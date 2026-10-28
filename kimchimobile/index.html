@@ -65,16 +65,78 @@
   </style>
 </head>
 
-<body>
+<body class="login-locked">
+
+  <!-- SCRIPT KIỂM TRA TRẠNG THÁI ĐĂNG NHẬP & XỬ LÝ ĐĂNG NHẬP TỨC THÌ (KHÔNG CẦN CHỜ FILE JS NẶNG) -->
+  <script>
+    (function() {
+      try {
+        var isLogged = sessionStorage.getItem('KIMCHI_LOGGED') === 'true' || localStorage.getItem('KIMCHI_LOGGED') === 'true';
+        if (isLogged) {
+          document.body.classList.remove('login-locked');
+        }
+      } catch (e) {}
+    })();
+
+    function handleLogin(e) {
+      if (e) {
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      }
+      var passInput = document.getElementById('loginPass');
+      var pass = passInput ? passInput.value.trim() : '';
+
+      if (pass !== '') {
+        var sc = document.getElementById('loginScreen');
+        if (sc) sc.style.display = 'none';
+        document.body.classList.remove('login-locked');
+        try {
+          sessionStorage.setItem('KIMCHI_LOGGED', 'true');
+          var rem = document.getElementById('rememberMe');
+          if (rem && rem.checked) {
+            localStorage.setItem('KIMCHI_LOGGED', 'true');
+          }
+        } catch (err) {
+          console.warn('Storage warning:', err);
+        }
+        var errEl = document.getElementById('loginError');
+        if (errEl) errEl.style.display = 'none';
+      } else {
+        var errEl = document.getElementById('loginError');
+        if (errEl) errEl.style.display = 'block';
+      }
+      return false;
+    }
+
+    function handleLogout() {
+      try {
+        sessionStorage.removeItem('KIMCHI_LOGGED');
+        localStorage.removeItem('KIMCHI_LOGGED');
+      } catch (err) {}
+      var sc = document.getElementById('loginScreen');
+      if (sc) sc.style.display = 'flex';
+      document.body.classList.add('login-locked');
+    }
+
+    window.handleLogin = handleLogin;
+    window.handleLogout = handleLogout;
+  </script>
 
   <!-- MÀN HÌNH ĐĂNG NHẬP -->
   <div id="loginScreen" style="display: flex;">
+    <script>
+      try {
+        if (sessionStorage.getItem('KIMCHI_LOGGED') === 'true' || localStorage.getItem('KIMCHI_LOGGED') === 'true') {
+          document.getElementById('loginScreen').style.display = 'none';
+        }
+      } catch (e) {}
+    </script>
     <div class="login-card">
       <div class="login-logo">KC</div>
       <div class="login-title">KIM CHI MOBILE</div>
       <div class="login-sub">ĐĂNG NHẬP HỆ THỐNG QUẢN LÝ</div>
 
-      <form id="loginForm">
+      <form id="loginForm" onsubmit="handleLogin(event); return false;">
         <div class="login-field">
           <label class="login-label">Tài Khoản Đăng Nhập</label>
           <input type="text" id="loginUser" class="login-input" placeholder="Nhập tài khoản" required autocomplete="off"
@@ -95,7 +157,7 @@
           <button type="button" class="btn-change-pass" onclick="alert('Mật khẩu mặc định là: 123456')"></button>
         </div>
 
-        <button type="button" class="login-btn" onclick="handleLogin(event)">ĐĂNG NHẬP NGAY</button>
+        <button type="submit" class="login-btn" onclick="handleLogin(event)">ĐĂNG NHẬP NGAY</button>
         <div id="loginError" class="login-error">Tài khoản hoặc mật khẩu không chính xác!</div>
       </form>
     </div>
@@ -4951,11 +5013,6 @@
 
   <!-- Tách các file JS theo module chức năng -->
   <script src="js/main.js?v=20261028_1435"></script>
-  <script src="js/sales.js"></script>
-  <script src="js/phone.js"></script>
-  <script src="js/software.js"></script>
-  <script src="js/parts.js"></script>
-  <script src="js/repair.js"></script>
 </body>
 
 </html>

@@ -1213,25 +1213,42 @@
     }
 
     function handleLogin(e) {
-      if (e) e.preventDefault();
+      if (e) {
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      }
       const pass = document.getElementById('loginPass') ? document.getElementById('loginPass').value.trim() : '';
       
       if (pass !== "") {
         const sc = document.getElementById('loginScreen');
         if (sc) sc.style.display = 'none';
-        sessionStorage.setItem('KIMCHI_LOGGED', 'true');
+        document.body.classList.remove('login-locked');
+        try {
+          sessionStorage.setItem('KIMCHI_LOGGED', 'true');
+          const rem = document.getElementById('rememberMe');
+          if (rem && rem.checked) {
+            localStorage.setItem('KIMCHI_LOGGED', 'true');
+          }
+        } catch (err) {
+          console.warn('Storage warning:', err);
+        }
         const err = document.getElementById('loginError');
         if (err) err.style.display = 'none';
       } else {
         const err = document.getElementById('loginError');
         if (err) err.style.display = 'block';
       }
+      return false;
     }
 
     function handleLogout() {
-      sessionStorage.removeItem('KIMCHI_LOGGED');
+      try {
+        sessionStorage.removeItem('KIMCHI_LOGGED');
+        localStorage.removeItem('KIMCHI_LOGGED');
+      } catch (err) {}
       const sc = document.getElementById('loginScreen');
       if (sc) sc.style.display = 'flex';
+      document.body.classList.add('login-locked');
     }
     window.handleLogin = handleLogin;
     window.handleLogout = handleLogout;
@@ -1312,8 +1329,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       initAllTabsToVietnamToday();
       migrateStorageUnits();
-      if (sessionStorage.getItem('KIMCHI_LOGGED') === 'true') {
-        document.getElementById('loginScreen').style.display = 'none';
+      if (sessionStorage.getItem('KIMCHI_LOGGED') === 'true' || localStorage.getItem('KIMCHI_LOGGED') === 'true') {
+        const sc = document.getElementById('loginScreen');
+        if (sc) sc.style.display = 'none';
+        document.body.classList.remove('login-locked');
       }
       renderAllDropdowns();
       renderAllRepairDropdowns();
