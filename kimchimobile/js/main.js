@@ -2110,7 +2110,9 @@
         return `
           <tr${trClass}${missingTitle}>
             <td${tdClass} style="font-weight: 800; font-size: 1.38rem; ${nameColorStyle}">${displayName}</td>
-            <td${tdClass} style="font-weight: 900; color: ${totalColor} !important; font-size: 1.65rem; text-align: center;">${item.total}</td>
+            <td${tdClass} style="text-align: center; vertical-align: middle;">
+              <span style="display: inline-block; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); color: #ffffff !important; font-weight: 900; font-size: 1.55rem; padding: 4px 16px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.45); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); letter-spacing: 0.5px;">${item.total}</span>
+            </td>
             <td${tdClass} style="color: ${priceInColor} !important; font-weight: 900; font-size: 1.14rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.priceIn}</td>
             <td${tdClass} style="font-weight: 900; color: ${profitColor} !important; font-size: 1.14rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.profit}</td>
             <td${tdClass} style="text-align: center;"><span style="font-weight: 800; font-size: 1.1rem; color: ${methodColorVal} !important; cursor: default; user-select: none;">${item.method}</span></td>
@@ -8201,19 +8203,19 @@
         let brandNamePart = '';
         let pName = formatBrandDeviceName(formatStorageDisplay(p.name || ''));
         if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️' || !brandDisplay) {
-          brandNamePart = `<span style="color: #ef4444; font-size: 1.15rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${pName}`;
+          brandNamePart = `<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${pName}`;
         } else {
           brandNamePart = `${brandDisplay ? brandDisplay + ' - ' : ''}${pName}`;
         }
         brandNamePart = formatBrandDeviceName(brandNamePart);
         let cleanStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, ''));
         let dotHtml = getColorDotHtml(p.color, 28);
-        let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.05rem;">${cleanStorage}</span>` : '';
-        let imeiPart = p.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.15rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${p.imei}</span>` : '';
+        let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.16rem;">${cleanStorage}</span>` : '';
+        let imeiPart = p.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.27rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${p.imei}</span>` : '';
 
         let nameHtml = `
           <div style="display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; flex-wrap: nowrap; white-space: nowrap;">
-            <span style="font-size: 1.15rem; font-weight: 800; white-space: nowrap;">${brandNamePart}</span>
+            <span style="font-size: 1.27rem; font-weight: 800; white-space: nowrap;">${brandNamePart}</span>
             ${dotHtml}
             ${storagePart}
             ${imeiPart}
@@ -8238,11 +8240,11 @@
             <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle;">
               ${nameHtml}
             </td>
-            <td style="font-weight: 900; color: #f87171; font-size: 1.25rem; text-align: center; vertical-align: middle;">${formatPriceStr(p.price || p.total) || '0'}</td>
-            <td style="color: #ffffff; font-weight: 900; font-size: 0.8rem; text-align: center; vertical-align: middle;">${p.priceIn || '0'}</td>
-            <td style="font-weight: 900; color: #eab308; font-size: 0.95rem; text-align: center; vertical-align: middle;">${profitVal}</td>
-            <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; color: ${methodColor};">${method}</span></td>
-            <td style="color: #ec4899; font-weight: 700; text-align: center; vertical-align: middle;">${dateDisplay}</td>
+            <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${formatPriceStr(p.price || p.total) || '0'}</td>
+            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${p.priceIn || '0'}</td>
+            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${profitVal}</td>
+            <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; font-size: 1.05rem; color: ${methodColor};">${method}</span></td>
+            <td style="color: #ec4899; font-weight: 800; font-size: 1.05rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
             <td style="text-align: center; vertical-align: middle;">
               <div class="action-btn-group" style="justify-content: center;">
                 <button type="button" class="action-btn-icon action-btn-view" onclick="viewPhone('${p.id}', true)" title="Xem chi tiết">
@@ -14486,12 +14488,12 @@
 
         let cleanStorage = formatStorageDisplay((item.storage || '').replace(/[()]/g, ''));
         let dotHtml = getColorDotHtml(item.color || 'Đen', 28);
-        let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.05rem;">${cleanStorage}</span>` : '';
-        let imeiPart = item.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.15rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${item.imei}</span>` : '';
+        let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.16rem;">${cleanStorage}</span>` : '';
+        let imeiPart = item.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.27rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${item.imei}</span>` : '';
 
         let nameHtml = `
           <div style="display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; flex-wrap: nowrap; white-space: nowrap;">
-            <span style="font-size: 1.15rem; font-weight: 800; white-space: nowrap;">${brandNamePart}</span>
+            <span style="font-size: 1.27rem; font-weight: 800; white-space: nowrap;">${brandNamePart}</span>
             ${dotHtml}
             ${storagePart}
             ${imeiPart}
@@ -14516,11 +14518,11 @@
             <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle;">
               ${nameHtml}
             </td>
-            <td style="font-weight: 900; color: #f87171; font-size: 1.25rem; text-align: center; vertical-align: middle;">${item.price || '0'}</td>
-            <td style="color: #ffffff; font-weight: 900; font-size: 0.95rem; text-align: center; vertical-align: middle;">${item.priceIn || '0'}</td>
-            <td style="font-weight: 900; color: #eab308; font-size: 0.95rem; text-align: center; vertical-align: middle;">${profitStr}</td>
-            <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; color: ${stColor};">${item.status || 'Còn Hàng'}</span></td>
-            <td style="color: #ec4899; font-weight: 700; font-size: 0.95rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
+            <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${item.price || '0'}</td>
+            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${item.priceIn || '0'}</td>
+            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${profitStr}</td>
+            <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; font-size: 1.05rem; color: ${stColor};">${item.status || 'Còn Hàng'}</span></td>
+            <td style="color: #ec4899; font-weight: 800; font-size: 1.05rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
             <td style="text-align: center; vertical-align: middle;">
               <div class="action-btn-group" style="justify-content: center;">
                 <button type="button" class="action-btn-icon action-btn-view" onclick="viewMainXacDetail('${item.id}')" title="Xem chi tiết">

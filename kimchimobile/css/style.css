@@ -5903,3 +5903,26 @@
       color: #ef4444;
       opacity: 1;
     }
+
+    /* TĂNG CỠ CHỮ TOÀN BỘ 10% CHO MENU BẢO HÀNH VÀ MENU MAIN - XÁC */
+    #tab-baohanh .sales-table th {
+      font-size: 1.08rem !important;
+      letter-spacing: 0.3px;
+    }
+    #tab-baohanh .sales-table td {
+      font-size: 1.05rem !important;
+    }
+    #tab-baohanh .sales-footer-stats {
+      font-size: 1.05rem !important;
+    }
+
+    #tab-quynhbupbe .sales-table th {
+      font-size: 1.08rem !important;
+      letter-spacing: 0.3px;
+    }
+    #tab-quynhbupbe .sales-table td {
+      font-size: 1.05rem !important;
+    }
+    #tab-quynhbupbe .sales-footer-stats {
+      font-size: 1.05rem !important;
+    }

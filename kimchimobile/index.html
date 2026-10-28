@@ -74,7 +74,7 @@
       <div class="login-title">KIM CHI MOBILE</div>
       <div class="login-sub">ĐĂNG NHẬP HỆ THỐNG QUẢN LÝ</div>
 
-      <form onsubmit="handleLogin(event)">
+      <form id="loginForm">
         <div class="login-field">
           <label class="login-label">Tài Khoản Đăng Nhập</label>
           <input type="text" id="loginUser" class="login-input" placeholder="Nhập tài khoản" required autocomplete="off"
@@ -95,7 +95,7 @@
           <button type="button" class="btn-change-pass" onclick="alert('Mật khẩu mặc định là: 123456')"></button>
         </div>
 
-        <button type="submit" class="login-btn">ĐĂNG NHẬP NGAY</button>
+        <button type="button" class="login-btn" onclick="handleLogin(event)">ĐĂNG NHẬP NGAY</button>
         <div id="loginError" class="login-error">Tài khoản hoặc mật khẩu không chính xác!</div>
       </form>
     </div>
@@ -1477,7 +1477,7 @@
 
             <div
               style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 14px; display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 0.88rem; color: #ffffff; font-weight: 800;" id="soldPhoneCountText">Máy Đã Bán :
+              <span style="font-size: 0.97rem; color: #ffffff; font-weight: 800;" id="soldPhoneCountText">Máy Đã Bán :
                 0</span>
             </div>
           </div>
@@ -1487,13 +1487,13 @@
           <table class="sales-table">
             <thead>
               <tr>
-                <th style="color: #eab308; text-align: left; padding-left: 16px;">HÃNG / TÊN MÁY</th>
-                <th style="color: #eab308; text-align: center;">GIÁ BÁN</th>
-                <th style="color: #eab308; text-align: center;">GIÁ NHẬP</th>
-                <th style="color: #eab308; text-align: center;">LÃI</th>
-                <th style="color: #eab308; text-align: center;">HÌNH THỨC</th>
-                <th style="color: #eab308; text-align: center;">GIỜ - NGÀY BÁN</th>
-                <th style="color: #eab308; text-align: center;">THAO TÁC</th>
+                <th style="color: #eab308; text-align: left; padding-left: 16px; font-size: 1.08rem;">HÃNG / TÊN MÁY</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ BÁN</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ NHẬP</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">LÃI</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">HÌNH THỨC</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIỜ - NGÀY BÁN</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">THAO TÁC</th>
               </tr>
             </thead>
             <tbody id="soldPhoneTableBody">
@@ -1938,11 +1938,11 @@
           style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; gap: 12px; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap;">
             <span
-              style="background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%); color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 7px 18px; border-radius: 8px; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">QUẢN
+              style="background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%); color: #ffffff; font-size: 1.16rem; font-weight: 900; padding: 7px 18px; border-radius: 8px; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">QUẢN
               LÝ MAIN - XÁC</span>
 
             <button type="button" class="btn-add-phone-main" onclick="openMainXacModal()"
-              style="height: 38px; padding: 0 16px; border-radius: 8px; font-weight: 900; font-size: 0.88rem; background: var(--amber-color); color: #000; cursor: pointer; border: none; box-shadow: 0 3px 12px rgba(245,158,11,0.4); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+              style="height: 38px; padding: 0 16px; border-radius: 8px; font-weight: 900; font-size: 0.97rem; background: var(--amber-color); color: #000; cursor: pointer; border: none; box-shadow: 0 3px 12px rgba(245,158,11,0.4); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
               + THÊM MAIN - XÁC MỚI
             </button>
 
@@ -2002,7 +2002,7 @@
 
             <div
               style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 14px; display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 0.88rem; color: #ffffff; font-weight: 800;" id="mainXacCountText">Main Xác :
+              <span style="font-size: 0.97rem; color: #ffffff; font-weight: 800;" id="mainXacCountText">Main Xác :
                 0</span>
             </div>
           </div>
@@ -2012,13 +2012,13 @@
           <table class="sales-table">
             <thead>
               <tr>
-                <th style="color: #eab308; text-align: left; padding-left: 16px;">HÃNG / TÊN MÁY</th>
-                <th style="color: #eab308; text-align: center;">GIÁ BÁN</th>
-                <th style="color: #eab308; text-align: center;">GIÁ NHẬP</th>
-                <th style="color: #eab308; text-align: center;">LÃI</th>
-                <th style="color: #eab308; text-align: center;">TRẠNG THÁI</th>
-                <th style="color: #eab308; text-align: center;">GIỜ - NGÀY NHẬP</th>
-                <th style="color: #eab308; text-align: center;">THAO TÁC</th>
+                <th style="color: #eab308; text-align: left; padding-left: 16px; font-size: 1.08rem;">HÃNG / TÊN MÁY</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ BÁN</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ NHẬP</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">LÃI</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">TRẠNG THÁI</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIỜ - NGÀY NHẬP</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">THAO TÁC</th>
               </tr>
             </thead>
             <tbody id="mainXacTableBody">
@@ -2026,10 +2026,10 @@
           </table>
         </div>
 
-        <div class="sales-footer-stats" style="margin-top: 1rem;">
+        <div class="sales-footer-stats" style="margin-top: 1rem; font-size: 1.05rem;">
           <span id="mainXacFooterCountText">Hiển thị 0 main - xác.</span>
           <div id="mainXacFooterSummary"
-            style="display: flex; align-items: center; gap: 20px; font-weight: 800; font-size: 0.95rem;">
+            style="display: flex; align-items: center; gap: 20px; font-weight: 800; font-size: 1.05rem;">
             <span>Tổng Máy : <span id="mainXacFootCount" style="color: #ffffff; font-weight: 800;">0</span></span>
             <span style="color: #f87171;">Giá Bán : <span id="mainXacFootPrice"
                 style="font-weight: 900;">0</span></span>
