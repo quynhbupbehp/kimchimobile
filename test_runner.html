@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+window.errors = [];
+window.onerror = function(msg, url, line) {
+    window.errors.push(msg + ' at line ' + line);
+};
+</script>
+</head>
+<body>
+<iframe id='testFrame' src='file:///q:/kimchimobile/index.html' width='390' height='844'></iframe>
+<script>
+var f = document.getElementById('testFrame');
+f.onload = function() {
+    try {
+        var win = f.contentWindow;
+        var doc = f.contentDocument;
+        console.log('Testing switchMainTab phanmem...');
+        win.switchMainTab('phanmem');
+        console.log('Testing switchMainTab banmay...');
+        win.switchMainTab('banmay');
+        console.log('Testing openTicketModalWithTarget...');
+        win.openTicketModalWithTarget('Bán Hàng');
+        var res = document.createElement('div');
+        res.id = 'result';
+        res.innerText = 'SUCCESS! Modal display: ' + doc.getElementById('ticketModal').style.display;
+        document.body.appendChild(res);
+    } catch(e) {
+        var res = document.createElement('div');
+        res.id = 'result';
+        res.innerText = 'EXCEPTION: ' + e.toString() + ' stack: ' + e.stack;
+        document.body.appendChild(res);
+    }
+};
+</script>
+</body>
+</html>

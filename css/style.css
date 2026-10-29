@@ -6109,12 +6109,12 @@
         -webkit-tap-highlight-color: transparent !important;
       }
       .mobile-quick-nav {
-        scroll-snap-type: x proximity;
         scroll-behavior: smooth;
         -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-x !important;
       }
       .mobile-tab-pill {
-        scroll-snap-align: center;
+        -webkit-tap-highlight-color: transparent !important;
       }
 
       /* Nút đóng Sidebar Drawer ✕ */
@@ -6548,7 +6548,25 @@
         touch-action: manipulation !important;
       }
 
-      /* HỘP THOẠI POP-UP / MODAL TRÊN MOBILE */
+      /* HỘP THOẠI POP-UP / MODAL TRÊN MOBILE CỰC ĐẸP & CHUẨN CHIỀU DỌC */
+      .modal-overlay {
+        z-index: 1000000 !important;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.88) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        padding: 10px !important;
+        box-sizing: border-box !important;
+        display: none !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+      .modal-overlay.active,
+      .modal-overlay.show,
+      #ticketModal.active {
+        display: flex !important;
+      }
       .modal-ticket-box,
       .other-debt-modal-box,
       .acc-modal-box,
@@ -6557,22 +6575,261 @@
       .modal-overlay > div {
         width: 95vw !important;
         max-width: 95vw !important;
-        max-height: 90vh !important;
-        max-height: 90dvh !important;
+        max-height: 92vh !important;
+        max-height: 92dvh !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        padding: 16px 12px !important;
-        margin: 12px auto !important;
-        border-radius: 14px !important;
+        padding: 16px 14px 24px 14px !important;
+        margin: auto !important;
+        border-radius: 16px !important;
         box-sizing: border-box !important;
         background: #0c121e !important;
         border: 1.5px solid #223048 !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9) !important;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.95) !important;
         pointer-events: auto !important;
       }
-      .modal-ticket-box form div[style*="grid-template-columns"] {
-        grid-template-columns: 1fr !important;
-        gap: 10px !important;
+      .ticket-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-bottom: 14px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 1.5px solid #1e293b !important;
+      }
+      .ticket-header span {
+        font-size: 1.15rem !important;
+        font-weight: 900 !important;
+      }
+      .ticket-header button {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 1.4rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+      }
+      .form-ticket-row {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        margin-bottom: 10px !important;
+        align-items: flex-end !important;
+      }
+      .form-ticket-group {
+        flex: 1 1 45% !important;
+        min-width: 130px !important;
+      }
+      .form-ticket-row:first-child .form-ticket-group:first-child {
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+      }
+      .form-ticket-label {
+        font-size: 0.8rem !important;
+        font-weight: 800 !important;
+        margin-bottom: 4px !important;
+      }
+      .ticket-input,
+      .ticket-select {
+        height: 42px !important;
+        font-size: 1rem !important;
+        border-radius: 8px !important;
+      }
+      .btn-save-ticket {
+        height: 48px !important;
+        font-size: 1.05rem !important;
+        font-weight: 900 !important;
+        border-radius: 10px !important;
+        width: 100% !important;
+        margin-top: 10px !important;
+      }
+
+      /* === TAB PHẦN MỀM MOBILE: BỐ CỤC CHIỀU DỌC GỌN GÀNG === */
+      #tab-phanmem .sw-top-header-bar {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-bottom: 8px !important;
+        width: 100% !important;
+      }
+      #tab-phanmem .sw-top-header-bar > div:first-child {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+      }
+      #tab-phanmem .sw-revenue-stat-pill {
+        flex: 1 1 auto !important;
+        justify-content: center !important;
+        height: 38px !important;
+        padding: 0 12px !important;
+      }
+      #tab-phanmem .sw-top-header-bar > div:last-child {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+      }
+      #tab-phanmem .sw-top-header-bar > div:last-child .sw-stat-pill {
+        width: 100% !important;
+        justify-content: center !important;
+        height: 38px !important;
+        padding: 0 12px !important;
+      }
+      /* Lưới 6 nút Shortcut Phần Mềm: 3 cột x 2 hàng chuẩn mobile */
+      #tab-phanmem .sw-top-header-bar > div:nth-child(2) {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+        width: 100% !important;
+      }
+      #tab-phanmem .sw-pill-btn {
+        width: 100% !important;
+        height: 36px !important;
+        padding: 0 4px !important;
+        font-size: 0.78rem !important;
+        font-weight: 800 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        text-align: center !important;
+        margin: 0 !important;
+      }
+      #tab-phanmem .sw-pill-btn .sw-link-text {
+        font-size: 0.78rem !important;
+      }
+      #tab-phanmem .sw-toolbar {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        margin-bottom: 8px !important;
+        width: 100% !important;
+      }
+      #tab-phanmem .sw-toolbar > div {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+      }
+      #tab-phanmem #swMainTitleBar {
+        flex: 1 1 auto !important;
+        height: 38px !important;
+        font-size: 0.88rem !important;
+      }
+      #tab-phanmem #swCustomerFilter {
+        height: 38px !important;
+        font-size: 0.88rem !important;
+        flex: 1.5 1 auto !important;
+      }
+
+      /* === TAB BÁN MÁY MOBILE: BỐ CỤC CHIỀU DỌC GỌN GÀNG === */
+      #tab-banmay .brand-tabs-horizontal {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-x !important;
+        gap: 6px !important;
+        padding: 4px 0 8px 0 !important;
+        width: 100% !important;
+        scrollbar-width: none !important;
+      }
+      #tab-banmay .brand-tabs-horizontal::-webkit-scrollbar {
+        display: none !important;
+      }
+      #tab-banmay .brand-btn-h {
+        flex-shrink: 0 !important;
+        padding: 6px 14px !important;
+        font-size: 0.82rem !important;
+        border-radius: 8px !important;
+      }
+      #tab-banmay > div:first-child {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-bottom: 8px !important;
+      }
+      #tab-banmay > div:first-child > div:last-child {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+      }
+      #phoneInventoryStatsBadge {
+        flex: 1 1 auto !important;
+        justify-content: center !important;
+        height: 38px !important;
+      }
+      .banmay-top-bar {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        margin-bottom: 8px !important;
+        width: 100% !important;
+      }
+      .search-box-bm {
+        width: 100% !important;
+        height: 40px !important;
+      }
+      .price-filter-box-bm {
+        width: 100% !important;
+        height: 38px !important;
+      }
+      .price-filter-box-bm select {
+        width: 100% !important;
+      }
+      /* Phone cards: tối ưu danh thiếp máy dạng dọc siêu đẹp */
+      .phone-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+      .phone-card {
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+        background: #0f172a !important;
+        border: 1px solid #1e293b !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+      }
+      .phone-card-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+      }
+      .phone-card-name {
+        font-size: 1.05rem !important;
+        font-weight: 900 !important;
+        color: #10b981 !important;
+      }
+      .phone-card-price {
+        font-size: 1.15rem !important;
+        font-weight: 900 !important;
+        color: #facc15 !important;
+      }
+      .phone-card-imei {
+        font-size: 0.85rem !important;
+        padding: 2px 6px !important;
+        border-radius: 6px !important;
+      }
+      .phone-card-specs {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 4px !important;
+        padding-top: 6px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+      }
+      .phone-spec-col {
+        font-size: 0.78rem !important;
+        text-align: center !important;
+        padding: 4px 2px !important;
+        border-radius: 6px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        white-space: nowrap !important;
       }
 
       /* Input form tối ưu kích cỡ không bị zoom lệch trên Safari */

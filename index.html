@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#06090e">
-  <link rel="stylesheet" href="css/style.css?v=20261029_1450">
+  <link rel="stylesheet" href="css/style.css?v=20261029_1530">
   <script>
     (function () {
       try {
@@ -5120,10 +5120,43 @@
   <script src="js/seed_data.js?v=20261028_1015"></script>
 
   <!-- Tách các file JS theo module chức năng -->
-  <script src="js/main.js?v=20261029_1450"></script>
+  <script src="js/main.js?v=20261029_1530"></script>
   <script src="js/sales.js"></script>
   <script src="js/phone.js"></script>
   <script src="js/software.js"></script>
   <script src="js/parts.js"></script>
   <script src="js/repair.js"></script>
+
+  <script>
+    // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
+    (function () {
+      function initFastMobileTouch() {
+        document.querySelectorAll('.mobile-tab-pill').forEach(function (pill) {
+          pill.addEventListener('pointerup', function (e) {
+            var tab = pill.getAttribute('data-tab');
+            if (tab && typeof switchMainTab === 'function') {
+              switchMainTab(tab, pill);
+            }
+          }, { passive: true });
+        });
+
+        document.querySelectorAll('.btn-create-ticket').forEach(function (btn) {
+          btn.addEventListener('pointerup', function (e) {
+            e.preventDefault();
+            var target = btn.classList.contains('btn-create-blue') ? 'Bán Gà' : 'Bán Hàng';
+            if (typeof openTicketModalWithTarget === 'function') {
+              openTicketModalWithTarget(target);
+            }
+          });
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initFastMobileTouch);
+      } else {
+        initFastMobileTouch();
+      }
+      window.addEventListener('load', initFastMobileTouch);
+    })();
+  </script>
 </body>

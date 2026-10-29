@@ -165,19 +165,23 @@
 
     function switchMainTab(tabName, btnElement) {
       document.querySelectorAll('.main-tab-btn-v').forEach(b => b.classList.remove('active'));
-      if (btnElement) {
+      if (btnElement && btnElement.classList && btnElement.classList.contains('main-tab-btn-v')) {
         btnElement.classList.add('active');
       } else {
         const matchingBtn = document.querySelector(`.main-tab-btn-v[onclick*="${tabName}"]`);
         if (matchingBtn) matchingBtn.classList.add('active');
       }
 
-      // Đồng bộ thanh cuộn ngang tab trên điện thoại
+      // Đồng bộ thanh cuộn ngang tab trên điện thoại (chỉ cuộn thanh tab ngang, không giật màn hình)
       document.querySelectorAll('.mobile-tab-pill').forEach(pill => {
         if (pill.getAttribute('data-tab') === tabName) {
           pill.classList.add('active');
           try {
-            pill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            const nav = pill.parentElement;
+            if (nav && nav.classList.contains('mobile-quick-nav')) {
+              const scrollLeft = pill.offsetLeft - (nav.clientWidth / 2) + (pill.clientWidth / 2);
+              nav.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'smooth' });
+            }
           } catch (e) {}
         } else {
           pill.classList.remove('active');
@@ -189,16 +193,23 @@
 
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       const targetTab = document.getElementById('tab-' + tabName);
-      if (targetTab) targetTab.classList.add('active');
+      if (targetTab) {
+        targetTab.classList.add('active');
+        // Cuộn mượt lên đầu nội dung tab trên điện thoại
+        if (window.innerWidth <= 1023) {
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+      }
 
       if (tabName === 'baogia') {
-        renderPartsTable();
+        if (typeof renderPartsTable === 'function') renderPartsTable();
       }
       if (tabName === 'phanmem') {
+        const isDebt = typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive;
         const titleBar = document.getElementById('swMainTitleBar');
         const btnCongNo = document.getElementById('swBtnCongNo');
         if (titleBar) {
-          if (swIsDebtViewActive) {
+          if (isDebt) {
             titleBar.innerText = 'DANH SÁCH NỢ';
             titleBar.classList.add('is-debt');
             titleBar.style.color = '#facc15';
@@ -209,45 +220,50 @@
           }
         }
         if (btnCongNo) {
-          btnCongNo.innerText = swIsDebtViewActive ? 'PHẦN MỀM' : 'CÔNG NỢ';
-          btnCongNo.title = swIsDebtViewActive ? 'Bấm vào để quay lại tab danh sách phần mềm' : 'Xem sổ công nợ phần mềm';
-          if (swIsDebtViewActive) btnCongNo.classList.add('active');
+          btnCongNo.innerText = isDebt ? 'PHẦN MỀM' : 'CÔNG NỢ';
+          btnCongNo.title = isDebt ? 'Bấm vào để quay lại tab danh sách phần mềm' : 'Xem sổ công nợ phần mềm';
+          if (isDebt) btnCongNo.classList.add('active');
           else btnCongNo.classList.remove('active');
         }
-        renderSoftwareTable(softwareDatabase);
-        if (swIsDebtViewActive) {
+        if (typeof renderSoftwareTable === 'function') {
+          renderSoftwareTable(typeof softwareDatabase !== 'undefined' ? softwareDatabase : []);
+        }
+        if (isDebt && typeof renderSoftwareDebtTable === 'function') {
           renderSoftwareDebtTable();
         }
       }
       if (tabName === 'banhang') {
-        renderSalesTable(salesDatabase);
+        if (typeof renderSalesTable === 'function') renderSalesTable(typeof salesDatabase !== 'undefined' ? salesDatabase : []);
       }
       if (tabName === 'banga') {
-        renderBangaTable(bangaDatabase);
+        if (typeof renderBangaTable === 'function') renderBangaTable(typeof bangaDatabase !== 'undefined' ? bangaDatabase : []);
       }
       if (tabName === 'banmay') {
-        renderPhoneGrid();
+        if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
       }
       if (tabName === 'baohanh') {
-        renderSoldPhoneTable();
+        if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
       }
       if (tabName === 'suachua') {
-        renderRepairTable();
+        if (typeof renderRepairTable === 'function') renderRepairTable();
       }
       if (tabName === 'congno') {
-        renderDebtDashboard();
+        if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
       }
       if (tabName === 'baocao') {
-        renderFinancialReports();
+        if (typeof renderFinancialReports === 'function') renderFinancialReports();
         if (typeof renderActivityLogTable === 'function') renderActivityLogTable();
         if (typeof renderSystemAccountsTable === 'function') renderSystemAccountsTable();
       }
       if (tabName === 'quynhbupbe') {
-        loadQuynhNotes();
-        renderMainXacGrid();
+        if (typeof loadQuynhNotes === 'function') loadQuynhNotes();
+        if (typeof renderMainXacGrid === 'function') renderMainXacGrid();
       }
-      setTimeout(initUniversalSearchClearButtons, 30);
+      if (typeof initUniversalSearchClearButtons === 'function') {
+        setTimeout(initUniversalSearchClearButtons, 30);
+      }
     }
+    window.switchMainTab = switchMainTab;
 
 
     function validatePriceKeypress(e) {
@@ -3081,7 +3097,18 @@
     }
 
     function openTicketModalWithTarget(target) {
-      openTicketModal();
+      try {
+        openTicketModal();
+      } catch (err) {
+        console.error('Error in openTicketModal:', err);
+      }
+      const m = document.getElementById('ticketModal');
+      if (m) {
+        m.classList.add('active');
+        m.style.display = 'flex';
+        m.style.zIndex = '1000000';
+      }
+
       const targetSelect = document.getElementById('tTargetList');
       if (targetSelect) targetSelect.value = target;
 
@@ -3090,18 +3117,28 @@
         titleSpan.innerText = target === 'Bán Gà' ? 'Tạo Phiếu Bán Gà' : 'Tạo Phiếu Bán Hàng';
       }
 
-      if (target === 'Bán Gà') {
-        const dd = String(currentBangaDateFilter.getDate()).padStart(2, '0');
-        const mm = String(currentBangaDateFilter.getMonth() + 1).padStart(2, '0');
-        const yyyy = currentBangaDateFilter.getFullYear();
-        document.getElementById('tDateVal').value = `${dd}/${mm}/${yyyy}`;
-      } else {
-        const dd = String(currentSalesDateFilter.getDate()).padStart(2, '0');
-        const mm = String(currentSalesDateFilter.getMonth() + 1).padStart(2, '0');
-        const yyyy = currentSalesDateFilter.getFullYear();
-        document.getElementById('tDateVal').value = `${dd}/${mm}/${yyyy}`;
-      }
+      try {
+        if (target === 'Bán Gà') {
+          if (typeof currentBangaDateFilter !== 'undefined') {
+            const dd = String(currentBangaDateFilter.getDate()).padStart(2, '0');
+            const mm = String(currentBangaDateFilter.getMonth() + 1).padStart(2, '0');
+            const yyyy = currentBangaDateFilter.getFullYear();
+            const dateEl = document.getElementById('tDateVal');
+            if (dateEl) dateEl.value = `${dd}/${mm}/${yyyy}`;
+          }
+        } else {
+          if (typeof currentSalesDateFilter !== 'undefined') {
+            const dd = String(currentSalesDateFilter.getDate()).padStart(2, '0');
+            const mm = String(currentSalesDateFilter.getMonth() + 1).padStart(2, '0');
+            const yyyy = currentSalesDateFilter.getFullYear();
+            const dateEl = document.getElementById('tDateVal');
+            if (dateEl) dateEl.value = `${dd}/${mm}/${yyyy}`;
+          }
+        }
+      } catch (e) {}
     }
+    window.openTicketModalWithTarget = openTicketModalWithTarget;
+    window.openTicketModal = openTicketModal;
 
     function closeTicketModal() {
       const m = document.getElementById('ticketModal');
@@ -3110,6 +3147,7 @@
         m.style.display = 'none';
       }
     }
+    window.closeTicketModal = closeTicketModal;
 
     function adjustQty(val) {
       let qInput = document.getElementById('tQty');
