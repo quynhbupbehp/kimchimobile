@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 >nul
-title DONG BO CODE LEN GITHUB VA NETLIFY (TU DONG DOI VERSION CHONG CACHE SAFARI)
+title DONG BO CODE LEN GITHUB (TU DONG DOI VERSION CHONG CACHE SAFARI)
 
 echo ========================================================
-echo   DANG DONG BO VA DAY CODE LEN GITHUB / NETLIFY...
+echo   DANG DONG BO VA DAY CODE LEN GITHUB...
 echo ========================================================
 echo.
 
@@ -30,7 +30,7 @@ if defined dt (
 git commit -m "%commit_msg%"
 
 echo.
-echo [4/4] Dang day len GitHub (Netlify se tu dong cap nhat)...
+echo [4/4] Dang day len GitHub (GitHub Pages se tu dong cap nhat)...
 git push origin main
 
 if %ERRORLEVEL% EQU 0 goto :success
@@ -39,7 +39,8 @@ goto :fail
 :success
 echo.
 echo ========================================================
-echo   THANH CONG! NETLIFY SE CAP NHAT WEB TRONG 15-30 GIAY!
+echo   THANH CONG! DA DAY CODE LEN GITHUB XONG!
+echo   GITHUB PAGES SE TU DONG CAP NHAT WEB TRONG 30-60 GIAY!
 echo   SAFARI SE TU DONG TAI FILE CSS VA JS MOI NHAT!
 echo ========================================================
 echo.
