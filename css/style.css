@@ -51,14 +51,25 @@
       }
     }
 
-    body.login-active {
+    body.login-active,
+    body.login-locked {
       overflow: hidden !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
       height: 100vh !important;
       height: 100dvh !important;
+      max-width: 100vw !important;
+      touch-action: none !important;
     }
 
     body.login-active .content-wrapper,
-    body.login-active aside.sidebar {
+    body.login-active aside.sidebar,
+    body.login-locked .content-wrapper,
+    body.login-locked aside.sidebar {
       visibility: hidden !important;
       pointer-events: none !important;
     }

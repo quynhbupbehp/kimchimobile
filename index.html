@@ -21,7 +21,9 @@
       display: none !important;
     }
     html.user-is-logged body.login-active .content-wrapper,
-    html.user-is-logged body.login-active aside.sidebar {
+    html.user-is-logged body.login-active aside.sidebar,
+    html.user-is-logged body.login-locked .content-wrapper,
+    html.user-is-logged body.login-locked aside.sidebar {
       visibility: visible !important;
       pointer-events: auto !important;
     }
@@ -85,7 +87,7 @@
   </style>
 </head>
 
-<body class="login-active">
+<body class="login-locked login-active">
 
   <!-- MÀN HÌNH ĐĂNG NHẬP -->
   <div id="loginScreen" style="display: flex;">
