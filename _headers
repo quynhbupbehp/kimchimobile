@@ -1,0 +1,21 @@
+# Cache-Control rules for Netlify
+
+# HTML files: NEVER CACHE. Always revalidate so Safari/Chrome fetches latest version
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/baogia.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Static assets with version queries can be cached safely
+/css/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/js/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/img/*
+  Cache-Control: public, max-age=86400, must-revalidate
