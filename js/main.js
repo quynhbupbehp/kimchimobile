@@ -2428,12 +2428,12 @@
 
         return `
           <tr${trClass}${missingTitle} ondblclick="editSale(${item.id})" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ editSale(${item.id}); } this._lastTap=now;" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết phiếu">
-            <td${tdClass} style="font-weight: 800; font-size: 1.52rem; ${nameColorStyle}">${displayName}</td>
-            <td${tdClass} style="text-align: center; vertical-align: middle;">
-              <span style="display: inline-block; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); color: #ffffff !important; font-weight: 900; font-size: 1.24rem; padding: 3px 13px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.45); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); letter-spacing: 0.5px;">${item.total}</span>
+            <td${tdClass} class="sales-td-name" style="font-weight: 800; font-size: 1.26rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; ${nameColorStyle}">${displayName}</td>
+            <td${tdClass} class="sales-td-price" style="text-align: center; vertical-align: middle;">
+              <span class="sales-price-badge" style="display: inline-block; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); color: #ffffff !important; font-weight: 900; font-size: 1.02rem; padding: 2px 8px; border-radius: 6px; border: 1px solid #fcd34d; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.45); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); letter-spacing: 0.5px;">${item.total}</span>
             </td>
-            <td${tdClass} style="color: ${priceInColor} !important; font-weight: 900; font-size: 1.25rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.priceIn}</td>
-            <td${tdClass} style="font-weight: 900; color: ${profitColor} !important; font-size: 1.25rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.profit}</td>
+            <td${tdClass} class="sales-td-cost" style="color: ${priceInColor} !important; font-weight: 900; font-size: 1.18rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.priceIn}</td>
+            <td${tdClass} class="sales-td-profit" style="font-weight: 900; color: ${profitColor} !important; font-size: 1.18rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.profit}</td>
             <td${tdClass} style="text-align: center;"><span style="font-weight: 800; font-size: 1.1rem; color: ${methodColorVal} !important; cursor: default; user-select: none;">${item.method}</span></td>
             <td${tdClass} style="text-align: center;">
               <div class="action-btn-group" style="justify-content: center;">

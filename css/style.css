@@ -6544,15 +6544,79 @@
           padding: 0 10px !important;
         }
 
-        /* HÀNG 4: BẢNG BÁN HÀNG TIÊU ĐỀ TÍM NỔI BẬT */
+        /* HÀNG 4: BẢNG BÁN HÀNG TIÊU ĐỀ TÍM NỔI BẬT & THU HẸP VỪA VẶN 100% MÀN HÌNH (KHÔNG CUỘN NGANG) */
+        #tab-banhang .sales-table-container {
+          overflow-x: hidden !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          box-sizing: border-box !important;
+        }
+        #tab-banhang .sales-table {
+          table-layout: fixed !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          box-sizing: border-box !important;
+        }
         #tab-banhang .sales-table th {
           background: #7c3aed !important;
           color: #ffffff !important;
-          font-size: 0.98rem !important;
+          font-size: 0.85rem !important;
           font-weight: 900 !important;
           text-transform: uppercase !important;
-          padding: 9px 8px !important;
-          letter-spacing: 0.5px !important;
+          padding: 8px 2px !important;
+          letter-spacing: 0.2px !important;
+          white-space: nowrap !important;
+          box-sizing: border-box !important;
+          text-align: center !important;
+        }
+        #tab-banhang .sales-table td {
+          padding: 9px 2px !important;
+          box-sizing: border-box !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          vertical-align: middle !important;
+        }
+        #tab-banhang .sales-table th:nth-child(1),
+        #tab-banhang .sales-table td:nth-child(1) {
+          width: 42% !important;
+          max-width: 42% !important;
+          min-width: 0 !important;
+          text-align: left !important;
+          padding-left: 6px !important;
+          font-size: 1.25rem !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+        }
+        #tab-banhang .sales-table th:nth-child(2),
+        #tab-banhang .sales-table td:nth-child(2) {
+          width: 26% !important;
+          max-width: 26% !important;
+          min-width: 0 !important;
+          text-align: center !important;
+          padding: 6px 1px !important;
+        }
+        #tab-banhang .sales-table th:nth-child(3),
+        #tab-banhang .sales-table td:nth-child(3) {
+          width: 16% !important;
+          max-width: 16% !important;
+          min-width: 0 !important;
+          text-align: center !important;
+          font-size: 1.18rem !important;
+          padding: 6px 1px !important;
+        }
+        #tab-banhang .sales-table th:nth-child(4),
+        #tab-banhang .sales-table td:nth-child(4) {
+          width: 16% !important;
+          max-width: 16% !important;
+          min-width: 0 !important;
+          text-align: center !important;
+          font-size: 1.18rem !important;
+          padding: 6px 1px !important;
         }
         /* Ẩn cột HÌNH THỨC (5), THAO TÁC (6), GIỜ - NGÀY BÁN (7), THANH TOÁN (8) trên Mobile theo yêu cầu */
         #tab-banhang .sales-table th:nth-child(5),
