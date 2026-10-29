@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title DONG BO CODE LEN GITHUB & NETLIFY
+title DONG BO CODE LEN GITHUB VA NETLIFY
 
 echo ========================================================
 echo   DANG DONG BO VA DAY CODE LEN GITHUB / NETLIFY...
