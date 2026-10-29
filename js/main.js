@@ -147,6 +147,22 @@
     }
     window.formatSalesShortDeviceName = formatSalesShortDeviceName;
 
+    function toggleMobileSidebar() {
+      const sidebar = document.querySelector('aside.sidebar');
+      const overlay = document.getElementById('mobileSidebarOverlay');
+      if (sidebar) sidebar.classList.toggle('mobile-open');
+      if (overlay) overlay.classList.toggle('active');
+    }
+    window.toggleMobileSidebar = toggleMobileSidebar;
+
+    function closeMobileSidebar() {
+      const sidebar = document.querySelector('aside.sidebar');
+      const overlay = document.getElementById('mobileSidebarOverlay');
+      if (sidebar) sidebar.classList.remove('mobile-open');
+      if (overlay) overlay.classList.remove('active');
+    }
+    window.closeMobileSidebar = closeMobileSidebar;
+
     function switchMainTab(tabName, btnElement) {
       document.querySelectorAll('.main-tab-btn-v').forEach(b => b.classList.remove('active'));
       if (btnElement) {
@@ -155,6 +171,21 @@
         const matchingBtn = document.querySelector(`.main-tab-btn-v[onclick*="${tabName}"]`);
         if (matchingBtn) matchingBtn.classList.add('active');
       }
+
+      // Đồng bộ thanh cuộn ngang tab trên điện thoại
+      document.querySelectorAll('.mobile-tab-pill').forEach(pill => {
+        if (pill.getAttribute('data-tab') === tabName) {
+          pill.classList.add('active');
+          try {
+            pill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          } catch (e) {}
+        } else {
+          pill.classList.remove('active');
+        }
+      });
+
+      // Tự động đóng mobile drawer nếu đang mở
+      closeMobileSidebar();
 
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       const targetTab = document.getElementById('tab-' + tabName);

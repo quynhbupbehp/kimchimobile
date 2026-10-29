@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#06090e">
-  <link rel="stylesheet" href="css/style.css?v=20261029_1210">
+  <link rel="stylesheet" href="css/style.css?v=20261029_1250">
   <script>
     (function () {
       try {
@@ -161,8 +161,12 @@
     </div>
   </div>
 
+  <!-- OVERLAY NỀN MỜ KHI MỞ MENU MOBILE -->
+  <div id="mobileSidebarOverlay" onclick="closeMobileSidebar()"></div>
+
   <!-- SIDEBAR BÊN TRÁI -->
   <aside class="sidebar">
+    <button type="button" class="sidebar-close-btn" onclick="closeMobileSidebar()" aria-label="Đóng menu">✕</button>
     <div class="sidebar-top">
       <a href="#" class="brand-logo">
         <div class="brand-icon">KC</div>
@@ -199,6 +203,35 @@
 
   <!-- PHẦN NỘI DUNG CHÍNH -->
   <div class="content-wrapper">
+    <!-- HEADER RIÊNG BIỆT DÀNH CHO MOBILE (TỰ ẨN TRÊN WEB/DESKTOP) -->
+    <header class="mobile-top-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button type="button" class="mobile-menu-toggle" onclick="toggleMobileSidebar()" aria-label="Mở Menu">☰</button>
+        <div class="mobile-header-brand">
+          <span class="kc-icon">KC</span>
+          <span>KIM CHI MOBILE</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button type="button" class="mobile-top-btn" onclick="location.reload()" title="Làm mới dữ liệu">🔄</button>
+        <button type="button" class="mobile-top-btn" onclick="handleLogout()" title="Đăng xuất">🔒</button>
+      </div>
+    </header>
+
+    <!-- THANH CUỘN NGANG CHUYỂN TAB 1 CHẠM TRÊN MOBILE -->
+    <nav class="mobile-quick-nav">
+      <button type="button" class="mobile-tab-pill active" data-tab="banhang" onclick="switchMainTab('banhang')">🛒 Bán Hàng</button>
+      <button type="button" class="mobile-tab-pill" data-tab="phanmem" onclick="switchMainTab('phanmem')">💻 Phần Mềm</button>
+      <button type="button" class="mobile-tab-pill" data-tab="suachua" onclick="switchMainTab('suachua')">🔧 Sửa Chữa</button>
+      <button type="button" class="mobile-tab-pill" data-tab="banmay" onclick="switchMainTab('banmay')">📱 Bán Máy</button>
+      <button type="button" class="mobile-tab-pill" data-tab="banga" onclick="switchMainTab('banga')">🐓 Bán Gà</button>
+      <button type="button" class="mobile-tab-pill" data-tab="baohanh" onclick="switchMainTab('baohanh')">🛡️ Bảo Hành</button>
+      <button type="button" class="mobile-tab-pill" data-tab="baogia" onclick="switchMainTab('baogia')">📋 Báo Giá</button>
+      <button type="button" class="mobile-tab-pill" data-tab="congno" onclick="switchMainTab('congno')">💳 Công Nợ</button>
+      <button type="button" class="mobile-tab-pill" data-tab="quynhbupbe" onclick="switchMainTab('quynhbupbe')">👑 Main - Xác</button>
+      <button type="button" class="mobile-tab-pill" data-tab="baocao" onclick="switchMainTab('baocao')">⚙️ Hệ Thống</button>
+    </nav>
+
     <main>
 
       <!-- TAB 1: BÁN HÀNG -->
@@ -5080,7 +5113,7 @@
   <script src="js/seed_data.js?v=20261028_1015"></script>
 
   <!-- Tách các file JS theo module chức năng -->
-  <script src="js/main.js?v=20261029_1210"></script>
+  <script src="js/main.js?v=20261029_1250"></script>
   <script src="js/sales.js"></script>
   <script src="js/phone.js"></script>
   <script src="js/software.js"></script>
