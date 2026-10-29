@@ -508,25 +508,57 @@
     }, true);
 
     function getHexColor(colorName) {
-      if (!colorName) return '#f59e0b';
+      if (!colorName) return '#94a3b8';
       let raw = colorName.toString().trim().toLowerCase();
       let c = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
-      
-      if (c.includes('xanh la') || c.includes('green')) return '#10b981';
-      if (c.includes('den') || c.includes('black')) return '#1f2937';
-      if (c.includes('trang') || c.includes('white')) return '#ffffff';
-      if (c.includes('vang') || c.includes('gold')) return '#eab308';
-      if (c.includes('tim') || c.includes('purple')) return '#a855f7';
-      if (c.includes('sa mac') || c.includes('desert')) return '#d4a373';
-      if (c.includes('tu nhien') || c.includes('natural') || c.includes('titan')) return '#9ca3af';
-      if (c.includes('xam') || c.includes('grey') || c.includes('gray') || c.includes('space')) return '#64748b';
-      if (c.includes('xanh duong') || c.includes('xanh bien') || c.includes('blue')) return '#3b82f6';
+
+      // 1. Tổ hợp màu Titan & từ ghép đặc biệt
+      if (c.includes('titan xanh') || c.includes('blue titan')) return '#3b82f6';
+      if (c.includes('titan sa mac') || c.includes('desert titan') || c.includes('sa mac') || c.includes('desert')) return '#d4a373';
+      if (c.includes('titan den') || c.includes('black titan')) return '#1e293b';
+      if (c.includes('titan trang') || c.includes('white titan')) return '#ffffff';
+      if (c.includes('titan tu nhien') || c.includes('natural titan') || c.includes('titan')) return '#9ca3af';
+
+      // 2. Tổ hợp màu Vàng hồng / Rose Gold (phải kiểm tra trước vàng và hồng đơn lẻ)
+      if (c.includes('rose gold') || c.includes('vang hong') || c.includes('hong vang') || c.includes('rose')) return '#f472b6';
+
+      // 3. Tông Xanh lá / Xanh rêu / Xanh mint / Xanh lục
+      if (c.includes('xanh la') || c.includes('green') || c.includes('reu') || c.includes('xanh reu') || c.includes('luc') || c.includes('xanh luc') || c.includes('mint') || c.includes('alpine') || c.includes('olive') || c.includes('emerald') || c.includes('bo doi')) return '#10b981';
+
+      // 4. Tông Xanh ngọc / Teal / Cyan
+      if (c.includes('xanh ngoc') || c.includes('teal') || c.includes('cyan')) return '#14b8a6';
+
+      // 5. Tông Xanh dương / Blue / Xanh thông thường (bao gồm khi chỉ nhập "Xanh")
+      if (c.includes('xanh duong') || c.includes('xanh bien') || c.includes('blue') || c.includes('navy') || c.includes('lam') || c.includes('lo') || c.includes('coban') || c.includes('pacific') || c.includes('sierra') || c.includes('sky') || c.includes('xanh')) return '#3b82f6';
+
+      // 6. Tông Đen / Midnight / Tối
+      if (c.includes('den') || c.includes('black') || c.includes('midnight') || c.includes('jet black')) return '#1e293b';
+
+      // 7. Tông Trắng / Starlight / Bạc sáng
+      if (c.includes('trang') || c.includes('white') || c.includes('starlight')) return '#ffffff';
+
+      // 8. Tông Xám / Graphite / Space Gray
+      if (c.includes('graphite') || c.includes('space') || c.includes('xam') || c.includes('grey') || c.includes('gray')) return '#64748b';
+
+      // 9. Tông Vàng / Gold / Yellow
+      if (c.includes('vang') || c.includes('gold') || c.includes('yellow') || c.includes('anh kim')) return '#eab308';
+
+      // 10. Tông Đỏ / Red
       if (c.includes('do') || c.includes('red')) return '#ef4444';
+
+      // 11. Tông Hồng / Pink
       if (c.includes('hong') || c.includes('pink')) return '#ec4899';
-      if (c.includes('cam') || c.includes('orange')) return '#f97316';
+
+      // 12. Tông Tím / Purple
+      if (c.includes('tim') || c.includes('purple')) return '#a855f7';
+
+      // 13. Tông Cam / Orange / Coral
+      if (c.includes('cam') || c.includes('orange') || c.includes('coral')) return '#f97316';
+
+      // 14. Tông Bạc / Silver
       if (c.includes('bac') || c.includes('silver')) return '#e2e8f0';
-      
-      return '#f59e0b';
+
+      return '#94a3b8';
     }
 
     function getColorDotHtml(colorName, sizePx = 28) {
@@ -11502,7 +11534,7 @@
           }
           const timePart = item.timeFormatted || '00:00';
           const isWhiteRow = (index % 2 === 0);
-          const rowColor = isWhiteRow ? '#ffffff' : '#fef9c3';
+          const rowColor = isWhiteRow ? '#ffffff' : '#4ade80';
           const fwDevice = isWhiteRow ? '900' : '800';
           const fwIssue = isWhiteRow ? '900' : '700';
           const fwNum = isWhiteRow ? '900' : '800';

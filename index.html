@@ -3,9 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#06090e">
-  <link rel="stylesheet" href="css/style.css?v=20261029_1100">
+  <link rel="stylesheet" href="css/style.css?v=20261029_1105">
   <script>
     (function () {
       try {
@@ -20,6 +21,7 @@
     html.user-is-logged #loginScreen {
       display: none !important;
     }
+
     html.user-is-logged body.login-active .content-wrapper,
     html.user-is-logged body.login-active aside.sidebar,
     html.user-is-logged body.login-locked .content-wrapper,
@@ -672,7 +674,8 @@
           </div>
 
           <div class="sales-footer-stats">
-            <span id="softwareCountText">Tổng = 0 &nbsp;&nbsp;-&nbsp;&nbsp; Thanh Toán = 0 &nbsp;&nbsp;-&nbsp;&nbsp; Nợ Dai = 0</span>
+            <span id="softwareCountText">Tổng = 0 &nbsp;&nbsp;-&nbsp;&nbsp; Thanh Toán = 0 &nbsp;&nbsp;-&nbsp;&nbsp; Nợ
+              Dai = 0</span>
             <span id="softwareSummaryStats">DOANH THU : 0 &nbsp;&nbsp;&nbsp;-&nbsp;&nbsp; VỐN : 0
               &nbsp;&nbsp;=&nbsp;&nbsp; LÃI : 0</span>
           </div>
@@ -968,10 +971,14 @@
           <!-- FOOTER THỐNG KÊ -->
           <div class="repair-footer-bar">
             <div class="repair-footer-left" id="repairFooterLeft">
-              <span id="rCountTotal" style="color: #38bdf8; font-weight: 800;">186</span> Máy đã sửa &nbsp;-&nbsp; Tiền mặt : <span class="num" id="rSumTM">77.700</span> (<span id="rCountTM">185</span>) &nbsp;-&nbsp; Chuyển khoản : <span class="num" id="rSumCK">500</span> (<span id="rCountCK">1</span>) &nbsp;-&nbsp; Nợ <span style="color: #f87171; font-weight: 800;" id="rSumNo">0</span> (<span id="rCountNo">0</span>)
+              <span id="rCountTotal" style="color: #38bdf8; font-weight: 800;">186</span> Máy đã sửa &nbsp;-&nbsp; Tiền
+              mặt : <span class="num" id="rSumTM">77.700</span> (<span id="rCountTM">185</span>) &nbsp;-&nbsp; Chuyển
+              khoản : <span class="num" id="rSumCK">500</span> (<span id="rCountCK">1</span>) &nbsp;-&nbsp; Nợ <span
+                style="color: #f87171; font-weight: 800;" id="rSumNo">0</span> (<span id="rCountNo">0</span>)
             </div>
             <div class="repair-footer-right" id="repairFooterRight">
-              Tổng = <span class="sum-total" id="rSumTotal">78.200</span> &nbsp;-&nbsp; Vốn = <span class="sum-cost" id="rSumCost">41.406</span> &nbsp;-&nbsp; Lãi = <span class="sum-profit" id="rSumProfit">36.794</span>
+              Tổng = <span class="sum-total" id="rSumTotal">78.200</span> &nbsp;-&nbsp; Vốn = <span class="sum-cost"
+                id="rSumCost">41.406</span> &nbsp;-&nbsp; Lãi = <span class="sum-profit" id="rSumProfit">36.794</span>
             </div>
           </div>
         </div>
@@ -989,9 +996,14 @@
             <button class="brand-btn-h" onclick="filterBrand('OPPO & REALME', this)">OPPO - REALME</button>
             <button class="brand-btn-h" onclick="filterBrand('REDMI & POCO', this)">REDMI - POCO</button>
             <button class="brand-btn-h brand-btn-add" onclick="addNewBrand()" title="Thêm hãng mới">+</button>
-            <button type="button" id="btnToggleHidePrices" class="brand-btn-h btn-hide-prices" onclick="toggleHidePhonePrices()" title="Bấm để ẩn toàn bộ giá tiền thành *****">
+            <button type="button" id="btnToggleHidePrices" class="brand-btn-h btn-hide-prices"
+              onclick="toggleHidePhonePrices()" title="Bấm để ẩn toàn bộ giá tiền thành *****">
               <span id="hidePriceEyeIcon" style="display: inline-flex; align-items: center; justify-content: center;">
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
               </span>
             </button>
           </div>
@@ -1068,8 +1080,8 @@
           </button>
 
           <!-- 4. NÚT CHUYỂN ĐỔI CHẾ ĐỘ HIỂN THỊ HÀNG NGANG (LÁ CỜ VIỆT NAM - NẰM NGAY SAU BÁN MÁY NGOÀI KHO) -->
-          <button type="button" id="btnPhoneViewModeToggle" class="btn-view-mode-toggle"
-            onclick="togglePhoneViewMode()" title="Chuyển chế độ xem: Dạng hàng ngang / Dạng lưới ô">
+          <button type="button" id="btnPhoneViewModeToggle" class="btn-view-mode-toggle" onclick="togglePhoneViewMode()"
+            title="Chuyển chế độ xem: Dạng hàng ngang / Dạng lưới ô">
             <svg width="25" height="19" viewBox="0 0 36 26" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="vnFlagGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -1080,17 +1092,16 @@
                   <stop offset="100%" stop-color="#991b1b" />
                 </linearGradient>
               </defs>
-              <path d="M2 4 C 8 1, 14 7, 20 4 C 26 1, 31 5, 34 3 L 34 20 C 29 22, 24 18, 18 21 C 12 24, 7 18, 2 21 Z" 
-                    fill="url(#vnFlagGradient)" />
-              <polygon points="18,6.5 19.8,12 25.5,12 20.8,15.2 22.6,20.5 18,17.2 13.4,20.5 15.2,15.2 10.5,12 16.2,12" 
-                       fill="#facc15" stroke="#eab308" stroke-width="0.3" />
+              <path d="M2 4 C 8 1, 14 7, 20 4 C 26 1, 31 5, 34 3 L 34 20 C 29 22, 24 18, 18 21 C 12 24, 7 18, 2 21 Z"
+                fill="url(#vnFlagGradient)" />
+              <polygon points="18,6.5 19.8,12 25.5,12 20.8,15.2 22.6,20.5 18,17.2 13.4,20.5 15.2,15.2 10.5,12 16.2,12"
+                fill="#facc15" stroke="#eab308" stroke-width="0.3" />
             </svg>
           </button>
 
           <!-- 5. NÚT HÀNH ĐỘNG GÓC PHẢI (CHUYỂN GIAO DIỆN Ở TAB TẤT CẢ / + THÊM MÁY MỚI Ở CÁC TAB KHÁC) -->
           <div style="margin-left: auto; display: flex; align-items: center;" id="addPhoneBtnWrapper">
-            <button type="button" id="btnTopActionPhone" class="btn-add-phone-main"
-              onclick="togglePhoneViewMode()"
+            <button type="button" id="btnTopActionPhone" class="btn-add-phone-main" onclick="togglePhoneViewMode()"
               style="height: 38px; box-sizing: border-box; background: #2563eb !important; color: #ffffff !important; border: 1px solid #3b82f6 !important; border-radius: 8px; padding: 0 18px; font-weight: 900; font-size: 0.88rem; letter-spacing: 0.5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(37, 99, 235, 0.45); white-space: nowrap;">
               CHUYỂN GIAO DIỆN
             </button>
@@ -1163,8 +1174,8 @@
                   style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.97rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
                   🗑️ Xóa Hết
                 </button>
-                <input type="file" id="bangaExcelFileInput" accept=".csv, .xlsx, .xls, text/csv" multiple style="display: none;"
-                  onchange="handleImportBangaExcelFile(event)">
+                <input type="file" id="bangaExcelFileInput" accept=".csv, .xlsx, .xls, text/csv" multiple
+                  style="display: none;" onchange="handleImportBangaExcelFile(event)">
               </div>
             </div>
           </div>
@@ -1202,7 +1213,8 @@
                 style="font-size: 0.8rem; font-weight: 800; color: #f59e0b; letter-spacing: 0.5px; white-space: nowrap;">TÌM
                 KIẾM</span>
               <span style="color: #94a3b8; font-size: 0.85rem;">🔍</span>
-              <input type="text" class="search-input-field" placeholder="Tìm tên máy, phụ kiện..." oninput="handleSearchBanga(this)"
+              <input type="text" class="search-input-field" placeholder="Tìm tên máy, phụ kiện..."
+                oninput="handleSearchBanga(this)"
                 style="background: transparent; border: none; outline: none; color: #ffffff; font-size: 0.85rem; width: 175px;">
               <button type="button" class="btn-clear-search" onclick="clearBangaSearch(this)" title="Xóa tìm kiếm"
                 style="display: none; background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0 2px;">✕</button>
@@ -1312,7 +1324,8 @@
         </div>
 
         <div class="sales-footer-stats" style="font-size: 1.00rem;">
-          <span id="bangaCountText">Tổng = 0 &nbsp;&nbsp;-&nbsp;&nbsp; Thanh Toán = 0 &nbsp;&nbsp;-&nbsp;&nbsp; Nợ Dai = 0</span>
+          <span id="bangaCountText">Tổng = 0 &nbsp;&nbsp;-&nbsp;&nbsp; Thanh Toán = 0 &nbsp;&nbsp;-&nbsp;&nbsp; Nợ Dai =
+            0</span>
           <div id="bangaFooterSummary"
             style="display: flex; align-items: center; gap: 20px; font-weight: 800; font-size: 1.05rem;">
             <span>Máy đã bán : <span id="bangaFootSold" style="color: #ffffff; font-weight: 800;">0</span></span>
@@ -1509,7 +1522,8 @@
           <table class="sales-table">
             <thead>
               <tr>
-                <th style="color: #eab308; text-align: left; padding-left: 16px; font-size: 1.08rem;">HÃNG / TÊN MÁY</th>
+                <th style="color: #eab308; text-align: left; padding-left: 16px; font-size: 1.08rem;">HÃNG / TÊN MÁY
+                </th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ BÁN</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ NHẬP</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">LÃI</th>
@@ -2034,12 +2048,13 @@
           <table class="sales-table">
             <thead>
               <tr>
-                <th style="color: #eab308; text-align: left; padding-left: 16px; font-size: 1.08rem;">HÃNG / TÊN MÁY</th>
+                <th style="color: #eab308; text-align: left; padding-left: 16px; font-size: 1.08rem;">HÃNG / TÊN MÁY
+                </th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ BÁN</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ NHẬP</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">LÃI</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">TRẠNG THÁI</th>
-                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIỜ - NGÀY NHẬP</th>
+                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">NGÀY NHẬP</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">THAO TÁC</th>
               </tr>
             </thead>
@@ -2700,8 +2715,7 @@
             <input type="hidden" id="mProfit" value="">
           </div>
 
-          <button type="submit" class="btn-save-ticket active"
-            style="font-weight: 900;">LƯU DỮ LIỆU</button>
+          <button type="submit" class="btn-save-ticket active" style="font-weight: 900;">LƯU DỮ LIỆU</button>
         </div>
       </form>
     </div>
@@ -2987,8 +3001,7 @@
             <input type="hidden" id="mxProfit" value="">
           </div>
 
-          <button type="submit" class="btn-save-ticket active"
-            style="font-weight: 900;">LƯU DỮ LIỆU</button>
+          <button type="submit" class="btn-save-ticket active" style="font-weight: 900;">LƯU DỮ LIỆU</button>
         </div>
       </form>
     </div>
@@ -3465,8 +3478,10 @@
       </div>
 
       <!-- THANH CÔNG CỤ XUẤT ẢNH & SAO CHÉP CÔNG NỢ GỬI KHÁCH HÀNG -->
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); padding: 8px 12px; border-radius: 10px; margin-bottom: 1.1rem; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 800; color: #cbd5e1;">
+      <div
+        style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); padding: 8px 12px; border-radius: 10px; margin-bottom: 1.1rem; flex-wrap: wrap;">
+        <div
+          style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 800; color: #cbd5e1;">
           <span style="font-size: 1rem;">📤</span> Gửi cho khách:
         </div>
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -3517,16 +3532,20 @@
   <!-- MODAL CHECK GIAO DỊCH BÁN HÀNG (POPUP TRÁI TIM ❤️) -->
   <div class="modal-overlay" id="salesReconcileModal" style="z-index: 100000; display: none;"
     onclick="if(event.target === this) closeSalesReconcileModal()">
-    <div class="modal-ticket-box" style="max-width: 980px; max-height: 94vh; padding: 1.15rem 1.4rem; width: 96%; background: #0c111d; border: 1.5px solid #1e293b; border-radius: 14px; box-shadow: 0 25px 60px rgba(0,0,0,0.85); display: flex; flex-direction: column;"
+    <div class="modal-ticket-box"
+      style="max-width: 980px; max-height: 94vh; padding: 1.15rem 1.4rem; width: 96%; background: #0c111d; border: 1.5px solid #1e293b; border-radius: 14px; box-shadow: 0 25px 60px rgba(0,0,0,0.85); display: flex; flex-direction: column;"
       onclick="event.stopPropagation()">
-      
+
       <!-- HEADER -->
-      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.85rem; margin-bottom: 1rem;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.85rem; margin-bottom: 1rem;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); border: 1.5px solid #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+          <div
+            style="width: 36px; height: 36px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); border: 1.5px solid #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
             💵
           </div>
-          <div style="font-size: 1.4rem; font-weight: 900; color: #ffffff; letter-spacing: 0.3px;">Check Giao Dịch Bán Hàng</div>
+          <div style="font-size: 1.4rem; font-weight: 900; color: #ffffff; letter-spacing: 0.3px;">Check Giao Dịch Bán
+            Hàng</div>
         </div>
 
         <button type="button" onclick="closeSalesReconcileModal()"
@@ -3536,7 +3555,8 @@
       </div>
 
       <!-- THANH ĐIỀU KHIỂN BỘ LỌC NGÀY & THỐNG KÊ CHECK -->
-      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 1.25rem; flex-wrap: wrap;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 1.25rem; flex-wrap: wrap;">
         <!-- Bộ lọc ngày -->
         <div class="unified-date-filter-box" style="margin: 0; display: inline-flex; align-items: center; gap: 6px;">
           <select class="unified-mode-select" id="reconcileModeSelect" onchange="setReconcileMode(this.value)"
@@ -3546,18 +3566,24 @@
             <option value="year">Năm</option>
           </select>
 
-          <div class="unified-date-ctrls" id="reconcileDateFilterBox" style="display: inline-flex; align-items: center; gap: 6px;">
+          <div class="unified-date-ctrls" id="reconcileDateFilterBox"
+            style="display: inline-flex; align-items: center; gap: 6px;">
             <button type="button" class="unified-arrow-btn" onclick="changeReconcileDate(-1)" title="Lùi 1 ngày"
               style="height: 32px; width: 32px; border-radius: 6px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;">
-              <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+              <svg viewBox="0 0 24 24">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
             </button>
             <span class="unified-date-text" id="filterReconcileDateDisplay"
               style="height: 32px; font-size: 0.92rem !important; font-weight: 900 !important; display: inline-flex; align-items: center; padding: 0 8px; box-sizing: border-box;">28/10/2026</span>
             <button type="button" class="unified-arrow-btn" onclick="changeReconcileDate(1)" title="Tiến 1 ngày"
               style="height: 32px; width: 32px; border-radius: 6px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;">
-              <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+              <svg viewBox="0 0 24 24">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
             </button>
-            <button type="button" class="unified-arrow-btn" onclick="openReconcileDatePicker()" title="Mở lịch chọn ngày"
+            <button type="button" class="unified-arrow-btn" onclick="openReconcileDatePicker()"
+              title="Mở lịch chọn ngày"
               style="height: 32px; width: 32px; border-radius: 6px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;">
               <svg viewBox="0 0 24 24">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -3574,13 +3600,15 @@
         <!-- Thống kê Đã check & Chưa check -->
         <div style="display: flex; align-items: center; gap: 18px; font-size: 0.92rem; font-weight: 800;">
           <div style="display: inline-flex; align-items: center; gap: 7px; color: #cbd5e1;">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+            <span
+              style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
             <span>Đã check:</span>
             <span id="reconcileCheckedCount" style="color: #34d399; font-weight: 900; font-size: 1.05rem;">0</span>
           </div>
 
           <div style="display: inline-flex; align-items: center; gap: 7px; color: #cbd5e1;">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px #ef4444;"></span>
+            <span
+              style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px #ef4444;"></span>
             <span>Chưa check:</span>
             <span id="reconcileUncheckedCount" style="color: #f87171; font-weight: 900; font-size: 1.05rem;">0</span>
           </div>
@@ -3588,49 +3616,65 @@
       </div>
 
       <!-- KHUNG 2 CỘT: CHUYỂN KHOẢN (TRÁI) & TIỀN MẶT (PHẢI) -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1rem; flex: 1; min-height: 0;">
-        
+      <div
+        style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1rem; flex: 1; min-height: 0;">
+
         <!-- CỘT 1: CHUYỂN KHOẢN -->
-        <div style="background: rgba(15, 23, 42, 0.45); border: 1.5px solid #1e2638; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; min-height: 480px;">
+        <div
+          style="background: rgba(15, 23, 42, 0.45); border: 1.5px solid #1e2638; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; min-height: 480px;">
           <!-- Header cột -->
-          <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; margin-bottom: 6px;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; margin-bottom: 6px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #3b82f6;"></span>
-              <span style="font-weight: 900; color: #ffffff; font-size: 1.05rem; letter-spacing: 0.5px;">CHUYỂN KHOẢN</span>
+              <span
+                style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #3b82f6;"></span>
+              <span style="font-weight: 900; color: #ffffff; font-size: 1.05rem; letter-spacing: 0.5px;">CHUYỂN
+                KHOẢN</span>
             </div>
-            <span id="reconcileCkCountBadge" style="background: #172033; border: 1px solid #1e293b; color: #94a3b8; font-size: 0.8rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;">0 giao dịch</span>
+            <span id="reconcileCkCountBadge"
+              style="background: #172033; border: 1px solid #1e293b; color: #94a3b8; font-size: 0.8rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;">0
+              giao dịch</span>
           </div>
 
           <!-- Danh sách thẻ Chuyển Khoản -->
-          <div id="reconcileCkList" style="max-height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; flex: 1;">
+          <div id="reconcileCkList"
+            style="max-height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; flex: 1;">
             <!-- JS render -->
           </div>
 
           <!-- Tổng Chuyển Khoản -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 6px;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 6px;">
             <span style="font-size: 0.92rem; font-weight: 700; color: #94a3b8;">Tổng Chuyển Khoản:</span>
             <span id="reconcileCkTotalVal" style="font-size: 1.45rem; font-weight: 900; color: #3b82f6;">0</span>
           </div>
         </div>
 
         <!-- CỘT 2: TIỀN MẶT -->
-        <div style="background: rgba(15, 23, 42, 0.45); border: 1.5px solid #1e2638; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; min-height: 480px;">
+        <div
+          style="background: rgba(15, 23, 42, 0.45); border: 1.5px solid #1e2638; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; min-height: 480px;">
           <!-- Header cột -->
-          <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; margin-bottom: 6px;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; margin-bottom: 6px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #f59e0b;"></span>
+              <span
+                style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #f59e0b;"></span>
               <span style="font-weight: 900; color: #ffffff; font-size: 1.05rem; letter-spacing: 0.5px;">TIỀN MẶT</span>
             </div>
-            <span id="reconcileTmCountBadge" style="background: #172033; border: 1px solid #1e293b; color: #94a3b8; font-size: 0.8rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;">0 giao dịch</span>
+            <span id="reconcileTmCountBadge"
+              style="background: #172033; border: 1px solid #1e293b; color: #94a3b8; font-size: 0.8rem; font-weight: 800; padding: 3px 12px; border-radius: 20px;">0
+              giao dịch</span>
           </div>
 
           <!-- Danh sách thẻ Tiền Mặt -->
-          <div id="reconcileTmList" style="max-height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; flex: 1;">
+          <div id="reconcileTmList"
+            style="max-height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; flex: 1;">
             <!-- JS render -->
           </div>
 
           <!-- Tổng Tiền Mặt -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 6px;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 6px;">
             <span style="font-size: 0.92rem; font-weight: 700; color: #94a3b8;">Tổng Tiền Mặt:</span>
             <span id="reconcileTmTotalVal" style="font-size: 1.45rem; font-weight: 900; color: #f59e0b;">0</span>
           </div>
@@ -3638,15 +3682,20 @@
       </div>
 
       <!-- FOOTER: TỔNG SỐ GD & TỔNG CỘNG TẤT CẢ -->
-      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; flex-wrap: wrap; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.95rem; color: #94a3b8; font-weight: 700;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; flex-wrap: wrap; gap: 12px;">
+        <div
+          style="display: flex; align-items: center; gap: 6px; font-size: 0.95rem; color: #94a3b8; font-weight: 700;">
           <span>Tổng số GD trong ngày:</span>
           <span id="reconcileTotalTxCount" style="color: #ffffff; font-weight: 900; font-size: 1.15rem;">0</span>
         </div>
 
-        <div style="background: #0f1523; border: 1.5px solid #1e2638; border-radius: 8px; padding: 8px 20px; display: inline-flex; align-items: center; gap: 12px;">
-          <span style="font-weight: 900; color: #ffffff; font-size: 0.95rem; letter-spacing: 0.5px;">TỔNG CỘNG TẤT CẢ:</span>
-          <span id="reconcileGrandTotalVal" style="font-weight: 900; color: #10b981; font-size: 1.65rem; letter-spacing: 0.5px;">0</span>
+        <div
+          style="background: #0f1523; border: 1.5px solid #1e2638; border-radius: 8px; padding: 8px 20px; display: inline-flex; align-items: center; gap: 12px;">
+          <span style="font-weight: 900; color: #ffffff; font-size: 0.95rem; letter-spacing: 0.5px;">TỔNG CỘNG TẤT
+            CẢ:</span>
+          <span id="reconcileGrandTotalVal"
+            style="font-weight: 900; color: #10b981; font-size: 1.65rem; letter-spacing: 0.5px;">0</span>
         </div>
       </div>
 
@@ -4821,7 +4870,8 @@
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Dung Lượng</label>
-            <input type="text" class="ticket-input" id="bbStorage" oninput="formatTitleCaseInput(this)" onblur="formatStorageInput(this)">
+            <input type="text" class="ticket-input" id="bbStorage" oninput="formatTitleCaseInput(this)"
+              onblur="formatStorageInput(this)">
           </div>
           <div class="form-ticket-group" style="flex: 1.2;">
             <label class="form-ticket-label">Tình Trạng Máy *</label>
@@ -4994,7 +5044,7 @@
   <script src="js/seed_data.js?v=20261028_1015"></script>
 
   <!-- Tách các file JS theo module chức năng -->
-  <script src="js/main.js?v=20261029_1030"></script>
+  <script src="js/main.js?v=20261029_1106"></script>
   <script src="js/sales.js"></script>
   <script src="js/phone.js"></script>
   <script src="js/software.js"></script>

@@ -5994,3 +5994,17 @@
     #tab-quynhbupbe .sales-footer-stats {
       font-size: 1.05rem !important;
     }
+
+    /* ============================================================
+       ẨN HOÀN TOÀN HUY HIỆU "POWERED BY NETLIFY" TRÊN TOÀN GIAO DIỆN
+       ============================================================ */
+    [id*="netlify"],
+    [class*="netlify"],
+    a[href*="netlify.com"],
+    iframe[src*="netlify"],
+    .netlify-badge {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
