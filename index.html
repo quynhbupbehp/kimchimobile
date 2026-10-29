@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#06090e">
-  <link rel="stylesheet" href="css/style.css?v=20261029_1135">
+  <link rel="stylesheet" href="css/style.css?v=20261029_1145">
   <script>
     (function () {
       try {
@@ -44,14 +44,24 @@
       height: 0 !important;
     }
 
-    html.user-is-logged #loginScreen {
+    /* TẠM THỜI ẨN HOÀN TOÀN MÀN HÌNH ĐĂNG NHẬP (TRÁNH ĐƠ TRÊN MOBILE) */
+    #loginScreen {
       display: none !important;
     }
 
-    html.user-is-logged body.login-active .content-wrapper,
-    html.user-is-logged body.login-active aside.sidebar,
-    html.user-is-logged body.login-locked .content-wrapper,
-    html.user-is-logged body.login-locked aside.sidebar {
+    body.login-active,
+    body.login-locked {
+      overflow: auto !important;
+      position: static !important;
+      touch-action: auto !important;
+    }
+
+    body.login-active .content-wrapper,
+    body.login-active aside.sidebar,
+    body.login-locked .content-wrapper,
+    body.login-locked aside.sidebar,
+    .content-wrapper,
+    aside.sidebar {
       visibility: visible !important;
       pointer-events: auto !important;
     }
@@ -115,10 +125,10 @@
   </style>
 </head>
 
-<body class="login-locked login-active">
+<body>
 
-  <!-- MÀN HÌNH ĐĂNG NHẬP -->
-  <div id="loginScreen" style="display: flex;">
+  <!-- MÀN HÌNH ĐĂNG NHẬP (TẠM ẨN THEO YÊU CẦU) -->
+  <div id="loginScreen" style="display: none !important;">
     <div class="login-card">
       <div class="login-logo">KC</div>
       <div class="login-title">KIM CHI MOBILE</div>
@@ -5070,7 +5080,7 @@
   <script src="js/seed_data.js?v=20261028_1015"></script>
 
   <!-- Tách các file JS theo module chức năng -->
-  <script src="js/main.js?v=20261029_1135"></script>
+  <script src="js/main.js?v=20261029_1145"></script>
   <script src="js/sales.js"></script>
   <script src="js/phone.js"></script>
   <script src="js/software.js"></script>

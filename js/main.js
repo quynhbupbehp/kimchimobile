@@ -1254,7 +1254,8 @@
       if (pass !== "") {
         const sc = document.getElementById('loginScreen');
         if (sc) sc.style.display = 'none';
-        document.body.classList.remove('login-locked');
+        document.body.classList.remove('login-locked', 'login-active');
+        document.documentElement.classList.add('user-is-logged');
         try {
           sessionStorage.setItem('KIMCHI_LOGGED', 'true');
           const rem = document.getElementById('rememberMe');
@@ -1274,13 +1275,13 @@
     }
 
     function handleLogout() {
-      try {
-        sessionStorage.removeItem('KIMCHI_LOGGED');
-        localStorage.removeItem('KIMCHI_LOGGED');
-      } catch (err) {}
-      const sc = document.getElementById('loginScreen');
-      if (sc) sc.style.display = 'flex';
-      document.body.classList.add('login-locked');
+      if (confirm('Bạn có chắc chắn muốn đăng xuất không?')) {
+        try {
+          sessionStorage.removeItem('KIMCHI_LOGGED');
+          localStorage.removeItem('KIMCHI_LOGGED');
+        } catch (err) {}
+        alert('Chức năng đăng nhập đang tạm ẩn. Website vẫn hoạt động bình thường.');
+      }
     }
     window.handleLogin = handleLogin;
     window.handleLogout = handleLogout;
