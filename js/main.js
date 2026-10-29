@@ -507,77 +507,97 @@
       }, 0);
     }, true);
 
+    function normalizeColorStr(colorName) {
+      if (!colorName) return '';
+      let s = String(colorName).trim().toLowerCase();
+      // Khử dấu tiếng Việt trực tiếp đảm bảo chính xác 100% trên mọi trình duyệt
+      s = s.replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
+           .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
+           .replace(/[ìíịỉĩ]/g, 'i')
+           .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
+           .replace(/[ùúụủũưừứựửữ]/g, 'u')
+           .replace(/[ỳýỵỷỹ]/g, 'y')
+           .replace(/đ/g, 'd');
+      try {
+        s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      } catch (e) {}
+      return s.trim();
+    }
+
     function getHexColor(colorName) {
       if (!colorName) return '#94a3b8';
-      let raw = colorName.toString().trim().toLowerCase();
-      let c = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+      let raw = String(colorName).trim().toLowerCase();
+      let c = normalizeColorStr(colorName);
 
-      // 1. Tổ hợp màu Titan & từ ghép đặc biệt
+      // 1. Tông Trắng / White / Starlight / Bạc sáng (ƯU TIÊN HÀNG ĐẦU)
+      if (c.includes('trang') || raw.includes('trắng') || c.includes('white') || c.includes('starlight')) return '#ffffff';
+
+      // 2. Tổ hợp màu Titan & từ ghép đặc biệt
       if (c.includes('titan xanh') || c.includes('blue titan')) return '#3b82f6';
-      if (c.includes('titan sa mac') || c.includes('desert titan') || c.includes('sa mac') || c.includes('desert')) return '#d4a373';
-      if (c.includes('titan den') || c.includes('black titan')) return '#1e293b';
-      if (c.includes('titan trang') || c.includes('white titan')) return '#ffffff';
-      if (c.includes('titan tu nhien') || c.includes('natural titan') || c.includes('titan')) return '#9ca3af';
+      if (c.includes('titan sa mac') || c.includes('desert titan') || c.includes('sa mac') || raw.includes('sa mạc') || c.includes('desert')) return '#d4a373';
+      if (c.includes('titan den') || raw.includes('titan đen') || c.includes('black titan')) return '#111827';
+      if (c.includes('titan trang') || raw.includes('titan trắng') || c.includes('white titan')) return '#ffffff';
+      if (c.includes('titan tu nhien') || raw.includes('tự nhiên') || c.includes('natural titan') || c.includes('titan')) return '#9ca3af';
 
-      // 2. Tổ hợp màu Vàng hồng / Rose Gold (phải kiểm tra trước vàng và hồng đơn lẻ)
-      if (c.includes('rose gold') || c.includes('vang hong') || c.includes('hong vang') || c.includes('rose')) return '#f472b6';
+      // 3. Tổ hợp màu Vàng hồng / Rose Gold (trước vàng và hồng đơn lẻ)
+      if (c.includes('rose gold') || c.includes('vang hong') || raw.includes('vàng hồng') || c.includes('hong vang') || c.includes('rose')) return '#f472b6';
 
-      // 3. Tông Xanh lá / Xanh rêu / Xanh mint / Xanh lục
-      if (c.includes('xanh la') || c.includes('green') || c.includes('reu') || c.includes('xanh reu') || c.includes('luc') || c.includes('xanh luc') || c.includes('mint') || c.includes('alpine') || c.includes('olive') || c.includes('emerald') || c.includes('bo doi')) return '#10b981';
+      // 4. Tông Xanh lá / Xanh rêu / Xanh mint / Xanh lục
+      if (c.includes('xanh la') || raw.includes('xanh lá') || c.includes('green') || c.includes('reu') || raw.includes('rêu') || c.includes('luc') || raw.includes('lục') || c.includes('mint') || c.includes('alpine') || c.includes('olive') || c.includes('emerald') || c.includes('bo doi')) return '#10b981';
 
-      // 4. Tông Xanh ngọc / Teal / Cyan
-      if (c.includes('xanh ngoc') || c.includes('teal') || c.includes('cyan')) return '#14b8a6';
+      // 5. Tông Xanh ngọc / Teal / Cyan
+      if (c.includes('xanh ngoc') || raw.includes('xanh ngọc') || c.includes('teal') || c.includes('cyan')) return '#14b8a6';
 
-      // 5. Tông Xanh dương / Blue / Xanh thông thường (bao gồm khi chỉ nhập "Xanh")
-      if (c.includes('xanh duong') || c.includes('xanh bien') || c.includes('blue') || c.includes('navy') || c.includes('lam') || c.includes('lo') || c.includes('coban') || c.includes('pacific') || c.includes('sierra') || c.includes('sky') || c.includes('xanh')) return '#3b82f6';
+      // 6. Tông Xanh dương / Blue / Xanh thông thường (bao gồm khi chỉ nhập "Xanh")
+      if (c.includes('xanh duong') || raw.includes('xanh dương') || c.includes('xanh bien') || raw.includes('xanh biển') || c.includes('blue') || c.includes('navy') || c.includes('lam') || c.includes('lo') || c.includes('coban') || c.includes('pacific') || c.includes('sierra') || c.includes('sky') || c.includes('xanh')) return '#3b82f6';
 
-      // 6. Tông Đen / Midnight / Tối
-      if (c.includes('den') || c.includes('black') || c.includes('midnight') || c.includes('jet black')) return '#1e293b';
-
-      // 7. Tông Trắng / Starlight / Bạc sáng
-      if (c.includes('trang') || c.includes('white') || c.includes('starlight')) return '#ffffff';
+      // 7. Tông Đen / Midnight / Tối
+      if (c.includes('den') || raw.includes('đen') || c.includes('black') || c.includes('midnight') || c.includes('jet black')) return '#111827';
 
       // 8. Tông Xám / Graphite / Space Gray
-      if (c.includes('graphite') || c.includes('space') || c.includes('xam') || c.includes('grey') || c.includes('gray')) return '#64748b';
+      if (c.includes('graphite') || c.includes('space') || c.includes('xam') || raw.includes('xám') || c.includes('grey') || c.includes('gray')) return '#64748b';
 
       // 9. Tông Vàng / Gold / Yellow
-      if (c.includes('vang') || c.includes('gold') || c.includes('yellow') || c.includes('anh kim')) return '#eab308';
+      if (c.includes('vang') || raw.includes('vàng') || c.includes('gold') || c.includes('yellow') || c.includes('anh kim')) return '#eab308';
 
       // 10. Tông Đỏ / Red
-      if (c.includes('do') || c.includes('red')) return '#ef4444';
+      if (c.includes('do') || raw.includes('đỏ') || c.includes('red')) return '#ef4444';
 
       // 11. Tông Hồng / Pink
-      if (c.includes('hong') || c.includes('pink')) return '#ec4899';
+      if (c.includes('hong') || raw.includes('hồng') || c.includes('pink')) return '#ec4899';
 
       // 12. Tông Tím / Purple
-      if (c.includes('tim') || c.includes('purple')) return '#a855f7';
+      if (c.includes('tim') || raw.includes('tím') || c.includes('purple')) return '#a855f7';
 
       // 13. Tông Cam / Orange / Coral
       if (c.includes('cam') || c.includes('orange') || c.includes('coral')) return '#f97316';
 
       // 14. Tông Bạc / Silver
-      if (c.includes('bac') || c.includes('silver')) return '#e2e8f0';
+      if (c.includes('bac') || raw.includes('bạc') || c.includes('silver')) return '#e2e8f0';
 
       return '#94a3b8';
     }
 
     function getColorDotHtml(colorName, sizePx = 28) {
-      let raw = (colorName || '').toString().trim().toLowerCase();
-      let c = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
-      let isBlack = c.includes('den') || c.includes('black');
-      let isWhite = c.includes('trang') || c.includes('white');
-      let hex = getHexColor(colorName);
+      if (!colorName) return '';
+      let raw = String(colorName).trim().toLowerCase();
+      let c = normalizeColorStr(colorName);
 
-      if (isBlack) {
-        // Vòng tròn màu đen siêu nổi bật trên nền tối: Gradient đá Onyx đen ánh kim + viền trắng bạc sáng rõ + phát quang
-        return `<span style="width: ${sizePx}px; height: ${sizePx}px; border-radius: 50%; box-sizing: border-box; background: radial-gradient(circle at 35% 35%, #475569 0%, #1e293b 45%, #000000 100%); display: inline-block; flex-shrink: 0; border: 2px solid #ffffff; box-shadow: 0 0 8px rgba(255, 255, 255, 0.85), inset 0 0 4px rgba(255, 255, 255, 0.4);" title="Màu: ${escapeHtml(colorName || 'Đen')}"></span>`;
-      }
-
+      // 1. Kiểm tra màu Trắng (ƯU TIÊN HÀNG ĐẦU: nền trắng sáng rõ, viền mạ bạc nổi bật)
+      let isWhite = c.includes('trang') || raw.includes('trắng') || c.includes('white') || c.includes('starlight');
       if (isWhite) {
-        return `<span style="width: ${sizePx}px; height: ${sizePx}px; border-radius: 50%; box-sizing: border-box; background-color: #ffffff; display: inline-block; flex-shrink: 0; border: 2px solid #94a3b8; box-shadow: 0 0 8px rgba(255, 255, 255, 0.65);" title="Màu: ${escapeHtml(colorName || 'Trắng')}"></span>`;
+        return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; border-radius: 50% !important; box-sizing: border-box !important; background: #ffffff !important; background-color: #ffffff !important; display: inline-block !important; flex-shrink: 0 !important; border: 2px solid #cbd5e1 !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.95), inset 0 0 2px rgba(0, 0, 0, 0.15) !important;" title="Màu: ${escapeHtml(colorName || 'Trắng')}"></span>`;
       }
 
-      return `<span style="width: ${sizePx}px; height: ${sizePx}px; border-radius: 50%; box-sizing: border-box; background-color: ${hex}; display: inline-block; flex-shrink: 0; border: 1.5px solid rgba(255, 255, 255, 0.45); box-shadow: 0 0 8px ${hex}aa;" title="Màu: ${escapeHtml(colorName || 'Mặc định')}"></span>`;
+      // 2. Kiểm tra màu Đen (Đá Onyx ánh kim viền trắng bạc sáng)
+      let isBlack = c.includes('den') || raw.includes('đen') || c.includes('black') || c.includes('midnight') || c.includes('jet black');
+      if (isBlack) {
+        return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; border-radius: 50% !important; box-sizing: border-box !important; background: radial-gradient(circle at 35% 35%, #475569 0%, #1e293b 45%, #000000 100%) !important; display: inline-block !important; flex-shrink: 0 !important; border: 2px solid #ffffff !important; box-shadow: 0 0 8px rgba(255, 255, 255, 0.85), inset 0 0 4px rgba(255, 255, 255, 0.4) !important;" title="Màu: ${escapeHtml(colorName || 'Đen')}"></span>`;
+      }
+
+      // 3. Các màu sắc khác theo mã hex
+      let hex = getHexColor(colorName);
+      return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; border-radius: 50% !important; box-sizing: border-box !important; background-color: ${hex} !important; background: ${hex} !important; display: inline-block !important; flex-shrink: 0 !important; border: 1.5px solid rgba(255, 255, 255, 0.5) !important; box-shadow: 0 0 8px ${hex}cc !important;" title="Màu: ${escapeHtml(colorName || 'Mặc định')}"></span>`;
     }
 
     function isPhoneBrandIphone(brand, phoneName) {
