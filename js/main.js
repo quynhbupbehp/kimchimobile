@@ -2427,13 +2427,13 @@
         let dateTimeColor = isMissing ? '#ffffff' : '#ffffff';
 
         return `
-          <tr${trClass}${missingTitle}>
-            <td${tdClass} style="font-weight: 800; font-size: 1.38rem; ${nameColorStyle}">${displayName}</td>
+          <tr${trClass}${missingTitle} ondblclick="editSale(${item.id})" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ editSale(${item.id}); } this._lastTap=now;" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết phiếu">
+            <td${tdClass} style="font-weight: 800; font-size: 1.52rem; ${nameColorStyle}">${displayName}</td>
             <td${tdClass} style="text-align: center; vertical-align: middle;">
-              <span style="display: inline-block; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); color: #ffffff !important; font-weight: 900; font-size: 1.55rem; padding: 4px 16px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.45); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); letter-spacing: 0.5px;">${item.total}</span>
+              <span style="display: inline-block; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); color: #ffffff !important; font-weight: 900; font-size: 1.24rem; padding: 3px 13px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.45); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); letter-spacing: 0.5px;">${item.total}</span>
             </td>
-            <td${tdClass} style="color: ${priceInColor} !important; font-weight: 900; font-size: 1.14rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.priceIn}</td>
-            <td${tdClass} style="font-weight: 900; color: ${profitColor} !important; font-size: 1.14rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.profit}</td>
+            <td${tdClass} style="color: ${priceInColor} !important; font-weight: 900; font-size: 1.25rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.priceIn}</td>
+            <td${tdClass} style="font-weight: 900; color: ${profitColor} !important; font-size: 1.25rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.profit}</td>
             <td${tdClass} style="text-align: center;"><span style="font-weight: 800; font-size: 1.1rem; color: ${methodColorVal} !important; cursor: default; user-select: none;">${item.method}</span></td>
             <td${tdClass} style="text-align: center;">
               <div class="action-btn-group" style="justify-content: center;">
@@ -6108,7 +6108,7 @@
     }
     let currentBrandFilter = "ALL";
     let currentPriceFilter = "ALL";
-    let soldPhoneViewMode = 'year';
+    let soldPhoneViewMode = 'month';
     let currentSoldPhoneDateFilter = getVietnamDate();
     let currentSoldPhoneMonthFilter = { month: currentSoldPhoneDateFilter.getMonth(), year: currentSoldPhoneDateFilter.getFullYear() };
     let currentSoldPhoneYearFilter = currentSoldPhoneDateFilter.getFullYear();
@@ -8468,7 +8468,8 @@
           if (currentSoldPhoneWarrantyFilter === 'HET' && isUnderWarranty) return false;
         }
 
-        // 3. Lọc theo Chế độ xem: Ngày / Tháng / Tất cả
+        // 3. Lọc theo Chế độ xem: Nếu đang tìm kiếm thì tìm trên TOÀN BỘ danh sách bảo hành; Nếu không tìm kiếm thì lọc theo Ngày / Tháng / Năm
+        if (keyword) return true;
         if (soldPhoneViewMode === 'all') return true;
 
         let pDate = parseSoldPhoneDate(p);
@@ -8572,13 +8573,13 @@
 
       if (mobileCardsContainer) {
         mobileCardsContainer.innerHTML = filtered.map(p => {
-          let brandDisplay = formatBrandDeviceName(p.brand);
+          let brandDisplay = formatBrandDeviceName(p.brand || '');
           let pName = formatBrandDeviceName(formatStorageDisplay(p.name || ''));
-          let brandAndName = '';
-          if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️' || !brandDisplay) {
-            brandAndName = pName;
-          } else {
-            brandAndName = `${brandDisplay} - ${pName}`;
+          // Bỏ tên hãng đi theo yêu cầu (ví dụ: IPHONE - SE - 2020 thì chỉ hiển thị SE - 2020)
+          let brandAndName = pName;
+          if (brandDisplay && brandDisplay !== 'MÁY NGOÀI' && brandDisplay !== '❤️❤️❤️') {
+            const regex = new RegExp(`^${brandDisplay}\\s*[-–—:]*\\s*`, 'i');
+            brandAndName = brandAndName.replace(regex, '');
           }
           brandAndName = formatBrandDeviceName(brandAndName);
 
@@ -8628,13 +8629,16 @@
       }
 
       tbody.innerHTML = filtered.map(p => {
-        let brandDisplay = formatBrandDeviceName(p.brand);
-        let brandNamePart = '';
+        let brandDisplay = formatBrandDeviceName(p.brand || '');
         let pName = formatBrandDeviceName(formatStorageDisplay(p.name || ''));
-        if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️' || !brandDisplay) {
-          brandNamePart = `<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${pName}`;
-        } else {
-          brandNamePart = `${brandDisplay ? brandDisplay + ' - ' : ''}${pName}`;
+        // Bỏ tên hãng đi theo yêu cầu (ví dụ: IPHONE - SE - 2020 thì chỉ hiển thị SE - 2020)
+        let brandNamePart = pName;
+        if (brandDisplay && brandDisplay !== 'MÁY NGOÀI' && brandDisplay !== '❤️❤️❤️') {
+          const regex = new RegExp(`^${brandDisplay}\\s*[-–—:]*\\s*`, 'i');
+          brandNamePart = brandNamePart.replace(regex, '');
+        }
+        if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️') {
+          brandNamePart = `<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${brandNamePart}`;
         }
         brandNamePart = formatBrandDeviceName(brandNamePart);
         let cleanStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, ''));

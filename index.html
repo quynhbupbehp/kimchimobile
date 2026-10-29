@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_000120">
+  <link rel="stylesheet" href="css/style.css?v=20261030_005042">
   <script>
     // === CƠ CHẾ TỰ ĐỘNG PHÁ CACHE SAFARI & DI ĐỘNG 100% ===
-    var CURRENT_PAGE_VERSION = "20261030_000120";
+    var CURRENT_PAGE_VERSION = "20261030_005042";
     
     function checkAppVersion() {
       // Gọi version.json với tham số ngẫu nhiên thời gian thực để Safari KHÔNG THỂ lưu cache
@@ -1501,10 +1501,10 @@
           <!-- BỘ LỌC XEM THEO THỐNG NHẤT (CHUẨN MẪU MỚI: [Ngày ▼] [<] 24/10/2026 [>] [📅]) -->
           <div class="unified-date-filter-box">
             <select class="unified-mode-select" id="soldPhoneModeSelect" onchange="setSoldPhoneMode(this.value)"
-              title="Xem theo Năm / Ngày / Tháng / Tất cả">
-              <option value="year" selected>Năm</option>
+              title="Xem theo Tháng / Ngày / Năm / Tất cả">
+              <option value="month" selected>Tháng</option>
               <option value="day">Ngày</option>
-              <option value="month">Tháng</option>
+              <option value="year">Năm</option>
               <option value="all">Tất cả</option>
             </select>
 
@@ -1537,7 +1537,7 @@
                 onchange="handleNativeDateChange('soldPhone', this.value)">
             </div>
 
-            <div class="unified-date-ctrls" id="soldPhoneMonthFilterBox" style="display: none;">
+            <div class="unified-date-ctrls" id="soldPhoneMonthFilterBox">
               <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterMonth(-1)"
                 title="Lùi 1 tháng">
                 <svg viewBox="0 0 24 24">
@@ -1555,7 +1555,7 @@
               </button>
             </div>
 
-            <div class="unified-date-ctrls" id="soldPhoneYearFilterBox">
+            <div class="unified-date-ctrls" id="soldPhoneYearFilterBox" style="display: none;">
               <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterYear(-1)" title="Lùi 1 năm">
                 <svg viewBox="0 0 24 24">
                   <path d="M15 18l-6-6 6-6" />
@@ -1686,7 +1686,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_000120" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_005042" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5188,10 +5188,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_000120"></script>
+  <script src="js/seed_data.js?v=20261030_005042"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_000120"></script>
+  <script src="js/main.js?v=20261030_005042"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
