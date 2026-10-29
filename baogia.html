@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="dark">
+    <title>BÁO GIÁ SỬA CHỮA & NHẬP HÀNG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FIREBASE COMPAT SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body { background-color: #0b0f19; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; font-size: 1.15rem; }
+        .card-dark { background-color: #111827; border: 1px solid #1f2937; }
+        .row-hover:hover { background-color: rgba(31, 41, 55, 0.5); cursor: pointer; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes yellowRowPulse {
+            0%, 100% {
+                background-color: rgba(234, 179, 8, 0.35);
+                box-shadow: inset 0 0 12px rgba(234, 179, 8, 0.3);
+            }
+            50% {
+                background-color: rgba(234, 179, 8, 0.05);
+                box-shadow: none;
+            }
+        }
+        .yellow-pulse-row { animation: yellowRowPulse 1.6s ease-in-out infinite; cursor: pointer; }
+
+        .clicked-pink-row {
+            background-color: rgba(236, 72, 153, 0.4) !important;
+            transition: background-color 0.3s ease;
+        }
+
+        @keyframes yellowSelectionPulse {
+            0%, 100% {
+                background-color: rgba(234, 179, 8, 0.95);
+                box-shadow: 0 0 12px rgba(234, 179, 8, 0.6);
+            }
+            50% {
+                background-color: rgba(234, 179, 8, 0.4);
+                box-shadow: 0 0 4px rgba(234, 179, 8, 0.2);
+            }
+        }
+        .yellow-pulse-selected { animation: yellowSelectionPulse 1.6s ease-in-out infinite; color: #000 !important; font-weight: bold; }
+
+        @keyframes purpleSelectionPulse {
+            0%, 100% {
+                background-color: rgba(168, 85, 247, 0.95);
+                box-shadow: 0 0 14px rgba(168, 85, 247, 0.7);
+            }
+            50% {
+                background-color: rgba(168, 85, 247, 0.4);
+                box-shadow: 0 0 4px rgba(168, 85, 247, 0.2);
+            }
+        }
+        .purple-pulse-selected { animation: purpleSelectionPulse 1.6s ease-in-out infinite; color: #fff !important; font-weight: bold; }
+    </style>
+</head>
+<body class="min-h-screen p-2 md:p-6 uppercase">
+
+    <div class="max-w-7xl mx-auto space-y-3 md:space-y-4 flex flex-col items-center">
+        
+        <!-- CỤM CỐ ĐỊNH KHI CUỘN -->
+        <div class="sticky top-0 z-40 w-full flex flex-col gap-2 pt-2 bg-[#0b0f19]">
+            <!-- THANH CÔNG CỤ & THỐNG KÊ -->
+            <div class="card-dark p-2.5 md:p-4 rounded-2xl flex flex-col gap-2.5 shadow-xl w-full">
+                <div class="flex flex-col gap-2.5">
+                    <!-- HÀNG 1: CÁC HÃNG, TAB HẾT HÀNG, NHẬP HÀNG -->
+                    <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-1 overflow-x-auto pb-1 xl:pb-0" id="brand-tabs"></div>
+
+                        <div class="hidden xl:flex items-center gap-1 bg-gray-900/90 p-1 rounded-2xl border border-gray-800 overflow-hidden shrink-0 self-end xl:self-auto">
+                            <button onclick="togglePrivacyMode()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-sm font-medium border border-gray-700 transition flex items-center justify-center w-8 h-8 shrink-0" title="ẨN / HIỆN VỐN & LÃI">
+                                <i class="fa-solid fa-eye text-xs" id="privacy-icon"></i>
+                            </button>
+                            <div id="cloud-status" class="flex w-8 h-8 bg-gray-800 rounded-xl border border-gray-700 items-center justify-center shrink-0" title="Đang kết nối...">
+                                <i class="fa-solid fa-cloud text-amber-400 text-xs"></i>
+                            </div>
+                            <div class="flex items-center gap-1 bg-gray-900 px-2 py-1 rounded-xl border border-gray-800 shrink-0">
+                                <div>
+                                    <div class="text-[10px] text-gray-400 uppercase tracking-wider text-center">VỐN</div>
+                                    <div id="total-cost" class="text-xs font-bold text-amber-400 text-center">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HÀNG 2 (DESKTOP): BỘ LỌC LINH KIỆN & TÌM KIẾM / THÊM MỚI -->
+                    <div class="hidden xl:flex items-center justify-between gap-3 pt-2 border-t border-gray-800/80 w-full" id="toolbar-row-2">
+                        <div class="flex flex-col gap-2" id="categories-filter-wrapper">
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <span class="text-sm font-bold text-amber-400 uppercase mr-1">LINH KIỆN:</span>
+                                <div id="main-cat-tabs-desktop" class="flex items-center gap-1"></div>
+                            </div>
+                            <div id="type-tabs-container-desktop" class="flex items-center gap-1.5 shrink-0"></div>
+                        </div>
+
+                        <!-- THANH BỘ LỌC RIÊNG CHO TAB NHẬP HÀNG -->
+                        <div id="import-filters-desktop" class="hidden items-center gap-4">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-emerald-400 uppercase shrink-0">NHÀ PHÂN PHỐI:</span>
+                                <select id="filter-supplier-desktop" onchange="handleSupplierFilterChange(this.value)" class="bg-gray-900 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white uppercase focus:outline-none focus:border-emerald-500 w-44 md:w-48"></select>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-emerald-400 uppercase shrink-0">LINH KIỆN:</span>
+                                <select id="filter-import-cat-desktop" onchange="handleCategoryFilterChange(this.value)" class="bg-gray-900 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white uppercase focus:outline-none focus:border-emerald-500 w-40 md:w-44"></select>
+                            </div>
+                            <button id="btn-delete-selected" onclick="deleteSelectedImportOrders()" class="hidden bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition items-center gap-1 shadow shrink-0">
+                                <i class="fa-solid fa-trash text-xs"></i> XÓA ĐÃ CHỌN
+                            </button>
+                        </div>
+
+                        <!-- Ô tìm kiếm Desktop (Nút X to và màu đỏ) -->
+                        <div class="flex items-center gap-2 shrink-0">
+                            <div class="relative w-64 md:w-72">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                </span>
+                                <input type="text" id="search-input-desktop" oninput="handleSearchInput(this)" placeholder="TÌM KIẾM..." 
+                                    class="w-full pl-9 pr-10 py-2 bg-gray-900 border border-gray-700 rounded-xl text-sm focus:outline-none focus:border-amber-500 text-white placeholder-gray-500 uppercase">
+                                <button id="btn-clear-search-desktop" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 px-3 flex items-center text-red-500 hover:text-red-400 transition text-lg font-bold cursor-pointer" title="XÓA TÌM KIẾM">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+
+                            <button id="main-action-btn" onclick="openModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 shadow-lg shadow-amber-600/35 shrink-0">
+                                <i class="fa-solid fa-plus text-xs"></i> THÊM MỚI
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PHẦN GIAO DIỆN MOBILE -->
+                    <div class="flex xl:hidden flex-col gap-2 pt-2 border-t border-gray-800/80" id="toolbar-mobile-wrapper">
+                        <div id="mobile-cats-container" class="flex items-center gap-1 relative w-full pt-1 overflow-x-auto no-scrollbar whitespace-nowrap">
+                            <div id="main-cat-tabs-mobile" class="inline-flex items-center gap-1 shrink-0"></div>
+                        </div>
+
+                        <div id="type-tabs-container-mobile" class="flex flex-wrap items-center gap-1 w-full pt-1"></div>
+
+                        <!-- BỘ LỌC MOBILE CHO TAB NHẬP HÀNG -->
+                        <div id="import-filters-mobile" class="hidden flex-col gap-1.5 w-full pt-1">
+                            <div class="flex items-center justify-between gap-2 w-full">
+                                <div class="flex items-center gap-1 flex-1 min-w-0">
+                                    <span class="text-[11px] font-bold text-emerald-400 uppercase shrink-0">NPP:</span>
+                                    <select id="filter-supplier-mobile" onchange="handleSupplierFilterChange(this.value)" class="bg-gray-900 border border-gray-700 rounded-xl px-1.5 py-1 text-[11px] font-bold text-white uppercase focus:outline-none focus:border-emerald-500 w-full min-w-0"></select>
+                                </div>
+                                <div class="flex items-center gap-1 flex-1 min-w-0">
+                                    <span class="text-[11px] font-bold text-emerald-400 uppercase shrink-0">LK:</span>
+                                    <select id="filter-import-cat-mobile" onchange="handleCategoryFilterChange(this.value)" class="bg-gray-900 border border-gray-700 rounded-xl px-1.5 py-1 text-[11px] font-bold text-white uppercase focus:outline-none focus:border-emerald-500 w-full min-w-0"></select>
+                                </div>
+                            </div>
+                            <button id="btn-delete-selected-mobile" onclick="deleteSelectedImportOrders()" class="hidden bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition items-center justify-center gap-1 shadow w-full">
+                                <i class="fa-solid fa-trash text-xs"></i> XÓA CÁC MỤC ĐÃ CHỌN
+                            </button>
+                        </div>
+
+                        <!-- Ô tìm kiếm Mobile (Nút X to và màu đỏ) -->
+                        <div class="flex items-center justify-between gap-2 w-full">
+                            <div class="relative flex-1">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-gray-500">
+                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                </span>
+                                <input type="text" id="search-input-mobile" oninput="handleSearchInput(this)" placeholder="TÌM KIẾM..." 
+                                    class="w-full pl-8 pr-9 py-1.5 bg-gray-900 border border-gray-700 rounded-xl text-xs focus:outline-none focus:border-amber-500 text-white placeholder-gray-500 uppercase">
+                                <button id="btn-clear-search-mobile" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 px-2.5 flex items-center text-red-500 hover:text-red-400 transition text-base font-bold cursor-pointer" title="XÓA TÌM KIẾM">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            
+                            <button id="main-action-btn-mobile" onclick="openModal()" class="bg-amber-600 hover:bg-amber-500 text-white w-9 h-8 rounded-xl text-xs font-medium transition flex items-center justify-center shadow-lg shrink-0" title="THÊM MỚI">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIÊU ĐỀ BẢNG CHO DESKTOP -->
+            <div class="hidden md:block card-dark rounded-t-2xl overflow-hidden shadow-md">
+                <table class="w-full text-center border-collapse table-fixed">
+                    <thead>
+                        <tr id="desktop-table-header" class="bg-amber-600 text-white text-xs md:text-sm uppercase tracking-wider whitespace-nowrap"></tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- BẢNG NỘI DUNG DỮ LIỆU CUỘN -->
+        <div class="card-dark rounded-2xl md:rounded-t-none overflow-hidden shadow-xl w-full">
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full text-center border-collapse table-fixed">
+                    <tbody id="device-table-body" class="text-base"></tbody>
+                </table>
+            </div>
+
+            <div class="md:hidden px-2" id="device-mobile-list"></div>
+
+            <div id="empty-state" class="hidden text-center py-12 text-gray-500">
+                <i class="fa-solid fa-box-open text-3xl mb-2"></i>
+                <p class="text-sm">KHÔNG TÌM THẤY DỮ LIỆU NÀO PHÙ HỢP.</p>
+            </div>
+
+            <!-- PHẦN HIỂN THỊ SỐ LƯỢNG DÒNG -->
+            <div class="px-4 py-3 bg-gray-900/60 border-t border-gray-800 flex justify-between items-center text-xs md:text-sm text-gray-400">
+                <span>TỔNG SỐ DÒNG: <strong id="row-count" class="text-amber-400 font-bold">0</strong></span>
+                <span class="text-[11px] text-gray-500">KIM CHI MOBILE</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL THÊM / SỬA BÁO GIÁ LINH KIỆN -->
+    <div id="device-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="card-dark w-full max-w-xl rounded-2xl p-4 md:p-6 shadow-2xl border border-gray-700 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3">
+                <h3 id="modal-title" class="text-base md:text-xl font-bold text-amber-400 uppercase">THÊM LINH KIỆN MỚI</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="device-form" onsubmit="saveDevice(event)" class="space-y-3">
+                <input type="hidden" id="device-index" value="-1">
+
+                <div>
+                    <label class="block text-sm font-bold text-amber-400 uppercase mb-1">HÃNG</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="device-brand" required list="brand-suggestions" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 uppercase">
+                        <datalist id="brand-suggestions"></datalist>
+                        <div class="flex items-center gap-1">
+                            <button type="button" onclick="handleEntity('brands', 'add')" class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="THÊM HÃNG"><i class="fa-solid fa-plus"></i></button>
+                            <button type="button" onclick="handleEntity('brands', 'edit')" class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="SỬA HÃNG"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                            <button type="button" onclick="handleEntity('brands', 'delete')" class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="XÓA HÃNG"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-amber-400 uppercase mb-1">TÊN MÁY</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="device-name" required class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 uppercase" autocomplete="off">
+                        <div class="flex items-center gap-1">
+                            <button type="button" onclick="handleEntity('names', 'add')" class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="THÊM TÊN MÁY"><i class="fa-solid fa-plus"></i></button>
+                            <button type="button" onclick="handleEntity('names', 'edit')" class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="SỬA TÊN MÁY"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                            <button type="button" onclick="handleEntity('names', 'delete')" class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="XÓA TÊN MÁY"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                        </div>
+                    </div>
+                    <datalist id="name-suggestions"></datalist>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-amber-400 uppercase mb-1">LINH KIỆN</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="device-part" required list="part-suggestions" oninput="onModalPartChange()" class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:border-amber-500 uppercase">
+                            <datalist id="part-suggestions"></datalist>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" onclick="handleEntity('categories', 'add')" class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="THÊM"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" onclick="handleEntity('categories', 'edit')" class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="SỬA"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                <button type="button" onclick="handleEntity('categories', 'delete')" class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="XÓA"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-amber-400 uppercase mb-1">KIỂU</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="device-type" list="type-suggestions" class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:border-amber-500 uppercase">
+                            <datalist id="type-suggestions"></datalist>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" onclick="handleEntity('types', 'add')" class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="THÊM"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" onclick="handleEntity('types', 'edit')" class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="SỬA"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                <button type="button" onclick="handleEntity('types', 'delete')" class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="XÓA"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-bold text-amber-400 uppercase mb-1 text-center">GIÁ BÁN</label>
+                        <input type="text" id="device-price" required maxlength="12" oninput="formatCurrencyInput(this)" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-amber-400 uppercase mb-1 text-center">GIÁ NHẬP</label>
+                        <input type="text" id="device-cost" required maxlength="12" oninput="formatCurrencyInput(this)" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white text-center focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <div class="flex items-end gap-2 pt-1">
+                    <div class="flex flex-col items-center">
+                        <label class="block text-sm font-bold text-amber-400 uppercase mb-1 text-center w-full">SL</label>
+                        <div class="flex items-center bg-gray-900 border border-gray-700 rounded-xl overflow-hidden p-0.5 h-10">
+                            <button type="button" onclick="adjustQty(-1)" class="w-8 h-9 bg-gray-800 text-white font-bold transition flex items-center justify-center rounded-lg"><i class="fa-solid fa-minus text-xs"></i></button>
+                            <input type="number" id="device-qty" required value="1" min="0" oninput="updateModalStats()" class="w-9 bg-transparent text-sm font-bold text-white text-center focus:outline-none">
+                            <button type="button" onclick="adjustQty(1)" class="w-8 h-9 bg-gray-800 text-white font-bold transition flex items-center justify-center rounded-lg"><i class="fa-solid fa-plus text-xs"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <label class="block text-sm font-bold text-amber-400 uppercase mb-1 text-center w-full">MÀU</label>
+                        <input type="text" id="device-color" list="color-suggestions" placeholder="" class="w-32 bg-gray-900 border border-gray-700 rounded-xl px-2 py-2 text-sm text-white text-center focus:outline-none focus:border-amber-500 uppercase h-10">
+                        <datalist id="color-suggestions">
+                            <option value="ĐEN">
+                            <option value="TRẮNG">
+                            <option value="ĐỎ">
+                            <option value="VÀNG">
+                            <option value="XANH DƯƠNG">
+                            <option value="XANH LÁ">
+                            <option value="CAM SAN HÔ">
+                            <option value="HỒNG">
+                            <option value="TÍM">
+                            <option value="XÁM">
+                        </datalist>
+                    </div>
+
+                    <div class="flex-1 flex flex-col items-center min-w-0">
+                        <label class="block text-sm font-bold text-amber-400 uppercase mb-1 text-center w-full">LÃI / SP</label>
+                        <div class="w-full bg-gray-900/90 border border-gray-800 px-2 rounded-xl h-10 flex items-center justify-center">
+                            <div id="modal-profit-preview" class="text-xs font-bold text-emerald-400 leading-none truncate text-center w-full">0</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" onclick="closeModal()" class="px-3.5 h-10 rounded-xl text-sm font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 transition">HỦY</button>
+                        <button type="submit" class="px-4 h-10 rounded-xl text-sm font-semibold bg-amber-600 text-white hover:bg-amber-500 transition shadow-lg shadow-amber-600/35 whitespace-nowrap">LƯU</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL NHẬP HÀNG -->
+    <div id="import-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="card-dark w-full max-w-xl rounded-2xl p-4 md:p-6 shadow-2xl border border-gray-700 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeImportModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div class="mb-4">
+                <h3 class="text-lg md:text-xl font-bold text-white uppercase">Nhập hàng</h3>
+            </div>
+            
+            <form id="import-form" onsubmit="saveImportOrder(event)" class="space-y-4">
+                <input type="hidden" id="import-index" value="-1">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-white mb-1">Nhà phân phối <span class="text-red-500">*</span></label>
+                        <div class="flex items-center gap-1.5">
+                            <input type="text" id="import-supplier" required list="supplier-suggestions" placeholder="" class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase">
+                            <datalist id="supplier-suggestions"></datalist>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" onclick="handleImportEntity('suppliers', 'add')" class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="THÊM NHÀ PHÂN PHỐI"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" onclick="handleImportEntity('suppliers', 'edit')" class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="SỬA NHÀ PHÂN PHỐI"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                <button type="button" onclick="handleImportEntity('suppliers', 'delete')" class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="XÓA NHÀ PHÂN PHỐI"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-white mb-1">Loại linh kiện <span class="text-red-500">*</span></label>
+                        <div class="flex items-center gap-1.5">
+                            <input type="text" id="import-category" required list="import-category-suggestions" placeholder="" class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase">
+                            <datalist id="import-category-suggestions"></datalist>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" onclick="handleImportEntity('categories', 'add')" class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="THÊM LOẠI LINH KIỆN"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" onclick="handleImportEntity('categories', 'edit')" class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="SỬA LOẠI LINH KIỆN"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                <button type="button" onclick="handleImportEntity('categories', 'delete')" class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="XÓA LOẠI LINH KIỆN"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-white mb-1">Tên linh kiện <span class="text-red-500">*</span></label>
+                    <div id="import-items-container" class="space-y-2">
+                        <div class="flex items-center gap-2 item-row">
+                            <input type="text" required placeholder="" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase item-name-input">
+                            <button type="button" onclick="addImportItemRow()" class="w-11 h-11 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xl rounded-xl transition flex items-center justify-center shadow-lg shrink-0" title="Thêm dòng linh kiện"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-800 pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeImportModal()" class="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 transition">Hủy</button>
+                    <button type="submit" id="btn-save-import-submit" class="px-5 py-2 rounded-xl text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/35 flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus text-xs"></i> <span id="import-modal-submit-text">Lưu phiếu nhập</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLC4dPLEP84yj6vkvf--DM8u_dN9YPJEs",
+            authDomain: "bao-gia-sua-chua.firebaseapp.com",
+            projectId: "bao-gia-sua-chua",
+            storageBucket: "bao-gia-sua-chua.firebasestorage.app",
+            messagingSenderId: "775400571262",
+            appId: "1:775400571262:web:b264070746f5fbb6fbf32f"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let devices = [];
+        let importOrders = JSON.parse(localStorage.getItem('local_import_orders') || '[]'); 
+        let brands = ['IPHONE', 'SAMSUNG', 'OPPO - REALME', 'MI - POCO', 'VIVO', 'HÃNG KHÁC'];
+        let categories = ['MÀN HÌNH', 'PIN', 'CÁP SẠC', 'KÍNH ÉP', 'LƯNG', 'CÁP NỐI'];
+        let types = ['ZIN', 'GX', 'ZIN BÓC MÁY', 'ZIN HÃNG', 'OLED', 'LINH KIỆN'];
+        let names = [];
+        let suppliers = JSON.parse(localStorage.getItem('local_suppliers') || '[]');
+
+        let currentBrand = localStorage.getItem('active_brand_tab') || brands[0] || '';
+        let currentCategory = localStorage.getItem('active_cat_tab') || 'MÀN HÌNH';
+        let currentType = '';
+        let isPrivacyMode = false;
+
+        let activeRowElement = null;
+        let activeRowTimeout = null;
+        let activeInlineQtyIndex = null;
+
+        let originalQtyBeforeEdit = null;
+
+        document.addEventListener('click', function(event) {
+            if (activeInlineQtyIndex !== null) {
+                const container = document.getElementById(`inline-qty-container-${activeInlineQtyIndex}`);
+                if (container && !container.contains(event.target)) {
+                    cancelInlineQty(activeInlineQtyIndex);
+                }
+            }
+        });
+
+        function getColorStyle(colorName, isMobile = false) {
+            if (!colorName) return '';
+            const c = colorName.trim().toUpperCase();
+            const sizeClass = isMobile ? 'w-4 h-4' : 'w-5 h-5';
+            
+            if (c.includes('ĐEN') || c.includes('BLACK')) {
+                return `<span class="inline-block ${sizeClass} rounded-full ml-1.5 mr-1 shrink-0 align-middle shadow-md" style="background-color: #000000; border: 2px solid #ffffff;" title="MÀU: ${colorName}"></span>`;
+            }
+
+            let hex = '#9ca3af';
+            let borderStyle = 'border: 1px solid rgba(255,255,255,0.2)';
+
+            if (c.includes('TRẮNG') || c.includes('WHITE')) { hex = '#ffffff'; borderStyle = 'border: 2px solid #9ca3af'; }
+            else if (c.includes('ĐỎ') || c.includes('RED')) { hex = '#ef4444'; }
+            else if (c.includes('VÀNG') || c.includes('GOLD') || c.includes('YELLOW')) { hex = '#eab308'; }
+            else if (c.includes('CAM SAN HÔ') || c.includes('SAN HÔ') || c.includes('CORAL')) { hex = '#ff6f61'; }
+            else if (c.includes('XANH DƯƠNG') || c.includes('BLUE') || c.includes('DƯƠNG')) { hex = '#3b82f6'; }
+            else if (c.includes('XANH LÁ') || c.includes('LÁ') || c.includes('GREEN')) { hex = '#22c55e'; }
+            else if (c.includes('XANH')) { hex = '#3b82f6'; }
+            else if (c.includes('HỒNG') || c.includes('PINK')) { hex = '#ec4899'; }
+            else if (c.includes('TÍM') || c.includes('PURPLE')) { hex = '#a855f7'; }
+            else if (c.includes('XÁM') || c.includes('GRAY') || c.includes('GREY')) { hex = '#6b7280'; }
+
+            return `<span class="inline-block ${sizeClass} rounded-full ml-1.5 mr-1 shrink-0 align-middle shadow-sm" style="background-color: ${hex}; ${borderStyle};" title="MÀU: ${colorName}"></span>`;
+        }
+
+        function renderDeviceNames(nameStr, colorStr, isMobile = false) {
+            if (!nameStr) return '';
+            const isSpecialTab = (currentBrand === 'HẾT HÀNG' || currentBrand === 'NHẬP HÀNG');
+            const isIphone = isSpecialTab ? true : (currentBrand.toUpperCase() === 'IPHONE');
+            
+            let processedName = nameStr;
+            if (!isIphone) {
+                processedName = processedName.replace(/I/g, 'i');
+            }
+
+            const parts = processedName.split('-').map(p => p.trim()).filter(Boolean);
+            const appleIcon = isIphone ? `<i class="fa-brands fa-apple text-amber-500 ${isMobile ? 'text-sm' : 'text-base'} mr-1 align-middle"></i>` : '';
+
+            let colorDotHtml = '';
+            if (colorStr && colorStr.trim()) {
+                colorDotHtml = getColorStyle(colorStr, isMobile);
+            }
+
+            const dashCount = (processedName.match(/-/g) || []).length;
+            const isVeryLong = dashCount >= 10;
+
+            if (isMobile) {
+                const textSizeClass = isVeryLong ? 'text-xs' : 'text-sm font-bold';
+                const namePartsHtml = parts.map((part, index) => {
+                    const textColor = isIphone ? 'text-white' : ((index % 2 === 0) ? 'text-amber-400' : 'text-white');
+                    return `<span class="px-1 py-0.5 rounded bg-gray-900 border border-gray-800 ${textColor} ${textSizeClass} inline-block whitespace-nowrap">${part}</span>`;
+                }).join(' ');
+                return `<div class="inline-flex items-center flex-wrap">${appleIcon}${namePartsHtml}${colorDotHtml}</div>`;
+            }
+
+            const fontSizeClass = isVeryLong ? 'text-xs' : 'text-base md:text-lg';
+            const namePartsHtml = parts.map((part, index) => {
+                const textColor = isIphone ? 'text-white' : ((index % 2 === 0) ? 'text-amber-400' : 'text-white');
+                return `<span class="rounded bg-gray-800/90 border border-gray-700/60 ${textColor} font-extrabold whitespace-nowrap ${fontSizeClass} inline-block px-1 py-0.25 m-0.25">${part}</span>`;
+            }).join('');
+
+            return `<div class="flex items-center flex-wrap gap-1">${appleIcon}${namePartsHtml}${colorDotHtml}</div>`;
+        }
+
+        function handleRowClick(rowElement) {
+            if (event.target.closest('button') || event.target.closest('.qty-container') || event.target.closest('input[type="checkbox"]')) return;
+            
+            if (activeRowElement && activeRowElement !== rowElement) {
+                activeRowElement.classList.remove('clicked-pink-row');
+            }
+            if (activeRowTimeout) {
+                clearTimeout(activeRowTimeout);
+            }
+
+            activeRowElement = rowElement;
+            activeRowElement.classList.remove('clicked-pink-row');
+            void activeRowElement.offsetWidth;
+            activeRowElement.classList.add('clicked-pink-row');
+
+            activeRowTimeout = setTimeout(() => {
+                if (activeRowElement) {
+                    activeRowElement.classList.remove('clicked-pink-row');
+                    activeRowElement = null;
+                }
+            }, 5000);
+        }
+
+        function enableInlineQtyEdit(containerEl, realIndex) {
+            const isSpecialTab = (currentBrand === 'HẾT HÀNG' || currentBrand === 'NHẬP HÀNG');
+            if (isSpecialTab) return;
+
+            activeInlineQtyIndex = realIndex;
+            const currentQty = parseInt(devices[realIndex].qty) || 0;
+            originalQtyBeforeEdit = currentQty;
+
+            // Xử lý chống bị cắt cụt do overflow: hidden của ô td hoặc tr
+            containerEl.style.overflow = 'visible';
+            containerEl.style.position = 'relative';
+            containerEl.style.zIndex = '1000';
+            const parentRow = containerEl.closest('tr');
+            if (parentRow) {
+                parentRow.style.position = 'relative';
+                parentRow.style.zIndex = '1000';
+            }
+
+            containerEl.innerHTML = `
+                <div id="inline-qty-container-${realIndex}" 
+                     class="inline-flex items-center bg-gray-950 border-2 border-amber-500 rounded-lg px-2 py-1 shadow-2xl qty-container gap-1.5" 
+                     style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 99999; min-width: 175px; white-space: nowrap; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95), 0 0 15px rgba(245, 158, 11, 0.5);" 
+                     onclick="event.stopPropagation()">
+                    <button type="button" onclick="updateQtyDirect(${realIndex}, -1)" class="w-7 h-7 bg-gray-800 hover:bg-gray-700 text-white font-bold flex items-center justify-center rounded transition shrink-0 active:scale-95" title="Giảm 1"><i class="fa-solid fa-minus text-xs"></i></button>
+                    <input type="number" min="0" value="${currentQty}" id="inline-qty-val-${realIndex}" 
+                           oninput="devices[${realIndex}].qty = Math.max(0, parseInt(this.value) || 0)"
+                           onkeydown="if(event.key === 'Enter') confirmInlineQty(${realIndex}); if(event.key === 'Escape') cancelInlineQty(${realIndex});"
+                           class="w-11 h-7 bg-gray-900 border border-amber-500/70 rounded text-center text-sm font-black text-amber-400 focus:outline-none focus:border-amber-400 shrink-0" />
+                    <button type="button" onclick="updateQtyDirect(${realIndex}, 1)" class="w-7 h-7 bg-gray-800 hover:bg-gray-700 text-white font-bold flex items-center justify-center rounded transition shrink-0 active:scale-95" title="Tăng 1"><i class="fa-solid fa-plus text-xs"></i></button>
+                    <button type="button" onclick="confirmInlineQty(${realIndex})" class="w-7 h-7 bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center rounded ml-1 transition shrink-0 active:scale-95 shadow" title="LƯU (Enter)"><i class="fa-solid fa-check text-xs"></i></button>
+                    <button type="button" onclick="cancelInlineQty(${realIndex})" class="w-7 h-7 bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold flex items-center justify-center rounded transition shrink-0 active:scale-95" title="HỦY (Esc)"><i class="fa-solid fa-xmark text-xs"></i></button>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const inp = document.getElementById(`inline-qty-val-${realIndex}`);
+                if (inp) { inp.focus(); inp.select(); }
+            }, 50);
+        }
+
+        function cancelInlineQty(realIndex) {
+            if (realIndex !== undefined && originalQtyBeforeEdit !== null && devices[realIndex]) {
+                devices[realIndex].qty = originalQtyBeforeEdit;
+            }
+            activeInlineQtyIndex = null;
+            originalQtyBeforeEdit = null;
+            renderTable();
+        }
+
+        function updateQtyDirect(realIndex, change) {
+            let currentQty = parseInt(devices[realIndex].qty) || 0;
+            currentQty += change;
+            if (currentQty < 0) currentQty = 0;
+            devices[realIndex].qty = currentQty;
+            const valInput = document.getElementById(`inline-qty-val-${realIndex}`);
+            if (valInput) {
+                if (valInput.tagName === 'INPUT') valInput.value = currentQty;
+                else valInput.innerText = currentQty;
+            }
+        }
+
+        async function confirmInlineQty(realIndex) {
+            activeInlineQtyIndex = null;
+            originalQtyBeforeEdit = null;
+            await saveAllToCloud();
+            renderTable();
+        }
+
+        function syncFromCloud() {
+            const statusEl = document.getElementById('cloud-status');
+            if(statusEl) {
+                statusEl.setAttribute('title', 'Đang đồng bộ...');
+                statusEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-amber-400 text-xs"></i>`;
+            }
+
+            db.collection("store_data").doc("main").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.devices) devices = data.devices;
+                    if (data.brands) brands = data.brands;
+                    if (data.categories) {
+                        categories = data.categories;
+                        categories = categories.map(c => c === 'BO SẠC' ? 'CÁP SẠC' : c);
+                    }
+                    if (data.types) types = data.types;
+                    if (data.names) names = data.names;
+                    if (data.suppliers) {
+                        suppliers = data.suppliers;
+                        localStorage.setItem('local_suppliers', JSON.stringify(suppliers));
+                    }
+                    if (data.importOrders) {
+                        importOrders = data.importOrders;
+                        localStorage.setItem('local_import_orders', JSON.stringify(importOrders));
+                    }
+                    devices.forEach(d => {
+                        if (d.part === 'BO SẠC') d.part = 'CÁP SẠC';
+                    });
+                } else {
+                    saveAllToCloud();
+                }
+                if(statusEl) {
+                    statusEl.setAttribute('title', 'Online Realtime');
+                    statusEl.innerHTML = `<i class="fa-solid fa-cloud text-amber-400 text-xs"></i>`;
+                }
+                initTabs();
+                renderTable();
+            }, (err) => {
+                console.error("Lỗi Firestore:", err);
+                if(statusEl) {
+                    statusEl.setAttribute('title', 'Offline / LocalStorage');
+                    statusEl.innerHTML = `<i class="fa-solid fa-hard-drive text-emerald-400 text-xs"></i>`;
+                }
+                initTabs();
+                renderTable();
+            });
+        }
+
+        async function saveAllToCloud() {
+            const statusEl = document.getElementById('cloud-status');
+            if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin text-amber-400 text-xs"></i>`;
+            
+            localStorage.setItem('local_import_orders', JSON.stringify(importOrders));
+            localStorage.setItem('local_suppliers', JSON.stringify(suppliers));
+
+            try {
+                await db.collection("store_data").doc("main").set({
+                    devices, importOrders, brands, categories, types, names, suppliers
+                });
+                if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-cloud text-amber-400 text-xs"></i>`;
+            } catch (e) {
+                console.error("Lỗi lưu Cloud:", e);
+                if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-400 text-xs"></i>`;
+            }
+        }
+
+        function switchBrand(b) {
+            currentBrand = b;
+            localStorage.setItem('active_brand_tab', b);
+            if (b !== 'NHẬP HÀNG' && b !== 'HẾT HÀNG') {
+                currentCategory = 'MÀN HÌNH';
+                localStorage.setItem('active_cat_tab', 'MÀN HÌNH');
+            }
+            currentType = '';
+            initTabs();
+            renderTable();
+        }
+
+        function switchCategory(c) {
+            currentCategory = c;
+            localStorage.setItem('active_cat_tab', c);
+            currentType = '';
+            initTabs();
+            renderTable();
+        }
+
+        function handleSupplierFilterChange(val) {
+            const desktopSel = document.getElementById('filter-supplier-desktop');
+            const mobileSel = document.getElementById('filter-supplier-mobile');
+            if (desktopSel) desktopSel.value = val;
+            if (mobileSel) mobileSel.value = val;
+            renderTable();
+        }
+
+        function handleCategoryFilterChange(val) {
+            const desktopSel = document.getElementById('filter-import-cat-desktop');
+            const mobileSel = document.getElementById('filter-import-cat-mobile');
+            if (desktopSel) desktopSel.value = val;
+            if (mobileSel) mobileSel.value = val;
+            renderTable();
+        }
+
+        function initTabs() {
+            const isImportTab = currentBrand === 'NHẬP HÀNG';
+            const allBrandsToShow = [...brands, 'HẾT HÀNG', 'NHẬP HÀNG'];
+
+            document.getElementById('brand-tabs').innerHTML = allBrandsToShow.map(b => {
+                const isSelected = b === currentBrand;
+                let btnClass = '';
+                
+                if (b === 'HẾT HÀNG') {
+                    if (isSelected) {
+                        btnClass = 'purple-pulse-selected text-white font-bold shadow-lg border border-purple-400';
+                    } else {
+                        btnClass = 'bg-gray-800 text-red-500 hover:bg-gray-700 border border-red-700/50 font-bold';
+                    }
+                } else if (b === 'NHẬP HÀNG') {
+                    if (isSelected) {
+                        btnClass = 'purple-pulse-selected text-white font-bold shadow-lg border border-purple-400';
+                    } else {
+                        btnClass = 'bg-gray-800 text-emerald-400 hover:bg-gray-700 border border-emerald-700/50 font-bold';
+                    }
+                } else {
+                    btnClass = isSelected 
+                        ? 'yellow-pulse-selected text-black font-bold shadow-lg' 
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700';
+                }
+
+                const displayName = b === 'KHÁC' ? 'HÃNG KHÁC' : b;
+                return `<button onclick="switchBrand('${b}')" class="px-2.5 py-1 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm font-semibold transition uppercase ${btnClass}">${displayName}</button>`;
+            }).join('');
+
+            const toolbarRow2 = document.getElementById('toolbar-row-2');
+            const toolbarMobile = document.getElementById('toolbar-mobile-wrapper');
+            const mainActionBtn = document.getElementById('main-action-btn');
+            const mainActionBtnMobile = document.getElementById('main-action-btn-mobile');
+            const importFiltersDesktop = document.getElementById('import-filters-desktop');
+            const importFiltersMobile = document.getElementById('import-filters-mobile');
+            const categoriesFilterWrapper = document.getElementById('categories-filter-wrapper');
+            const mobileCatsContainer = document.getElementById('mobile-cats-container');
+
+            if (isImportTab) {
+                categoriesFilterWrapper.style.display = 'none';
+                mobileCatsContainer.style.display = 'none';
+                document.getElementById('type-tabs-container-desktop').style.display = 'none';
+                document.getElementById('type-tabs-container-mobile').style.display = 'none';
+                
+                importFiltersDesktop.style.display = 'flex';
+                importFiltersMobile.style.display = 'flex';
+                updateImportFilterOptions();
+
+                if(mainActionBtn) mainActionBtn.innerHTML = `<i class="fa-solid fa-plus text-xs"></i> Nhập hàng`;
+                if(mainActionBtn) mainActionBtn.setAttribute('onclick', 'openImportModal()');
+                if(mainActionBtnMobile) mainActionBtnMobile.setAttribute('onclick', 'openImportModal()');
+                return;
+            } else {
+                importFiltersDesktop.style.display = 'none';
+                importFiltersMobile.style.display = 'none';
+
+                if (currentBrand === 'HẾT HÀNG') {
+                    categoriesFilterWrapper.style.display = 'none';
+                    mobileCatsContainer.style.display = 'none';
+                    document.getElementById('type-tabs-container-desktop').style.display = 'none';
+                    document.getElementById('type-tabs-container-mobile').style.display = 'none';
+                    if(mainActionBtn) mainActionBtn.innerHTML = `<i class="fa-solid fa-plus text-xs"></i> THÊM MỚI`;
+                    if(mainActionBtn) mainActionBtn.setAttribute('onclick', 'openModal()');
+                    if(mainActionBtnMobile) mainActionBtnMobile.setAttribute('onclick', 'openModal()');
+                    return;
+                } else {
+                    categoriesFilterWrapper.style.display = 'flex';
+                    mobileCatsContainer.style.display = 'flex';
+                    if(mainActionBtn) mainActionBtn.innerHTML = `<i class="fa-solid fa-plus text-xs"></i> THÊM MỚI`;
+                    if(mainActionBtn) mainActionBtn.setAttribute('onclick', 'openModal()');
+                    if(mainActionBtnMobile) mainActionBtnMobile.setAttribute('onclick', 'openModal()');
+                }
+            }
+
+            const isIphone = currentBrand.toUpperCase() === 'IPHONE';
+
+            let displayCategories = ['MÀN HÌNH', 'PIN', 'CÁP SẠC', 'KÍNH ÉP'];
+            if (isIphone) {
+                displayCategories.push('LƯNG');
+            } else {
+                displayCategories.push('CÁP NỐI');
+            }
+
+            if (!displayCategories.includes(currentCategory)) {
+                currentCategory = displayCategories[0];
+            }
+
+            const catHtmlDesktop = displayCategories.map(c => {
+                const isSelected = c === currentCategory;
+                const btnClass = isSelected 
+                    ? 'yellow-pulse-selected text-black font-bold shadow-lg border border-amber-400' 
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700';
+                return `<button onclick="switchCategory('${c}')" class="px-2.5 py-1.5 rounded-lg text-sm font-semibold transition uppercase ${btnClass}">${c}</button>`;
+            }).join('');
+
+            const catHtmlMobile = displayCategories.map(c => {
+                const isSelected = c === currentCategory;
+                const btnClass = isSelected 
+                    ? 'yellow-pulse-selected text-black font-bold shadow-lg border border-amber-400 shrink-0' 
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 shrink-0';
+                return `<button onclick="switchCategory('${c}')" class="px-2 py-1 rounded-lg text-xs font-semibold transition uppercase ${btnClass}">${c}</button>`;
+            }).join('');
+
+            document.getElementById('main-cat-tabs-desktop').innerHTML = catHtmlDesktop;
+            document.getElementById('main-cat-tabs-mobile').innerHTML = catHtmlMobile;
+
+            if (!isIphone) currentType = '';
+
+            let typeButtonsHtml = '';
+            let typeButtonsMobileHtml = '';
+
+            if (isIphone) {
+                const validTypesSet = new Set();
+                devices.forEach(d => {
+                    if ((d.brand || '').toUpperCase() === currentBrand.toUpperCase() &&
+                        (d.part || '').toUpperCase() === currentCategory.toUpperCase() &&
+                        d.type) {
+                        validTypesSet.add(d.type.toUpperCase());
+                    }
+                });
+
+                const allTypeSelected = currentType === '';
+                const allTypeClass = allTypeSelected 
+                    ? 'yellow-pulse-selected text-black font-bold shadow-lg border border-amber-400 shrink-0' 
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 shrink-0';
+                
+                typeButtonsHtml += `<button onclick="currentType=''; initTabs(); renderTable();" class="px-2.5 py-1 rounded-lg text-xs font-bold transition uppercase ${allTypeClass}">TẤT CẢ</button>`;
+                typeButtonsMobileHtml += `<button onclick="currentType=''; initTabs(); renderTable();" class="px-2.5 py-1 rounded-lg text-xs font-bold transition uppercase ${allTypeClass}">TẤT CẢ</button>`;
+
+                types.forEach(t => {
+                    if (validTypesSet.has(t.toUpperCase())) {
+                        const isSelected = currentType === t;
+                        const btnClass = isSelected 
+                            ? 'yellow-pulse-selected text-black font-bold shadow-lg border border-amber-400 shrink-0' 
+                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700 shrink-0';
+                        typeButtonsHtml += `<button onclick="currentType='${t}'; initTabs(); renderTable();" class="px-2.5 py-1 rounded-lg text-xs font-bold transition uppercase ${btnClass}">${t}</button>`;
+                        typeButtonsMobileHtml += `<button onclick="currentType='${t}'; initTabs(); renderTable();" class="px-2.5 py-1 rounded-lg text-xs font-bold transition uppercase ${btnClass}">${t}</button>`;
+                    }
+                });
+            }
+
+            const typeContainerDesktop = document.getElementById('type-tabs-container-desktop');
+            const typeContainerMobile = document.getElementById('type-tabs-container-mobile');
+
+            if (typeContainerDesktop) {
+                if (isIphone && typeButtonsHtml !== '') {
+                    typeContainerDesktop.style.display = 'flex';
+                    typeContainerDesktop.innerHTML = `<span class="text-sm font-bold text-amber-400 uppercase mr-1">KIỂU:</span>` + typeButtonsHtml;
+                } else {
+                    typeContainerDesktop.style.display = 'none';
+                    typeContainerDesktop.innerHTML = '';
+                }
+            }
+
+            if (typeContainerMobile) {
+                if (isIphone && typeButtonsMobileHtml !== '') {
+                    typeContainerMobile.style.display = 'flex';
+                    typeContainerMobile.className = "flex items-center gap-1 w-full pt-1 overflow-x-auto no-scrollbar whitespace-nowrap";
+                    typeContainerMobile.innerHTML = `<span class="text-xs font-bold text-amber-400 uppercase mr-0.5 shrink-0">KIỂU:</span>` + typeButtonsMobileHtml;
+                } else {
+                    typeContainerMobile.style.display = 'none';
+                    typeContainerMobile.innerHTML = '';
+                }
+            }
+        }
+
+        function updateImportFilterOptions() {
+            const supplierSelectDesktop = document.getElementById('filter-supplier-desktop');
+            const supplierSelectMobile = document.getElementById('filter-supplier-mobile');
+            const catSelectDesktop = document.getElementById('filter-import-cat-desktop');
+            const catSelectMobile = document.getElementById('filter-import-cat-mobile');
+
+            const currentSupplierVal = (supplierSelectDesktop?.value || supplierSelectMobile?.value || 'ALL').trim().toUpperCase();
+            const currentCatVal = (catSelectDesktop?.value || catSelectMobile?.value || 'ALL').trim().toUpperCase();
+
+            const uniqueSuppliers = [...new Set(importOrders.map(o => (o.supplier || '').trim().toUpperCase()))].filter(Boolean);
+            const uniqueCats = [...new Set(importOrders.map(o => (o.category || '').trim().toUpperCase()))].filter(Boolean);
+
+            const supplierOptionsDesktop = `<option value="ALL">TẤT CẢ (NHÀ PHÂN PHỐI)</option>` + uniqueSuppliers.map(s => `<option value="${s}">${s}</option>`).join('');
+            const supplierOptionsMobile = `<option value="ALL">TẤT CẢ (NPP)</option>` + uniqueSuppliers.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const catOptionsDesktop = `<option value="ALL">TẤT CẢ (LINH KIỆN)</option>` + uniqueCats.map(c => `<option value="${c}">${c}</option>`).join('');
+            const catOptionsMobile = `<option value="ALL">TẤT CẢ (LK)</option>` + uniqueCats.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            if (supplierSelectDesktop) {
+                supplierSelectDesktop.innerHTML = supplierOptionsDesktop;
+                supplierSelectDesktop.value = uniqueSuppliers.includes(currentSupplierVal) ? currentSupplierVal : 'ALL';
+            }
+            if (supplierSelectMobile) {
+                supplierSelectMobile.innerHTML = supplierOptionsMobile;
+                supplierSelectMobile.value = uniqueSuppliers.includes(currentSupplierVal) ? currentSupplierVal : 'ALL';
+            }
+
+            if (catSelectDesktop) {
+                catSelectDesktop.innerHTML = catOptionsDesktop;
+                catSelectDesktop.value = uniqueCats.includes(currentCatVal) ? currentCatVal : 'ALL';
+            }
+            if (catSelectMobile) {
+                catSelectMobile.innerHTML = catOptionsMobile;
+                catSelectMobile.value = uniqueCats.includes(currentCatVal) ? currentCatVal : 'ALL';
+            }
+        }
+
+        function formatMoney(amount) {
+            if (amount === null || amount === undefined || amount === '') return "0";
+            let cleanStr = amount.toString().replace(/\./g, '').replace(/,/g, '.').trim();
+            let num = parseFloat(cleanStr);
+            if (isNaN(num)) return amount.toString();
+            
+            if (num < 10 && cleanStr.includes('.')) {
+                num = num * 1000;
+            }
+
+            return Math.round(num).toLocaleString('vi-VN');
+        }
+
+        function parseMoney(str) {
+            if (!str) return 0;
+            let cleanStr = str.toString().replace(/\./g, '').replace(/,/g, '.').trim();
+            let num = parseFloat(cleanStr);
+            if (isNaN(num)) return 0;
+            if (num < 10 && cleanStr.includes('.')) {
+                num = num * 1000;
+            }
+            return Math.round(num);
+        }
+
+        function formatCurrencyInput(input) {
+            let val = input.value.replace(/\D/g, '');
+            if (val) {
+                val = parseInt(val, 10).toLocaleString('vi-VN');
+            }
+            input.value = val;
+        }
+
+        function togglePrivacyMode() {
+            isPrivacyMode = !isPrivacyMode;
+            const icon = document.getElementById('privacy-icon');
+            if (icon) {
+                icon.className = isPrivacyMode ? "fa-solid fa-eye-slash text-xs text-red-400" : "fa-solid fa-eye text-xs";
+            }
+            renderTable();
+        }
+
+        function getIphoneSortWeight(name) {
+            const clean = name.replace(/\s+/g, '').toUpperCase();
+            
+            if (clean.includes('5G')) return 50;
+            if (clean.includes('5S')) return 51;
+            if (clean.includes('5SE') || (clean.includes('SE') && clean.includes('5'))) return 52;
+
+            if (clean.includes('6PLUS')) return 62;
+            if (clean.includes('6SPLUS')) return 64;
+            if (clean.includes('6S')) return 63;
+            if (clean.includes('6G') || clean === '6') return 61;
+
+            if (clean.includes('7PLUS')) return 72;
+            if (clean.includes('7')) return 71;
+
+            if (clean.includes('8PLUS')) return 82;
+            if (clean.includes('8')) return 81;
+
+            if (clean.includes('SE')) return 85;
+
+            if (clean.includes('XSMAX')) return 93;
+            if (clean.includes('XS')) return 92;
+            if (clean.includes('XR')) return 91;
+            if (clean === 'X' || clean.startsWith('X-')) return 90;
+
+            if (clean.includes('11PROMAX')) return 113;
+            if (clean.includes('11PRO')) return 112;
+            if (clean.includes('11')) return 111;
+
+            if (clean.includes('12PROMAX')) return 124;
+            if (clean.includes('12PRO')) return 123;
+            if (clean.includes('12MINI')) return 122;
+            if (clean.includes('12')) return 121;
+
+            if (clean.includes('13PROMAX')) return 134;
+            if (clean.includes('13PRO')) return 133;
+            if (clean.includes('13MINI')) return 132;
+            if (clean.includes('13')) return 131;
+
+            if (clean.includes('14PROMAX')) return 144;
+            if (clean.includes('14PRO')) return 143;
+            if (clean.includes('14PLUS')) return 142;
+            if (clean.includes('14')) return 141;
+
+            if (clean.includes('15PROMAX')) return 154;
+            if (clean.includes('15PRO')) return 153;
+            if (clean.includes('15PLUS')) return 152;
+            if (clean.includes('15')) return 151;
+
+            if (clean.includes('16PROMAX')) return 164;
+            if (clean.includes('16PRO')) return 163;
+            if (clean.includes('16PLUS')) return 162;
+            if (clean.includes('16')) return 161;
+
+            return 999;
+        }
+
+        function renderTable() {
+            activeRowElement = null;
+            activeInlineQtyIndex = null;
+            if (activeRowTimeout) clearTimeout(activeRowTimeout);
+
+            const tbody = document.getElementById('device-table-body');
+            const mobileList = document.getElementById('device-mobile-list');
+            const emptyState = document.getElementById('empty-state');
+            const rowCountEl = document.getElementById('row-count');
+            const totalCostEl = document.getElementById('total-cost');
+
+            const searchInputDesktop = document.getElementById('search-input-desktop');
+            const searchInputMobile = document.getElementById('search-input-mobile');
+            const keyword = (searchInputDesktop?.value || searchInputMobile?.value || '').trim().toUpperCase();
+
+            const isOutStockTab = currentBrand === 'HẾT HÀNG';
+            const isImportTab = currentBrand === 'NHẬP HÀNG';
+            const isIphone = currentBrand.toUpperCase() === 'IPHONE';
+
+            let filtered = [];
+            let expandedImportRows = [];
+
+            if (isImportTab) {
+                const selSupDesktop = document.getElementById('filter-supplier-desktop')?.value;
+                const selSupMobile = document.getElementById('filter-supplier-mobile')?.value;
+                const selectedSupplier = (selSupDesktop !== undefined && selSupDesktop !== '') ? selSupDesktop : (selSupMobile || 'ALL');
+
+                const selCatDesktop = document.getElementById('filter-import-cat-desktop')?.value;
+                const selCatMobile = document.getElementById('filter-import-cat-mobile')?.value;
+                const selectedCat = (selCatDesktop !== undefined && selCatDesktop !== '') ? selCatDesktop : (selCatMobile || 'ALL');
+
+                importOrders.forEach((o, orderIdx) => {
+                    const supplier = (o.supplier || '').trim().toUpperCase();
+                    let category = (o.category || '').trim().toUpperCase();
+                    if (category === 'BO SẠC') category = 'CÁP SẠC';
+
+                    if (selectedSupplier !== 'ALL' && supplier !== selectedSupplier.trim().toUpperCase()) return;
+                    if (selectedCat !== 'ALL' && category !== selectedCat.trim().toUpperCase()) return;
+
+                    if (o.items && o.items.length > 0) {
+                        o.items.forEach(item => {
+                            const itemName = (item || '').trim().toUpperCase();
+                            const fullStr = `${supplier} ${category} ${itemName}`;
+                            if (!keyword || keyword.split(' ').every(k => fullStr.includes(k))) {
+                                expandedImportRows.push({
+                                    supplier,
+                                    category,
+                                    item: itemName,
+                                    realIndex: orderIdx
+                                });
+                            }
+                        });
+                    }
+                });
+
+                const btnDelDesktop = document.getElementById('btn-delete-selected');
+                const btnDelMobile = document.getElementById('btn-delete-selected-mobile');
+                if (expandedImportRows.length > 0 && document.querySelectorAll('.import-checkbox:checked').length > 0) {
+                    if(btnDelDesktop) btnDelDesktop.style.display = 'flex';
+                    if(btnDelMobile) btnDelMobile.style.display = 'flex';
+                } else {
+                    if(btnDelDesktop) btnDelDesktop.style.display = 'none';
+                    if(btnDelMobile) btnDelMobile.style.display = 'none';
+                }
+            } else {
+                filtered = devices.filter(d => {
+                    const qtyVal = parseInt(d.qty) || 0;
+
+                    if (isOutStockTab) {
+                        if (qtyVal !== 0) return false;
+                    } else {
+                        const matchBrand = (d.brand || '').toUpperCase() === currentBrand.toUpperCase();
+                        let dPart = (d.part || '').toUpperCase();
+                        if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                        const matchCategory = dPart === currentCategory.toUpperCase();
+                        const matchType = (!isIphone || !currentType || (d.type || '').toUpperCase() === currentType.toUpperCase());
+                        if (!matchBrand || !matchCategory || !matchType) return false;
+                    }
+
+                    const fullSearchStr = `${d.brand} ${d.name} ${d.part} ${d.type} ${d.color}`.toUpperCase();
+                    const matchKeyword = !keyword || keyword.split(' ').every(k => fullSearchStr.includes(k));
+
+                    return matchKeyword;
+                });
+
+                filtered.sort((a, b) => {
+                    if (isOutStockTab) {
+                        const partA = (a.part || '').trim();
+                        const partB = (b.part || '').trim();
+                        const compPart = partA.localeCompare(partB, 'vi', { numeric: true });
+                        if (compPart !== 0) return compPart;
+
+                        const nameA = (a.name || '').trim();
+                        const nameB = (b.name || '').trim();
+                        return nameA.localeCompare(nameB, 'vi', { numeric: true });
+                    }
+
+                    const nameA = (a.name || '').trim();
+                    const nameB = (b.name || '').trim();
+
+                    if (isIphone) {
+                        const weightA = getIphoneSortWeight(nameA);
+                        const weightB = getIphoneSortWeight(nameB);
+                        if (weightA !== weightB) {
+                            return weightA - weightB;
+                        }
+                    }
+                    return nameA.localeCompare(nameB, 'vi', { numeric: true });
+                });
+            }
+
+            const totalDisplayCount = isImportTab ? expandedImportRows.length : filtered.length;
+            if (rowCountEl) rowCountEl.innerText = totalDisplayCount;
+
+            let totalCostSum = 0;
+            if (!isImportTab) {
+                filtered.forEach(d => {
+                    totalCostSum += (parseMoney(d.cost) * (parseInt(d.qty) || 0));
+                });
+            }
+            if (totalCostEl) totalCostEl.innerText = isPrivacyMode ? '***' : formatMoney(totalCostSum);
+
+            const desktopHeader = document.getElementById('desktop-table-header');
+            if (desktopHeader) {
+                if (isImportTab) {
+                    desktopHeader.innerHTML = `
+                        <th class="py-3 px-3 text-left w-[24%] whitespace-nowrap truncate">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" id="select-all-import" onclick="toggleSelectAllImport(this)" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-emerald-600 focus:ring-0">
+                                <span class="text-xs">NHÀ PHÂN PHỐI</span>
+                            </label>
+                        </th>
+                        <th class="py-3 px-3 w-[26%] whitespace-nowrap truncate">LOẠI LINH KIỆN</th>
+                        <th class="py-3 px-4 w-[38%] text-left whitespace-nowrap truncate">TÊN LINH KIỆN</th>
+                        <th class="py-3 px-2 w-[12%] whitespace-nowrap text-center truncate">THAO TÁC</th>
+                    `;
+                } else if (isPrivacyMode) {
+                    if (isIphone || isOutStockTab) {
+                        desktopHeader.innerHTML = `
+                            <th class="py-3 px-4 text-left w-[35%] whitespace-nowrap truncate">TÊN MÁY</th>
+                            <th class="py-3 px-3 w-[20%] whitespace-nowrap truncate">LINH KIỆN</th>
+                            <th class="py-3 px-3 w-[15%] whitespace-nowrap truncate">KIỂU</th>
+                            <th class="py-3 px-3 w-[15%] whitespace-nowrap truncate">GIÁ BÁN</th>
+                            <th class="py-3 px-3 w-[5%] whitespace-nowrap truncate">SL</th>
+                            <th class="py-3 px-3 w-[10%] whitespace-nowrap text-center truncate">THAO TÁC</th>
+                        `;
+                    } else {
+                        desktopHeader.innerHTML = `
+                            <th class="py-3 px-4 text-left w-[45%] whitespace-nowrap truncate">TÊN MÁY</th>
+                            <th class="py-3 px-3 w-[25%] whitespace-nowrap truncate">LINH KIỆN</th>
+                            <th class="py-3 px-3 w-[15%] whitespace-nowrap truncate">GIÁ BÁN</th>
+                            <th class="py-3 px-3 w-[5%] whitespace-nowrap truncate">SL</th>
+                            <th class="py-3 px-3 w-[10%] whitespace-nowrap text-center truncate">THAO TÁC</th>
+                        `;
+                    }
+                } else {
+                    if (isIphone || isOutStockTab) {
+                        desktopHeader.innerHTML = `
+                            <th class="py-3 px-3 text-left w-[26%] whitespace-nowrap truncate">TÊN MÁY</th>
+                            <th class="py-3 px-3 w-[15%] whitespace-nowrap truncate">LINH KIỆN</th>
+                            <th class="py-3 px-3 w-[11%] whitespace-nowrap truncate">KIỂU</th>
+                            <th class="py-3 px-3 w-[13%] whitespace-nowrap truncate">GIÁ BÁN</th>
+                            <th class="py-3 px-3 w-[5%] whitespace-nowrap truncate">SL</th>
+                            <th class="py-3 px-3 w-[11%] whitespace-nowrap text-center truncate">THAO TÁC</th>
+                            <th class="py-3 px-3 w-[10%] whitespace-nowrap truncate">GIÁ NHẬP</th>
+                            <th class="py-3 px-3 w-[9%] whitespace-nowrap truncate">LÃI</th>
+                        `;
+                    } else {
+                        desktopHeader.innerHTML = `
+                            <th class="py-3 px-4 text-left w-[34%] whitespace-nowrap truncate">TÊN MÁY</th>
+                            <th class="py-3 px-3 w-[18%] whitespace-nowrap truncate">LINH KIỆN</th>
+                            <th class="py-3 px-3 w-[14%] whitespace-nowrap truncate">GIÁ BÁN</th>
+                            <th class="py-3 px-3 w-[5%] whitespace-nowrap truncate">SL</th>
+                            <th class="py-3 px-3 w-[11%] whitespace-nowrap text-center truncate">THAO TÁC</th>
+                            <th class="py-3 px-3 w-[10%] whitespace-nowrap truncate">GIÁ NHẬP</th>
+                            <th class="py-3 px-3 w-[8%] whitespace-nowrap truncate">LÃI</th>
+                        `;
+                    }
+                }
+            }
+
+            if (totalDisplayCount === 0) {
+                if (tbody) tbody.innerHTML = '';
+                if (mobileList) mobileList.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+
+            if (tbody) {
+                if (isImportTab) {
+                    tbody.innerHTML = expandedImportRows.map(row => {
+                        return `
+                            <tr class="row-hover transition">
+                                <td class="py-3 px-3 text-left font-bold text-white w-[24%] whitespace-nowrap truncate">
+                                    <div class="flex items-center gap-1.5 overflow-hidden">
+                                        <input type="checkbox" value="${row.realIndex}" data-item="${row.item}" onchange="handleImportCheckboxChange()" class="import-checkbox w-4 h-4 rounded bg-gray-900 border-gray-700 text-emerald-600 focus:ring-0 shrink-0">
+                                        <span class="truncate text-xs" title="${row.supplier}">${row.supplier}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 text-emerald-400 font-semibold w-[26%] whitespace-nowrap truncate"><span class="px-2 py-0.5 rounded bg-gray-900 border border-gray-800 text-xs">${row.category}</span></td>
+                                <td class="py-3 px-4 text-amber-400 font-bold w-[38%] text-left whitespace-nowrap truncate">${row.item}</td>
+                                <td class="py-3 px-2 w-[12%] whitespace-nowrap truncate">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <button onclick="editImportOrder(${row.realIndex})" class="w-7 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center shadow" title="SỬA"><i class="fa-solid fa-pen text-xs"></i></button>
+                                        <button onclick="duplicateImportOrder(${row.realIndex})" class="w-7 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center shadow" title="NHÂN BẢN"><i class="fa-solid fa-copy text-xs"></i></button>
+                                        <button onclick="deleteImportOrder(${row.realIndex})" class="w-7 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center shadow" title="XÓA"><i class="fa-solid fa-trash text-xs"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = filtered.map((d, index) => {
+                        const realIndex = devices.indexOf(d);
+                        const qtyVal = parseInt(d.qty) || 0;
+                        const priceFormatted = formatMoney(d.price);
+                        const costFormatted = formatMoney(d.cost);
+                        const profitVal = parseMoney(d.price) - parseMoney(d.cost);
+                        const profitFormatted = formatMoney(profitVal);
+                        const formattedNameHtml = renderDeviceNames(d.name, d.color, false);
+                        const displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : d.part;
+
+                        const zeroQtyClass = isOutStockTab ? 'row-hover' : (qtyVal === 0 ? 'yellow-pulse-row' : 'row-hover');
+
+                        if (isPrivacyMode) {
+                            if (isIphone || isOutStockTab) {
+                                return `
+                                    <tr class="${zeroQtyClass} transition" onclick="handleRowClick(this)">
+                                        <td class="py-3 px-4 text-left w-[35%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                        <td class="py-3 px-3 font-semibold text-emerald-400 w-[20%] whitespace-nowrap truncate">${displayPart}</td>
+                                        <td class="py-3 px-3 text-indigo-300 font-medium w-[15%] whitespace-nowrap truncate" style="font-weight: bold;">${d.type || '---'}</td>
+                                        <td class="py-3 px-3 font-black text-xl md:text-2xl text-amber-400 w-[15%] whitespace-nowrap truncate" style="color: #fbbf24 !important;">${priceFormatted}</td>
+                                        <td class="py-3 px-3 font-bold text-lg text-white w-[5%] whitespace-nowrap truncate" ${!isOutStockTab ? `ondblclick="enableInlineQtyEdit(this, ${realIndex})"` : ''} data-qty="${d.qty}">${d.qty}</td>
+                                        <td class="py-3 px-3 w-[10%] whitespace-nowrap truncate">
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <button onclick="editDevice(${realIndex})" class="w-7 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center shadow" title="SỬA"><i class="fa-solid fa-pen text-xs"></i></button>
+                                                <button onclick="duplicateDevice(${realIndex})" class="w-7 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center shadow" title="NHÂN BẢN"><i class="fa-solid fa-copy text-xs"></i></button>
+                                                <button onclick="deleteDevice(${realIndex})" class="w-7 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center shadow" title="XÓA"><i class="fa-solid fa-trash text-xs"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            } else {
+                                return `
+                                    <tr class="${zeroQtyClass} transition" onclick="handleRowClick(this)">
+                                        <td class="py-3 px-4 text-left w-[45%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                        <td class="py-3 px-3 font-semibold text-emerald-400 w-[25%] whitespace-nowrap truncate">${displayPart}</td>
+                                        <td class="py-3 px-3 font-black text-xl md:text-2xl text-amber-400 w-[15%] whitespace-nowrap truncate" style="color: #fbbf24 !important;">${priceFormatted}</td>
+                                        <td class="py-3 px-3 font-bold text-lg text-white w-[5%] whitespace-nowrap truncate" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
+                                        <td class="py-3 px-3 w-[10%] whitespace-nowrap truncate">
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <button onclick="editDevice(${realIndex})" class="w-7 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center shadow" title="SỬA"><i class="fa-solid fa-pen text-xs"></i></button>
+                                                <button onclick="duplicateDevice(${realIndex})" class="w-7 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center shadow" title="NHÂN BẢN"><i class="fa-solid fa-copy text-xs"></i></button>
+                                                <button onclick="deleteDevice(${realIndex})" class="w-7 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center shadow" title="XÓA"><i class="fa-solid fa-trash text-xs"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }
+                        }
+
+                        if (isIphone || isOutStockTab) {
+                            return `
+                                <tr class="${zeroQtyClass} transition" onclick="handleRowClick(this)">
+                                    <td class="py-3 px-3 text-left w-[26%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                    <td class="py-3 px-3 font-semibold text-emerald-400 w-[15%] whitespace-nowrap truncate">${displayPart}</td>
+                                    <td class="py-3 px-3 text-indigo-300 font-medium w-[11%] whitespace-nowrap truncate" style="font-weight: bold;">${d.type || '---'}</td>
+                                    <td class="py-3 px-3 font-black text-lg md:text-xl text-amber-400 w-[13%] whitespace-nowrap truncate" style="color: #fbbf24 !important;">${priceFormatted}</td>
+                                    <td class="py-3 px-3 font-bold text-base text-white w-[5%] whitespace-nowrap truncate" ${!isOutStockTab ? `ondblclick="enableInlineQtyEdit(this, ${realIndex})"` : ''} data-qty="${d.qty}">${d.qty}</td>
+                                    <td class="py-3 px-3 w-[11%] whitespace-nowrap truncate">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button onclick="editDevice(${realIndex})" class="w-6 h-6 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center shadow" title="SỬA"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                            <button onclick="duplicateDevice(${realIndex})" class="w-6 h-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center shadow" title="NHÂN BẢN"><i class="fa-solid fa-copy text-[10px]"></i></button>
+                                            <button onclick="deleteDevice(${realIndex})" class="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center shadow" title="XÓA"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-3 font-bold text-xs md:text-sm text-gray-300 w-[10%] whitespace-nowrap truncate">${costFormatted}</td>
+                                    <td class="py-3 px-3 font-semibold text-xs text-emerald-400 w-[9%] whitespace-nowrap truncate">${profitFormatted}</td>
+                                </tr>
+                            `;
+                        } else {
+                            return `
+                                <tr class="${zeroQtyClass} transition" onclick="handleRowClick(this)">
+                                    <td class="py-3 px-4 text-left w-[34%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                    <td class="py-3 px-3 font-semibold text-emerald-400 w-[18%] whitespace-nowrap truncate">${displayPart}</td>
+                                    <td class="py-3 px-3 font-black text-lg md:text-xl text-amber-400 w-[14%] whitespace-nowrap truncate" style="color: #fbbf24 !important;">${priceFormatted}</td>
+                                    <td class="py-3 px-3 font-bold text-base text-white w-[5%] whitespace-nowrap truncate" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
+                                    <td class="py-3 px-3 w-[11%] whitespace-nowrap truncate">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button onclick="editDevice(${realIndex})" class="w-6 h-6 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center shadow" title="SỬA"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                            <button onclick="duplicateDevice(${realIndex})" class="w-6 h-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center shadow" title="NHÂN BẢN"><i class="fa-solid fa-copy text-[10px]"></i></button>
+                                            <button onclick="deleteDevice(${realIndex})" class="w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center shadow" title="XÓA"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-3 font-bold text-xs md:text-sm text-gray-300 w-[10%] whitespace-nowrap truncate">${costFormatted}</td>
+                                    <td class="py-3 px-3 font-semibold text-xs text-emerald-400 w-[8%] whitespace-nowrap truncate" style="color: #34d399 !important;">${profitFormatted}</td>
+                                </tr>
+                            `;
+                        }
+                    }).join('');
+                }
+            }
+
+            if (mobileList) {
+                const mobileItemBorderClass = isOutStockTab ? 'border-b-0' : 'border-b border-gray-800/40';
+
+                if (isImportTab) {
+                    mobileList.innerHTML = expandedImportRows.map(row => {
+                        return `
+                            <div class="py-3 px-2 flex items-center justify-between gap-2 row-hover rounded-xl border-b border-gray-800/40">
+                                <div class="flex items-center gap-2 min-w-0 flex-1">
+                                    <input type="checkbox" value="${row.realIndex}" data-item="${row.item}" onchange="handleImportCheckboxChange()" class="import-checkbox w-4 h-4 rounded bg-gray-900 border-gray-700 text-emerald-600 focus:ring-0 shrink-0">
+                                    <div class="flex flex-col min-w-0 flex-1">
+                                        <div class="text-sm font-bold text-white">${row.supplier} - <span class="text-emerald-400">${row.category}</span></div>
+                                        <div class="text-xs text-amber-400 font-bold mt-0.5">${row.item}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <button onclick="editImportOrder(${row.realIndex})" class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xs"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteImportOrder(${row.realIndex})" class="w-8 h-8 bg-red-600 text-white rounded-lg flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    mobileList.innerHTML = filtered.map((d) => {
+                        const realIndex = devices.indexOf(d);
+                        const qtyVal = parseInt(d.qty) || 0;
+                        const priceFormatted = formatMoney(d.price);
+                        const formattedNameHtml = renderDeviceNames(d.name, d.color, true);
+                        const displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : d.part;
+
+                        const zeroQtyClassMobile = isOutStockTab ? 'row-hover px-2 rounded-xl' : (qtyVal === 0 ? 'yellow-pulse-row px-2 rounded-xl' : 'row-hover px-2 rounded-xl');
+
+                        if (isIphone || isOutStockTab) {
+                            return `
+                                <div class="py-2.5 flex items-center justify-between gap-2 ${mobileItemBorderClass} ${zeroQtyClassMobile}" onclick="handleRowClick(this)">
+                                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                                        ${formattedNameHtml}
+                                        <div class="flex items-center gap-1 text-xs text-gray-400 shrink-0">
+                                            <span class="text-emerald-400 font-semibold">${displayPart}</span>
+                                            ${d.type ? `<span class="text-indigo-300 font-bold">• ${d.type}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 shrink-0 ml-auto">
+                                        <div class="text-sm text-red-500 font-bold" ${!isOutStockTab ? `ondblclick="enableInlineQtyEdit(this, ${realIndex})"` : ''} data-qty="${d.qty}">${d.qty}</div>
+                                        <div class="text-right shrink-0">
+                                            <div class="text-base font-bold text-amber-400" style="color: #fbbf24 !important;">${priceFormatted}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div class="py-2.5 flex items-center justify-between gap-2 ${mobileItemBorderClass} ${zeroQtyClassMobile}" onclick="handleRowClick(this)">
+                                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                                        ${formattedNameHtml}
+                                    </div>
+                                    <div class="flex items-center gap-3 shrink-0 ml-auto">
+                                        <div class="text-sm text-red-500 font-bold" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</div>
+                                        <div class="text-right shrink-0">
+                                            <div class="text-base font-bold text-amber-400" style="color: #fbbf24 !important;">${priceFormatted}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }).join('');
+                }
+            }
+        }
+
+        function toggleSelectAllImport(masterCheckbox) {
+            const checkboxes = document.querySelectorAll('.import-checkbox');
+            checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+            handleImportCheckboxChange();
+        }
+
+        function handleImportCheckboxChange() {
+            const checkedBoxes = document.querySelectorAll('.import-checkbox:checked');
+            const btnDelDesktop = document.getElementById('btn-delete-selected');
+            const btnDelMobile = document.getElementById('btn-delete-selected-mobile');
+            if (checkedBoxes.length > 0) {
+                if(btnDelDesktop) btnDelDesktop.style.display = 'flex';
+                if(btnDelMobile) btnDelMobile.style.display = 'flex';
+            } else {
+                if(btnDelDesktop) btnDelDesktop.style.display = 'none';
+                if(btnDelMobile) btnDelMobile.style.display = 'none';
+            }
+        }
+
+        async function deleteSelectedImportOrders() {
+            const checkedBoxes = document.querySelectorAll('.import-checkbox:checked');
+            if (checkedBoxes.length === 0) return;
+
+            if (confirm(`BẠN CÓ CHẮC MUỐN XÓA ${checkedBoxes.length} MỤC ĐÃ CHỌN KHÔNG?`)) {
+                const ordersToUpdateMap = {}; 
+                const ordersToDeleteCompletely = new Set();
+
+                checkedBoxes.forEach(cb => {
+                    const orderIdx = parseInt(cb.value);
+                    const itemName = cb.getAttribute('data-item');
+                    if (!importOrders[orderIdx]) return;
+
+                    if (!ordersToUpdateMap[orderIdx]) {
+                        ordersToUpdateMap[orderIdx] = new Set(importOrders[orderIdx].items);
+                    }
+                    ordersToUpdateMap[orderIdx].delete(itemName);
+
+                    if (ordersToUpdateMap[orderIdx].size === 0) {
+                        ordersToDeleteCompletely.add(orderIdx);
+                    }
+                });
+
+                const newImportOrders = [];
+                importOrders.forEach((order, idx) => {
+                    if (ordersToDeleteCompletely.has(idx)) {
+                        return; 
+                    }
+                    if (ordersToUpdateMap[idx]) {
+                        order.items = Array.from(ordersToUpdateMap[idx]);
+                    }
+                    newImportOrders.push(order);
+                });
+
+                importOrders = newImportOrders;
+                await saveAllToCloud();
+                renderTable();
+            }
+        }
+
+        function handleSearchInput(input) {
+            const val = input.value;
+            const desktopInput = document.getElementById('search-input-desktop');
+            const mobileInput = document.getElementById('search-input-mobile');
+            const clearDesktop = document.getElementById('btn-clear-search-desktop');
+            const clearMobile = document.getElementById('btn-clear-search-mobile');
+
+            if (desktopInput && desktopInput.value !== val) desktopInput.value = val;
+            if (mobileInput && mobileInput.value !== val) mobileInput.value = val;
+
+            if (val) {
+                if (clearDesktop) clearDesktop.classList.remove('hidden');
+                if (clearMobile) clearMobile.classList.remove('hidden');
+            } else {
+                if (clearDesktop) clearDesktop.classList.add('hidden');
+                if (clearMobile) clearMobile.classList.add('hidden');
+            }
+            renderTable();
+        }
+
+        function clearSearch() {
+            const desktopInput = document.getElementById('search-input-desktop');
+            const mobileInput = document.getElementById('search-input-mobile');
+            if (desktopInput) desktopInput.value = '';
+            if (mobileInput) mobileInput.value = '';
+            const clearDesktop = document.getElementById('btn-clear-search-desktop');
+            const clearMobile = document.getElementById('btn-clear-search-mobile');
+            if (clearDesktop) clearDesktop.classList.add('hidden');
+            if (clearMobile) clearMobile.classList.add('hidden');
+            renderTable();
+        }
+
+        function openModal(isEdit = false) {
+            document.getElementById('device-modal').classList.remove('hidden');
+            document.getElementById('modal-title').innerText = isEdit ? 'SỬA LINH KIỆN' : 'THÊM LINH KIỆN MỚI';
+            
+            document.getElementById('brand-suggestions').innerHTML = brands.map(b => `<option value="${b}">`).join('');
+            document.getElementById('part-suggestions').innerHTML = categories.map(c => `<option value="${c}">`).join('');
+            document.getElementById('type-suggestions').innerHTML = types.map(t => `<option value="${t}">`).join('');
+            document.getElementById('name-suggestions').innerHTML = names.map(n => `<option value="${n}">`).join('');
+
+            if (!isEdit) {
+                document.getElementById('device-index').value = '-1';
+                document.getElementById('device-form').reset();
+                document.getElementById('device-brand').value = (currentBrand === 'HẾT HÀNG' || currentBrand === 'NHẬP HÀNG') ? 'IPHONE' : currentBrand;
+                document.getElementById('device-part').value = currentCategory;
+                document.getElementById('device-type').value = '';
+                document.getElementById('device-qty').value = '1';
+                document.getElementById('modal-profit-preview').innerText = '0';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('device-modal').classList.add('hidden');
+        }
+
+        function openImportModal(isEdit = false) {
+            document.getElementById('import-modal').classList.remove('hidden');
+            
+            document.getElementById('supplier-suggestions').innerHTML = suppliers.map(s => `<option value="${s}">`).join('');
+            document.getElementById('import-category-suggestions').innerHTML = categories.map(c => `<option value="${c}">`).join('');
+
+            if (!isEdit) {
+                document.getElementById('import-index').value = '-1';
+                document.getElementById('import-form').reset();
+                document.getElementById('import-modal-submit-text').innerText = 'Lưu phiếu nhập';
+                document.getElementById('import-items-container').innerHTML = `
+                    <div class="flex items-center gap-2 item-row">
+                        <input type="text" required placeholder="" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase item-name-input">
+                        <button type="button" onclick="addImportItemRow()" class="w-11 h-11 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xl rounded-xl transition flex items-center justify-center shadow-lg shrink-0" title="Thêm dòng linh kiện"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                `;
+            }
+        }
+
+        function addImportItemRow(value = '') {
+            const container = document.getElementById('import-items-container');
+            const row = document.createElement('div');
+            row.className = "flex items-center gap-2 item-row mt-2";
+            row.innerHTML = `
+                <input type="text" required value="${value}" placeholder="" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase item-name-input">
+                <button type="button" onclick="this.closest('.item-row').remove()" class="w-11 h-11 bg-red-600 hover:bg-red-500 text-white font-extrabold text-lg rounded-xl transition flex items-center justify-center shadow-lg shrink-0" title="Xóa dòng này"><i class="fa-solid fa-trash text-xs"></i></button>
+            `;
+            container.appendChild(row);
+        }
+
+        function closeImportModal() {
+            document.getElementById('import-modal').classList.add('hidden');
+        }
+
+        function handleImportEntity(entityType, action) {
+            let listRef, inputId, labelName, datalistId;
+            if (entityType === 'suppliers') {
+                listRef = suppliers; inputId = 'import-supplier'; labelName = 'NHÀ PHÂN PHỐI'; datalistId = 'supplier-suggestions';
+            } else if (entityType === 'categories') {
+                listRef = categories; inputId = 'import-category'; labelName = 'LOẠI LINH KIỆN'; datalistId = 'import-category-suggestions';
+            }
+
+            let val = document.getElementById(inputId).value.trim().toUpperCase();
+            if (val === 'BO SẠC') val = 'CÁP SẠC';
+
+            if (action === 'add') {
+                if (!val) { alert(`VUI LÒNG NHẬP TÊN ${labelName}!`); return; }
+                if (!listRef.includes(val)) {
+                    listRef.push(val);
+                    saveAllToCloud();
+                    document.getElementById(datalistId).innerHTML = listRef.map(item => `<option value="${item}">`).join('');
+                    alert(`ĐÃ THÊM ${labelName} MỚI THÀNH CÔNG!`);
+                } else {
+                    alert(`${labelName} NÀY ĐÃ TỒN TẠI!`);
+                }
+            } else if (action === 'edit') {
+                if (!val) { alert(`VUI LÒNG NHẬP HOẶC CHỌN ${labelName} CẦN SỬA!`); return; }
+                const oldVal = prompt(`NHẬP TÊN MỚI THAY THẾ CHO "${val}":`, val);
+                if (oldVal) {
+                    let newVal = oldVal.trim().toUpperCase();
+                    if (newVal === 'BO SẠC') newVal = 'CÁP SẠC';
+                    const idx = listRef.indexOf(val);
+                    if (idx !== -1) listRef[idx] = newVal;
+                    else listRef.push(newVal);
+
+                    importOrders.forEach(o => {
+                        if (entityType === 'suppliers' && o.supplier === val) o.supplier = newVal;
+                        if (entityType === 'categories') {
+                            let oCat = (o.category || '').toUpperCase();
+                            if (oCat === 'BO SẠC') oCat = 'CÁP SẠC';
+                            if (oCat === val) o.category = newVal;
+                        }
+                    });
+
+                    if (entityType === 'categories') {
+                        devices.forEach(d => {
+                            let dPart = (d.part || '').toUpperCase();
+                            if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                            if (dPart === val) d.part = newVal;
+                        });
+                    }
+
+                    saveAllToCloud();
+                    document.getElementById(inputId).value = newVal;
+                    document.getElementById(datalistId).innerHTML = listRef.map(item => `<option value="${item}">`).join('');
+                    initTabs();
+                    renderTable();
+                    alert(`ĐÃ CẬP NHẬT THÀNH CÔNG!`);
+                }
+            } else if (action === 'delete') {
+                if (!val) { alert(`VUI LÒNG NHẬP HOẶC CHỌN ${labelName} CẦN XÓA!`); return; }
+                if (confirm(`BẠN CÓ CHẮC MUỐN XÓA "${val}" KHỎI DANH SÁCH?`)) {
+                    const idx = listRef.indexOf(val);
+                    if (idx !== -1) listRef.splice(idx, 1);
+                    saveAllToCloud();
+                    document.getElementById(inputId).value = '';
+                    document.getElementById(datalistId).innerHTML = listRef.map(item => `<option value="${item}">`).join('');
+                    initTabs();
+                    renderTable();
+                    alert(`ĐÃ XÓA THÀNH CÔNG!`);
+                }
+            }
+        }
+
+        async function saveImportOrder(e) {
+            e.preventDefault();
+            const btnSubmit = document.getElementById('btn-save-import-submit');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.classList.add('opacity-50');
+            }
+
+            const index = parseInt(document.getElementById('import-index').value);
+            const supplier = document.getElementById('import-supplier').value.trim().toUpperCase();
+            let category = document.getElementById('import-category').value.trim().toUpperCase();
+            if (category === 'BO SẠC') category = 'CÁP SẠC';
+            
+            const itemInputs = document.querySelectorAll('.item-name-input');
+            const items = [];
+            itemInputs.forEach(input => {
+                const val = input.value.trim().toUpperCase();
+                if (val) items.push(val);
+            });
+
+            if (items.length === 0) {
+                alert('VUI LÒNG NHẬP ÍT NHẤT MỘT TÊN LINH KIỆN!');
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.classList.remove('opacity-50');
+                }
+                return;
+            }
+
+            if (!suppliers.includes(supplier)) suppliers.push(supplier);
+            if (!categories.includes(category)) categories.push(category);
+
+            const orderObj = { supplier, category, items };
+
+            if (index === -1) {
+                importOrders.unshift(orderObj);
+            } else {
+                importOrders[index] = orderObj;
+            }
+
+            await saveAllToCloud();
+            
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.classList.remove('opacity-50');
+            }
+            closeImportModal();
+            renderTable();
+        }
+
+        function editImportOrder(index) {
+            const o = importOrders[index];
+            document.getElementById('import-index').value = index;
+            openImportModal(true);
+
+            document.getElementById('import-supplier').value = o.supplier || '';
+            let oCat = (o.category || '').toUpperCase();
+            if (oCat === 'BO SẠC') oCat = 'CÁP SẠC';
+            document.getElementById('import-category').value = oCat;
+            
+            const container = document.getElementById('import-items-container');
+            container.innerHTML = '';
+            if (o.items && o.items.length > 0) {
+                o.items.forEach((it, idx) => {
+                    if (idx === 0) {
+                        container.innerHTML = `
+                            <div class="flex items-center gap-2 item-row">
+                                <input type="text" required value="${it}" placeholder="" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase item-name-input">
+                                <button type="button" onclick="addImportItemRow()" class="w-11 h-11 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xl rounded-xl transition flex items-center justify-center shadow-lg shrink-0" title="Thêm dòng linh kiện"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        `;
+                    } else {
+                        addImportItemRow(it);
+                    }
+                });
+            }
+            document.getElementById('import-modal-submit-text').innerText = 'Cập nhật phiếu';
+        }
+
+        function duplicateImportOrder(index) {
+            const o = importOrders[index];
+            document.getElementById('import-index').value = '-1';
+            openImportModal(false);
+
+            document.getElementById('import-supplier').value = o.supplier || '';
+            let oCat = (o.category || '').toUpperCase();
+            if (oCat === 'BO SẠC') oCat = 'CÁP SẠC';
+            document.getElementById('import-category').value = oCat;
+            
+            const container = document.getElementById('import-items-container');
+            container.innerHTML = '';
+            if (o.items && o.items.length > 0) {
+                o.items.forEach((it, idx) => {
+                    if (idx === 0) {
+                        container.innerHTML = `
+                            <div class="flex items-center gap-2 item-row">
+                                <input type="text" required value="${it}" placeholder="" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase item-name-input">
+                                <button type="button" onclick="addImportItemRow()" class="w-11 h-11 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xl rounded-xl transition flex items-center justify-center shadow-lg shrink-0" title="Thêm dòng linh kiện"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        `;
+                    } else {
+                        addImportItemRow(it);
+                    }
+                });
+            }
+            document.getElementById('import-modal-submit-text').innerText = 'Lưu phiếu nhập';
+        }
+
+        async function deleteImportOrder(index) {
+            if (confirm('BẠN CÓ CHẮC MUỐN XÓA PHIẾU NHẬP NÀY KHÔNG?')) {
+                importOrders.splice(index, 1);
+                await saveAllToCloud();
+                renderTable();
+            }
+        }
+
+        function onModalPartChange() {
+            const index = parseInt(document.getElementById('device-index').value);
+            if (index === -1) {
+                document.getElementById('device-type').value = '';
+            }
+        }
+
+        function adjustQty(amount) {
+            const qtyInput = document.getElementById('device-qty');
+            let val = parseInt(qtyInput.value) || 0;
+            val += amount;
+            if (val < 0) val = 0;
+            qtyInput.value = val;
+            updateModalStats();
+        }
+
+        function updateModalStats() {
+            const price = parseMoney(document.getElementById('device-price').value);
+            const cost = parseMoney(document.getElementById('device-cost').value);
+            const profit = price - cost;
+            document.getElementById('modal-profit-preview').innerText = formatMoney(profit);
+        }
+
+        function saveDevice(e) {
+            e.preventDefault();
+            const index = parseInt(document.getElementById('device-index').value);
+            const brand = document.getElementById('device-brand').value.trim().toUpperCase();
+            const name = document.getElementById('device-name').value.trim().toUpperCase();
+            let part = document.getElementById('device-part').value.trim().toUpperCase();
+            if (part === 'BO SẠC') part = 'CÁP SẠC';
+            const type = document.getElementById('device-type').value.trim().toUpperCase();
+            const price = document.getElementById('device-price').value.trim();
+            const cost = document.getElementById('device-cost').value.trim();
+            const qty = parseInt(document.getElementById('device-qty').value) || 0;
+            const color = document.getElementById('device-color').value.trim().toUpperCase();
+
+            if (!brands.includes(brand)) brands.push(brand);
+            if (!categories.includes(part)) categories.push(part);
+            if (type && !types.includes(type)) types.push(type);
+            if (name && !names.includes(name)) names.push(name);
+
+            const deviceObj = { brand, name, part, type, price, cost, qty, color };
+
+            if (index === -1) {
+                devices.unshift(deviceObj);
+            } else {
+                devices[index] = deviceObj;
+            }
+
+            saveAllToCloud();
+            closeModal();
+            currentBrand = brand;
+            currentCategory = part;
+            currentType = type;
+            initTabs();
+            renderTable();
+        }
+
+        function editDevice(index) {
+            const d = devices[index];
+            document.getElementById('device-index').value = index;
+            openModal(true);
+
+            document.getElementById('device-brand').value = d.brand || '';
+            document.getElementById('device-name').value = d.name || '';
+            let dPart = (d.part || '').toUpperCase();
+            if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+            document.getElementById('device-part').value = dPart;
+            document.getElementById('device-type').value = d.type || '';
+            document.getElementById('device-price').value = formatMoney(d.price);
+            document.getElementById('device-cost').value = formatMoney(d.cost);
+            document.getElementById('device-qty').value = d.qty !== undefined ? d.qty : 1;
+            document.getElementById('device-color').value = d.color || '';
+            updateModalStats();
+        }
+
+        function duplicateDevice(index) {
+            const d = devices[index];
+            document.getElementById('device-index').value = '-1';
+            openModal(false);
+
+            document.getElementById('modal-title').innerText = 'THÊM BẢN SAO LINH KIỆN';
+            document.getElementById('device-brand').value = d.brand || '';
+            document.getElementById('device-name').value = d.name || '';
+            let dPart = (d.part || '').toUpperCase();
+            if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+            document.getElementById('device-part').value = dPart;
+            document.getElementById('device-type').value = d.type || '';
+            document.getElementById('device-price').value = formatMoney(d.price);
+            document.getElementById('device-cost').value = formatMoney(d.cost);
+            document.getElementById('device-qty').value = d.qty !== undefined ? d.qty : 1;
+            document.getElementById('device-color').value = d.color || '';
+            updateModalStats();
+        }
+
+        function deleteDevice(index) {
+            if (confirm('BẠN CÓ CHẮC MUỐN XÓA MỤC NÀY KHÔNG?')) {
+                devices.splice(index, 1);
+                saveAllToCloud();
+                renderTable();
+            }
+        }
+
+        function handleEntity(entityType, action) {
+            let listRef, inputId, labelName;
+            if (entityType === 'brands') {
+                listRef = brands; inputId = 'device-brand'; labelName = 'HÃNG';
+            } else if (entityType === 'categories') {
+                listRef = categories; inputId = 'device-part'; labelName = 'LINH KIỆN';
+            } else if (entityType === 'types') {
+                listRef = types; inputId = 'device-type'; labelName = 'KIỂU';
+            } else if (entityType === 'names') {
+                listRef = names; inputId = 'device-name'; labelName = 'TÊN MÁY';
+            }
+
+            let val = document.getElementById(inputId).value.trim().toUpperCase();
+            if (val === 'BO SẠC') val = 'CÁP SẠC';
+
+            if (action === 'add') {
+                if (!val) { alert(`VUI LÒNG NHẬP TÊN ${labelName}!`); return; }
+                if (!listRef.includes(val)) {
+                    listRef.push(val);
+                    saveAllToCloud();
+                    alert(`ĐÃ THÊM ${labelName} MỚI THÀNH CÔNG!`);
+                    openModal(document.getElementById('device-index').value !== '-1');
+                } else {
+                    alert(`${labelName} NÀY ĐÃ TỒN TẠI!`);
+                }
+            } else if (action === 'edit') {
+                if (!val) { alert(`VUI LÒNG NHẬP HOẶC CHỌN ${labelName} CẦN SỬA!`); return; }
+                const oldVal = prompt(`NHẬP TÊN MỚI THAY THẾ CHO "${val}":`, val);
+                if (oldVal) {
+                    let newVal = oldVal.trim().toUpperCase();
+                    if (newVal === 'BO SẠC') newVal = 'CÁP SẠC';
+                    const idx = listRef.indexOf(val);
+                    if (idx !== -1) listRef[idx] = newVal;
+                    else listRef.push(newVal);
+
+                    devices.forEach(d => {
+                        if (entityType === 'brands' && d.brand === val) d.brand = newVal;
+                        if (entityType === 'categories') {
+                            let dPart = (d.part || '').toUpperCase();
+                            if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                            if (dPart === val) d.part = newVal;
+                        }
+                        if (entityType === 'types' && d.type === val) d.type = newVal;
+                        if (entityType === 'names' && d.name === val) d.name = newVal;
+                    });
+
+                    saveAllToCloud();
+                    document.getElementById(inputId).value = newVal;
+                    initTabs();
+                    renderTable();
+                    alert(`ĐÃ CẬP NHẬT THÀNH CÔNG!`);
+                }
+            } else if (action === 'delete') {
+                if (!val) { alert(`VUI LÒNG NHẬP HOẶC CHỌN ${labelName} CẦN XÓA!`); return; }
+                if (confirm(`BẠN CÓ CHẮC MUỐN XÓA "${val}" KHỎI DANH SÁCH GỢI Ý?`)) {
+                    const idx = listRef.indexOf(val);
+                    if (idx !== -1) listRef.splice(idx, 1);
+                    saveAllToCloud();
+                    document.getElementById(inputId).value = '';
+                    initTabs();
+                    renderTable();
+                    alert(`ĐÃ XÓA THÀNH CÔNG!`);
+                }
+            }
+        }
+
+        window.onload = function() {
+            syncFromCloud();
+        };
+    </script>
+</body>
+</html>
