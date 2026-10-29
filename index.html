@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261029_230222">
+  <link rel="stylesheet" href="css/style.css?v=20261029_234251">
   <script>
     // === CƠ CHẾ TỰ ĐỘNG PHÁ CACHE SAFARI & DI ĐỘNG 100% ===
-    var CURRENT_PAGE_VERSION = "20261029_230222";
+    var CURRENT_PAGE_VERSION = "20261029_234251";
     
     function checkAppVersion() {
       // Gọi version.json với tham số ngẫu nhiên thời gian thực để Safari KHÔNG THỂ lưu cache
@@ -603,7 +603,7 @@
           </div>
 
           <!-- Cột 2 (Giữa): CỤM NÚT SHORTCUTS (LINK TOOL, TESTPOINT, ROM, TÀI KHOẢN, GHI CHÚ, CÔNG NỢ) - CĂN CHÍNH GIỮA -->
-          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+          <div class="sw-shortcuts-container" style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
             <div class="sw-pill-btn sw-btn-black" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
               <span class="sw-link-text" onclick="openSwUrl('tool')">LINK TOOL</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('tool', event)" title="Sao chép link Tool">
@@ -814,12 +814,12 @@
         <!-- KHUNG 2: MÀN HÌNH QUẢN LÝ CÔNG NỢ (ĐỒNG BỘ VỚI MENU CÔNG NỢ TAB PHẦN MỀM) -->
         <div id="swDebtView" style="display: none;">
           <!-- THANH CÔNG CỤ & THỐNG KÊ NỢ PHẦN MỀM -->
-          <div
+          <div class="sw-debt-toolbar-row"
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 10px;">
             <!-- BÊN TRÁI: TÌM KIẾM, BỘ LỌC MỨC NỢ, NÚT THU NỢ -->
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">TÌM KIẾM:</span>
+            <div class="sw-debt-toolbar-left" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <div class="sw-debt-search-box-row" style="display: flex; align-items: center; gap: 6px;">
+                <span class="sw-debt-search-label" style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">TÌM KIẾM:</span>
                 <input type="text" id="swDebtSearchInput" class="search-sales-input" placeholder="🔍 Tên người nợ..."
                   style="width: 340px;" oninput="renderSoftwareDebtTable()">
               </div>
@@ -839,13 +839,13 @@
             </div>
 
             <!-- BÊN PHẢI (TRÊN CÙNG BÊN PHẢI): KHOẢN NỢ & TỔNG NỢ -->
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <div
+            <div class="sw-debt-stats-group" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <div class="sw-debt-stat-box"
                 style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 14px; display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-sub);">Khoản nợ:</span>
                 <span id="swDebtCountVal" style="font-size: 0.95rem; font-weight: 900; color: #f59e0b;">0</span>
               </div>
-              <div
+              <div class="sw-debt-stat-box"
                 style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 14px; display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-sub);">Tổng số nợ:</span>
                 <span id="swDebtTotalAmountVal" style="font-size: 1.05rem; font-weight: 900; color: #f87171;">0</span>
@@ -1139,15 +1139,21 @@
           </div>
 
           <!-- GÓC PHẢI HÀNG 1: Ô 168 MÁY (NỀN ĐEN) & NÚT MỞ ẨN NHẬP XUẤT -->
-          <div style="display: inline-flex; align-items: center; gap: 8px;">
+          <div class="phone-stats-wrapper" style="display: inline-flex; align-items: center; gap: 8px;">
             <!-- Ô 168 MÁY - NỀN ĐEN -->
             <div id="phoneInventoryStatsBadge"
               style="background: #000000; border: 1.5px solid #1e293b; border-radius: 8px; padding: 6px 16px; display: inline-flex; align-items: center; gap: 8px; color: #ffffff; font-weight: 900; font-size: 0.95rem; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); white-space: nowrap; flex-shrink: 0;"
               title="Số lượng máy & Tổng tiền máy trong kho">
               <span id="phoneInventoryCountText">0 Máy</span>
-              <span style="opacity: 0.8;">·</span>
+              <span style="opacity: 0.8;">•</span>
               <span id="phoneInventoryTotalValText">0</span>
             </div>
+
+            <!-- NÚT BÁN MÁY NGOÀI KHO (HIỂN THỊ CÙNG HÀNG VỚI 168 MÁY TRÊN MOBILE) -->
+            <button type="button" class="btn-sell-external btn-sell-external-mobile" onclick="openExternalSellPhoneModal()"
+              style="display: none; height: 38px; box-sizing: border-box; background: #ec4899 !important; color: #ffffff !important; border: 1px solid #f472b6 !important; border-radius: 8px; padding: 0 14px; font-weight: 900; font-size: 0.88rem; letter-spacing: 0.5px; cursor: pointer; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.45); white-space: nowrap;">
+              BÁN MÁY NGOÀI KHO
+            </button>
 
             <!-- NÚT MỞ ẨN NHẬP XUẤT -->
             <button type="button" id="btnPhoneExcelToggle" class="btn-excel-toggle-custom"
@@ -1203,8 +1209,8 @@
             </select>
           </div>
 
-          <!-- 3. NÚT BÁN MÁY NGOÀI KHO (NẰM NGAY SAU GIÁ BÁN) -->
-          <button type="button" class="btn-sell-external" onclick="openExternalSellPhoneModal()"
+          <!-- 3. NÚT BÁN MÁY NGOÀI KHO (NẰM NGAY SAU GIÁ BÁN - DÀNH CHO DESKTOP) -->
+          <button type="button" class="btn-sell-external btn-sell-external-desktop" onclick="openExternalSellPhoneModal()"
             style="height: 38px; box-sizing: border-box; background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important; color: #ffffff !important; border: 1px solid #f472b6 !important; border-radius: 8px; padding: 0 16px; font-weight: 900; font-size: 0.88rem; letter-spacing: 0.5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.45); white-space: nowrap;">
             BÁN MÁY NGOÀI KHO
           </button>
@@ -1649,6 +1655,11 @@
         </div>
 
         <div class="sales-table-container">
+          <!-- TIÊU ĐỀ HÃNG / TÊN MÁY TRÊN MOBILE -->
+          <div class="baohanh-list-header-mobile" style="display: none;">
+            <span style="color: #f59e0b; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.5px;">HÃNG / TÊN MÁY</span>
+          </div>
+
           <table class="sales-table">
             <thead>
               <tr>
@@ -1665,13 +1676,17 @@
             <tbody id="soldPhoneTableBody">
             </tbody>
           </table>
+
+          <!-- DANH SÁCH THẺ MÁY ĐÃ BÁN TRÊN MOBILE (GIỐNG 100% BÁN MÁY) -->
+          <div class="sold-phone-cards-mobile phone-grid" id="soldPhoneCardsContainer" style="display: none;">
+          </div>
         </div>
       </div>
 
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261029_230222" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261029_234251" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -2449,7 +2464,7 @@
             <label class="form-ticket-label">Số lượng</label>
             <div class="qty-box" style="width: 100%;">
               <button type="button" class="qty-btn" onclick="adjustQty(-1)">-</button>
-              <input type="text" class="qty-input" id="tQty" value="1">
+              <input type="text" class="qty-input" id="tQty" value="1" inputmode="numeric" pattern="[0-9]*">
               <button type="button" class="qty-btn" onclick="adjustQty(1)">+</button>
             </div>
           </div>
@@ -2461,6 +2476,7 @@
             <label class="form-ticket-label">Giá bán</label>
             <div class="input-with-actions">
               <input type="text" list="priceOutPresets" class="ticket-input" id="tPriceOut" placeholder=""
+                inputmode="numeric" pattern="[0-9]*"
                 oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)">
               <datalist id="priceOutPresets">
                 <option value="10">
@@ -2480,6 +2496,7 @@
             <label class="form-ticket-label">Giá nhập</label>
             <div class="input-with-actions">
               <input type="text" list="priceInPresets" class="ticket-input" id="tPriceIn" placeholder=""
+                inputmode="numeric" pattern="[0-9]*"
                 oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)">
               <datalist id="priceInPresets">
                 <option value="5">
@@ -2806,13 +2823,13 @@
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá Nhập</label>
-            <input type="text" class="ticket-input" id="mPriceIn"
+            <input type="text" class="ticket-input" id="mPriceIn" inputmode="numeric" pattern="[0-9]*"
               oninput="formatCurrencyInput(this); calcModalProfit();">
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá Bán *</label>
-            <input type="text" class="ticket-input" id="mPriceOut"
+            <input type="text" class="ticket-input" id="mPriceOut" inputmode="numeric" pattern="[0-9]*"
               oninput="formatCurrencyInput(this); calcModalProfit();" required>
           </div>
         </div>
@@ -5171,10 +5188,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261029_230222"></script>
+  <script src="js/seed_data.js?v=20261029_234251"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261029_230222"></script>
+  <script src="js/main.js?v=20261029_234251"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

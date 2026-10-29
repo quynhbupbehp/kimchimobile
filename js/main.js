@@ -1064,19 +1064,27 @@
     function positionUniversalSmartDropdown(input, dropdownEl) {
       if (!input || !dropdownEl) return;
       const rect = input.getBoundingClientRect();
-      const dropdownHeight = Math.min(dropdownEl.offsetHeight || 220, 250);
-      const spaceBelow = window.innerHeight - rect.bottom;
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
 
-      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-        dropdownEl.style.top = `${Math.max(10, rect.top - dropdownHeight - 4)}px`;
+      if (spaceBelow < 200 && spaceAbove > spaceBelow) {
+        // Nằm PHÍA TRÊN ô nhập (cách đỉnh ô nhập 6px, tuyệt đối không che lấp chữ đang gõ)
+        dropdownEl.style.top = 'auto';
+        dropdownEl.style.bottom = `${viewportHeight - rect.top + 6}px`;
+        dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceAbove - 16))}px`;
       } else {
-        dropdownEl.style.top = `${rect.bottom + 4}px`;
+        // Nằm PHÍA DƯỚI ô nhập (cách đáy ô nhập 6px, tuyệt đối không che lấp chữ đang gõ)
+        dropdownEl.style.bottom = 'auto';
+        dropdownEl.style.top = `${rect.bottom + 6}px`;
+        dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceBelow - 16))}px`;
       }
 
       dropdownEl.style.left = `${Math.max(10, rect.left)}px`;
       dropdownEl.style.minWidth = `${Math.max(rect.width, 140)}px`;
-      dropdownEl.style.maxWidth = `${Math.max(rect.width, 320)}px`;
+      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 20, Math.max(rect.width, 320))}px`;
+      dropdownEl.style.overflowY = 'auto';
+      dropdownEl.style.zIndex = '999999';
     }
 
     // Gắn sự kiện toàn cục cho toàn bộ trang web
@@ -8507,7 +8515,7 @@
 
       const countEl = document.getElementById('soldPhoneCountText');
       if (countEl) {
-        countEl.innerText = `Máy Đã Bán : ${filtered.length}`;
+        countEl.innerText = `Đã Bán : ${filtered.length}`;
       }
 
       const dtEl = document.getElementById('soldPhoneDoanhThuVal');
@@ -8521,9 +8529,71 @@
         pfLabel.innerText = soldPhoneViewMode === 'month' ? 'Lãi Tháng:' : (soldPhoneViewMode === 'year' ? 'Lãi Năm:' : (soldPhoneViewMode === 'all' ? 'Tổng Lãi:' : 'Lãi Ngày:'));
       }
 
+      const mobileCardsContainer = document.getElementById('soldPhoneCardsContainer');
+
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-sub);">Không tìm thấy máy phù hợp</td></tr>`;
+        if (mobileCardsContainer) {
+          mobileCardsContainer.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-sub);">Không tìm thấy máy phù hợp</div>`;
+        }
         return;
+      }
+
+      if (mobileCardsContainer) {
+        mobileCardsContainer.innerHTML = filtered.map(p => {
+          let brandDisplay = formatBrandDeviceName(p.brand);
+          let pName = formatBrandDeviceName(formatStorageDisplay(p.name || ''));
+          let brandAndName = '';
+          if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️' || !brandDisplay) {
+            brandAndName = pName;
+          } else {
+            brandAndName = `${brandDisplay} - ${pName}`;
+          }
+          brandAndName = formatBrandDeviceName(brandAndName);
+
+          let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
+          let storageWithGB = rawStorage;
+          if (storageWithGB) {
+            if (!/gb|tb/i.test(storageWithGB)) {
+              storageWithGB += 'GB';
+            } else {
+              storageWithGB = storageWithGB.toUpperCase();
+            }
+          }
+
+          let displayPinStatus = p.pinStatus || 'Pin Zin';
+          let displayPinPct = formatPinByBrand(p.pin, p.brand, p.name);
+          let displayOrigin = p.origin || 'VN/A';
+          let displayCondition = p.condition || 'Zin Đẹp 99%';
+          let formattedPrice = formatPriceStr(p.price || p.total) || '0';
+
+          return `
+            <div class="phone-card sold-phone-card" ondblclick="viewPhone('${p.id}', true)" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}', true); } this._lastTap=now;" title="Nháy 2 lần để xem chi tiết máy">
+              <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
+              <div class="phone-card-header">
+                <div class="phone-header-left">
+                  <span class="phone-card-name">${escapeHtml(brandAndName)}</span>
+                  ${getColorDotHtml(p.color, 20)}
+                  ${storageWithGB ? `<span class="phone-card-storage">${escapeHtml(storageWithGB)}</span>` : ''}
+                </div>
+                <div class="phone-header-center">
+                  <span class="phone-card-price">${isPhonePricesHidden ? '*****' : formattedPrice}</span>
+                </div>
+                <div class="phone-header-right">
+                  <span class="phone-card-imei" style="border: 1px solid #ef4444; color: #ffffff;">${escapeHtml(p.imei)}</span>
+                </div>
+              </div>
+
+              <!-- HÀNG 2: 4 THÔNG SỐ CÁCH NHAU BẰNG VẠCH DỌC -->
+              <div class="phone-card-specs">
+                <div class="phone-spec-col col-origin">${escapeHtml(displayOrigin)}</div>
+                <div class="phone-spec-col col-condition">${escapeHtml(displayCondition)}</div>
+                <div class="phone-spec-col col-pin-status">${escapeHtml(displayPinStatus)}</div>
+                <div class="phone-spec-col col-pin-pct">${escapeHtml(displayPinPct)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
       }
 
       tbody.innerHTML = filtered.map(p => {
@@ -8564,7 +8634,7 @@
         let dateDisplay = p.dateTime || p.soldDateTime || (p.soldDate ? `${getCurrentTimeStr()} - ${p.soldDate}` : p.date || getCurrentDateStr());
 
         return `
-          <tr>
+          <tr ondblclick="viewPhone('${p.id}', true)" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết máy">
             <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle;">
               ${nameHtml}
             </td>
