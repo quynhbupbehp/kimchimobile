@@ -1,20 +1,27 @@
 ---
 name: plan-before-edit
 description: >-
-  Kỹ năng tự động hóa 100%, giới hạn hỏi quyền tối đa 2 lần trong mỗi yêu cầu, mặc định tự động đồng ý (auto-agree) theo giải pháp tối ưu của AI.
+  Kỹ năng tự động hóa 100%, không hỏi bất kỳ quyền gì (auto-agree 100%), làm y chang ảnh mẫu, đúng chuẩn nền tảng Mobile/Web.
 ---
 
-# Kỹ Năng: Tự Động Làm Ngay - Giới Hạn Hỏi Quyền Tối Đa 2 Lần (Auto-Agree)
+# Kỹ Năng: Tự Động Hóa 100% - Tuyệt Đối Làm Y Chang Ảnh Mẫu
 
-Kỹ năng này bắt buộc agent làm việc tốc độ cao, dứt khoát, tự động hóa hoàn toàn.
+Kỹ năng này bắt buộc agent làm việc tốc độ cao, dứt khoát, tự động hóa hoàn toàn và chính xác tuyệt đối theo mẫu thiết kế.
 
-## 1. Giới Hạn Hỏi Quyền & Auto-Agree
-1. Trong mỗi yêu cầu / câu hỏi của người dùng, chỉ được phép hỏi quyền hoặc xin ý kiến **TỐI ĐA 2 LẦN**.
-2. Mặc định là người dùng **TỰ ĐỘNG ĐỒNG Ý (AUTO-AGREE)** theo phương án tối ưu nhất của bạn (AI).
-3. Sau tối đa 2 lần, tự động chốt giải pháp tốt nhất và thực thi ngay lập tức.
-4. Tuyệt đối không bắt bấm duyệt kế hoạch ("Proceed") rườm rà, không khảo sát ý kiến giao diện không cần thiết.
+## 1. Không Hỏi Quyền & Auto-Agree 100%
+1. Tuyệt đối không hỏi xin bất kỳ quyền gì hay xác nhận gì từ người dùng.
+2. Mặc định là người dùng **TỰ ĐỘNG ĐỒNG Ý (AUTO-AGREE 100%)** theo phương án tối ưu nhất của bạn (AI).
+3. Làm ngay và luôn, không bắt bấm duyệt kế hoạch ("Proceed") rườm rà.
+4. Những điểm chưa vừa ý, người dùng sẽ tự nói để sửa lại sau.
 
-## 2. Thực Thi & Báo Cáo
-1. Khảo sát nhanh mã nguồn liên quan.
-2. Thực hiện sửa đổi ngay bằng các công cụ (`replace_file_content`, `multi_replace_file_content`, `write_to_file`, `run_command`).
+## 2. Tuyệt Đối Làm Y Chang Ảnh Mẫu
+1. Khi có ảnh gửi kèm: Bắt buộc làm **Y CHANG 100%** theo ảnh (màu sắc, tỷ lệ, font chữ, icon, vị trí, khoảng cách padding/margin).
+2. Tuyệt đối không tự ý thêm bớt hoặc sáng tạo khác ảnh.
+3. Phân biệt rõ ngữ cảnh thiết bị từ ảnh:
+   - **Ảnh Mobile**: Chỉnh chuẩn xác trên giao diện Mobile (`@media (max-width: 767px)`).
+   - **Ảnh Web / Desktop**: Chỉnh chuẩn xác trên giao diện Web (`@media (min-width: 768px)` trở lên).
+
+## 3. Thực Thi & Báo Cáo
+1. Tự khảo sát mã nguồn và sửa đổi ngay bằng các công cụ (`replace_file_content`, `multi_replace_file_content`, `write_to_file`, `run_command`).
+2. Tự động kiểm tra / triển khai.
 3. Báo cáo kết quả ngắn gọn, súc tích kèm link file clickable `[filename](file:///...)`.
