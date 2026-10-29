@@ -1059,32 +1059,50 @@
       currentUniversalInput = input;
 
       positionUniversalSmartDropdown(input, dropdownEl);
+
+      // Định vị lại sau khi bàn phím ảo đẩy viewport trên điện thoại (iOS / Android)
+      setTimeout(() => {
+        if (activeUniversalDropdown === dropdownEl && currentUniversalInput === input) {
+          positionUniversalSmartDropdown(input, dropdownEl);
+        }
+      }, 100);
+      setTimeout(() => {
+        if (activeUniversalDropdown === dropdownEl && currentUniversalInput === input) {
+          positionUniversalSmartDropdown(input, dropdownEl);
+        }
+      }, 250);
     }
 
     function positionUniversalSmartDropdown(input, dropdownEl) {
       if (!input || !dropdownEl) return;
-      const rect = input.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
+      const targetEl = input.closest('.input-with-actions') || input;
+      const rect = targetEl.getBoundingClientRect();
+      const viewportHeight = (window.visualViewport && window.visualViewport.height) 
+        ? window.visualViewport.height 
+        : window.innerHeight;
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
 
-      if (spaceBelow < 200 && spaceAbove > spaceBelow) {
-        // Nằm PHÍA TRÊN ô nhập (cách đỉnh ô nhập 6px, tuyệt đối không che lấp chữ đang gõ)
+      // Khoảng cách tụt xuống dưới ô nhập (cho tụt xuống thêm theo yêu cầu, đảm bảo không che chữ và viền ô nhập)
+      const dropDownOffset = 26;
+
+      if (spaceBelow < 130 && spaceAbove > spaceBelow) {
+        // Nằm PHÍA TRÊN ô nhập
         dropdownEl.style.top = 'auto';
-        dropdownEl.style.bottom = `${viewportHeight - rect.top + 6}px`;
+        dropdownEl.style.bottom = `${viewportHeight - rect.top + 8}px`;
         dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceAbove - 16))}px`;
       } else {
-        // Nằm PHÍA DƯỚI ô nhập (cách đáy ô nhập 6px, tuyệt đối không che lấp chữ đang gõ)
+        // Nằm PHÍA DƯỚI ô nhập (tụt xuống dưới ô nhập 26px)
         dropdownEl.style.bottom = 'auto';
-        dropdownEl.style.top = `${rect.bottom + 6}px`;
-        dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceBelow - 16))}px`;
+        dropdownEl.style.top = `${rect.bottom + dropDownOffset}px`;
+        dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceBelow - dropDownOffset - 10))}px`;
       }
 
       dropdownEl.style.left = `${Math.max(10, rect.left)}px`;
       dropdownEl.style.minWidth = `${Math.max(rect.width, 140)}px`;
       dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 20, Math.max(rect.width, 320))}px`;
       dropdownEl.style.overflowY = 'auto';
-      dropdownEl.style.zIndex = '999999';
+      dropdownEl.style.zIndex = '999999999';
     }
 
     // Gắn sự kiện toàn cục cho toàn bộ trang web
@@ -1144,6 +1162,19 @@
         positionUniversalSmartDropdown(currentUniversalInput, activeUniversalDropdown);
       }
     });
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', function() {
+        if (activeUniversalDropdown && currentUniversalInput) {
+          positionUniversalSmartDropdown(currentUniversalInput, activeUniversalDropdown);
+        }
+      });
+      window.visualViewport.addEventListener('scroll', function() {
+        if (activeUniversalDropdown && currentUniversalInput) {
+          positionUniversalSmartDropdown(currentUniversalInput, activeUniversalDropdown);
+        }
+      });
+    }
 
     function editItemNameOption(event) {
       if (event) { event.preventDefault(); event.stopPropagation(); }
