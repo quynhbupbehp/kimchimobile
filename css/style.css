@@ -6088,6 +6088,30 @@
         box-shadow: 16px 0 50px rgba(0, 0, 0, 0.95) !important;
       }
 
+      /* ẨN HOÀN TOÀN MENU SỬA CHỮA, CÔNG NỢ, MAIN - XÁC TRÊN GIAO DIỆN MOBILE */
+      aside.sidebar .main-nav-vertical button[onclick*="'suachua'"],
+      aside.sidebar .main-nav-vertical button[onclick*="'congno'"],
+      aside.sidebar .main-nav-vertical button[onclick*="'quynhbupbe'"],
+      aside.sidebar .main-nav-vertical li:has(button[onclick*="'suachua'"]),
+      aside.sidebar .main-nav-vertical li:has(button[onclick*="'congno'"]),
+      aside.sidebar .main-nav-vertical li:has(button[onclick*="'quynhbupbe'"]) {
+        display: none !important;
+      }
+
+      /* Tối ưu hóa vuốt chạm mượt mà tuyệt đối */
+      button, a, input, select, textarea, .mobile-tab-pill, .view-mode-btn, .action-btn-icon {
+        touch-action: manipulation !important;
+        -webkit-tap-highlight-color: transparent !important;
+      }
+      .mobile-quick-nav {
+        scroll-snap-type: x proximity;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch !important;
+      }
+      .mobile-tab-pill {
+        scroll-snap-align: center;
+      }
+
       /* Nút đóng Sidebar Drawer ✕ */
       .sidebar-close-btn {
         display: flex !important;
