@@ -1352,7 +1352,17 @@
       localStorage.setItem('KIMCHI_SALES_CLEAR_OCT25', 'done');
     }
 
-    let salesDatabase = JSON.parse(localStorage.getItem('KIMCHI_SALES_DB')) || [];
+    let salesDatabase = [];
+    const salesRaw = localStorage.getItem('KIMCHI_SALES_DB');
+    const isSalesCleared = localStorage.getItem('KIMCHI_SALES_CLEARED') === 'true';
+    if (isSalesCleared) {
+      salesDatabase = [];
+    } else if (salesRaw !== null) {
+      try { salesDatabase = JSON.parse(salesRaw) || []; } catch(e) { salesDatabase = []; }
+    } else {
+      salesDatabase = [];
+      localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify([]));
+    }
 
     function clearAllSalesData() {
       let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Bán Hàng!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
@@ -1361,8 +1371,9 @@
       }
       
       let clean = confirmText.trim().toLowerCase();
-      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa') {
+      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
         salesDatabase = [];
+        localStorage.setItem('KIMCHI_SALES_CLEARED', 'true');
         saveSalesStorage();
         renderSalesTable(salesDatabase);
         alert('Đã xóa sạch toàn bộ dữ liệu Bán Hàng thành công!');
@@ -1397,69 +1408,76 @@
     });
     localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase));
 
-    let bangaDatabase = JSON.parse(localStorage.getItem('KIMCHI_BANGA_DB')) || [];
-    if ((!Array.isArray(bangaDatabase) || bangaDatabase.length < 5) && Array.isArray(window.SEED_BANGA_DATA) && window.SEED_BANGA_DATA.length > 0) {
-      bangaDatabase = JSON.parse(JSON.stringify(window.SEED_BANGA_DATA));
-    } else if (!Array.isArray(bangaDatabase) || bangaDatabase.length === 0) {
-      bangaDatabase = [
-        { id: 1, name: "Gà Tre Giống", accessory: "Cám 1kg", total: "350", priceIn: "250", profit: "100", method: "Tiền mặt", dateTime: "10:15 - 23/10/2026", customer: "Khách lẻ" }
-      ];
+    let bangaDatabase = [];
+    const bangaRaw = localStorage.getItem('KIMCHI_BANGA_DB');
+    const isBangaCleared = localStorage.getItem('KIMCHI_BANGA_CLEARED') === 'true';
+    if (isBangaCleared) {
+      bangaDatabase = [];
+    } else if (bangaRaw !== null) {
+      try { bangaDatabase = JSON.parse(bangaRaw) || []; } catch(e) { bangaDatabase = []; }
+    } else {
+      if (Array.isArray(window.SEED_BANGA_DATA) && window.SEED_BANGA_DATA.length > 0) {
+        bangaDatabase = JSON.parse(JSON.stringify(window.SEED_BANGA_DATA));
+      } else {
+        bangaDatabase = [];
+      }
+      localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
     }
     
     // Tự động khôi phục và đồng bộ chuẩn xác 100% dữ liệu Bán Gà từ SEED_BANGA_DATA và sửa các giá trị bị chia sai
-    const nonMachineRegexGlobal = /bán thẻ|thẻ nhớ|nạp|cầm đồ|thay lưng|sửa|míc|mic|ép kính|sim|bán màn|đớp|viettel|huy linh|rút tiền|bộ sạc|dây sạc|củ sạc|tai nghe|cường lực|ốp lưng|dán|pin|vỏ|camera|loa|hòa/i;
-    let seedMap = new Map();
-    if (Array.isArray(window.SEED_BANGA_DATA)) {
-      window.SEED_BANGA_DATA.forEach(s => {
-        if (s) {
-          let key = (s.dateTime || '').trim() + '___' + (s.name || '').toLowerCase().trim();
-          seedMap.set(key, s);
-          if (s.id) seedMap.set(String(s.id), s);
+    if (!isBangaCleared && bangaDatabase.length > 0) {
+      const nonMachineRegexGlobal = /bán thẻ|thẻ nhớ|nạp|cầm đồ|thay lưng|sửa|míc|mic|ép kính|sim|bán màn|đớp|viettel|huy linh|rút tiền|bộ sạc|dây sạc|củ sạc|tai nghe|cường lực|ốp lưng|dán|pin|vỏ|camera|loa|hòa/i;
+      let seedMap = new Map();
+      if (Array.isArray(window.SEED_BANGA_DATA)) {
+        window.SEED_BANGA_DATA.forEach(s => {
+          if (s) {
+            let key = (s.dateTime || '').trim() + '___' + (s.name || '').toLowerCase().trim();
+            seedMap.set(key, s);
+            if (s.id) seedMap.set(String(s.id), s);
+          }
+        });
+      }
+
+      bangaDatabase.forEach(item => {
+        if (!item) return;
+        let key = (item.dateTime || '').trim() + '___' + (item.name || '').toLowerCase().trim();
+        let seed = seedMap.get(key) || (item.id ? seedMap.get(String(item.id)) : null);
+        if (seed) {
+          item.total = seed.total;
+          item.priceIn = seed.priceIn;
+          item.profit = seed.profit;
+          item.accessory = seed.accessory || item.accessory;
+          if (seed.customer && item.customer === 'Khách lẻ') item.customer = seed.customer;
+        } else {
+          sanitizeRecordPrice(item);
+          let tNum = parsePriceNum(item.total);
+          let piNum = parsePriceNum(item.priceIn);
+          if (tNum > 0 && tNum < 50 && piNum > 100) {
+            tNum = tNum * 1000;
+            item.total = formatPriceStr(tNum);
+            item.profit = formatPriceStr(tNum - piNum);
+          }
+        }
+
+        if (item && item.name) {
+          if (nonMachineRegexGlobal.test(item.name)) {
+            item.accessory = 'Khác';
+            item.brand = '';
+          } else if (/^(?:oppo\s*a78|gen\s*\d+|se\s*-\s*2020|m7\s*pro\s*5g|\d{1,2}\s*(?:pro|max|plus)?|a\d+|xs|x|m\d+|c\d+|note\s*\d+)/i.test(item.name.trim())) {
+            item.accessory = 'Bán Máy';
+          }
         }
       });
+      localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
     }
 
-    bangaDatabase.forEach(item => {
-      if (!item) return;
-      let key = (item.dateTime || '').trim() + '___' + (item.name || '').toLowerCase().trim();
-      let seed = seedMap.get(key) || (item.id ? seedMap.get(String(item.id)) : null);
-      if (seed) {
-        item.total = seed.total;
-        item.priceIn = seed.priceIn;
-        item.profit = seed.profit;
-        item.accessory = seed.accessory || item.accessory;
-        if (seed.customer && item.customer === 'Khách lẻ') item.customer = seed.customer;
-      } else {
-        sanitizeRecordPrice(item);
-        let tNum = parsePriceNum(item.total);
-        let piNum = parsePriceNum(item.priceIn);
-        if (tNum > 0 && tNum < 50 && piNum > 100) {
-          tNum = tNum * 1000;
-          item.total = formatPriceStr(tNum);
-          item.profit = formatPriceStr(tNum - piNum);
-        }
-      }
-
-      if (item && item.name) {
-        if (nonMachineRegexGlobal.test(item.name)) {
-          item.accessory = 'Khác';
-          item.brand = '';
-        } else if (/^(?:oppo\s*a78|gen\s*\d+|se\s*-\s*2020|m7\s*pro\s*5g|\d{1,2}\s*(?:pro|max|plus)?|a\d+|xs|x|m\d+|c\d+|note\s*\d+)/i.test(item.name.trim())) {
-          item.accessory = 'Bán Máy';
-        }
-      }
-    });
-    localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
-
     function saveSalesStorage() {
+      if (salesDatabase.length > 0) localStorage.removeItem('KIMCHI_SALES_CLEARED');
       localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase));
     }
 
     function saveBangaStorage() {
-      localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
-    }
-
-    function saveBangaStorage() {
+      if (bangaDatabase.length > 0) localStorage.removeItem('KIMCHI_BANGA_CLEARED');
       localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
     }
 
@@ -3998,8 +4016,9 @@
       let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Phần Mềm!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
-      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa') {
+      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
         softwareDatabase = [];
+        localStorage.setItem('KIMCHI_PHANMEM_CLEARED', 'true');
         saveSoftwareStorage();
         if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
         alert('Đã xóa sạch toàn bộ dữ liệu Phần Mềm thành công!');
@@ -4203,8 +4222,9 @@
       let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Sửa Chữa!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
-      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa') {
+      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
         repairDatabase = [];
+        localStorage.setItem('KIMCHI_REPAIR_CLEARED', 'true');
         saveRepairDb();
         if (typeof renderRepairTable === 'function') renderRepairTable();
         alert('Đã xóa sạch toàn bộ dữ liệu Sửa Chữa thành công!');
@@ -4423,8 +4443,9 @@
       let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Máy trong kho Bán Máy!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
-      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa') {
+      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
         phoneDatabase = [];
+        localStorage.setItem('KIMCHI_PHONE_CLEARED', 'true');
         savePhoneStorage();
         if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         alert('Đã xóa sạch toàn bộ máy trong kho Bán Máy thành công!');
@@ -4872,8 +4893,9 @@
       let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Bán Gà!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
-      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa') {
+      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
         bangaDatabase = [];
+        localStorage.setItem('KIMCHI_BANGA_CLEARED', 'true');
         saveBangaStorage();
         if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
         alert('Đã xóa sạch toàn bộ dữ liệu Bán Gà thành công!');
@@ -5116,10 +5138,11 @@
       let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Máy đã bán / Bảo Hành!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
-      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa') {
+      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
         soldPhoneDatabase = [];
         try {
-          localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+          localStorage.setItem('KIMCHI_SOLD_PHONE_CLEARED', 'true');
+          saveSoldPhoneStorage();
         } catch (e) {}
         if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         alert('Đã xóa sạch toàn bộ dữ liệu Bảo Hành thành công!');
@@ -5725,9 +5748,15 @@
       renderBangaTable(bangaDatabase);
     }
 
-    let phoneDatabase = JSON.parse(localStorage.getItem('KIMCHI_PHONE_DB'));
-    if (!phoneDatabase || phoneDatabase.length <= 2) {
-      phoneDatabase = (window.SEED_PHONES_DATA && window.SEED_PHONES_DATA.length > 0) ? window.SEED_PHONES_DATA : [
+    let phoneDatabase = [];
+    const phoneRaw = localStorage.getItem('KIMCHI_PHONE_DB');
+    const isPhoneCleared = localStorage.getItem('KIMCHI_PHONE_CLEARED') === 'true';
+    if (isPhoneCleared) {
+      phoneDatabase = [];
+    } else if (phoneRaw !== null) {
+      try { phoneDatabase = JSON.parse(phoneRaw) || []; } catch(e) { phoneDatabase = []; }
+    } else {
+      phoneDatabase = (window.SEED_PHONES_DATA && window.SEED_PHONES_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_PHONES_DATA)) : [
         { id: 1, brand: "IPHONE", name: "12 Pro Max", storage: "128", color: "Trắng", imei: "1122", price: "5.678", condition: "Zin Đẹp 99%", pinStatus: "Pin Thay", pin: "99%", origin: "VN/A", priceIn: "4.500", note: "", date: "23/10/2026" },
         { id: 2, brand: "IPHONE", name: "15 Pro Max", storage: "256", color: "Trắng", imei: "4567", price: "19.800", condition: "Zin Đẹp 99%", pinStatus: "Pin Zin", pin: "99%", origin: "VN/A", priceIn: "17.500", note: "", date: "23/10/2026" }
       ];
@@ -5736,7 +5765,7 @@
 
     // Tự động phân tách nếu kho Bán Máy đang chứa máy Đã bán hoặc Main Xác do lần nhập trước
     try {
-      if (Array.isArray(phoneDatabase)) {
+      if (!isPhoneCleared && Array.isArray(phoneDatabase) && phoneDatabase.length > 0) {
         let hasMixed = phoneDatabase.some(p => p.status && (p.status.includes('Đã bán') || p.status.includes('Chưa xử lý') || p.status.includes('Máy Xác')));
         if (hasMixed) {
           phoneDatabase = phoneDatabase.filter(p => {
@@ -5750,15 +5779,21 @@
 
     // Nếu kho bị cộng dồn thành 241 máy (73 máy cũ + 168 máy mới), tự động đồng bộ lại đúng 168 máy chuẩn từ file Excel
     try {
-      if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length === 168 && (phoneDatabase.length === 241 || phoneDatabase.length > 200)) {
+      if (!isPhoneCleared && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length === 168 && (phoneDatabase.length === 241 || phoneDatabase.length > 200)) {
         phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
         localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
       }
     } catch(e) {}
 
-    let soldPhoneDatabase = JSON.parse(localStorage.getItem('KIMCHI_SOLD_PHONE_DB'));
-    if (!soldPhoneDatabase || soldPhoneDatabase.length === 0) {
-      soldPhoneDatabase = (window.SEED_SOLD_DATA && window.SEED_SOLD_DATA.length > 0) ? window.SEED_SOLD_DATA : [];
+    let soldPhoneDatabase = [];
+    const soldRaw = localStorage.getItem('KIMCHI_SOLD_PHONE_DB');
+    const isSoldCleared = localStorage.getItem('KIMCHI_SOLD_PHONE_CLEARED') === 'true';
+    if (isSoldCleared) {
+      soldPhoneDatabase = [];
+    } else if (soldRaw !== null) {
+      try { soldPhoneDatabase = JSON.parse(soldRaw) || []; } catch(e) { soldPhoneDatabase = []; }
+    } else {
+      soldPhoneDatabase = (window.SEED_SOLD_DATA && window.SEED_SOLD_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_SOLD_DATA)) : [];
       localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
     }
     let currentBrandFilter = "ALL";
@@ -5850,12 +5885,15 @@
     }
 
     function savePhoneStorage() {
+      if (phoneDatabase.length > 0) localStorage.removeItem('KIMCHI_PHONE_CLEARED');
+      if (soldPhoneDatabase.length > 0) localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
       localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
       localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
     }
 
     function saveSoldPhoneStorage() {
-      savePhoneStorage();
+      if (soldPhoneDatabase.length > 0) localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
+      localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
     }
 
     function filterBrand(brandName, btn) {
@@ -8733,13 +8771,22 @@
 
     let softwareDatabase = [];
     try {
+      const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
       const stored = localStorage.getItem('KIMCHI_PHANMEM_DB');
-      softwareDatabase = stored ? JSON.parse(stored) : DEFAULT_SOFTWARE_DATA;
+      if (isSoftwareCleared) {
+        softwareDatabase = [];
+      } else if (stored !== null) {
+        softwareDatabase = JSON.parse(stored) || [];
+      } else {
+        softwareDatabase = DEFAULT_SOFTWARE_DATA;
+        localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
+      }
     } catch (e) {
-      softwareDatabase = DEFAULT_SOFTWARE_DATA;
+      softwareDatabase = [];
     }
 
     function saveSoftwareStorage() {
+      if (softwareDatabase.length > 0) localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
       localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
     }
 
@@ -11229,15 +11276,18 @@
 
     let repairDatabase = [];
     try {
+      const isRepairCleared = localStorage.getItem('KIMCHI_REPAIR_CLEARED') === 'true';
       const savedRepairs = localStorage.getItem('KIMCHI_REPAIR_DB');
-      repairDatabase = savedRepairs ? JSON.parse(savedRepairs) : [];
-      if (Array.isArray(window.SEED_REPAIRS_DATA) && window.SEED_REPAIRS_DATA.length > 0 &&
-          (!savedRepairs || repairDatabase.length < 50 || !repairDatabase.some(r => r.warranty && r.warranty !== '—'))) {
-        repairDatabase = JSON.parse(JSON.stringify(window.SEED_REPAIRS_DATA));
+      if (isRepairCleared) {
+        repairDatabase = [];
+      } else if (savedRepairs !== null) {
+        repairDatabase = JSON.parse(savedRepairs) || [];
+      } else {
+        repairDatabase = (Array.isArray(window.SEED_REPAIRS_DATA) && window.SEED_REPAIRS_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_REPAIRS_DATA)) : DEFAULT_REPAIR_DATA;
         localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase));
       }
       // Chuẩn hóa toàn bộ danh sách: Lãi = Báo giá - Vốn & Bảo hành
-      if (Array.isArray(repairDatabase)) {
+      if (!isRepairCleared && Array.isArray(repairDatabase) && repairDatabase.length > 0) {
         repairDatabase.forEach(item => {
           const pr = Number(item.price) || 0;
           const cs = Number(item.cost) || 0;
@@ -11252,24 +11302,12 @@
         localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase));
       }
     } catch (e) {
-      repairDatabase = (Array.isArray(window.SEED_REPAIRS_DATA) && window.SEED_REPAIRS_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_REPAIRS_DATA)) : DEFAULT_REPAIR_DATA;
-      if (Array.isArray(repairDatabase)) {
-        repairDatabase.forEach(item => {
-          const pr = Number(item.price) || 0;
-          const cs = Number(item.cost) || 0;
-          item.profit = pr - cs;
-          if (item.warranty) {
-            const wLower = String(item.warranty).trim().toLowerCase();
-            if (wLower.includes('khong') || wLower.includes('không') || wLower === '0' || wLower === '0 bh' || wLower === 'kbh') {
-              item.warranty = '0 Bảo Hành';
-            }
-          }
-        });
-      }
+      repairDatabase = [];
     }
 
     function saveRepairDb() {
       try {
+        if (repairDatabase.length > 0) localStorage.removeItem('KIMCHI_REPAIR_CLEARED');
         localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase));
       } catch (e) {
         console.error('Lỗi lưu repairDatabase:', e);
@@ -14104,8 +14142,14 @@
     // =========================================================
     // MODULE QUẢN LÝ MAIN - XÁC (CHUẨN GIAO DIỆN MÁY ĐÃ BÁN & BẢO HÀNH)
     // =========================================================
-    let mainXacDatabase = JSON.parse(localStorage.getItem('KIMCHI_MAIN_XAC_DB'));
-    if (!mainXacDatabase || mainXacDatabase.length === 0) {
+    let mainXacDatabase = [];
+    const isMainXacCleared = localStorage.getItem('KIMCHI_MAINXAC_CLEARED') === 'true';
+    const mainXacRaw = localStorage.getItem('KIMCHI_MAIN_XAC_DB');
+    if (isMainXacCleared) {
+      mainXacDatabase = [];
+    } else if (mainXacRaw !== null) {
+      try { mainXacDatabase = JSON.parse(mainXacRaw) || []; } catch(e) { mainXacDatabase = []; }
+    } else {
       mainXacDatabase = (window.SEED_MAINXAC_DATA && window.SEED_MAINXAC_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_MAINXAC_DATA)) : [];
       localStorage.setItem('KIMCHI_MAIN_XAC_DB', JSON.stringify(mainXacDatabase));
     }
@@ -14184,17 +14228,24 @@
     window.toggleMainXacExcelActions = toggleMainXacExcelActions;
 
     function clearAllMainXacData() {
-      const confirmWord = prompt("⚠️ CẢNH BÁO: Thao tác này sẽ xóa toàn bộ danh sách Main - Xác!\n\nNhập đúng chữ \"yes\" để xác nhận xóa:");
-      if (confirmWord !== null && confirmWord.trim().toLowerCase() === "yes") {
-        mainXacDatabase = [];
-        saveMainXacStorage();
-        renderMainXacGrid();
-        alert("Đã xóa sạch toàn bộ danh sách Main - Xác!");
+      const confirmWord = prompt("⚠️ CẢNH BÁO: Thao tác này sẽ xóa toàn bộ danh sách Main - Xác!\n\nNhập đúng chữ \"yes\" hoặc \"tôi đồng ý xóa\" để xác nhận xóa:");
+      if (confirmWord !== null) {
+        const clean = confirmWord.trim().toLowerCase();
+        if (clean === "yes" || clean === "tôi đồng ý xóa" || clean === "toi dong y xoa") {
+          mainXacDatabase = [];
+          localStorage.setItem('KIMCHI_MAINXAC_CLEARED', 'true');
+          saveMainXacStorage();
+          renderMainXacGrid();
+          alert("Đã xóa sạch toàn bộ danh sách Main - Xác!");
+        } else {
+          alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
+        }
       }
     }
     window.clearAllMainXacData = clearAllMainXacData;
 
     function saveMainXacStorage() {
+      if (mainXacDatabase.length > 0) localStorage.removeItem('KIMCHI_MAINXAC_CLEARED');
       localStorage.setItem('KIMCHI_MAIN_XAC_DB', JSON.stringify(mainXacDatabase));
     }
     window.saveMainXacStorage = saveMainXacStorage;
