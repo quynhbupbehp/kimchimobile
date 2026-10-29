@@ -1436,9 +1436,114 @@
       }
     }
 
+    /* ============================================================
+       KẾT NỐI VÀ TỰ ĐỘNG ĐỒNG BỘ CLOUD FIRESTORE TỨC THÌ (REALTIME)
+       ============================================================ */
+    function initFirebaseRealtimeSync() {
+      if (typeof db === 'undefined' || !db) {
+        console.warn("Chưa tìm thấy kết nối Firebase Firestore (db)!");
+        return;
+      }
+
+      // 1. Đồng bộ Bán Hàng (sales) thời gian thực
+      try {
+        db.collection('sales').onSnapshot(snapshot => {
+          let list = [];
+          snapshot.forEach(doc => {
+            let data = doc.data();
+            if (!data.id) data.id = doc.id;
+            list.push(data);
+          });
+          if (list.length > 0) {
+            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            salesDatabase = list;
+            localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase));
+            if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+            if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+          }
+        }, err => console.error("Lỗi sync sales realtime:", err));
+      } catch (err) {
+        console.error("Lỗi setup sync sales:", err);
+      }
+
+      // 2. Đồng bộ Bán Gà (banga) thời gian thực
+      try {
+        db.collection('banga').onSnapshot(snapshot => {
+          let list = [];
+          snapshot.forEach(doc => {
+            let data = doc.data();
+            if (!data.id) data.id = doc.id;
+            list.push(data);
+          });
+          if (list.length > 0) {
+            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            bangaDatabase = list;
+            localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
+            if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+          }
+        }, err => console.error("Lỗi sync banga realtime:", err));
+      } catch (err) {
+        console.error("Lỗi setup sync banga:", err);
+      }
+
+      // 3. Đồng bộ Kho Bán Máy (phones)
+      try {
+        db.collection('phones').onSnapshot(snapshot => {
+          let list = [];
+          snapshot.forEach(doc => list.push(doc.data()));
+          if (list.length > 0) {
+            phoneDatabase = list;
+            localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
+            if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
+          }
+        }, err => console.error("Lỗi sync phones:", err));
+      } catch (err) {}
+
+      // 4. Đồng bộ Bảo Hành (sold_phones)
+      try {
+        db.collection('sold_phones').onSnapshot(snapshot => {
+          let list = [];
+          snapshot.forEach(doc => list.push(doc.data()));
+          if (list.length > 0) {
+            soldPhoneDatabase = list;
+            localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+            if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+          }
+        }, err => console.error("Lỗi sync sold_phones:", err));
+      } catch (err) {}
+
+      // 5. Đồng bộ Main - Xác (mainxac)
+      try {
+        db.collection('mainxac').onSnapshot(snapshot => {
+          let list = [];
+          snapshot.forEach(doc => list.push(doc.data()));
+          if (list.length > 0) {
+            mainXacDatabase = list;
+            localStorage.setItem('KIMCHI_MAIN_XAC_DB', JSON.stringify(list));
+            if (typeof renderMainXacGrid === 'function') renderMainXacGrid();
+          }
+        }, err => console.error("Lỗi sync mainxac:", err));
+      } catch (err) {}
+
+      // 6. Đồng bộ Sửa Chữa (repairs)
+      try {
+        db.collection('repairs').onSnapshot(snapshot => {
+          let list = [];
+          snapshot.forEach(doc => list.push(doc.data()));
+          if (list.length > 0) {
+            repairDatabase = list;
+            localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(list));
+            if (typeof renderRepairTable === 'function') renderRepairTable();
+          }
+        }, err => console.error("Lỗi sync repairs:", err));
+      } catch (err) {}
+    }
+    window.initFirebaseRealtimeSync = initFirebaseRealtimeSync;
+
     window.addEventListener('DOMContentLoaded', () => {
       initAllTabsToVietnamToday();
       migrateStorageUnits();
+      initFirebaseRealtimeSync();
       const isAuth = (sessionStorage.getItem('KIMCHI_AUTH_TOKEN') === '250991' || localStorage.getItem('KIMCHI_AUTH_TOKEN') === '250991');
       const sc = document.getElementById('loginScreen');
       if (isAuth) {
@@ -1587,14 +1692,36 @@
       localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
     }
 
-    function saveSalesStorage() {
+    function saveSalesStorage(itemToSync) {
       if (salesDatabase.length > 0) localStorage.removeItem('KIMCHI_SALES_CLEARED');
       localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase));
+      if (typeof db !== 'undefined' && db) {
+        if (itemToSync && itemToSync.id) {
+          db.collection('sales').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+        } else {
+          salesDatabase.forEach(item => {
+            if (item && item.id) {
+              db.collection('sales').doc(String(item.id)).set(item).catch(console.error);
+            }
+          });
+        }
+      }
     }
 
-    function saveBangaStorage() {
+    function saveBangaStorage(itemToSync) {
       if (bangaDatabase.length > 0) localStorage.removeItem('KIMCHI_BANGA_CLEARED');
       localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
+      if (typeof db !== 'undefined' && db) {
+        if (itemToSync && itemToSync.id) {
+          db.collection('banga').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+        } else {
+          bangaDatabase.forEach(item => {
+            if (item && item.id) {
+              db.collection('banga').doc(String(item.id)).set(item).catch(console.error);
+            }
+          });
+        }
+      }
     }
 
     let tempCart = [];
@@ -5532,6 +5659,9 @@
 
         salesDatabase = salesDatabase.filter(s => s.id !== id);
         saveSalesStorage();
+        if (typeof db !== 'undefined' && db) {
+          db.collection('sales').doc(String(id)).delete().catch(console.error);
+        }
         renderSalesTable(salesDatabase);
 
         if (isPhone) {
@@ -5562,6 +5692,9 @@
       if (confirmText && confirmText.trim().toLowerCase() === 'yes') {
         bangaDatabase = bangaDatabase.filter(s => String(s.id) !== String(id) && s.id != id);
         saveBangaStorage();
+        if (typeof db !== 'undefined' && db) {
+          db.collection('banga').doc(String(id)).delete().catch(console.error);
+        }
         if (typeof logActivity === 'function') {
           logActivity('DELETE', 'banga', 'Bán gà', `Xóa đơn bán gà: ${item.name} - ${item.total}`, item, null, id);
         }
