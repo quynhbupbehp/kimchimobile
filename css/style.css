@@ -6031,6 +6031,8 @@
     @media (max-width: 1023px) {
       /* Khung nhìn và mở khóa cảm ứng toàn diện */
       html, body {
+        margin: 0 !important;
+        padding: 0 !important;
         overflow-x: hidden !important;
         width: 100% !important;
         max-width: 100vw !important;
@@ -6038,6 +6040,9 @@
         -webkit-tap-highlight-color: transparent;
         pointer-events: auto !important;
         touch-action: auto !important;
+      }
+      body {
+        display: block !important;
       }
 
       /* Lớp phủ mờ tối khi mở Menu Drawer: Mặc định ẩn tiệt để không chặn click */
@@ -6928,6 +6933,382 @@
           border-radius: 10px !important;
           width: 100% !important;
           margin-top: 10px !important;
+        }
+
+        /* === MODAL TẠO PHIẾU BÁN HÀNG MOBILE (< 768px) CHUẨN ẢNH MẪU === */
+        #ticketModal {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          height: 100dvh !important;
+          z-index: 999999 !important;
+          background: rgba(0, 0, 0, 0.88) !important;
+          backdrop-filter: blur(8px) !important;
+          -webkit-backdrop-filter: blur(8px) !important;
+          display: none;
+          align-items: center !important;
+          justify-content: center !important;
+          margin: 0 !important;
+          padding: 8px !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal.active,
+        #ticketModal.show {
+          display: flex !important;
+        }
+        #ticketModal .modal-ticket-box {
+          width: calc(100vw - 16px) !important;
+          max-width: 374px !important;
+          max-height: 94dvh !important;
+          background: #0b111e !important;
+          border: 1.5px solid #1e293b !important;
+          border-radius: 16px !important;
+          padding: 12px 10px 14px 10px !important;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.95) !important;
+          box-sizing: border-box !important;
+          margin: auto !important;
+          overflow-x: hidden !important;
+        }
+
+        /* 1. HEADER: BADGE HỒNG NEON (CHỮ NHỎ LẠI 30%) + NÚT ĐÓNG ✕ */
+        #ticketModal .ticket-header {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          border-bottom: 1px solid #1e293b !important;
+          padding-bottom: 8px !important;
+          margin-bottom: 8px !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal .ticket-header > span:first-child {
+          background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important;
+          border: 1px solid #f472b6 !important;
+          border-radius: 8px !important;
+          box-shadow: 0 0 16px rgba(236, 72, 153, 0.6) !important;
+          color: #ffffff !important;
+          font-weight: 900 !important;
+          font-size: 0.82rem !important; /* Giảm 30% chữ theo yêu cầu */
+          padding: 5px 12px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          line-height: 1.2 !important;
+        }
+        #ticketModal .ticket-header button {
+          color: #ffffff !important;
+          font-size: 1.3rem !important;
+          font-weight: 700 !important;
+          padding: 0 4px !important;
+          background: transparent !important;
+          border: none !important;
+          cursor: pointer !important;
+        }
+
+        /* 2. FORM TICKET: FLATTEN RA ĐỂ XẾP HÀNG Y CHANG ẢNH MẪU */
+        #ticketModal #ticketForm {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 6px 5px !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal .form-ticket-row {
+          display: contents !important;
+        }
+
+        /* 3. ĐỊNH DẠNG CHUNG CHO CÁC NHÃN VÀ INPUT */
+        #ticketModal .form-ticket-label {
+          color: #10b981 !important; /* Xanh lá nổi bật như ảnh mẫu */
+          font-weight: 900 !important;
+          font-size: 0.8rem !important;
+          margin-bottom: 3px !important;
+          display: block !important;
+        }
+        #ticketModal .ticket-input,
+        #ticketModal select.ticket-input {
+          height: 38px !important;
+          background: #0b111e !important;
+          border: 1.5px solid #1e293b !important;
+          border-radius: 8px !important;
+          color: #ffffff !important;
+          font-weight: 800 !important;
+          font-size: 0.9rem !important;
+          padding: 0 8px !important;
+          box-sizing: border-box !important;
+          width: 100% !important;
+        }
+
+        /* HÀNG 1: TÊN PHỤ KIỆN (100% WIDTH) KÈM 3 NÚT */
+        #ticketModal .form-ticket-group:has(#tItemName) {
+          order: 1 !important;
+          flex: 1 1 100% !important;
+          width: 100% !important;
+          min-width: 100% !important;
+        }
+        #ticketModal .input-with-actions {
+          display: flex !important;
+          gap: 4px !important;
+          align-items: center !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal #tItemName {
+          flex: 1 1 auto !important;
+          min-width: 0 !important;
+          width: 100% !important;
+        }
+        #ticketModal .icon-btn-set {
+          display: flex !important;
+          gap: 3px !important;
+          flex-shrink: 0 !important;
+        }
+        #ticketModal .btn-svg-action {
+          width: 28px !important;
+          height: 38px !important;
+          flex: 0 0 28px !important;
+          border-radius: 7px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          background: #0f172a !important;
+          padding: 0 !important;
+        }
+        #ticketModal .btn-svg-add {
+          border: 1.5px solid #2563eb !important;
+          color: #60a5fa !important;
+        }
+        #ticketModal .btn-svg-edit {
+          border: 1.5px solid #059669 !important;
+          color: #34d399 !important;
+        }
+        #ticketModal .btn-svg-del {
+          border: 1.5px solid #dc2626 !important;
+          color: #f87171 !important;
+        }
+        #ticketModal .btn-svg-action svg {
+          width: 16px !important;
+          height: 16px !important;
+          stroke: currentColor !important;
+        }
+
+        /* HÀNG 2: 3 CỘT (GIÁ BÁN, GIÁ NHẬP, SỐ LƯỢNG) */
+        #ticketModal .form-ticket-group:has(#tPriceOut),
+        #ticketModal .form-ticket-group:has(#tPriceIn),
+        #ticketModal .form-ticket-group:has(#tQty) {
+          order: 2 !important;
+          flex: 1 1 calc((100% - 10px) / 3) !important;
+          max-width: calc((100% - 10px) / 3) !important;
+          min-width: 0 !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal .form-ticket-group:has(#tPriceIn) {
+          order: 3 !important;
+        }
+        #ticketModal .form-ticket-group:has(#tQty) {
+          order: 4 !important;
+        }
+        #ticketModal .qty-box {
+          display: flex !important;
+          height: 38px !important;
+          background: #0b111e !important;
+          border: 1.5px solid #1e293b !important;
+          border-radius: 8px !important;
+          overflow: hidden !important;
+          box-sizing: border-box !important;
+          width: 100% !important;
+        }
+        #ticketModal .qty-btn {
+          width: 25px !important;
+          min-width: 25px !important;
+          flex: 0 0 25px !important;
+          height: 38px !important;
+          background: #1e293b !important;
+          border: none !important;
+          color: #ffffff !important;
+          font-size: 1.1rem !important;
+          font-weight: 900 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer !important;
+          padding: 0 !important;
+        }
+        #ticketModal .qty-input {
+          flex: 1 1 auto !important;
+          width: 100% !important;
+          min-width: 0 !important;
+          height: 38px !important;
+          background: transparent !important;
+          border: none !important;
+          color: #ffffff !important;
+          font-size: 0.95rem !important;
+          font-weight: 900 !important;
+          text-align: center !important;
+          padding: 0 !important;
+        }
+
+        /* HÀNG 3: 2 CỘT (THANH TOÁN, LƯU VÀO) */
+        #ticketModal .form-ticket-group:has(#tPaymentMethod),
+        #ticketModal .form-ticket-group:has(#tTargetList) {
+          order: 5 !important;
+          flex: 1 1 calc((100% - 6px) / 2) !important;
+          max-width: calc((100% - 6px) / 2) !important;
+          min-width: 0 !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal .form-ticket-group:has(#tTargetList) {
+          order: 6 !important;
+        }
+
+        /* HÀNG 4: ẨN MỤC GIỜ BÁN ĐI THEO YÊU CẦU */
+        #ticketModal .form-ticket-group:has(#tTimeVal) {
+          display: none !important;
+        }
+
+        /* HÀNG 4: NGÀY BÁN + NÚT + THÊM GIỎ HÀNG NẰM SONG SONG CÂN ĐỐI */
+        #ticketModal .form-ticket-group:has(#tDateVal),
+        #ticketModal .form-ticket-group:has(.btn-add-cart-row3) {
+          order: 7 !important;
+          flex: 1 1 calc((100% - 6px) / 2) !important;
+          max-width: calc((100% - 6px) / 2) !important;
+          min-width: 0 !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal .form-ticket-group:has(.btn-add-cart-row3) {
+          order: 8 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: flex-end !important;
+          margin: 0 !important;
+        }
+        #ticketModal .date-adjust-container {
+          display: flex !important;
+          align-items: center !important;
+          gap: 2px !important;
+          height: 38px !important;
+          box-sizing: border-box !important;
+          width: 100% !important;
+        }
+        #ticketModal .btn-date-step {
+          width: 25px !important;
+          min-width: 25px !important;
+          flex: 0 0 25px !important;
+          height: 38px !important;
+          background: #1e293b !important;
+          border: 1.5px solid #334155 !important;
+          border-radius: 6px !important;
+          color: #ffffff !important;
+          font-weight: 900 !important;
+          font-size: 1rem !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer !important;
+          padding: 0 !important;
+        }
+        #ticketModal #tDateVal {
+          flex: 1 1 auto !important;
+          min-width: 0 !important;
+          height: 38px !important;
+          background: #0b111e !important;
+          border: 1.5px solid #1e293b !important;
+          border-radius: 6px !important;
+          color: #f59e0b !important;
+          font-weight: 900 !important;
+          font-size: 0.8rem !important;
+          text-align: center !important;
+          padding: 0 2px !important;
+        }
+
+        #ticketModal .form-ticket-group:has(.btn-add-cart-row3) > label {
+          display: none !important;
+        }
+        #ticketModal .btn-add-cart-row3 {
+          height: 38px !important;
+          background: #f59e0b !important;
+          color: #000000 !important;
+          border: none !important;
+          border-radius: 8px !important;
+          font-weight: 900 !important;
+          font-size: 0.8rem !important;
+          box-shadow: 0 3px 12px rgba(245, 158, 11, 0.4) !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 4px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer !important;
+          white-space: nowrap !important;
+        }
+
+        /* HÀNG 5: GIỎ HÀNG */
+        #ticketModal .cart-section {
+          order: 9 !important;
+          width: 100% !important;
+          background: #070c14 !important;
+          border: 1.5px solid #1e293b !important;
+          border-radius: 10px !important;
+          padding: 8px 10px !important;
+          margin: 2px 0 !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal .cart-title {
+          color: #ef4444 !important;
+          font-weight: 900 !important;
+          font-size: 0.9rem !important;
+          margin-bottom: 2px !important;
+        }
+        #ticketModal .cart-empty {
+          color: #64748b !important;
+          font-size: 0.85rem !important;
+          padding: 6px 0 !important;
+          text-align: center !important;
+        }
+
+        /* HÀNG 6: FOOTER (TỔNG Ở TRÁI, LƯU LẠI Ở PHẢI - CHỮ NHỎ LẠI 30%) */
+        #ticketModal .ticket-footer {
+          order: 10 !important;
+          width: 100% !important;
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          border-top: 1px solid #1e293b !important;
+          padding-top: 8px !important;
+          margin-top: 2px !important;
+          flex-wrap: nowrap !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal #ticketTotalSummary {
+          font-size: 0.95rem !important;
+          font-weight: 900 !important;
+          color: #10b981 !important;
+          white-space: nowrap !important;
+        }
+        #ticketModal .ticket-footer > div:nth-child(2) {
+          display: none !important; /* Ẩn dropdown Đã Trả ở footer trên mobile như ảnh mẫu */
+        }
+        #ticketModal .btn-save-ticket {
+          height: 38px !important;
+          background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important;
+          border: 1px solid #f472b6 !important;
+          box-shadow: 0 0 14px rgba(236, 72, 153, 0.5) !important;
+          color: #ffffff !important;
+          font-weight: 900 !important;
+          font-size: 0.82rem !important; /* Giảm 30% chữ theo yêu cầu */
+          border-radius: 9px !important;
+          padding: 0 18px !important;
+          width: auto !important;
+          margin: 0 !important;
+          cursor: pointer !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          white-space: nowrap !important;
         }
       }
 
