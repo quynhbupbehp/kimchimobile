@@ -1,27 +1,28 @@
-# Quy Tắc: Tự Động Thực Hiện Ngay (100% Auto-Approve) & Hạn Chế Tối Đa Hỏi Quyền
+# Quy Tắc Bắt Buộc: 100% Tự Động Làm Ngay (Zero-Friction Execution) - Tuyệt Đối Không Hỏi Quyền
 
-Quy tắc này bắt buộc áp dụng cho mọi yêu cầu chỉnh sửa, bổ sung, tối ưu hoặc thực thi lệnh trong dự án.
-
----
-
-## 1. NGUYÊN TẮC CỐT LÕI: TỰ ĐỘNG LÀM NGAY (AUTO-EXECUTE)
-
-- **Tự động thực hiện 100% (Zero-Friction Execution)**:
-  - Khi nhận yêu cầu từ người dùng (sửa giao diện, fix bug, thêm tính năng, refactor, tạo file mới, chạy lệnh build/deploy...):
-  - Agent **KHÔNG ĐƯỢC HỎI XIN QUYỀN**, KHÔNG tạo kế hoạch bắt người dùng bấm duyệt ("Proceed"), KHÔNG tạo bộ đếm thời gian gây phiền toái.
-  - Tự động khảo sát mã nguồn, chọn phương án kỹ thuật tối ưu nhất và gọi ngay các công cụ chỉnh sửa (`replace_file_content`, `multi_replace_file_content`, `write_to_file`, `run_command`).
-  - **Cái gì không cần thiết: TỰ ĐỘNG XÁC NHẬN HẾT**.
+Quy tắc này áp dụng vĩnh viễn cho mọi tương tác trong dự án. Người dùng đã cấp toàn quyền cho AI.
 
 ---
 
-## 2. TRƯỜNG HỢP DUY NHẤT ĐƯỢC PHÉP HỎI (CLARIFY ONLY WHEN CRITICAL)
+## 1. NGUYÊN TẮC CỐT LÕI: LÀM NGAY KHÔNG HỎI (JUST DO IT)
 
-Agent chỉ được dừng lại hỏi người dùng khi và chỉ khi:
-1. **Yêu cầu thực sự mơ hồ hoặc thiếu dữ liệu cốt lõi**: Không thể suy đoán hợp lý được, có nhiều lựa chọn nghiệp vụ hoàn toàn khác nhau cần người dùng quyết định.
-   - Bắt buộc dùng công cụ `ask_question` với các phương án trắc nghiệm ngắn gọn, có gợi ý `(Recommended)`.
-2. **Nguy cơ mất mát dữ liệu không thể phục hồi**: Thao tác xóa vĩnh viễn bảng dữ liệu hoặc cơ sở dữ liệu quan trọng.
+- **TUYỆT ĐỐI KHÔNG HỎI QUYỀN**: 
+  - Không tạo kế hoạch bắt người dùng bấm duyệt ("Proceed").
+  - Không hỏi "Tôi có thể sửa file này không?", "Bạn có đồng ý không?".
+  - Không dùng công cụ `ask_question` với các câu hỏi rườm rà hay khảo sát ý kiến giao diện không cần thiết.
+- **TỰ ĐỘNG XÁC NHẬN VÀ THỰC THI 100%**:
+  - Khi người dùng yêu cầu sửa đổi, thêm mới, sửa lỗi, đổi màu, tối ưu, refactor, tạo file, chạy lệnh deploy...:
+  - Agent tự khảo sát mã nguồn, tự chọn giải pháp kỹ thuật tốt nhất và GỌI NGAY CÁC CÔNG CỤ (`replace_file_content`, `multi_replace_file_content`, `write_to_file`, `run_command`).
+  - Mọi quyết định kỹ thuật: **TỰ ĐỘNG CHỐT VÀ LÀM LUÔN**.
+
+---
+
+## 2. TRƯỜNG HỢP DUY NHẤT ĐƯỢC PHÉP HỎI
+
+- **CHỈ ĐƯỢC PHÉP DỪNG LẠI HỎI KHI**: Có nguy cơ xóa sạch vĩnh viễn toàn bộ cơ sở dữ liệu (database) quan trọng không thể phục hồi.
+- Mọi trường hợp còn lại (sửa code, sửa UI, fix bug, cấu hình, build, deploy): **BẮT BUỘC TỰ LÀM NGAY**.
 
 ---
 
 ## 3. BÁO CÁO KẾT QUẢ
-- Sau khi thực hiện xong, báo cáo kết quả ngắn gọn, súc tích kèm liên kết file clickable dạng `[filename](file:///...)`.
+- Làm xong toàn bộ mới thông báo kết quả ngắn gọn, súc tích kèm liên kết file clickable `[filename](file:///...)`.
