@@ -1318,16 +1318,21 @@
       }
       const pass = document.getElementById('loginPass') ? document.getElementById('loginPass').value.trim() : '';
       
-      if (pass !== "") {
+      if (pass === "250991") {
         const sc = document.getElementById('loginScreen');
         if (sc) sc.style.display = 'none';
         document.body.classList.remove('login-locked', 'login-active');
         document.documentElement.classList.add('user-is-logged');
         try {
+          sessionStorage.setItem('KIMCHI_AUTH_TOKEN', '250991');
           sessionStorage.setItem('KIMCHI_LOGGED', 'true');
           const rem = document.getElementById('rememberMe');
           if (rem && rem.checked) {
+            localStorage.setItem('KIMCHI_AUTH_TOKEN', '250991');
             localStorage.setItem('KIMCHI_LOGGED', 'true');
+          } else {
+            localStorage.removeItem('KIMCHI_AUTH_TOKEN');
+            localStorage.removeItem('KIMCHI_LOGGED');
           }
         } catch (err) {
           console.warn('Storage warning:', err);
@@ -1336,7 +1341,10 @@
         if (err) err.style.display = 'none';
       } else {
         const err = document.getElementById('loginError');
-        if (err) err.style.display = 'block';
+        if (err) {
+          err.innerText = 'Mật khẩu không chính xác! Vui lòng thử lại.';
+          err.style.display = 'block';
+        }
       }
       return false;
     }
@@ -1344,10 +1352,12 @@
     function handleLogout() {
       if (confirm('Bạn có chắc chắn muốn đăng xuất không?')) {
         try {
+          sessionStorage.removeItem('KIMCHI_AUTH_TOKEN');
+          localStorage.removeItem('KIMCHI_AUTH_TOKEN');
           sessionStorage.removeItem('KIMCHI_LOGGED');
           localStorage.removeItem('KIMCHI_LOGGED');
         } catch (err) {}
-        alert('Chức năng đăng nhập đang tạm ẩn. Website vẫn hoạt động bình thường.');
+        window.location.reload();
       }
     }
     window.handleLogin = handleLogin;
@@ -1429,10 +1439,16 @@
     window.addEventListener('DOMContentLoaded', () => {
       initAllTabsToVietnamToday();
       migrateStorageUnits();
-      if (sessionStorage.getItem('KIMCHI_LOGGED') === 'true' || localStorage.getItem('KIMCHI_LOGGED') === 'true') {
-        const sc = document.getElementById('loginScreen');
+      const isAuth = (sessionStorage.getItem('KIMCHI_AUTH_TOKEN') === '250991' || localStorage.getItem('KIMCHI_AUTH_TOKEN') === '250991');
+      const sc = document.getElementById('loginScreen');
+      if (isAuth) {
         if (sc) sc.style.display = 'none';
         document.body.classList.remove('login-locked');
+        document.documentElement.classList.add('user-is-logged');
+      } else {
+        if (sc) sc.style.display = 'flex';
+        document.body.classList.add('login-locked');
+        document.documentElement.classList.remove('user-is-logged');
       }
       renderAllDropdowns();
       renderAllRepairDropdowns();
