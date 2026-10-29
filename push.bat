@@ -30,10 +30,13 @@ if %ERRORLEVEL% EQU 0 (
     echo ========================================================
     echo   THANH CONG! NETLIFY SE CAP NHAT WEB TRONG 15-30 GIAY!
     echo ========================================================
+    echo.
+    echo Cua so se tu dong dong sau 3 giay...
+    timeout /t 3 >nul
 ) else (
     echo ========================================================
     echo   CO LOI TRONG QUA TRINH DAY CODE! XIN KIEM TRA LAI.
     echo ========================================================
+    echo.
+    pause
 )
-echo.
-pause
