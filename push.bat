@@ -33,19 +33,25 @@ echo.
 echo [4/4] Dang day len GitHub (Netlify se tu dong cap nhat)...
 git push origin main
 
+if %ERRORLEVEL% EQU 0 goto :success
+goto :fail
+
+:success
 echo.
-if %ERRORLEVEL% EQU 0 (
-    echo ========================================================
-    echo   THANH CONG! NETLIFY SE CAP NHAT WEB TRONG 15-30 GIAY!
-    echo   SAFARI SE TU DONG TAI FILE CSS/JS MOI (KHONG BI CACHE)
-    echo ========================================================
-    echo.
-    echo Cua so se tu dong dong sau 3 giay...
-    timeout /t 3 /nobreak >nul 2>nul || ping -n 4 127.0.0.1 >nul
-) else (
-    echo ========================================================
-    echo   CO LOI TRONG QUA TRINH DAY CODE! XIN KIEM TRA LAI.
-    echo ========================================================
-    echo.
-    pause
-)
+echo ========================================================
+echo   THANH CONG! NETLIFY SE CAP NHAT WEB TRONG 15-30 GIAY!
+echo   SAFARI SE TU DONG TAI FILE CSS VA JS MOI NHAT!
+echo ========================================================
+echo.
+echo Cua so se tu dong dong sau 3 giay...
+timeout /t 3 /nobreak >nul 2>nul || ping -n 4 127.0.0.1 >nul
+exit /b 0
+
+:fail
+echo.
+echo ========================================================
+echo   CO LOI TRONG QUA TRINH DAY CODE! XIN KIEM TRA LAI.
+echo ========================================================
+echo.
+pause
+exit /b 1
