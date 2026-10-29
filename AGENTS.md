@@ -1,52 +1,27 @@
-# Quy Tắc: Cấp Quyền Duy Nhất 1 Lần Cho Mỗi Dự Án & Hỏi Khi Vướng Mắc
+# Quy Tắc: Tự Động Thực Hiện Ngay (100% Auto-Approve) & Hạn Chế Tối Đa Hỏi Quyền
 
-Quy tắc này bắt buộc áp dụng cho mọi yêu cầu chỉnh sửa, bổ sung, tái cấu trúc hoặc thực thi lệnh trong dự án.
-
----
-
-## 1. NGUYÊN TẮC CỐT LÕI: HỎI QUYỀN DUY NHẤT 1 LẦN (ONCE-PER-PROJECT PERMISSION)
-
-Mỗi dự án chỉ được hỏi/xin quyền người dùng **DUY NHẤT 1 LẦN**:
-
-### A. Lần đầu tiên trong dự án:
-- Nếu dự án mới bắt đầu và chưa từng được cấp quyền, agent có thể xin xác nhận quyền thực thi/chỉnh sửa mã nguồn cho dự án này (hoặc phê duyệt kế hoạch lần đầu tiên).
-- Ngay khi người dùng đồng ý (hoặc đã xác nhận từ yêu cầu đầu tiên), dự án này được xem là **ĐÃ ĐƯỢC CẤP TOÀN QUYỀN (AUTHORIZED)**.
-
-### B. Tất cả các tác vụ tiếp theo (Sau khi đã cấp quyền):
-- **TỰ ĐỘNG THỰC HIỆN NGAY (100% AUTO-APPROVE)**:
-  - Cho dù là tác vụ nhỏ (sửa CSS, giao diện, text, icon, fix bug) hay tác vụ lớn (thêm tính năng mới, tái cấu trúc nhiều file, thay đổi schema, logic tính toán):
-  - Agent **KHÔNG ĐƯỢC HỎI LẠI QUYỀN**, không dừng lại chờ người dùng bấm duyệt, không tạo bộ đếm hẹn giờ gây phiền toái.
-  - Tự động khảo sát mã nguồn, chọn phương án tối ưu nhất và gọi ngay các công cụ chỉnh sửa (`replace_file_content`, `multi_replace_file_content`, `write_to_file`, `run_command`).
-  - Hoàn thành xong thì báo cáo kết quả chi tiết, rõ ràng kèm liên kết file clickable dạng `[filename](file:///...)`.
+Quy tắc này bắt buộc áp dụng cho mọi yêu cầu chỉnh sửa, bổ sung, tối ưu hoặc thực thi lệnh trong dự án.
 
 ---
 
-## 2. TRƯỜNG HỢP DUY NHẤT CẦN DỪNG LẠI HỎI (CLARIFY IMMEDIATELY)
+## 1. NGUYÊN TẮC CỐT LÕI: TỰ ĐỘNG LÀM NGAY (AUTO-EXECUTE)
 
-Agent chỉ được phép dừng lại đặt câu hỏi khi:
-1. **Yêu cầu mơ hồ hoặc chưa rõ ràng**: Thiếu dữ kiện, có nhiều cách hiểu hoặc nhiều phương án thiết kế khác nhau cần người dùng chọn lựa.
-   - Bắt buộc hỏi ngay bằng công cụ `ask_question` với các phương án trắc nghiệm rõ ràng, có gợi ý `(Recommended)`.
-   - Tuyệt đối không tự ý đoán mò khi yêu cầu chưa rõ.
-2. **Gặp sự cố / Trở ngại nghiêm trọng (Blocker)**: Lỗi môi trường, xung đột code không thể tự giải quyết.
+- **Tự động thực hiện 100% (Zero-Friction Execution)**:
+  - Khi nhận yêu cầu từ người dùng (sửa giao diện, fix bug, thêm tính năng, refactor, tạo file mới, chạy lệnh build/deploy...):
+  - Agent **KHÔNG ĐƯỢC HỎI XIN QUYỀN**, KHÔNG tạo kế hoạch bắt người dùng bấm duyệt ("Proceed"), KHÔNG tạo bộ đếm thời gian gây phiền toái.
+  - Tự động khảo sát mã nguồn, chọn phương án kỹ thuật tối ưu nhất và gọi ngay các công cụ chỉnh sửa (`replace_file_content`, `multi_replace_file_content`, `write_to_file`, `run_command`).
+  - **Cái gì không cần thiết: TỰ ĐỘNG XÁC NHẬN HẾT**.
 
 ---
 
-## Quy Trình Chuẩn (Standard Workflow):
-```text
-[Yêu cầu từ người dùng]
-       │
-       ▼
-[Khảo sát mã nguồn] ──(Yêu cầu mơ hồ/chưa rõ?)──► [HỎI NGAY (ask_question)]
-       │
-       ▼
-[Kiểm tra quyền dự án]
-       ├────────────────────────────────────────┐
-       ▼ (Chưa từng cấp quyền lần nào)          ▼ (Đã cấp quyền trước đó)
-[Xin xác nhận quyền lần đầu duy nhất]    [TỰ ĐỘNG THỰC HIỆN NGAY]
-       │                                        │
-       ▼ (Người dùng duyệt)                     │ (Gọi tool sửa code trực tiếp)
-[Trạng thái: ĐÃ CẤP QUYỀN]                      │
-       │                                        │
-       ▼                                        ▼
-[Tiến hành sửa code & Báo cáo kết quả hoàn thiện ─┘]
-```
+## 2. TRƯỜNG HỢP DUY NHẤT ĐƯỢC PHÉP HỎI (CLARIFY ONLY WHEN CRITICAL)
+
+Agent chỉ được dừng lại hỏi người dùng khi và chỉ khi:
+1. **Yêu cầu thực sự mơ hồ hoặc thiếu dữ liệu cốt lõi**: Không thể suy đoán hợp lý được, có nhiều lựa chọn nghiệp vụ hoàn toàn khác nhau cần người dùng quyết định.
+   - Bắt buộc dùng công cụ `ask_question` với các phương án trắc nghiệm ngắn gọn, có gợi ý `(Recommended)`.
+2. **Nguy cơ mất mát dữ liệu không thể phục hồi**: Thao tác xóa vĩnh viễn bảng dữ liệu hoặc cơ sở dữ liệu quan trọng.
+
+---
+
+## 3. BÁO CÁO KẾT QUẢ
+- Sau khi thực hiện xong, báo cáo kết quả ngắn gọn, súc tích kèm liên kết file clickable dạng `[filename](file:///...)`.
