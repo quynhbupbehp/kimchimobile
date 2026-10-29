@@ -5998,6 +5998,10 @@
     /* ============================================================
        ẨN HOÀN TOÀN HUY HIỆU "POWERED BY NETLIFY" TRÊN TOÀN GIAO DIỆN
        ============================================================ */
+    #nl-badge-frame,
+    iframe#nl-badge-frame,
+    [id*="nl-badge"],
+    [class*="nl-badge"],
     [id*="netlify"],
     [class*="netlify"],
     a[href*="netlify.com"],
@@ -6007,4 +6011,9 @@
       visibility: hidden !important;
       opacity: 0 !important;
       pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      clip: rect(0, 0, 0, 0) !important;
+      position: absolute !important;
+      left: -9999px !important;
     }

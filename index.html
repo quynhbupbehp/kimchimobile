@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#06090e">
-  <link rel="stylesheet" href="css/style.css?v=20261029_1105">
+  <link rel="stylesheet" href="css/style.css?v=20261029_1135">
   <script>
     (function () {
       try {
@@ -15,9 +15,35 @@
           document.documentElement.classList.add('user-is-logged');
         }
       } catch (e) { }
+
+      // Tự động xóa sạch huy hiệu Powered by Netlify ngay khi xuất hiện
+      function removeNetlifyBadge() {
+        var el = document.getElementById('nl-badge-frame') || document.querySelector('[id*="nl-badge"]') || document.querySelector('[class*="nl-badge"]');
+        if (el) el.remove();
+      }
+      try {
+        var obs = new MutationObserver(function () { removeNetlifyBadge(); });
+        obs.observe(document.documentElement, { childList: true, subtree: true });
+      } catch (e) { }
+      window.addEventListener('DOMContentLoaded', removeNetlifyBadge);
+      window.addEventListener('load', removeNetlifyBadge);
     })();
   </script>
   <style>
+    /* Ẩn triệt để huy hiệu Netlify */
+    #nl-badge-frame,
+    iframe#nl-badge-frame,
+    [id*="nl-badge"],
+    [class*="nl-badge"],
+    .netlify-badge {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
     html.user-is-logged #loginScreen {
       display: none !important;
     }
@@ -5044,7 +5070,7 @@
   <script src="js/seed_data.js?v=20261028_1015"></script>
 
   <!-- Tách các file JS theo module chức năng -->
-  <script src="js/main.js?v=20261029_1106"></script>
+  <script src="js/main.js?v=20261029_1135"></script>
   <script src="js/sales.js"></script>
   <script src="js/phone.js"></script>
   <script src="js/software.js"></script>
