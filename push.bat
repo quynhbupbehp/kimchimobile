@@ -32,7 +32,7 @@ if %ERRORLEVEL% EQU 0 (
     echo ========================================================
     echo.
     echo Cua so se tu dong dong sau 3 giay...
-    timeout /t 3 >nul
+    timeout /t 3 /nobreak >nul 2>nul || ping -n 4 127.0.0.1 >nul
 ) else (
     echo ========================================================
     echo   CO LOI TRONG QUA TRINH DAY CODE! XIN KIEM TRA LAI.
