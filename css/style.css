@@ -6088,13 +6088,18 @@
         box-shadow: 16px 0 50px rgba(0, 0, 0, 0.95) !important;
       }
 
-      /* ẨN HOÀN TOÀN MENU SỬA CHỮA, CÔNG NỢ, MAIN - XÁC TRÊN GIAO DIỆN MOBILE */
+      /* ẨN HOÀN TOÀN MENU SỬA CHỮA, BÁN GÀ, CÔNG NỢ, MAIN - XÁC, HỆ THỐNG TRÊN GIAO DIỆN MOBILE */
+      .nav-item-desktop-only,
       aside.sidebar .main-nav-vertical button[onclick*="'suachua'"],
+      aside.sidebar .main-nav-vertical button[onclick*="'banga'"],
       aside.sidebar .main-nav-vertical button[onclick*="'congno'"],
       aside.sidebar .main-nav-vertical button[onclick*="'quynhbupbe'"],
-      aside.sidebar .main-nav-vertical li:has(button[onclick*="'suachua'"]),
-      aside.sidebar .main-nav-vertical li:has(button[onclick*="'congno'"]),
-      aside.sidebar .main-nav-vertical li:has(button[onclick*="'quynhbupbe'"]) {
+      aside.sidebar .main-nav-vertical button[onclick*="'baocao'"],
+      button[data-tab="suachua"],
+      button[data-tab="banga"],
+      button[data-tab="congno"],
+      button[data-tab="quynhbupbe"],
+      button[data-tab="baocao"] {
         display: none !important;
       }
 

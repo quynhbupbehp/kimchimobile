@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#06090e">
-  <link rel="stylesheet" href="css/style.css?v=20261029_1445">
+  <link rel="stylesheet" href="css/style.css?v=20261029_1450">
   <script>
     (function () {
       try {
@@ -193,18 +193,18 @@
               HÀNG</span></button></li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('phanmem', this)">💻 <span>PHẦN MỀM</span></button>
         </li>
-        <li><button class="main-tab-btn-v" onclick="switchMainTab('suachua', this)">🔧 <span>SỬA CHỮA</span></button>
+        <li class="nav-item-desktop-only"><button class="main-tab-btn-v" onclick="switchMainTab('suachua', this)">🔧 <span>SỬA CHỮA</span></button>
         </li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('banmay', this)">📱 <span>BÁN MÁY</span></button></li>
-        <li><button class="main-tab-btn-v" onclick="switchMainTab('banga', this)">🐓 <span>BÁN GÀ</span></button></li>
+        <li class="nav-item-desktop-only"><button class="main-tab-btn-v" onclick="switchMainTab('banga', this)">🐓 <span>BÁN GÀ</span></button></li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('baohanh', this)">🛡️ <span>BẢO HÀNH</span></button>
         </li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('baogia', this)">📋 <span>BÁO GIÁ SỬA</span></button>
         </li>
-        <li><button class="main-tab-btn-v" onclick="switchMainTab('congno', this)">💳 <span>CÔNG NỢ</span></button></li>
-        <li><button class="main-tab-btn-v" onclick="switchMainTab('quynhbupbe', this)">👑
+        <li class="nav-item-desktop-only"><button class="main-tab-btn-v" onclick="switchMainTab('congno', this)">💳 <span>CÔNG NỢ</span></button></li>
+        <li class="nav-item-desktop-only"><button class="main-tab-btn-v" onclick="switchMainTab('quynhbupbe', this)">👑
             <span>MAIN - XÁC</span></button></li>
-        <li><button class="main-tab-btn-v" onclick="switchMainTab('baocao', this)">⚙️ <span>HỆ THỐNG</span></button>
+        <li class="nav-item-desktop-only"><button class="main-tab-btn-v" onclick="switchMainTab('baocao', this)">⚙️ <span>HỆ THỐNG</span></button>
         </li>
       </ul>
 
@@ -235,10 +235,8 @@
       <button type="button" class="mobile-tab-pill active" data-tab="banhang" onclick="switchMainTab('banhang')">🛒 Bán Hàng</button>
       <button type="button" class="mobile-tab-pill" data-tab="phanmem" onclick="switchMainTab('phanmem')">💻 Phần Mềm</button>
       <button type="button" class="mobile-tab-pill" data-tab="banmay" onclick="switchMainTab('banmay')">📱 Bán Máy</button>
-      <button type="button" class="mobile-tab-pill" data-tab="banga" onclick="switchMainTab('banga')">🐓 Bán Gà</button>
       <button type="button" class="mobile-tab-pill" data-tab="baohanh" onclick="switchMainTab('baohanh')">🛡️ Bảo Hành</button>
       <button type="button" class="mobile-tab-pill" data-tab="baogia" onclick="switchMainTab('baogia')">📋 Báo Giá</button>
-      <button type="button" class="mobile-tab-pill" data-tab="baocao" onclick="switchMainTab('baocao')">⚙️ Hệ Thống</button>
     </nav>
 
     <main>
@@ -5122,7 +5120,7 @@
   <script src="js/seed_data.js?v=20261028_1015"></script>
 
   <!-- Tách các file JS theo module chức năng -->
-  <script src="js/main.js?v=20261029_1445"></script>
+  <script src="js/main.js?v=20261029_1450"></script>
   <script src="js/sales.js"></script>
   <script src="js/phone.js"></script>
   <script src="js/software.js"></script>
