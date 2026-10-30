@@ -1427,11 +1427,14 @@
         if (typeof e.preventDefault === 'function') e.preventDefault();
         if (typeof e.stopPropagation === 'function') e.stopPropagation();
       }
-      const user = document.getElementById('loginUser') ? document.getElementById('loginUser').value.trim() : '';
-      const pass = document.getElementById('loginPass') ? document.getElementById('loginPass').value.trim() : '';
-      const validPassList = ["250991", "Huyen@95"];
+      const userEl = document.getElementById('loginUser');
+      const passEl = document.getElementById('loginPass');
+      const user = userEl ? userEl.value.trim().toLowerCase() : '';
+      // Loại bỏ ký tự tàng hình / zero-width space do bàn phím iOS tạo ra
+      const pass = passEl ? passEl.value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() : '';
+      const validPassList = ["250991", "250995", "Huyen@95"];
       
-      const isUserValid = (user.toLowerCase() === 'admin');
+      const isUserValid = (user === 'admin');
       const isPassValid = validPassList.includes(pass);
 
       if (isUserValid && isPassValid) {
