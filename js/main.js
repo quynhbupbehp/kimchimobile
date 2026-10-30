@@ -8419,11 +8419,146 @@
       return expireDate.getTime() >= dNow.getTime();
     }
 
+    function getSoldPhoneNameSuggestions(query) {
+      const qNorm = (query || '').trim().toLowerCase();
+      const pool = soldPhoneDatabase || [];
+      const nameMap = new Map();
+
+      pool.forEach(p => {
+        let rawName = (p.name || '').trim();
+        if (!rawName) return;
+
+        let cleanedName = rawName
+          .replace(/\s*-\s*\(?(đang\s*)?thất\s*lạc\)?/gi, '')
+          .replace(/\s*\([^)]*vân\s*tay[^)]*\)/gi, '')
+          .replace(/\s*-\s*cất\s*trong\s*nhà/gi, '')
+          .trim();
+
+        let displayModel = formatBrandDeviceName(cleanedName || rawName);
+        let key = displayModel.toLowerCase();
+        let normModel = key;
+        let normFullName = `${(p.brand || '').toLowerCase()} ${key}`;
+
+        let isMatch = !qNorm || normModel.includes(qNorm) || normFullName.includes(qNorm) || rawName.toLowerCase().includes(qNorm);
+
+        if (isMatch) {
+          if (!nameMap.has(key)) {
+            nameMap.set(key, { name: displayModel, count: 1, brand: p.brand || '' });
+          } else {
+            nameMap.get(key).count++;
+          }
+        }
+      });
+
+      const list = Array.from(nameMap.values());
+      list.sort((a, b) => {
+        if (qNorm) {
+          let aLower = a.name.toLowerCase();
+          let bLower = b.name.toLowerCase();
+          let aExact = aLower === qNorm;
+          let bExact = bLower === qNorm;
+          if (aExact && !bExact) return -1;
+          if (!aExact && bExact) return 1;
+          let aStarts = aLower.startsWith(qNorm);
+          let bStarts = bLower.startsWith(qNorm);
+          if (aStarts && !bStarts) return -1;
+          if (!aStarts && bStarts) return 1;
+        }
+        return b.count - a.count;
+      });
+
+      return list.slice(0, 10);
+    }
+
+    let currentSoldSuggestionIndex = -1;
+
+    function renderSoldPhoneSearchSuggestions(query) {
+      const dropdown = document.getElementById('soldPhoneSearchSuggestions');
+      if (!dropdown) return;
+
+      const suggestions = getSoldPhoneNameSuggestions(query);
+      currentSoldSuggestionIndex = -1;
+
+      if (!suggestions || suggestions.length === 0) {
+        dropdown.style.display = 'none';
+        dropdown.innerHTML = '';
+        return;
+      }
+
+      dropdown.innerHTML = suggestions.map((item, index) => {
+        return `
+          <div class="phone-suggestion-item" data-index="${index}" data-name="${escapeHtml(item.name)}" onclick="selectSoldPhoneSearchSuggestion(this.getAttribute('data-name'))">
+            <span class="suggestion-model-name">
+              <span style="font-size: 1.05rem;">📱</span>
+              <span>${highlightSuggestionMatch(item.name, query)}</span>
+            </span>
+            <span class="suggestion-count">${item.count} máy</span>
+          </div>
+        `;
+      }).join('');
+
+      dropdown.style.display = 'block';
+    }
+
+    function selectSoldPhoneSearchSuggestion(name) {
+      const input = document.getElementById('soldPhoneSearchInput');
+      if (!input) return;
+      input.value = name;
+      const clearBtn = document.getElementById('btnClearSoldPhoneSearch');
+      if (clearBtn) clearBtn.style.display = 'block';
+      hideSoldPhoneSearchSuggestions();
+      renderSoldPhoneTable();
+    }
+    window.selectSoldPhoneSearchSuggestion = selectSoldPhoneSearchSuggestion;
+
+    function hideSoldPhoneSearchSuggestions() {
+      const dropdown = document.getElementById('soldPhoneSearchSuggestions');
+      if (dropdown) {
+        dropdown.style.display = 'none';
+      }
+      currentSoldSuggestionIndex = -1;
+    }
+    window.hideSoldPhoneSearchSuggestions = hideSoldPhoneSearchSuggestions;
+
+    function handleSoldPhoneSearchKeydown(e) {
+      const dropdown = document.getElementById('soldPhoneSearchSuggestions');
+      if (!dropdown || dropdown.style.display === 'none') return;
+      const items = dropdown.querySelectorAll('.phone-suggestion-item');
+      if (items.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        currentSoldSuggestionIndex = (currentSoldSuggestionIndex + 1) % items.length;
+        updateSuggestionHighlight(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        currentSoldSuggestionIndex = (currentSoldSuggestionIndex - 1 + items.length) % items.length;
+        updateSuggestionHighlight(items);
+      } else if (e.key === 'Enter') {
+        if (currentSoldSuggestionIndex >= 0 && currentSoldSuggestionIndex < items.length) {
+          e.preventDefault();
+          items[currentSoldSuggestionIndex].click();
+        } else {
+          hideSoldPhoneSearchSuggestions();
+        }
+      } else if (e.key === 'Escape') {
+        hideSoldPhoneSearchSuggestions();
+      }
+    }
+    window.handleSoldPhoneSearchKeydown = handleSoldPhoneSearchKeydown;
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#tab-baohanh .search-box-bm')) {
+        hideSoldPhoneSearchSuggestions();
+      }
+    });
+
     function handleSoldPhoneSearchInput(input) {
       const clearBtn = document.getElementById('btnClearSoldPhoneSearch');
       if (clearBtn) {
         clearBtn.style.display = input.value.trim() !== "" ? 'block' : 'none';
       }
+      renderSoldPhoneSearchSuggestions(input.value);
       renderSoldPhoneTable();
     }
 
@@ -8433,6 +8568,7 @@
         input.value = '';
         const clearBtn = document.getElementById('btnClearSoldPhoneSearch');
         if (clearBtn) clearBtn.style.display = 'none';
+        hideSoldPhoneSearchSuggestions();
         input.focus();
         renderSoldPhoneTable();
       }

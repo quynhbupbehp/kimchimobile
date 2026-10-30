@@ -6064,7 +6064,7 @@
       html, body {
         margin: 0 !important;
         padding: 0 !important;
-        overflow-x: hidden !important;
+        overflow-x: clip !important;
         width: 100% !important;
         max-width: 100vw !important;
         position: relative !important;
@@ -6300,7 +6300,8 @@
         margin-left: 0 !important;
         width: 100% !important;
         max-width: 100vw !important;
-        overflow-x: hidden !important;
+        overflow-x: clip !important;
+        overflow: visible !important;
         padding: 0 !important;
         min-height: calc(100vh - 100px) !important;
         pointer-events: auto !important;
@@ -6312,7 +6313,8 @@
         width: 100% !important;
         max-width: 100vw !important;
         box-sizing: border-box !important;
-        overflow-x: hidden !important;
+        overflow-x: clip !important;
+        overflow: visible !important;
         pointer-events: auto !important;
       }
 
@@ -6723,77 +6725,314 @@
           font-weight: 900 !important;
         }
 
-        /* === TAB 2: PHẦN MỀM MOBILE (< 768PX) === */
+        /* === TAB 2: PHẦN MỀM MOBILE (< 768PX) - CHUẨN Y CHANG ẢNH MẪU 100% === */
         #tab-phanmem .sw-top-header-bar {
-          display: flex !important;
-          flex-direction: column !important;
-          gap: 6px !important;
-          margin-bottom: 6px !important;
+          display: grid !important;
+          grid-template-columns: 1fr 1fr !important;
+          gap: 8px !important;
           width: 100% !important;
+          margin-bottom: 8px !important;
         }
+        /* HÀNG 1: DOANH THU & LÃI CÙNG 1 HÀNG */
         #tab-phanmem .sw-top-header-bar > div:first-child {
+          grid-column: 1 / 2 !important;
+          grid-row: 1 !important;
+          width: 100% !important;
+          margin: 0 !important;
+          display: flex !important;
+        }
+        #tab-phanmem .sw-top-header-bar > div:last-child {
+          grid-column: 2 / 3 !important;
+          grid-row: 1 !important;
+          width: 100% !important;
+          margin: 0 !important;
+          display: flex !important;
+        }
+        #swRevenueBadge,
+        #tab-phanmem .sw-top-header-bar > div:last-child > .sw-stat-pill {
+          width: 100% !important;
+          height: 42px !important;
+          justify-content: center !important;
+          box-sizing: border-box !important;
+          padding: 0 10px !important;
+          margin: 0 !important;
+          background: #000000 !important;
+          border: 1.5px solid #334155 !important;
+          border-radius: 9px !important;
+        }
+        #btnSwExcelToggle, #swExcelActionsBox {
+          display: none !important;
+        }
+
+        /* HÀNG 2 & 3: LƯỚI 6 NÚT PHÍM TẮT (3 CỘT X 2 HÀNG) */
+        .sw-shortcuts-container,
+        #tab-phanmem .sw-top-header-bar > div:nth-child(2) {
+          grid-column: 1 / -1 !important;
+          grid-row: 2 !important;
+          display: grid !important;
+          grid-template-columns: repeat(3, 1fr) !important;
+          gap: 6px !important;
+          width: 100% !important;
+          margin: 0 !important;
+        }
+        .sw-shortcuts-container .sw-pill-btn,
+        #tab-phanmem .sw-pill-btn {
+          width: 100% !important;
+          height: 40px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 4px !important;
+          font-size: 0.82rem !important;
+          font-weight: 800 !important;
+          box-sizing: border-box !important;
+          border-radius: 8px !important;
+          background: #0f1623 !important;
+          border: 1.5px solid #1e293b !important;
+          color: #ffffff !important;
+          margin: 0 !important;
+          white-space: nowrap !important;
+        }
+        .sw-shortcuts-container .sw-pill-btn .sw-link-text,
+        #tab-phanmem .sw-pill-btn .sw-link-text {
+          font-size: 0.82rem !important;
+          font-weight: 800 !important;
+          color: #ffffff !important;
+        }
+        .sw-shortcuts-container .sw-btn-congno.active {
+          background: #8b5cf6 !important;
+          border-color: #a78bfa !important;
+          color: #ffffff !important;
+          box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4) !important;
+        }
+
+        /* HÀNG 4 & 5: BỘ LỌC NGÀY & NÚT DANH SÁCH PHẦN MỀM / TẠO ĐƠN MỚI */
+        #tab-phanmem .sw-toolbar {
+          display: grid !important;
+          grid-template-columns: 1.55fr 1fr !important;
+          gap: 8px !important;
+          width: 100% !important;
+          margin-bottom: 8px !important;
+        }
+        /* Hàng 4: Bộ lọc ngày chiếm trọn chiều ngang */
+        #tab-phanmem .sw-toolbar > div:nth-child(2) {
+          grid-column: 1 / -1 !important;
+          grid-row: 1 !important;
+          width: 100% !important;
+          display: flex !important;
+          justify-content: center !important;
+          margin: 0 !important;
+        }
+        #tab-phanmem .sw-toolbar .unified-date-filter-box {
           width: 100% !important;
           display: flex !important;
           justify-content: space-between !important;
-          align-items: center !important;
-        }
-        #tab-phanmem .sw-revenue-stat-pill {
-          flex: 1 1 auto !important;
-          justify-content: center !important;
-          height: 38px !important;
-          padding: 0 10px !important;
-        }
-        #tab-phanmem .sw-top-header-bar > div:last-child {
-          width: 100% !important;
-          display: flex !important;
-          justify-content: center !important;
-        }
-        #tab-phanmem .sw-top-header-bar > div:last-child .sw-stat-pill {
-          width: 100% !important;
-          justify-content: center !important;
-          height: 38px !important;
-          padding: 0 10px !important;
-        }
-        /* Lưới 6 nút phím tắt: 3 cột x 2 hàng tự động chia đều */
-        #tab-phanmem .sw-top-header-bar > div:nth-child(2) {
-          display: grid !important;
-          grid-template-columns: repeat(3, 1fr) !important;
-          gap: 5px !important;
-          width: 100% !important;
-        }
-        #tab-phanmem .sw-pill-btn {
-          width: 100% !important;
-          height: 36px !important;
-          padding: 0 4px !important;
-          font-size: 0.78rem !important;
-          font-weight: 800 !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          border-radius: 8px !important;
-          text-align: center !important;
           margin: 0 !important;
         }
-        #tab-phanmem .sw-pill-btn .sw-link-text {
-          font-size: 0.78rem !important;
-        }
-        #tab-phanmem .sw-toolbar {
-          display: flex !important;
-          flex-direction: column !important;
-          gap: 6px !important;
-          margin-bottom: 6px !important;
-          width: 100% !important;
-        }
-        #tab-phanmem .sw-toolbar > div {
+        /* Hàng 5 - Trái: Danh Sách Phần Mềm (Hồng) */
+        #tab-phanmem .sw-toolbar > div:first-child {
+          grid-column: 1 / 2 !important;
+          grid-row: 2 !important;
           width: 100% !important;
           display: flex !important;
-          justify-content: center !important;
+          align-items: center !important;
+          justify-content: flex-start !important;
+          margin: 0 !important;
         }
-        #tab-phanmem #swCustomerFilter {
+        #tab-phanmem #swCustomerFilter,
+        #tab-phanmem .sw-clear-btn {
+          display: none !important;
+        }
+        #tab-phanmem #swMainTitleBar {
+          display: inline-flex !important;
+          width: 100% !important;
           height: 38px !important;
-          font-size: 0.88rem !important;
+          justify-content: center !important;
+          align-items: center !important;
+          background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important;
+          color: #ffffff !important;
+          font-weight: 900 !important;
+          border-radius: 8px !important;
+          padding: 0 10px !important;
+          font-size: 0.92rem !important;
+          white-space: nowrap !important;
+          border: none !important;
+          box-shadow: 0 3px 10px rgba(236, 72, 153, 0.4) !important;
+        }
+        /* Hàng 5 - Phải: Tạo Đơn Mới (Vàng) */
+        #tab-phanmem .sw-toolbar > div:last-child {
+          grid-column: 2 / 3 !important;
+          grid-row: 2 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: flex-end !important;
+          margin: 0 !important;
           width: 100% !important;
-          flex: 1 1 auto !important;
+        }
+        #tab-phanmem .sw-btn-pay,
+        #tab-phanmem .sw-eye-toggle-btn {
+          display: none !important;
+        }
+        #tab-phanmem .sw-btn-create-new {
+          width: 100% !important;
+          height: 38px !important;
+          padding: 0 10px !important;
+          background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%) !important;
+          color: #ffffff !important;
+          font-weight: 900 !important;
+          font-size: 0.92rem !important;
+          border-radius: 8px !important;
+          white-space: nowrap !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          border: none !important;
+          box-shadow: 0 3px 10px rgba(245, 158, 11, 0.4) !important;
+        }
+        #tab-phanmem .sw-btn-create-new svg {
+          stroke: #ffffff !important;
+          width: 15px !important;
+          height: 15px !important;
+          margin-right: 4px !important;
+        }
+
+        /* BẢNG PHẦN MỀM: ÉP BUỘC HIỂN THỊ GỌN TRONG KHUNG, CHỈ HIỆN 3 CỘT (KHÁCH HÀNG, TÊN MÁY, BÁO GIÁ), KHÔNG KÉO TRÁI PHẢI */
+        #tab-phanmem .sales-table-container {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+          box-sizing: border-box !important;
+          border-radius: 8px !important;
+          background: #080d1a !important;
+          border: 1.5px solid #1e293b !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        #tab-phanmem .sw-main-table {
+          width: 100% !important;
+          max-width: 100% !important;
+          table-layout: fixed !important;
+          border-collapse: collapse !important;
+          margin: 0 !important;
+        }
+        #tab-phanmem .sw-main-table thead tr {
+          background: #059669 !important;
+        }
+        #tab-phanmem .sw-main-table th {
+          background: #059669 !important;
+          color: #ffffff !important;
+          font-weight: 900 !important;
+          font-size: 0.95rem !important;
+          padding: 8px 4px !important;
+          border: none !important;
+          border-right: 1px solid rgba(0, 0, 0, 0.18) !important;
+          white-space: nowrap !important;
+          letter-spacing: 0.5px !important;
+          text-align: center !important;
+          vertical-align: middle !important;
+        }
+        #tab-phanmem .sw-main-table th:nth-child(4),
+        #tab-phanmem .sw-main-table th:last-child {
+          border-right: none !important;
+        }
+
+        /* Checkbox thead bo góc màu trắng y chang ảnh */
+        #tab-phanmem #swCheckAll,
+        #tab-phanmem .sw-main-table th:first-child input[type="checkbox"] {
+          appearance: none !important;
+          -webkit-appearance: none !important;
+          width: 18px !important;
+          height: 18px !important;
+          background-color: #ffffff !important;
+          border-radius: 4px !important;
+          border: 1px solid #cbd5e1 !important;
+          cursor: pointer !important;
+          display: inline-block !important;
+          vertical-align: middle !important;
+          margin: 0 !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+        }
+        #tab-phanmem #swCheckAll:checked,
+        #tab-phanmem .sw-main-table th:first-child input[type="checkbox"]:checked {
+          background-color: #059669 !important;
+          border-color: #ffffff !important;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E") !important;
+          background-repeat: no-repeat !important;
+          background-position: center !important;
+        }
+
+        #tab-phanmem .sw-main-table th:first-child,
+        #tab-phanmem .sw-main-table td:first-child {
+          width: 38px !important;
+          max-width: 38px !important;
+          min-width: 38px !important;
+          text-align: center !important;
+          padding: 8px 2px !important;
+        }
+        #tab-phanmem .sw-main-table th:nth-child(2),
+        #tab-phanmem .sw-main-table td:nth-child(2) {
+          width: 35% !important;
+          text-align: left !important;
+          padding: 8px 6px !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+        #tab-phanmem .sw-main-table th:nth-child(3),
+        #tab-phanmem .sw-main-table td:nth-child(3) {
+          width: 33% !important;
+          text-align: left !important;
+          padding: 8px 6px !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+        #tab-phanmem .sw-main-table th:nth-child(4),
+        #tab-phanmem .sw-main-table td:nth-child(4) {
+          width: calc(32% - 38px) !important;
+          text-align: right !important;
+          padding: 8px 6px !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+        /* ẨN TOÀN BỘ CỘT PHÍ DV, ĐỚP, THANH TOÁN, GIỜ-NGÀY, THAO TÁC TRÊN MOBILE */
+        #tab-phanmem .sw-main-table th:nth-child(n+5),
+        #tab-phanmem .sw-main-table td:nth-child(n+5) {
+          display: none !important;
+        }
+        #tab-phanmem .sw-main-table td {
+          padding: 8px 4px !important;
+          border-bottom: 1px solid #1a2333 !important;
+          vertical-align: middle !important;
+        }
+        #tab-phanmem .sw-main-table td:nth-child(2) span {
+          font-size: 1.05rem !important;
+        }
+        #tab-phanmem .sw-main-table td:nth-child(3) span {
+          font-size: 1.05rem !important;
+        }
+        #tab-phanmem .sw-main-table td:nth-child(4) span {
+          font-size: 1.15rem !important;
+        }
+        #tab-phanmem .sw-main-table td[colspan] {
+          text-align: center !important;
+          width: 100% !important;
+          padding: 2.5rem 1rem !important;
+          color: #64748b !important;
+          font-weight: 700 !important;
+        }
+        #tab-phanmem .sales-footer-stats {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          text-align: center !important;
+          gap: 6px !important;
+          font-size: 0.85rem !important;
+          overflow: hidden !important;
+          padding: 8px 0 !important;
         }
 
         /* === TAB 3: BÁN MÁY MOBILE (< 768PX) === */
@@ -7261,13 +7500,19 @@
           display: none !important;
         }
 
-        /* HÀNG 3: BADGE MÁY ĐÃ BÁN & BẢO HÀNH */
+        /* HÀNG 3: BADGE MÁY ĐÃ BÁN & BẢO HÀNH (CỐ ĐỊNH TRÊN MOBILE KHI CUỘN) */
         .baohanh-title-row {
           display: flex !important;
           justify-content: center !important;
           align-items: center !important;
           width: 100% !important;
-          margin-bottom: 8px !important;
+          position: sticky !important;
+          top: 104px !important;
+          z-index: 850 !important;
+          background: #060a14 !important;
+          padding: 6px 0 8px 0 !important;
+          margin-bottom: 6px !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.75) !important;
         }
         .baohanh-title-row span {
           background: linear-gradient(180deg, #10b981 0%, #059669 100%) !important;
@@ -7295,22 +7540,7 @@
           display: none !important;
         }
         .baohanh-list-header-mobile {
-          display: block !important;
-          padding: 6px 2px 8px 2px !important;
-          background: transparent !important;
-          position: static !important;
-          box-shadow: none !important;
-          border: none !important;
-          margin-bottom: 4px !important;
-          width: 100% !important;
-          text-align: left !important;
-        }
-        .baohanh-list-header-mobile span {
-          color: #f59e0b !important;
-          font-weight: 900 !important;
-          font-size: 1.15rem !important;
-          letter-spacing: 0.5px !important;
-          text-transform: uppercase !important;
+          display: none !important;
         }
         .sold-phone-cards-mobile {
           display: flex !important;
@@ -7347,70 +7577,7 @@
           padding: 2.5px 5px !important;
         }
 
-        /* === TAB 1: PHẦN MỀM / CÔNG NỢ MOBILE (< 768PX) === */
-        #tab-phanmem .sw-top-header-bar {
-          display: flex !important;
-          flex-direction: column !important;
-          align-items: center !important;
-          gap: 6px !important;
-          width: 100% !important;
-          margin-bottom: 8px !important;
-        }
-        #tab-phanmem .sw-top-header-bar > div:first-child {
-          order: 1 !important;
-          width: 100% !important;
-          display: flex !important;
-          justify-content: center !important;
-        }
-        #swRevenueBadge {
-          width: auto !important;
-          min-width: 160px !important;
-          justify-content: center !important;
-          height: 38px !important;
-        }
-        #btnSwExcelToggle, #swExcelActionsBox {
-          display: none !important;
-        }
-        .sw-shortcuts-container {
-          order: 2 !important;
-          display: grid !important;
-          grid-template-columns: repeat(3, 1fr) !important;
-          gap: 6px !important;
-          width: 100% !important;
-        }
-        .sw-shortcuts-container .sw-pill-btn {
-          width: 100% !important;
-          height: 38px !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 4px !important;
-          font-size: 0.8rem !important;
-          font-weight: 800 !important;
-          box-sizing: border-box !important;
-          border-radius: 8px !important;
-          background: #111827 !important;
-          border: 1px solid #1e293b !important;
-          color: #ffffff !important;
-        }
-        .sw-shortcuts-container .sw-btn-congno.active {
-          background: #8b5cf6 !important;
-          border-color: #a78bfa !important;
-          color: #ffffff !important;
-          box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4) !important;
-        }
-        #tab-phanmem .sw-top-header-bar > div:last-child {
-          order: 3 !important;
-          width: 100% !important;
-          display: flex !important;
-          justify-content: center !important;
-        }
-        #tab-phanmem .sw-top-header-bar > div:last-child > .sw-stat-pill {
-          width: auto !important;
-          min-width: 160px !important;
-          justify-content: center !important;
-          height: 38px !important;
-        }
+
 
         /* KHUNG CÔNG NỢ PHẦN MỀM TRÊN MOBILE */
         .sw-debt-toolbar-row {
@@ -7603,11 +7770,13 @@
           background: rgba(0, 0, 0, 0.88) !important;
           backdrop-filter: blur(8px) !important;
           -webkit-backdrop-filter: blur(8px) !important;
-          padding: 10px !important;
+          padding: max(10px, env(safe-area-inset-top)) 8px 320px 8px !important;
           box-sizing: border-box !important;
           display: none !important;
           justify-content: center !important;
-          align-items: center !important;
+          align-items: flex-start !important;
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch !important;
         }
         .modal-overlay.active,
         .modal-overlay.show,
@@ -7622,12 +7791,12 @@
         .modal-overlay > div {
           width: 95vw !important;
           max-width: 95vw !important;
-          max-height: 92vh !important;
-          max-height: 92dvh !important;
+          max-height: 88vh !important;
+          max-height: 88dvh !important;
           overflow-y: auto !important;
           -webkit-overflow-scrolling: touch !important;
           padding: 16px 14px 24px 14px !important;
-          margin: auto !important;
+          margin: 6px auto !important;
           border-radius: 16px !important;
           box-sizing: border-box !important;
           background: #0c121e !important;
