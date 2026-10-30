@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261031_001753">
+  <link rel="stylesheet" href="css/style.css?v=20261031_002734">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261031_001753";
+    var CURRENT_PAGE_VERSION = "20261031_002734";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -342,9 +342,10 @@
     <!-- THANH CUỘN NGANG CHUYỂN TAB 1 CHẠM TRÊN MOBILE -->
     <nav class="mobile-quick-nav">
       <button type="button" class="mobile-tab-pill active" data-tab="banhang" onclick="switchMainTab('banhang')">🛒 Bán Hàng</button>
-      <button type="button" class="mobile-tab-pill" data-tab="phanmem" onclick="switchMainTab('phanmem')">💻 Phần Mềm</button>
       <button type="button" class="mobile-tab-pill" data-tab="banmay" onclick="switchMainTab('banmay')">📱 Bán Máy</button>
+      <button type="button" class="mobile-tab-pill" data-tab="banga" onclick="switchMainTab('banga')">🐓 Bán Gà</button>
       <button type="button" class="mobile-tab-pill" data-tab="baohanh" onclick="switchMainTab('baohanh')">🛡️ Bảo Hành</button>
+      <button type="button" class="mobile-tab-pill" data-tab="phanmem" onclick="switchMainTab('phanmem')">💻 Phần Mềm</button>
       <button type="button" class="mobile-tab-pill" data-tab="baogia" onclick="switchMainTab('baogia')">📋 Báo Giá</button>
     </nav>
 
@@ -1752,7 +1753,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261031_001753" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261031_002734" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -4042,21 +4043,17 @@
           </div>
         </div>
 
-        <!-- HÀNG 3: NGÀY & GIỜ & THANH TOÁN (CÙNG HÀNG NGANG BẰNG NHAU) -->
+        <!-- HÀNG 3: NGÀY & THANH TOÁN (CÙNG HÀNG NGANG BẰNG NHAU) -->
         <div class="sw-input-row" style="align-items: flex-start; margin-bottom: 1.15rem;">
-          <div class="sw-input-col" style="flex: 1.1;">
-            <label class="sw-input-label">Ngày & giờ <span class="req">*</span></label>
-            <div class="sw-time-inputs-group" style="height: 42px; align-items: stretch;">
-              <div class="sw-input-with-tools" style="flex: 1; padding: 0 10px; height: 42px; box-sizing: border-box;">
-                <input type="text" class="sw-input-field" id="swFormDate"
-                  style="color: #10b981; font-weight: 800; cursor: pointer; text-align: center; padding: 0; height: 100%; font-size: 0.92rem;" value="24/10/2026">
-              </div>
-              <select class="sw-select-time" id="swFormHour" style="width: 44px; height: 42px; padding: 0; box-sizing: border-box; text-align: center; text-align-last: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;"></select>
-              <select class="sw-select-time" id="swFormMin" style="width: 44px; height: 42px; padding: 0; box-sizing: border-box; text-align: center; text-align-last: center; -webkit-appearance: none; -moz-appearance: none; appearance: none;"></select>
+          <div class="sw-input-col" style="flex: 1;">
+            <label class="sw-input-label">Ngày <span class="req">*</span></label>
+            <div class="sw-input-with-tools" style="height: 42px; box-sizing: border-box; padding: 0 10px;">
+              <input type="text" class="sw-input-field" id="swFormDate"
+                style="color: #10b981; font-weight: 800; cursor: pointer; text-align: center; padding: 0; height: 100%; font-size: 0.95rem; width: 100%;" value="24/10/2026">
             </div>
           </div>
 
-          <div class="sw-input-col" style="flex: 0.9;">
+          <div class="sw-input-col" style="flex: 1;">
             <label class="sw-input-label">Thanh toán <span class="req">*</span></label>
             <div style="height: 42px;">
               <select class="sw-select-box" id="swFormPayment"
@@ -5219,10 +5216,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261031_001753"></script>
+  <script src="js/seed_data.js?v=20261031_002734"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261031_001753"></script>
+  <script src="js/main.js?v=20261031_002734"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

@@ -9731,8 +9731,10 @@
       }
 
       const now = getVietnamDate();
-      document.getElementById('swFormHour').value = String(now.getHours()).padStart(2, '0');
-      document.getElementById('swFormMin').value = String(now.getMinutes()).padStart(2, '0');
+      const hIn = document.getElementById('swFormHour');
+      const mIn = document.getElementById('swFormMin');
+      if (hIn) hIn.value = String(now.getHours()).padStart(2, '0');
+      if (mIn) mIn.value = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('swFormPayment').value = 'NỢ DAI VL';
 
       if (editId) {
@@ -9754,8 +9756,8 @@
           if (item.time) {
             let t = item.time.split(':');
             if (t.length === 2) {
-              document.getElementById('swFormHour').value = t[0];
-              document.getElementById('swFormMin').value = t[1];
+              if (hIn) hIn.value = t[0];
+              if (mIn) mIn.value = t[1];
             }
           }
           let isPaid = (item.paymentStatus === 'ĐÃ TRẢ' || item.paymentStatus === 'ĐÃ THANH TOÁN');
@@ -9777,10 +9779,12 @@
       const customer = document.getElementById('swCustomerInput').value.trim();
       const device = document.getElementById('swDeviceInput').value.trim();
       const price = document.getElementById('swPriceInput').value.trim();
-      const cost = document.getElementById('swFeeInput').value.trim() || '0';
       const dateVal = document.getElementById('swFormDate').value.trim();
-      const hourVal = document.getElementById('swFormHour').value;
-      const minVal = document.getElementById('swFormMin').value;
+      const hourEl = document.getElementById('swFormHour');
+      const minEl = document.getElementById('swFormMin');
+      const nowTime = getVietnamDate();
+      const hourVal = hourEl ? hourEl.value : String(nowTime.getHours()).padStart(2, '0');
+      const minVal = minEl ? minEl.value : String(nowTime.getMinutes()).padStart(2, '0');
       const paymentStatus = document.getElementById('swFormPayment').value;
 
       let pNum = parseFloat(price.replace(/\D/g, '')) || 0;
