@@ -8,8 +8,11 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_193742">
+  <link rel="stylesheet" href="css/style.css?v=20261030_200054">
   <script>
+    // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
+    var CURRENT_PAGE_VERSION = "20261030_200054";
+
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function (registrations) {
@@ -19,12 +22,76 @@
       }).catch(function () {});
     }
 
+    // === XÓA TOÀN BỘ CACHE API (nếu có) ===
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        names.forEach(function(n) { caches.delete(n); });
+      }).catch(function(){});
+    }
+
+    // === AUTO VERSION CHECK: Tự động reload khi phát hiện bản mới hơn ===
+    // Chạy ngay khi trang load (không chờ DOMContentLoaded để nhanh nhất có thể)
+    (function autoVersionCheck() {
+      // Tránh vòng lặp reload vô hạn: chỉ check 1 lần mỗi 30 giây
+      var RELOAD_LOCK_KEY = '_kimchi_last_version_reload';
+      var now = Date.now();
+      var lastReload = parseInt(sessionStorage.getItem(RELOAD_LOCK_KEY) || '0', 10);
+      if (now - lastReload < 30000) return; // đang trong 30 giây khóa → bỏ qua
+
+      // Fetch version.json với timestamp để LUÔN bypass cache iOS
+      var versionUrl = 'version.json?_nocache=' + now + '&_r=' + Math.random();
+      fetch(versionUrl, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        var serverVersion = (data && data.version) ? String(data.version).trim() : '';
+        var localVersion  = String(CURRENT_PAGE_VERSION).trim();
+        if (serverVersion && serverVersion !== localVersion) {
+          // Phát hiện phiên bản mới → đánh dấu thời điểm reload và hard reload
+          sessionStorage.setItem(RELOAD_LOCK_KEY, String(Date.now()));
+          // Xóa cache trước khi reload
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              names.forEach(function(n) { caches.delete(n); });
+              doHardReload();
+            }).catch(doHardReload);
+          } else {
+            doHardReload();
+          }
+        }
+      })
+      .catch(function() { /* Lỗi network → bỏ qua, không reload */ });
+
+      function doHardReload() {
+        var u = new URL(window.location.href);
+        u.searchParams.set('_v', Date.now());
+        window.location.replace(u.toString());
+      }
+    })();
+
+    // === FIX iOS BFCACHE: Khi user bấm nút Back/Forward trên Safari ===
+    // Safari iOS giữ trang trong bfcache → JS không chạy lại → trang cũ hiện ra
+    window.addEventListener('pageshow', function(e) {
+      if (e.persisted) {
+        // Trang được phục hồi từ bfcache → force reload toàn bộ
+        var u = new URL(window.location.href);
+        u.searchParams.set('_bfc', Date.now());
+        window.location.replace(u.toString());
+      }
+    });
+
     // === HÀM LÀM MỚI CƯỠNG BỨC KHI BẤM NÚT 🔄 TRÊN MOBILE ===
     window.hardRefreshApp = function() {
       if ('caches' in window) {
         caches.keys().then(function(names) {
           names.forEach(function(n) { caches.delete(n); });
-        });
+        }).catch(function(){});
       }
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -33,6 +100,7 @@
           }
         }).catch(function(){});
       }
+      sessionStorage.removeItem('_kimchi_last_version_reload');
       var u = new URL(window.location.href);
       u.searchParams.set('_t', Date.now());
       window.location.replace(u.toString());
@@ -203,6 +271,9 @@
         </div>
 
         <button type="submit" class="login-btn">ĐĂNG NHẬP NGAY</button>
+        <button type="button" onclick="hardRefreshApp()" style="margin-top: 10px; width: 100%; background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #94a3b8; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <span>🔄</span> <span>Làm mới & Tải bản mới nhất (Xóa Cache)</span>
+        </button>
         <div id="loginError" class="login-error">Mật khẩu không chính xác! Vui lòng thử lại.</div>
       </form>
     </div>
@@ -1667,7 +1738,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_193742" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_200054" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5147,10 +5218,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_193742"></script>
+  <script src="js/seed_data.js?v=20261030_200054"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_193742"></script>
+  <script src="js/main.js?v=20261030_200054"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
