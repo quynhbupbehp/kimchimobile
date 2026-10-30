@@ -1394,7 +1394,8 @@
     .phone-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr) !important;
-      gap: 12px !important;
+      column-gap: 32px !important;
+      row-gap: 13px !important;
       align-items: start;
       width: 100% !important;
       max-width: 100% !important;
