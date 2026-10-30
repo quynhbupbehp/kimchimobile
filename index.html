@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_214519">
+  <link rel="stylesheet" href="css/style.css?v=20261030_221945">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261030_214519";
+    var CURRENT_PAGE_VERSION = "20261030_221945";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -837,20 +837,31 @@
           <!-- BẢNG DANH SÁCH (CHUẨN ẢNH) -->
           <div class="sales-table-container">
             <table class="sales-table sw-main-table">
+              <colgroup>
+                <col class="sw-cg-check">
+                <col class="sw-cg-customer">
+                <col class="sw-cg-device">
+                <col class="sw-cg-price">
+                <col class="sw-cg-extra">
+                <col class="sw-cg-extra">
+                <col class="sw-cg-extra">
+                <col class="sw-cg-extra">
+                <col class="sw-cg-extra">
+              </colgroup>
               <thead>
                 <tr>
-                  <th class="sw-col-check" style="width: 44px; text-align: center;">
+                  <th class="sw-col-check">
                     <input type="checkbox" class="sw-checkbox" id="swCheckAll" onchange="toggleSelectAllSoftware(this)"
                       style="accent-color: #10b981;">
                   </th>
-                  <th class="sw-col-customer" style="text-align: left;">KHÁCH HÀNG</th>
-                  <th class="sw-col-device" style="text-align: left;">TÊN MÁY</th>
-                  <th class="sw-col-price" style="text-align: center;">BÁO GIÁ</th>
-                  <th class="sw-col-extra" style="text-align: center;">PHÍ DV</th>
-                  <th class="sw-col-extra" style="text-align: center;">ĐỚP</th>
-                  <th class="sw-col-extra" style="text-align: center;">THANH TOÁN</th>
-                  <th class="sw-col-extra" style="text-align: center;">GIỜ - NGÀY</th>
-                  <th class="sw-col-extra" style="text-align: center;">THAO TÁC</th>
+                  <th class="sw-col-customer">KHÁCH HÀNG</th>
+                  <th class="sw-col-device">TÊN MÁY</th>
+                  <th class="sw-col-price">GIÁ</th>
+                  <th class="sw-col-extra">PHÍ DV</th>
+                  <th class="sw-col-extra">ĐỚP</th>
+                  <th class="sw-col-extra">THANH TOÁN</th>
+                  <th class="sw-col-extra">GIỜ - NGÀY</th>
+                  <th class="sw-col-extra">THAO TÁC</th>
                 </tr>
               </thead>
               <tbody id="softwareTableBody">
@@ -1741,7 +1752,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_214519" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_221945" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5226,10 +5237,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_214519"></script>
+  <script src="js/seed_data.js?v=20261030_221945"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_214519"></script>
+  <script src="js/main.js?v=20261030_221945"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

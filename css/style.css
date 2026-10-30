@@ -6975,7 +6975,7 @@
           margin-right: 4px !important;
         }
 
-        /* BẢNG PHẦN MỀM: ÉP BUỘC HIỂN THỊ GỌN TRONG KHUNG, CHỈ HIỆN 3 CỘT (KHÁCH HÀNG, TÊN MÁY, BÁO GIÁ), KHÔNG KÉO TRÁI PHẢI */
+        /* BẢNG PHẦN MỀM: ÉP BUỘC HIỂN THỊ GỌN TRONG KHUNG, HIỆN ĐỦ 3 CỘT (KHÁCH HÀNG, TÊN MÁY, GIÁ), KHÔNG CUỘN NGANG */
         #tab-phanmem .sales-table-container {
           width: 100% !important;
           max-width: 100% !important;
@@ -6990,6 +6990,7 @@
         #tab-phanmem .sw-main-table {
           width: 100% !important;
           max-width: 100% !important;
+          min-width: 100% !important;
           table-layout: fixed !important;
           border-collapse: collapse !important;
           margin: 0 !important;
@@ -7001,84 +7002,102 @@
           background: #059669 !important;
           color: #ffffff !important;
           font-weight: 900 !important;
-          font-size: 0.95rem !important;
+          font-size: 0.90rem !important;
           padding: 8px 4px !important;
           border: none !important;
           border-right: 1px solid rgba(0, 0, 0, 0.18) !important;
           white-space: nowrap !important;
           letter-spacing: 0.5px !important;
-          text-align: center !important;
           vertical-align: middle !important;
+          box-sizing: border-box !important;
         }
-        #tab-phanmem .sw-main-table th:nth-child(4),
-        #tab-phanmem .sw-main-table th:last-child {
-          border-right: none !important;
-        }
+
+        /* ĐỊNH NGHĨA KÍCH THƯỚC COLGROUP TRÊN MOBILE */
+        #tab-phanmem .sw-main-table col.sw-cg-check { width: 0% !important; display: none !important; }
+        #tab-phanmem .sw-main-table col.sw-cg-customer { width: 28% !important; }
+        #tab-phanmem .sw-main-table col.sw-cg-device { width: 44% !important; }
+        #tab-phanmem .sw-main-table col.sw-cg-price { width: 28% !important; }
+        #tab-phanmem .sw-main-table col.sw-cg-extra { width: 0% !important; display: none !important; }
 
         /* ẨN CỘT CHECKBOX VÀ CÁC CỘT PHỤ TRÊN MOBILE */
         #tab-phanmem .sw-main-table .sw-col-check,
+        #tab-phanmem .sw-main-table th.sw-col-check,
+        #tab-phanmem .sw-main-table td.sw-col-check,
         #tab-phanmem .sw-main-table th:first-child,
         #tab-phanmem .sw-main-table td:first-child,
         #tab-phanmem .sw-main-table .sw-col-extra,
-        #tab-phanmem .sw-main-table th:nth-child(n+5),
-        #tab-phanmem .sw-main-table td:nth-child(n+5) {
+        #tab-phanmem .sw-main-table th.sw-col-extra,
+        #tab-phanmem .sw-main-table td.sw-col-extra {
           display: none !important;
           width: 0 !important;
+          max-width: 0 !important;
           padding: 0 !important;
+          border: none !important;
         }
 
-        /* 3 CỘT CHÍNH TRÊN MOBILE: KHÁCH HÀNG (28%) - TÊN MÁY (38%) - BÁO GIÁ (34%) */
+        /* 3 CỘT CHÍNH TRÊN MOBILE: KHÁCH HÀNG (28%) - TÊN MÁY (44%) - GIÁ (28%) */
         #tab-phanmem .sw-main-table .sw-col-customer,
-        #tab-phanmem .sw-main-table th:nth-child(2),
-        #tab-phanmem .sw-main-table td:nth-child(2) {
+        #tab-phanmem .sw-main-table th.sw-col-customer,
+        #tab-phanmem .sw-main-table td.sw-col-customer {
           display: table-cell !important;
           width: 28% !important;
+          max-width: 28% !important;
           text-align: left !important;
           padding: 8px 4px !important;
           white-space: nowrap !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
+          box-sizing: border-box !important;
         }
         #tab-phanmem .sw-main-table .sw-col-device,
-        #tab-phanmem .sw-main-table th:nth-child(3),
-        #tab-phanmem .sw-main-table td:nth-child(3) {
+        #tab-phanmem .sw-main-table th.sw-col-device,
+        #tab-phanmem .sw-main-table td.sw-col-device {
           display: table-cell !important;
-          width: 38% !important;
+          width: 44% !important;
+          max-width: 44% !important;
           text-align: left !important;
           padding: 8px 4px !important;
           white-space: nowrap !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
+          box-sizing: border-box !important;
         }
         #tab-phanmem .sw-main-table .sw-col-price,
-        #tab-phanmem .sw-main-table th:nth-child(4),
-        #tab-phanmem .sw-main-table td:nth-child(4) {
+        #tab-phanmem .sw-main-table th.sw-col-price,
+        #tab-phanmem .sw-main-table td.sw-col-price {
           display: table-cell !important;
-          width: 34% !important;
-          text-align: center !important;
-          padding: 8px 4px !important;
+          width: 28% !important;
+          max-width: 28% !important;
+          text-align: right !important;
+          padding: 8px 6px 8px 2px !important;
           white-space: nowrap !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
+          box-sizing: border-box !important;
+          border-right: none !important;
         }
 
         #tab-phanmem .sw-main-table td {
           padding: 8px 4px !important;
           border-bottom: 1px solid #1a2333 !important;
           vertical-align: middle !important;
+          box-sizing: border-box !important;
         }
-        /* GIẢM CỠ CHỮ KHÁCH HÀNG, TÊN MÁY VÀ GIÁ 10% */
-        #tab-phanmem .sw-main-table .sw-col-customer span,
-        #tab-phanmem .sw-main-table td:nth-child(2) span {
+        /* CỠ CHỮ KHÁCH HÀNG, TÊN MÁY VÀ GIÁ GỌN ĐẸP */
+        #tab-phanmem .sw-main-table .sw-col-customer span {
           font-size: 0.88rem !important;
+          color: #f59e0b !important;
+          font-weight: 900 !important;
         }
-        #tab-phanmem .sw-main-table .sw-col-device span,
-        #tab-phanmem .sw-main-table td:nth-child(3) span {
+        #tab-phanmem .sw-main-table .sw-col-device span {
           font-size: 0.90rem !important;
+          color: #ffffff !important;
+          font-weight: 800 !important;
         }
-        #tab-phanmem .sw-main-table .sw-col-price span,
-        #tab-phanmem .sw-main-table td:nth-child(4) span {
-          font-size: 0.98rem !important;
+        #tab-phanmem .sw-main-table .sw-col-price span {
+          font-size: 0.96rem !important;
+          color: #ef4444 !important;
+          font-weight: 900 !important;
           display: inline-block !important;
         }
         #tab-phanmem .sw-main-table td[colspan] {
