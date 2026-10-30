@@ -8,10 +8,32 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_010052">
+  <link rel="stylesheet" href="css/style.css?v=20261030_081952">
   <script>
+    // === XÓA BỎ HOÀN TOÀN SERVICE WORKER ĐỀ PHÒNG CACHE NGẦM SAFARI/CHROME ===
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (var i = 0; i < registrations.length; i++) {
+          registrations[i].unregister();
+        }
+      }).catch(function () {});
+    }
+
+    // === DỌN SẠCH CÁC BẢNG CACHE LOCAL DỮ LIỆU CŨ, CHUYỂN HOÀN TOÀN SANG FIREBASE ===
+    (function () {
+      var obsoleteKeys = [
+        'KIMCHI_PHONE_DB', 'KIMCHI_SOLD_PHONE_DB', 'KIMCHI_SALES_DB', 'KIMCHI_BANGA_DB',
+        'KIMCHI_MAIN_XAC_DB', 'KIMCHI_REPAIR_DB', 'KIMCHI_PHANMEM_DB', 'KIMCHI_SALES_CLEARED',
+        'KIMCHI_BANGA_CLEARED', 'KIMCHI_PHONE_CLEARED', 'KIMCHI_SOLD_PHONE_CLEARED',
+        'KIMCHI_PHANMEM_CLEARED', 'KIMCHI_REPAIR_CLEARED', 'KIMCHI_SALES_CLEAR_OCT25'
+      ];
+      for (var i = 0; i < obsoleteKeys.length; i++) {
+        try { localStorage.removeItem(obsoleteKeys[i]); } catch (e) {}
+      }
+    })();
+
     // === CƠ CHẾ TỰ ĐỘNG PHÁ CACHE SAFARI & DI ĐỘNG 100% ===
-    var CURRENT_PAGE_VERSION = "20261030_010052";
+    var CURRENT_PAGE_VERSION = "20261030_081952";
     
     function checkAppVersion() {
       // Gọi version.json với tham số ngẫu nhiên thời gian thực để Safari KHÔNG THỂ lưu cache
@@ -54,6 +76,13 @@
           names.forEach(function(n) { caches.delete(n); });
         });
       }
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var i = 0; i < registrations.length; i++) {
+            registrations[i].unregister();
+          }
+        }).catch(function(){});
+      }
       var u = new URL(window.location.href);
       u.searchParams.set('_t', Date.now());
       window.location.replace(u.toString());
@@ -64,7 +93,9 @@
       function checkLoginEarly() {
         var isLogged = false;
         try {
-          isLogged = (sessionStorage.getItem('KIMCHI_AUTH_TOKEN') === '250991' || localStorage.getItem('KIMCHI_AUTH_TOKEN') === '250991');
+          var token = sessionStorage.getItem('KIMCHI_AUTH_TOKEN') || localStorage.getItem('KIMCHI_AUTH_TOKEN');
+          var validTokens = ['250991', 'Huyen@95'];
+          isLogged = validTokens.indexOf(token) !== -1;
         } catch (e) { }
 
         var sc = document.getElementById('loginScreen');
@@ -87,6 +118,7 @@
       checkLoginEarly();
       window.addEventListener('DOMContentLoaded', checkLoginEarly);
       window.addEventListener('load', checkLoginEarly);
+
 
       function removeNetlifyBadge() {
         var el = document.getElementById('nl-badge-frame') || document.querySelector('[id*="nl-badge"]') || document.querySelector('[class*="nl-badge"]');
@@ -209,7 +241,7 @@
 
         <div class="login-field">
           <label class="login-label">Mật Khẩu</label>
-          <input type="password" id="loginPass" class="login-input" placeholder="Nhập mật khẩu (250991)" required autocomplete="current-password"
+          <input type="password" id="loginPass" class="login-input" placeholder="Nhập mật khẩu" required autocomplete="current-password"
             value="">
         </div>
 
@@ -218,7 +250,6 @@
             <input type="checkbox" id="rememberMe" checked>
             <span>Lưu mật khẩu</span>
           </label>
-          <button type="button" class="btn-change-pass" onclick="alert('Mật khẩu hệ thống là: 250991')"></button>
         </div>
 
         <button type="submit" class="login-btn">ĐĂNG NHẬP NGAY</button>
@@ -1497,15 +1528,14 @@
               title="Doanh thu Ngày">0</span>
           </div>
 
-          <!-- 2. BỘ LỌC XEM THEO (NGÀY / THÁNG / NĂM) & BOX CHỌN NGÀY Ở GIỮA -->
-          <!-- BỘ LỌC XEM THEO THỐNG NHẤT (CHUẨN MẪU MỚI: [Ngày ▼] [<] 24/10/2026 [>] [📅]) -->
-          <div class="unified-date-filter-box">
+          <!-- 2. BỘ LỌC XEM THEO (NGÀY / THÁNG / NĂM) - ẨN ĐI THEO YÊU CẦU, MẶC ĐỊNH TẤT CẢ -->
+          <div class="unified-date-filter-box" style="display: none;">
             <select class="unified-mode-select" id="soldPhoneModeSelect" onchange="setSoldPhoneMode(this.value)"
               title="Xem theo Tháng / Ngày / Năm / Tất cả">
-              <option value="month" selected>Tháng</option>
+              <option value="month">Tháng</option>
               <option value="day">Ngày</option>
               <option value="year">Năm</option>
-              <option value="all">Tất cả</option>
+              <option value="all" selected>Tất cả</option>
             </select>
 
             <div class="unified-date-ctrls" id="soldPhoneDateFilterBox" style="display: none;">
@@ -1537,7 +1567,7 @@
                 onchange="handleNativeDateChange('soldPhone', this.value)">
             </div>
 
-            <div class="unified-date-ctrls" id="soldPhoneMonthFilterBox">
+            <div class="unified-date-ctrls" id="soldPhoneMonthFilterBox" style="display: none;">
               <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterMonth(-1)"
                 title="Lùi 1 tháng">
                 <svg viewBox="0 0 24 24">
@@ -1587,83 +1617,82 @@
           </div>
         </div>
 
-        <!-- HÀNG 2: MÁY ĐÃ BÁN & BẢO HÀNH + TÌM KIẾM & CỤM EXCEL -->
-        <div
-          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; gap: 12px; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap;">
-            <span
-              style="background: linear-gradient(180deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 7px 18px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">MÁY
-              ĐÃ BÁN & BẢO HÀNH</span>
-
-            <!-- Ô TÌM KIẾM CÓ CHỮ TÌM KIẾM Ở TRƯỚC -->
-            <div class="search-box-bm" style="width: 300px; height: 38px; box-sizing: border-box; padding: 6px 12px;">
-              <span class="search-label-single-line" style="color: #ffffff;">TÌM KIẾM</span>
-              <input type="text" id="soldPhoneSearchInput" class="search-input-field"
-                placeholder="🔍 Tìm tên máy, IMEI, khách..." oninput="handleSoldPhoneSearchInput(this)">
-              <button type="button" id="btnClearSoldPhoneSearch" class="btn-clear-search"
-                onclick="clearSoldPhoneSearch()" title="Xóa tìm kiếm">✕</button>
-            </div>
-
-            <!-- BỘ LỌC BẢO HÀNH (BÊN PHẢI Ô TÌM KIẾM) -->
-            <div class="price-filter-box-bm" style="height: 38px; box-sizing: border-box; padding: 6px 12px;">
-              <span class="price-filter-label" style="color: #38bdf8;">BẢO HÀNH</span>
-              <select id="soldPhoneWarrantyFilter" class="price-filter-select"
-                onchange="handleSoldPhoneWarrantyFilterChange(this)">
-                <option value="ALL">Tất Cả</option>
-                <option value="CON">Còn Bảo Hành</option>
-                <option value="HET">Hết Bảo Hành</option>
-              </select>
-            </div>
+        <!-- HÀNG 2: TÌM KIẾM VÀ ĐÃ BÁN TRÊN CÙNG 1 HÀNG NHƯ MẪU -->
+        <div class="baohanh-search-row"
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; gap: 8px; width: 100%;">
+          <!-- Ô TÌM KIẾM CÓ CHỮ TÌM KIẾM Ở TRƯỚC -->
+          <div class="search-box-bm" style="flex: 1; height: 38px; box-sizing: border-box; padding: 6px 12px;">
+            <span class="search-label-single-line" style="color: #ffffff; font-weight: 800;">TÌM KIẾM</span>
+            <input type="text" id="soldPhoneSearchInput" class="search-input-field"
+              placeholder="🔍 Tìm tên máy, IMEI" oninput="handleSoldPhoneSearchInput(this)">
+            <button type="button" id="btnClearSoldPhoneSearch" class="btn-clear-search"
+              onclick="clearSoldPhoneSearch()" title="Xóa tìm kiếm">✕</button>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL BẢO HÀNH -->
-            <div style="display: inline-flex; align-items: center; gap: 8px;">
-              <button type="button" id="btnSoldPhoneExcelToggle" class="btn-excel-toggle-custom"
-                onclick="toggleSoldPhoneExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
-                <span id="soldPhoneExcelArrowIcon"
-                  style="display: inline-block; transition: transform 0.25s ease;">❯</span>
+          <!-- BỘ LỌC BẢO HÀNH (ẨN ĐI THEO YÊU CẦU, MẶC ĐỊNH TẤT CẢ) -->
+          <div class="price-filter-box-bm" style="display: none;">
+            <span class="price-filter-label" style="color: #38bdf8;">BẢO HÀNH</span>
+            <select id="soldPhoneWarrantyFilter" class="price-filter-select"
+              onchange="handleSoldPhoneWarrantyFilterChange(this)">
+              <option value="ALL" selected>Tất Cả</option>
+              <option value="CON">Còn Bảo Hành</option>
+              <option value="HET">Hết Bảo Hành</option>
+            </select>
+          </div>
+
+          <!-- KHỐI ĐÃ BÁN -->
+          <div class="baohanh-count-box"
+            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; height: 38px; padding: 0 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);">
+            <span style="font-size: 0.97rem; color: #ffffff; font-weight: 800; white-space: nowrap;" id="soldPhoneCountText">Đã Bán : 0</span>
+          </div>
+
+          <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL BẢO HÀNH (HIỆN TRÊN DESKTOP) -->
+          <div class="baohanh-excel-controls" style="display: inline-flex; align-items: center; gap: 8px;">
+            <button type="button" id="btnSoldPhoneExcelToggle" class="btn-excel-toggle-custom"
+              onclick="toggleSoldPhoneExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
+              <span id="soldPhoneExcelArrowIcon"
+                style="display: inline-block; transition: transform 0.25s ease;">❯</span>
+            </button>
+
+            <div id="soldPhoneActionsBox" style="display: none; align-items: center; gap: 8px;">
+              <button type="button" class="btn-action-sales" onclick="triggerImportSoldPhoneExcel()"
+                title="Nhập dữ liệu Bảo Hành từ file Excel (.csv, .xlsx)"
+                style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
+                📥 Nhập
               </button>
-
-              <div id="soldPhoneActionsBox" style="display: none; align-items: center; gap: 8px;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportSoldPhoneExcel()"
-                  title="Nhập dữ liệu Bảo Hành từ file Excel (.csv, .xlsx)"
-                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
-                  📥 Nhập
-                </button>
-                <button type="button" class="btn-action-sales" onclick="exportSoldPhoneToExcel()"
-                  title="Xuất danh sách Bảo Hành ra file Excel"
-                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
-                  📤 Xuất
-                </button>
-                <button type="button" class="btn-action-sales" onclick="clearAllSoldPhoneData()"
-                  title="Xóa toàn bộ danh sách Bảo Hành để nhập lại từ đầu"
-                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
-                  🗑️ Xóa Hết
-                </button>
-                <input type="file" id="soldPhoneExcelFileInput" accept=".csv, .xlsx, .xls, text/csv"
-                  style="display: none;" onchange="handleImportSoldPhoneExcelFile(event)">
-              </div>
-            </div>
-
-            <div
-              style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 14px; display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 0.97rem; color: #ffffff; font-weight: 800;" id="soldPhoneCountText">Máy Đã Bán :
-                0</span>
+              <button type="button" class="btn-action-sales" onclick="exportSoldPhoneToExcel()"
+                title="Xuất danh sách Bảo Hành ra file Excel"
+                style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
+                📤 Xuất
+              </button>
+              <button type="button" class="btn-action-sales" onclick="clearAllSoldPhoneData()"
+                title="Xóa toàn bộ danh sách Bảo Hành để nhập lại từ đầu"
+                style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
+                🗑️ Xóa Hết
+              </button>
+              <input type="file" id="soldPhoneExcelFileInput" accept=".csv, .xlsx, .xls, text/csv"
+                style="display: none;" onchange="handleImportSoldPhoneExcelFile(event)">
             </div>
           </div>
         </div>
 
+        <!-- HÀNG 3: BADGE TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH NHƯ MẪU -->
+        <div class="baohanh-title-row" style="display: flex; justify-content: center; align-items: center; margin-bottom: 0.5rem; width: 100%;">
+          <span
+            style="background: linear-gradient(180deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 6px 20px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">MÁY
+            ĐÃ BÁN & BẢO HÀNH</span>
+        </div>
+
         <div class="sales-table-container">
-          <!-- TIÊU ĐỀ HÃNG / TÊN MÁY TRÊN MOBILE -->
-          <div class="baohanh-list-header-mobile" style="display: none;">
-            <span style="color: #f59e0b; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.5px;">HÃNG / TÊN MÁY</span>
+          <!-- TIÊU ĐỀ THÔNG TIN MÁY ĐÃ BÁN CỐ ĐỊNH TRÊN MOBILE -->
+          <div class="baohanh-list-header-mobile">
+            <span style="color: #f59e0b; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.5px;">THÔNG TIN MÁY ĐÃ BÁN</span>
           </div>
 
           <table class="sales-table">
             <thead>
               <tr>
-                <th style="color: #eab308; text-align: left; padding-left: 16px; font-size: 1.08rem;">HÃNG / TÊN MÁY
+                <th style="color: #eab308; text-align: left; padding-left: 16px; font-size: 1.08rem;">THÔNG TIN MÁY ĐÃ BÁN
                 </th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ BÁN</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ NHẬP</th>
@@ -1686,7 +1715,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_010052" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_081952" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5188,10 +5217,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_010052"></script>
+  <script src="js/seed_data.js?v=20261030_081952"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_010052"></script>
+  <script src="js/main.js?v=20261030_081952"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

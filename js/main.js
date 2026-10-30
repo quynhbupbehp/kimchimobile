@@ -334,6 +334,8 @@
     function formatBrandDeviceName(str) {
       if (!str || typeof str !== 'string') return str || '';
       let res = str;
+      // Loại bỏ GB bị thêm nhầm sau 1 hoặc 2 số của tên máy (VD: 9GB, 11GB, 12GB, 14GB -> 9, 11, 12, 14)
+      res = res.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1');
       // Riêng iphone và ipad: người dùng ghi iphone/ipad thì hiển thị iPhone/iPad, còn ghi IPHONE/IPAD thì hiển thị đúng như vậy
       res = res.replace(/(?<!\p{L})(iphone|Iphone)(?!\p{L})/gu, 'iPhone');
       res = res.replace(/(?<!\p{L})(ipad|Ipad)(?!\p{L})/gu, 'iPad');
@@ -416,9 +418,11 @@
         return `${s}GB`;
       }
 
-      // 4. Số kèm gb/g viết thường hoặc cách ra: 64 gb, 64g, 64GB -> 64GB
+      // 4. Số kèm ggb, gb, g viết thường hoặc cách ra: 256 ggb -> 256GB, 64 gb, 64g, 64GB -> 64GB
+      s = s.replace(/(\d+)\s*ggb\b/gi, '$1GB');
       s = s.replace(/(\d+)\s*(gb|tb|mb|kb)\b/gi, (match, num, unit) => num + unit.toUpperCase());
-      s = s.replace(/(\d+)\s*(g|t)\b/gi, (match, num, unit) => num + unit.toUpperCase());
+      s = s.replace(/(\d+)\s*g\b/gi, '$1GB');
+      s = s.replace(/(\d+)\s*t\b/gi, '$1TB');
 
       // 5. Chuẩn hóa đơn vị viết hoa
       s = s.replace(/(^|[\s\/\-\(\[\{.,:+])(gb|tb|mb|kb)\b/gi, (match, sep, unit) => sep + unit.toUpperCase());
@@ -1355,19 +1359,24 @@
         if (typeof e.preventDefault === 'function') e.preventDefault();
         if (typeof e.stopPropagation === 'function') e.stopPropagation();
       }
+      const user = document.getElementById('loginUser') ? document.getElementById('loginUser').value.trim() : '';
       const pass = document.getElementById('loginPass') ? document.getElementById('loginPass').value.trim() : '';
+      const validPassList = ["250991", "Huyen@95"];
       
-      if (pass === "250991") {
+      const isUserValid = (user.toLowerCase() === 'admin');
+      const isPassValid = validPassList.includes(pass);
+
+      if (isUserValid && isPassValid) {
         const sc = document.getElementById('loginScreen');
         if (sc) sc.style.display = 'none';
         document.body.classList.remove('login-locked', 'login-active');
         document.documentElement.classList.add('user-is-logged');
         try {
-          sessionStorage.setItem('KIMCHI_AUTH_TOKEN', '250991');
+          sessionStorage.setItem('KIMCHI_AUTH_TOKEN', pass);
           sessionStorage.setItem('KIMCHI_LOGGED', 'true');
           const rem = document.getElementById('rememberMe');
           if (rem && rem.checked) {
-            localStorage.setItem('KIMCHI_AUTH_TOKEN', '250991');
+            localStorage.setItem('KIMCHI_AUTH_TOKEN', pass);
             localStorage.setItem('KIMCHI_LOGGED', 'true');
           } else {
             localStorage.removeItem('KIMCHI_AUTH_TOKEN');
@@ -1381,7 +1390,11 @@
       } else {
         const err = document.getElementById('loginError');
         if (err) {
-          err.innerText = 'Mật khẩu không chính xác! Vui lòng thử lại.';
+          if (!isUserValid) {
+            err.innerText = 'Tài khoản không chính xác (admin)!';
+          } else {
+            err.innerText = 'Mật khẩu không chính xác! Vui lòng thử lại.';
+          }
           err.style.display = 'block';
         }
       }
@@ -1407,8 +1420,8 @@
         if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
           let sChanged = false;
           salesDatabase.forEach(item => {
-            if (item.name && /gb|tb|mb/i.test(item.name)) {
-              let updated = formatStorageDisplay(item.name);
+            if (item.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(item.name)) {
+              let updated = item.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
               if (updated !== item.name) { item.name = updated; sChanged = true; }
             }
           });
@@ -1418,8 +1431,8 @@
         if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
           let bChanged = false;
           bangaDatabase.forEach(item => {
-            if (item.name && /gb|tb|mb/i.test(item.name)) {
-              let updated = formatStorageDisplay(item.name);
+            if (item.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(item.name)) {
+              let updated = item.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
               if (updated !== item.name) { item.name = updated; bChanged = true; }
             }
             if (item.storage && /gb|tb|mb/i.test(item.storage)) {
@@ -1437,8 +1450,8 @@
               let updated = formatStorageDisplay(p.storage);
               if (updated !== p.storage) { p.storage = updated; pChanged = true; }
             }
-            if (p.name && /gb|tb|mb/i.test(p.name)) {
-              let updated = formatStorageDisplay(p.name);
+            if (p.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(p.name)) {
+              let updated = p.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
               if (updated !== p.name) { p.name = updated; pChanged = true; }
             }
           });
@@ -1452,8 +1465,8 @@
               let updated = formatStorageDisplay(p.storage);
               if (updated !== p.storage) { p.storage = updated; spChanged = true; }
             }
-            if (p.name && /gb|tb|mb/i.test(p.name)) {
-              let updated = formatStorageDisplay(p.name);
+            if (p.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(p.name)) {
+              let updated = p.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
               if (updated !== p.name) { p.name = updated; spChanged = true; }
             }
           });
@@ -1463,8 +1476,8 @@
         if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
           let swChanged = false;
           softwareDatabase.forEach(item => {
-            if (item.device && /gb|tb|mb/i.test(item.device)) {
-              let updated = formatStorageDisplay(item.device);
+            if (item.device && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(item.device)) {
+              let updated = item.device.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
               if (updated !== item.device) { item.device = updated; swChanged = true; }
             }
           });
@@ -1496,7 +1509,6 @@
           if (list.length > 0) {
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             salesDatabase = list;
-            localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase));
             if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
             if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
           }
@@ -1517,7 +1529,6 @@
           if (list.length > 0) {
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             bangaDatabase = list;
-            localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
             if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
           }
         }, err => console.error("Lỗi sync banga realtime:", err));
@@ -1532,7 +1543,6 @@
           snapshot.forEach(doc => list.push(doc.data()));
           if (list.length > 0) {
             phoneDatabase = list;
-            localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
             if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
           }
         }, err => console.error("Lỗi sync phones:", err));
@@ -1545,7 +1555,6 @@
           snapshot.forEach(doc => list.push(doc.data()));
           if (list.length > 0) {
             soldPhoneDatabase = list;
-            localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
             if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
           }
         }, err => console.error("Lỗi sync sold_phones:", err));
@@ -1558,7 +1567,6 @@
           snapshot.forEach(doc => list.push(doc.data()));
           if (list.length > 0) {
             mainXacDatabase = list;
-            localStorage.setItem('KIMCHI_MAIN_XAC_DB', JSON.stringify(list));
             if (typeof renderMainXacGrid === 'function') renderMainXacGrid();
           }
         }, err => console.error("Lỗi sync mainxac:", err));
@@ -1571,7 +1579,6 @@
           snapshot.forEach(doc => list.push(doc.data()));
           if (list.length > 0) {
             repairDatabase = list;
-            localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(list));
             if (typeof renderRepairTable === 'function') renderRepairTable();
           }
         }, err => console.error("Lỗi sync repairs:", err));
@@ -1583,7 +1590,8 @@
       initAllTabsToVietnamToday();
       migrateStorageUnits();
       initFirebaseRealtimeSync();
-      const isAuth = (sessionStorage.getItem('KIMCHI_AUTH_TOKEN') === '250991' || localStorage.getItem('KIMCHI_AUTH_TOKEN') === '250991');
+      const curToken = sessionStorage.getItem('KIMCHI_AUTH_TOKEN') || localStorage.getItem('KIMCHI_AUTH_TOKEN');
+      const isAuth = ['250991', 'Huyen@95'].includes(curToken);
       const sc = document.getElementById('loginScreen');
       if (isAuth) {
         if (sc) sc.style.display = 'none';
@@ -1606,37 +1614,27 @@
       renderSystemAccountsTable();
     });
 
-    // Tự động xóa sạch toàn bộ dữ liệu Bán Hàng theo yêu cầu người dùng
-    if (localStorage.getItem('KIMCHI_SALES_CLEAR_OCT25') !== 'done') {
-      localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify([]));
-      localStorage.setItem('KIMCHI_SALES_CLEAR_OCT25', 'done');
-    }
-
+    // Dữ liệu Bán Hàng & Bán Gà: Lưu trữ và đồng bộ 100% trên Firebase Firestore
     let salesDatabase = [];
-    const salesRaw = localStorage.getItem('KIMCHI_SALES_DB');
-    const isSalesCleared = localStorage.getItem('KIMCHI_SALES_CLEARED') === 'true';
-    if (isSalesCleared) {
-      salesDatabase = [];
-    } else if (salesRaw !== null) {
-      try { salesDatabase = JSON.parse(salesRaw) || []; } catch(e) { salesDatabase = []; }
-    } else {
-      salesDatabase = [];
-      localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify([]));
-    }
 
     function clearAllSalesData() {
-      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Bán Hàng!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
+      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Bán Hàng trên Firebase!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
       if (confirmText === null) {
         return; // Người dùng bấm Hủy
       }
       
       let clean = confirmText.trim().toLowerCase();
       if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
+        if (typeof db !== 'undefined' && db) {
+          salesDatabase.forEach(item => {
+            if (item && item.id) {
+              db.collection('sales').doc(String(item.id)).delete().catch(console.error);
+            }
+          });
+        }
         salesDatabase = [];
-        localStorage.setItem('KIMCHI_SALES_CLEARED', 'true');
-        saveSalesStorage();
         renderSalesTable(salesDatabase);
-        alert('Đã xóa sạch toàn bộ dữ liệu Bán Hàng thành công!');
+        alert('Đã xóa sạch toàn bộ dữ liệu Bán Hàng trên Firebase thành công!');
       } else {
         alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
       }
@@ -1660,80 +1658,9 @@
       item.profit = formatPriceStr(p);
     }
 
-    salesDatabase.forEach(s => {
-      if (s.name && /\(x1\)/i.test(s.name)) {
-        s.name = s.name.replace(/\s*\(x1\)/gi, '').trim();
-      }
-      sanitizeRecordPrice(s);
-    });
-    localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase));
-
     let bangaDatabase = [];
-    const bangaRaw = localStorage.getItem('KIMCHI_BANGA_DB');
-    const isBangaCleared = localStorage.getItem('KIMCHI_BANGA_CLEARED') === 'true';
-    if (isBangaCleared) {
-      bangaDatabase = [];
-    } else if (bangaRaw !== null) {
-      try { bangaDatabase = JSON.parse(bangaRaw) || []; } catch(e) { bangaDatabase = []; }
-    } else {
-      if (Array.isArray(window.SEED_BANGA_DATA) && window.SEED_BANGA_DATA.length > 0) {
-        bangaDatabase = JSON.parse(JSON.stringify(window.SEED_BANGA_DATA));
-      } else {
-        bangaDatabase = [];
-      }
-      localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
-    }
-    
-    // Tự động khôi phục và đồng bộ chuẩn xác 100% dữ liệu Bán Gà từ SEED_BANGA_DATA và sửa các giá trị bị chia sai
-    if (!isBangaCleared && bangaDatabase.length > 0) {
-      const nonMachineRegexGlobal = /bán thẻ|thẻ nhớ|nạp|cầm đồ|thay lưng|sửa|míc|mic|ép kính|sim|bán màn|đớp|viettel|huy linh|rút tiền|bộ sạc|dây sạc|củ sạc|tai nghe|cường lực|ốp lưng|dán|pin|vỏ|camera|loa|hòa/i;
-      let seedMap = new Map();
-      if (Array.isArray(window.SEED_BANGA_DATA)) {
-        window.SEED_BANGA_DATA.forEach(s => {
-          if (s) {
-            let key = (s.dateTime || '').trim() + '___' + (s.name || '').toLowerCase().trim();
-            seedMap.set(key, s);
-            if (s.id) seedMap.set(String(s.id), s);
-          }
-        });
-      }
-
-      bangaDatabase.forEach(item => {
-        if (!item) return;
-        let key = (item.dateTime || '').trim() + '___' + (item.name || '').toLowerCase().trim();
-        let seed = seedMap.get(key) || (item.id ? seedMap.get(String(item.id)) : null);
-        if (seed) {
-          item.total = seed.total;
-          item.priceIn = seed.priceIn;
-          item.profit = seed.profit;
-          item.accessory = seed.accessory || item.accessory;
-          if (seed.customer && item.customer === 'Khách lẻ') item.customer = seed.customer;
-        } else {
-          sanitizeRecordPrice(item);
-          let tNum = parsePriceNum(item.total);
-          let piNum = parsePriceNum(item.priceIn);
-          if (tNum > 0 && tNum < 50 && piNum > 100) {
-            tNum = tNum * 1000;
-            item.total = formatPriceStr(tNum);
-            item.profit = formatPriceStr(tNum - piNum);
-          }
-        }
-
-        if (item && item.name) {
-          if (nonMachineRegexGlobal.test(item.name)) {
-            item.accessory = 'Khác';
-            item.brand = '';
-          } else if (/^(?:oppo\s*a78|gen\s*\d+|se\s*-\s*2020|m7\s*pro\s*5g|\d{1,2}\s*(?:pro|max|plus)?|a\d+|xs|x|m\d+|c\d+|note\s*\d+)/i.test(item.name.trim())) {
-            item.accessory = 'Bán Máy';
-          }
-        }
-      });
-      localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
-    }
 
     function saveSalesStorage(itemToSync) {
-      if (salesDatabase.length > 0) localStorage.removeItem('KIMCHI_SALES_CLEARED');
-      localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase));
       if (typeof db !== 'undefined' && db) {
         if (itemToSync && itemToSync.id) {
           db.collection('sales').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
@@ -1748,8 +1675,6 @@
     }
 
     function saveBangaStorage(itemToSync) {
-      if (bangaDatabase.length > 0) localStorage.removeItem('KIMCHI_BANGA_CLEARED');
-      localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase));
       if (typeof db !== 'undefined' && db) {
         if (itemToSync && itemToSync.id) {
           db.collection('banga').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
@@ -1760,7 +1685,6 @@
             }
           });
         }
-      }
     }
 
     let tempCart = [];
@@ -3149,7 +3073,7 @@
               !details.phoneName.toLowerCase().startsWith(details.brand.toLowerCase()) &&
               !/^(?:iphone|samsung|oppo|xiaomi|redmi|vivo|realme|nokia|huawei|ipad|sony|vsmart|google|pixel)\b/i.test(details.phoneName)) {
             let brandDisplay = formatBrandDeviceName(details.brand);
-            let pPhoneName = formatBrandDeviceName(formatStorageDisplay(details.phoneName));
+            let pPhoneName = formatBrandDeviceName(details.phoneName);
             if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️') {
               displayName = `<span style="color: #ef4444; font-size: 1.15rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${pPhoneName}`;
             } else {
@@ -3158,7 +3082,7 @@
           } else {
             // Tên máy trực tiếp (ví dụ: "12 PRO MAX", "OPPO A78", "Note 12", "Gen 11", "6S Plus"...)
             let rawDeviceName = details.phoneName || item.name || '';
-            displayName = formatBrandDeviceName(formatStorageDisplay(rawDeviceName));
+            displayName = formatBrandDeviceName(rawDeviceName);
           }
 
           // Dấu chấm màu: CHỈ hiển thị nếu có màu thực tế, KHÔNG tự ý vẽ chấm trắng mặc định
@@ -3175,7 +3099,7 @@
             </div>
           `;
         } else {
-          let customName = formatBrandDeviceName(formatStorageDisplay(item.name || item.accessory || ''));
+          let customName = formatBrandDeviceName(item.name || item.accessory || '');
           if (customName.includes('MÁY NGOÀI')) {
             customName = customName.replace(/^MÁY NGOÀI\s*[-–]?\s*/i, '<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px;">❤️❤️❤️</span> - ');
           }
@@ -6058,57 +5982,12 @@
       renderBangaTable(bangaDatabase);
     }
 
+    // Dữ liệu Kho Bán Máy & Bảo Hành: Lưu trữ và đồng bộ 100% trên Firebase Firestore
     let phoneDatabase = [];
-    const phoneRaw = localStorage.getItem('KIMCHI_PHONE_DB');
-    const isPhoneCleared = localStorage.getItem('KIMCHI_PHONE_CLEARED') === 'true';
-    if (isPhoneCleared) {
-      phoneDatabase = [];
-    } else if (phoneRaw !== null) {
-      try { phoneDatabase = JSON.parse(phoneRaw) || []; } catch(e) { phoneDatabase = []; }
-    } else {
-      phoneDatabase = (window.SEED_PHONES_DATA && window.SEED_PHONES_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_PHONES_DATA)) : [
-        { id: 1, brand: "IPHONE", name: "12 Pro Max", storage: "128", color: "Trắng", imei: "1122", price: "5.678", condition: "Zin Đẹp 99%", pinStatus: "Pin Thay", pin: "99%", origin: "VN/A", priceIn: "4.500", note: "", date: "23/10/2026" },
-        { id: 2, brand: "IPHONE", name: "15 Pro Max", storage: "256", color: "Trắng", imei: "4567", price: "19.800", condition: "Zin Đẹp 99%", pinStatus: "Pin Zin", pin: "99%", origin: "VN/A", priceIn: "17.500", note: "", date: "23/10/2026" }
-      ];
-      localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
-    }
-
-    // Tự động phân tách nếu kho Bán Máy đang chứa máy Đã bán hoặc Main Xác do lần nhập trước
-    try {
-      if (!isPhoneCleared && Array.isArray(phoneDatabase) && phoneDatabase.length > 0) {
-        let hasMixed = phoneDatabase.some(p => p.status && (p.status.includes('Đã bán') || p.status.includes('Chưa xử lý') || p.status.includes('Máy Xác')));
-        if (hasMixed) {
-          phoneDatabase = phoneDatabase.filter(p => {
-            let st = (p.status || '').toLowerCase();
-            return !st.includes('da ban') && !st.includes('chua xu ly') && !st.includes('xac');
-          });
-          localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
-        }
-      }
-    } catch(e) {}
-
-    // Nếu kho bị cộng dồn thành 241 máy (73 máy cũ + 168 máy mới), tự động đồng bộ lại đúng 168 máy chuẩn từ file Excel
-    try {
-      if (!isPhoneCleared && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length === 168 && (phoneDatabase.length === 241 || phoneDatabase.length > 200)) {
-        phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-        localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
-      }
-    } catch(e) {}
-
     let soldPhoneDatabase = [];
-    const soldRaw = localStorage.getItem('KIMCHI_SOLD_PHONE_DB');
-    const isSoldCleared = localStorage.getItem('KIMCHI_SOLD_PHONE_CLEARED') === 'true';
-    if (isSoldCleared) {
-      soldPhoneDatabase = [];
-    } else if (soldRaw !== null) {
-      try { soldPhoneDatabase = JSON.parse(soldRaw) || []; } catch(e) { soldPhoneDatabase = []; }
-    } else {
-      soldPhoneDatabase = (window.SEED_SOLD_DATA && window.SEED_SOLD_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_SOLD_DATA)) : [];
-      localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
-    }
     let currentBrandFilter = "ALL";
     let currentPriceFilter = "ALL";
-    let soldPhoneViewMode = 'month';
+    let soldPhoneViewMode = 'all';
     let currentSoldPhoneDateFilter = getVietnamDate();
     let currentSoldPhoneMonthFilter = { month: currentSoldPhoneDateFilter.getMonth(), year: currentSoldPhoneDateFilter.getFullYear() };
     let currentSoldPhoneYearFilter = currentSoldPhoneDateFilter.getFullYear();
@@ -6194,16 +6073,32 @@
       }
     }
 
-    function savePhoneStorage() {
-      if (phoneDatabase.length > 0) localStorage.removeItem('KIMCHI_PHONE_CLEARED');
-      if (soldPhoneDatabase.length > 0) localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
-      localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
-      localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+    function savePhoneStorage(itemToSync) {
+      if (typeof db !== 'undefined' && db) {
+        if (itemToSync && itemToSync.id) {
+          db.collection('phones').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+        } else {
+          phoneDatabase.forEach(item => {
+            if (item && item.id) {
+              db.collection('phones').doc(String(item.id)).set(item).catch(console.error);
+            }
+          });
+        }
+      }
     }
 
-    function saveSoldPhoneStorage() {
-      if (soldPhoneDatabase.length > 0) localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
-      localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+    function saveSoldPhoneStorage(itemToSync) {
+      if (typeof db !== 'undefined' && db) {
+        if (itemToSync && itemToSync.id) {
+          db.collection('sold_phones').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+        } else {
+          soldPhoneDatabase.forEach(item => {
+            if (item && item.id) {
+              db.collection('sold_phones').doc(String(item.id)).set(item).catch(console.error);
+            }
+          });
+        }
+      }
     }
 
     function filterBrand(brandName, btn) {
@@ -6452,7 +6347,7 @@
         brandDisplay = '<span style="color: #ef4444; font-size: 1.15rem;">❤️</span>';
       }
 
-      let pName = formatBrandDeviceName(formatStorageDisplay(p.name || ''));
+      let pName = formatBrandDeviceName(p.name || '');
       let fullName = `${brandDisplay} - ${pName} ${cleanStorage ? `(${cleanStorage})` : ''}`.trim();
       if (fullName.startsWith('- ')) fullName = fullName.substring(2);
       fullName = formatBrandDeviceName(fullName);
@@ -6731,7 +6626,9 @@
       if (confirmWord !== null) {
         if (confirmWord.trim().toLowerCase() === "yes") {
           phoneDatabase = phoneDatabase.filter(item => item.id !== id);
-          savePhoneStorage();
+          if (typeof db !== 'undefined' && db && id) {
+            db.collection('phones').doc(String(id)).delete().catch(console.error);
+          }
           if (p && typeof logActivity === 'function') {
             logActivity('DELETE', 'banmay', 'Bán máy', `Xóa máy khỏi kho: ${p.brand} ${p.name} (${p.imei || 'Không IMEI'})`, p, null, id);
           }
@@ -6927,8 +6824,8 @@
       soldPhoneDatabase.unshift(soldItem);
 
       let cleanStorage = formatStorageDisplay((soldItem.storage || '').replace(/[()]/g, ''));
-      let soldName = formatStorageDisplay(soldItem.name || '');
-      let displayName = formatStorageDisplay(`${soldItem.brand} - ${soldName} ${cleanStorage ? cleanStorage : ''} (${soldItem.imei})`);
+      let soldName = formatBrandDeviceName(soldItem.name || '');
+      let displayName = `${soldItem.brand} - ${soldName} ${cleanStorage ? cleanStorage : ''} (${soldItem.imei})`.trim();
 
       let record = {
         id: Date.now() + Math.random(),
@@ -7198,7 +7095,7 @@
 
       // 2. LƯU VÀO BÁN HÀNG HOẶC BÁN GÀ THEO LỰA CHỌN
       let prefixBrand = (detectedBrand === '❤️❤️❤️' || detectedBrand === 'MÁY NGOÀI' || !detectedBrand) ? '❤️❤️❤️ - ' : `${detectedBrand} - `;
-      let displayName = formatStorageDisplay(`${prefixBrand}${phoneName}${imei ? ' (' + imei + ')' : ''}`);
+      let displayName = `${prefixBrand}${phoneName}${imei ? ' (' + imei + ')' : ''}`;
       let record = {
         id: Date.now() + Math.random(),
         name: displayName,
@@ -7561,7 +7458,9 @@
       }
 
       soldPhoneDatabase = soldPhoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);
-      savePhoneStorage();
+      if (typeof db !== 'undefined' && db && id) {
+        db.collection('sold_phones').doc(String(id)).delete().catch(console.error);
+      }
       if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
 
       if (typeof logActivity === 'function') {
@@ -8153,9 +8052,9 @@
             </thead>
             <tbody>
               ${filtered.map(p => {
-                let pName = formatBrandDeviceName(formatStorageDisplay(p.name || ''));
+                let pName = formatBrandDeviceName(p.name || '');
                 let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
-                let storageWithGB = rawStorage;
+                let storageWithGB = rawStorage.replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
                 if (storageWithGB) {
                   if (!/gb|tb/i.test(storageWithGB)) {
                     storageWithGB += 'GB';
@@ -8262,9 +8161,9 @@
       } else {
         container.className = 'phone-grid';
         container.innerHTML = filtered.map(p => {
-          let pName = formatBrandDeviceName(formatStorageDisplay(p.name || ''));
+          let pName = formatBrandDeviceName(p.name || '');
           let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
-          let storageWithGB = rawStorage;
+          let storageWithGB = rawStorage.replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
           if (storageWithGB) {
             if (!/gb|tb/i.test(storageWithGB)) {
               storageWithGB += 'GB';
@@ -8574,7 +8473,7 @@
       if (mobileCardsContainer) {
         mobileCardsContainer.innerHTML = filtered.map(p => {
           let brandDisplay = formatBrandDeviceName(p.brand || '');
-          let pName = formatBrandDeviceName(formatStorageDisplay(p.name || ''));
+          let pName = formatBrandDeviceName(p.name || '');
           // Bỏ tên hãng đi theo yêu cầu (ví dụ: IPHONE - SE - 2020 thì chỉ hiển thị SE - 2020)
           let brandAndName = pName;
           if (brandDisplay && brandDisplay !== 'MÁY NGOÀI' && brandDisplay !== '❤️❤️❤️') {
@@ -8584,7 +8483,7 @@
           brandAndName = formatBrandDeviceName(brandAndName);
 
           let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
-          let storageWithGB = rawStorage;
+          let storageWithGB = rawStorage.replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
           if (storageWithGB) {
             if (!/gb|tb/i.test(storageWithGB)) {
               storageWithGB += 'GB';
@@ -8630,7 +8529,7 @@
 
       tbody.innerHTML = filtered.map(p => {
         let brandDisplay = formatBrandDeviceName(p.brand || '');
-        let pName = formatBrandDeviceName(formatStorageDisplay(p.name || ''));
+        let pName = formatBrandDeviceName(p.name || '');
         // Bỏ tên hãng đi theo yêu cầu (ví dụ: IPHONE - SE - 2020 thì chỉ hiển thị SE - 2020)
         let brandNamePart = pName;
         if (brandDisplay && brandDisplay !== 'MÁY NGOÀI' && brandDisplay !== '❤️❤️❤️') {
@@ -8641,7 +8540,7 @@
           brandNamePart = `<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${brandNamePart}`;
         }
         brandNamePart = formatBrandDeviceName(brandNamePart);
-        let cleanStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, ''));
+        let cleanStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
         let dotHtml = getColorDotHtml(p.color, 28);
         let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.16rem;">${cleanStorage}</span>` : '';
         let imeiPart = p.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.27rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${p.imei}</span>` : '';
@@ -11650,43 +11549,20 @@
       }
     ];
 
+    // Dữ liệu Sửa Chữa: Lưu trữ và đồng bộ 100% trên Firebase Firestore
     let repairDatabase = [];
-    try {
-      const isRepairCleared = localStorage.getItem('KIMCHI_REPAIR_CLEARED') === 'true';
-      const savedRepairs = localStorage.getItem('KIMCHI_REPAIR_DB');
-      if (isRepairCleared) {
-        repairDatabase = [];
-      } else if (savedRepairs !== null) {
-        repairDatabase = JSON.parse(savedRepairs) || [];
-      } else {
-        repairDatabase = (Array.isArray(window.SEED_REPAIRS_DATA) && window.SEED_REPAIRS_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_REPAIRS_DATA)) : DEFAULT_REPAIR_DATA;
-        localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase));
-      }
-      // Chuẩn hóa toàn bộ danh sách: Lãi = Báo giá - Vốn & Bảo hành
-      if (!isRepairCleared && Array.isArray(repairDatabase) && repairDatabase.length > 0) {
-        repairDatabase.forEach(item => {
-          const pr = Number(item.price) || 0;
-          const cs = Number(item.cost) || 0;
-          item.profit = pr - cs;
-          if (item.warranty) {
-            const wLower = String(item.warranty).trim().toLowerCase();
-            if (wLower.includes('khong') || wLower.includes('không') || wLower === '0' || wLower === '0 bh' || wLower === 'kbh') {
-              item.warranty = '0 Bảo Hành';
-            }
-          }
-        });
-        localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase));
-      }
-    } catch (e) {
-      repairDatabase = [];
-    }
 
-    function saveRepairDb() {
-      try {
-        if (repairDatabase.length > 0) localStorage.removeItem('KIMCHI_REPAIR_CLEARED');
-        localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase));
-      } catch (e) {
-        console.error('Lỗi lưu repairDatabase:', e);
+    function saveRepairDb(itemToSync) {
+      if (typeof db !== 'undefined' && db) {
+        if (itemToSync && itemToSync.id) {
+          db.collection('repairs').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+        } else {
+          repairDatabase.forEach(item => {
+            if (item && item.id) {
+              db.collection('repairs').doc(String(item.id)).set(item).catch(console.error);
+            }
+          });
+        }
       }
     }
     const saveRepairStorage = saveRepairDb;
@@ -12196,7 +12072,9 @@
       let confirmText = prompt(`Bạn có chắc muốn xóa đơn sửa chữa "${item.device}" của ${item.customer} không?\nNhập 'yes' để xác nhận xóa:`);
       if (confirmText && confirmText.trim().toLowerCase() === 'yes') {
         repairDatabase = repairDatabase.filter(x => String(x.id) !== String(id));
-        saveRepairDb();
+        if (typeof db !== 'undefined' && db && id) {
+          db.collection('repairs').doc(String(id)).delete().catch(console.error);
+        }
 
         // Tự động xóa đơn bán hàng liên kết (nếu có đơn chuyển khoản đồng bộ sang bán hàng)
         const prevSalesLen = salesDatabase.length;
@@ -14620,9 +14498,18 @@
     }
     window.clearAllMainXacData = clearAllMainXacData;
 
-    function saveMainXacStorage() {
-      if (mainXacDatabase.length > 0) localStorage.removeItem('KIMCHI_MAINXAC_CLEARED');
-      localStorage.setItem('KIMCHI_MAIN_XAC_DB', JSON.stringify(mainXacDatabase));
+    function saveMainXacStorage(itemToSync) {
+      if (typeof db !== 'undefined' && db) {
+        if (itemToSync && itemToSync.id) {
+          db.collection('mainxac').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+        } else {
+          mainXacDatabase.forEach(item => {
+            if (item && item.id) {
+              db.collection('mainxac').doc(String(item.id)).set(item).catch(console.error);
+            }
+          });
+        }
+      }
     }
     window.saveMainXacStorage = saveMainXacStorage;
 
@@ -14800,7 +14687,9 @@
       if (confirmWord !== null) {
         if (confirmWord.trim().toLowerCase() === "yes") {
           mainXacDatabase = mainXacDatabase.filter(x => String(x.id) !== String(id) && x.id != id);
-          saveMainXacStorage();
+          if (typeof db !== 'undefined' && db && id) {
+            db.collection('mainxac').doc(String(id)).delete().catch(console.error);
+          }
           if (item && typeof logActivity === 'function') {
             logActivity('DELETE', 'mainxac', 'Main - Xác', `Xóa main xác: ${item.name} (${item.imei})`);
           }
@@ -14924,7 +14813,7 @@
       tbody.innerHTML = filtered.map(item => {
         let brandDisplay = formatBrandDeviceName(item.brand || '');
         let brandNamePart = '';
-        let pName = formatBrandDeviceName(formatStorageDisplay(item.name || ''));
+        let pName = formatBrandDeviceName(item.name || '');
         if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️' || !brandDisplay) {
           brandNamePart = pName;
         } else {

@@ -17,6 +17,18 @@ if (Test-Path $htmlPath) {
     
     [System.IO.File]::WriteAllText($htmlPath, $content, [System.Text.Encoding]::UTF8)
     Write-Host "[OK] Da tu dong cap nhat Version Query moi vao index.html: v=$v" -ForegroundColor Green
+    
+    # Tao va cap nhat version.json de trinh duyet mobile / Safari tu dong pha cache
+    $versionJsonPath = Join-Path $PSScriptRoot "version.json"
+    $versionJsonContent = @"
+{
+  "version": "$v",
+  "updated": "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"
+}
+"@
+    [System.IO.File]::WriteAllText($versionJsonPath, $versionJsonContent, [System.Text.Encoding]::UTF8)
+    Write-Host "[OK] Da tao va cap nhat file version.json: v=$v" -ForegroundColor Cyan
 } else {
     Write-Host "[WARNING] Khong tim thay file index.html" -ForegroundColor Yellow
 }
+
