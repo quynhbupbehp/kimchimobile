@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_212701">
+  <link rel="stylesheet" href="css/style.css?v=20261030_214519">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261030_212701";
+    var CURRENT_PAGE_VERSION = "20261030_214519";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -839,18 +839,18 @@
             <table class="sales-table sw-main-table">
               <thead>
                 <tr>
-                  <th style="width: 44px; text-align: center;">
+                  <th class="sw-col-check" style="width: 44px; text-align: center;">
                     <input type="checkbox" class="sw-checkbox" id="swCheckAll" onchange="toggleSelectAllSoftware(this)"
                       style="accent-color: #10b981;">
                   </th>
-                  <th style="text-align: left;">KHÁCH HÀNG</th>
-                  <th style="text-align: left;">TÊN MÁY</th>
-                  <th style="text-align: center;">BÁO GIÁ</th>
-                  <th style="text-align: center;">PHÍ DV</th>
-                  <th style="text-align: center;">ĐỚP</th>
-                  <th style="text-align: center;">THANH TOÁN</th>
-                  <th style="text-align: center;">GIỜ - NGÀY</th>
-                  <th style="text-align: center;">THAO TÁC</th>
+                  <th class="sw-col-customer" style="text-align: left;">KHÁCH HÀNG</th>
+                  <th class="sw-col-device" style="text-align: left;">TÊN MÁY</th>
+                  <th class="sw-col-price" style="text-align: center;">BÁO GIÁ</th>
+                  <th class="sw-col-extra" style="text-align: center;">PHÍ DV</th>
+                  <th class="sw-col-extra" style="text-align: center;">ĐỚP</th>
+                  <th class="sw-col-extra" style="text-align: center;">THANH TOÁN</th>
+                  <th class="sw-col-extra" style="text-align: center;">GIỜ - NGÀY</th>
+                  <th class="sw-col-extra" style="text-align: center;">THAO TÁC</th>
                 </tr>
               </thead>
               <tbody id="softwareTableBody">
@@ -1741,7 +1741,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_212701" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_214519" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -3505,9 +3505,14 @@
       </div>
 
       <div id="viewPhoneModalFooter" class="view-phone-modal-footer">
-        <button type="button" class="view-modal-btn view-modal-btn-sell" id="viewModalBtnSell">🛒 Bán</button>
-        <button type="button" class="view-modal-btn view-modal-btn-edit" id="viewModalBtnEdit">✏️ Sửa</button>
-        <button type="button" class="view-modal-btn view-modal-btn-del" id="viewModalBtnDel">🗑️ Xóa</button>
+        <div class="view-phone-modal-btn-row">
+          <button type="button" class="view-modal-btn view-modal-btn-sell" id="viewModalBtnSell">🛒 Bán</button>
+          <button type="button" class="view-modal-btn view-modal-btn-edit" id="viewModalBtnEdit">✏️ Sửa</button>
+          <button type="button" class="view-modal-btn view-modal-btn-del" id="viewModalBtnDel">🗑️ Xóa</button>
+        </div>
+        <button type="button" class="view-modal-btn view-modal-btn-buyback" id="viewModalBtnBuyBack" style="display: none;">
+          🔄 Mua Lại Máy Khách
+        </button>
       </div>
     </div>
   </div>
@@ -5221,10 +5226,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_212701"></script>
+  <script src="js/seed_data.js?v=20261030_214519"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_212701"></script>
+  <script src="js/main.js?v=20261030_214519"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

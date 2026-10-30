@@ -6678,6 +6678,8 @@
       const btnEdit = document.getElementById('viewModalBtnEdit');
       const btnDel = document.getElementById('viewModalBtnDel');
 
+      const btnBuyBack = document.getElementById('viewModalBtnBuyBack');
+
       if (btnSell) {
         if (isSold) {
           btnSell.style.display = 'none';
@@ -6687,6 +6689,19 @@
             closeViewPhoneModal();
             openSellPhoneModal(p.id);
           };
+        }
+      }
+
+      // NÚT MUA LẠI MÁY KHÁCH: HIỂN THỊ KHI MÁY ĐÃ BÁN / BẢO HÀNH
+      if (btnBuyBack) {
+        if (isSold) {
+          btnBuyBack.style.display = 'inline-flex';
+          btnBuyBack.onclick = function() {
+            closeViewPhoneModal();
+            openBuyBackPhoneModal(p);
+          };
+        } else {
+          btnBuyBack.style.display = 'none';
         }
       }
 
@@ -11156,7 +11171,7 @@
 
         return `
           <tr>
-            <td style="text-align: center;">
+            <td class="sw-col-check" style="text-align: center;">
               ${isDebt ? `
                 <input type="checkbox" class="sw-checkbox"
                   ${item.selected ? 'checked' : ''}
@@ -11168,32 +11183,32 @@
                   title="Khách đã trả tiền 😊" alt="Đã trả tiền">
               `}
             </td>
-            <td>
+            <td class="sw-col-customer">
               <span style="color: #f59e0b; font-weight: 900; font-size: 1.25rem;">${escapeHtml(item.customer)}</span>
             </td>
-            <td>
+            <td class="sw-col-device">
               <span style="color: #ffffff; font-weight: 900; font-size: 1.30rem;">${escapeHtml(formatBrandDeviceName(item.device))}</span>
             </td>
-            <td>
+            <td class="sw-col-price">
               <span style="color: #ef4444; font-weight: 900; font-size: 1.38rem;">${swHideProfits ? '***' : formatPriceStr(item.price)}</span>
             </td>
-            <td>
+            <td class="sw-col-extra">
               <span style="color: #ffffff; font-weight: 800; font-size: 1.05rem;">${swHideProfits ? '***' : formatPriceStr(item.cost || '0')}</span>
             </td>
-            <td>
+            <td class="sw-col-extra">
               <span style="color: #f59e0b; font-weight: 900; font-size: 1.16rem;">${swHideProfits ? '***' : formatPriceStr(item.profit)}</span>
             </td>
-            <td>
+            <td class="sw-col-extra">
               ${statusBadgeHtml}
             </td>
-            <td>
+            <td class="sw-col-extra">
               <div class="sw-time-display">
                 <span class="sw-d-day">${(item.dayMonth || '').replace(/-/g, '/')}</span>
                 <span class="sw-d-year">${item.year || '2026'}</span>
                 <span class="sw-d-time">${item.time}</span>
               </div>
             </td>
-            <td style="text-align: center;">
+            <td class="sw-col-extra" style="text-align: center;">
               <div class="action-btn-group">
                 <button type="button" class="action-btn-icon action-btn-view" onclick="viewSoftwareTicket(${item.id})" title="Xem chi tiết">
                   <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
