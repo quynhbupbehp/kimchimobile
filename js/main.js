@@ -1580,8 +1580,15 @@
           if (list.length > 0) {
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             salesDatabase = list;
+            try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
             if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
             if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+          } else if (snapshot.empty && typeof salesDatabase !== 'undefined' && salesDatabase.length > 0) {
+            salesDatabase.forEach(item => {
+              if (item && item.id) {
+                db.collection('sales').doc(String(item.id)).set(item).catch(console.error);
+              }
+            });
           }
         }, err => console.error("Lỗi sync sales realtime:", err));
       } catch (err) {
@@ -1600,60 +1607,128 @@
           if (list.length > 0) {
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             bangaDatabase = list;
+            try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
             if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+          } else if (snapshot.empty && typeof bangaDatabase !== 'undefined' && bangaDatabase.length > 0) {
+            bangaDatabase.forEach(item => {
+              if (item && item.id) {
+                db.collection('banga').doc(String(item.id)).set(item).catch(console.error);
+              }
+            });
           }
         }, err => console.error("Lỗi sync banga realtime:", err));
       } catch (err) {
         console.error("Lỗi setup sync banga:", err);
       }
 
-      // 3. Đồng bộ Kho Bán Máy (phones)
+      // 3. Đồng bộ Kho Bán Máy (phones) thời gian thực
       try {
         db.collection('phones').onSnapshot(snapshot => {
           let list = [];
-          snapshot.forEach(doc => list.push(doc.data()));
+          snapshot.forEach(doc => {
+            let data = doc.data();
+            if (!data.id) data.id = doc.id;
+            list.push(data);
+          });
           if (list.length > 0) {
+            // Sắp xếp ID giảm dần (máy mới thêm luôn ở đầu bảng trên cả Mobile và Web)
+            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             phoneDatabase = list;
+            try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
             if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
+          } else if (snapshot.empty && typeof phoneDatabase !== 'undefined' && phoneDatabase.length > 0) {
+            console.log("Đang khởi tạo đồng bộ dữ liệu Bán Máy lên Cloud Firestore...");
+            phoneDatabase.forEach(item => {
+              if (item && item.id) {
+                db.collection('phones').doc(String(item.id)).set(item).catch(console.error);
+              }
+            });
           }
         }, err => console.error("Lỗi sync phones:", err));
-      } catch (err) {}
+      } catch (err) {
+        console.error("Lỗi setup sync phones:", err);
+      }
 
-      // 4. Đồng bộ Bảo Hành (sold_phones)
+      // 4. Đồng bộ Bảo Hành (sold_phones) thời gian thực
       try {
         db.collection('sold_phones').onSnapshot(snapshot => {
           let list = [];
-          snapshot.forEach(doc => list.push(doc.data()));
+          snapshot.forEach(doc => {
+            let data = doc.data();
+            if (!data.id) data.id = doc.id;
+            list.push(data);
+          });
           if (list.length > 0) {
+            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             soldPhoneDatabase = list;
+            try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
             if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+          } else if (snapshot.empty && typeof soldPhoneDatabase !== 'undefined' && soldPhoneDatabase.length > 0) {
+            console.log("Đang khởi tạo đồng bộ dữ liệu Bảo Hành lên Cloud Firestore...");
+            soldPhoneDatabase.forEach(item => {
+              if (item && item.id) {
+                db.collection('sold_phones').doc(String(item.id)).set(item).catch(console.error);
+              }
+            });
           }
         }, err => console.error("Lỗi sync sold_phones:", err));
-      } catch (err) {}
+      } catch (err) {
+        console.error("Lỗi setup sync sold_phones:", err);
+      }
 
-      // 5. Đồng bộ Main - Xác (mainxac)
+      // 5. Đồng bộ Main - Xác (mainxac) thời gian thực
       try {
         db.collection('mainxac').onSnapshot(snapshot => {
           let list = [];
-          snapshot.forEach(doc => list.push(doc.data()));
+          snapshot.forEach(doc => {
+            let data = doc.data();
+            if (!data.id) data.id = doc.id;
+            list.push(data);
+          });
           if (list.length > 0) {
+            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             mainXacDatabase = list;
+            try { localStorage.setItem('KIMCHI_MAIN_XAC_DB', JSON.stringify(mainXacDatabase)); } catch(e){}
             if (typeof renderMainXacGrid === 'function') renderMainXacGrid();
+          } else if (snapshot.empty && typeof mainXacDatabase !== 'undefined' && mainXacDatabase.length > 0) {
+            console.log("Đang khởi tạo đồng bộ dữ liệu Main Xác lên Cloud Firestore...");
+            mainXacDatabase.forEach(item => {
+              if (item && item.id) {
+                db.collection('mainxac').doc(String(item.id)).set(item).catch(console.error);
+              }
+            });
           }
         }, err => console.error("Lỗi sync mainxac:", err));
-      } catch (err) {}
+      } catch (err) {
+        console.error("Lỗi setup sync mainxac:", err);
+      }
 
-      // 6. Đồng bộ Sửa Chữa (repairs)
+      // 6. Đồng bộ Sửa Chữa (repairs) thời gian thực
       try {
         db.collection('repairs').onSnapshot(snapshot => {
           let list = [];
-          snapshot.forEach(doc => list.push(doc.data()));
+          snapshot.forEach(doc => {
+            let data = doc.data();
+            if (!data.id) data.id = doc.id;
+            list.push(data);
+          });
           if (list.length > 0) {
+            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             repairDatabase = list;
+            try { localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase)); } catch(e){}
             if (typeof renderRepairTable === 'function') renderRepairTable();
+          } else if (snapshot.empty && typeof repairDatabase !== 'undefined' && repairDatabase.length > 0) {
+            console.log("Đang khởi tạo đồng bộ dữ liệu Sửa Chữa lên Cloud Firestore...");
+            repairDatabase.forEach(item => {
+              if (item && item.id) {
+                db.collection('repairs').doc(String(item.id)).set(item).catch(console.error);
+              }
+            });
           }
         }, err => console.error("Lỗi sync repairs:", err));
-      } catch (err) {}
+      } catch (err) {
+        console.error("Lỗi setup sync repairs:", err);
+      }
 
       // 7. Đồng bộ Phần Mềm (software) thời gian thực giữa Web và Mobile
       try {
@@ -6836,7 +6911,8 @@
       const confirmWord = prompt("⚠️ CẢNH BÁO: Thao tác này sẽ xóa vĩnh viễn máy này khỏi kho!\n\nNhập chữ \"yes\" để xác nhận xóa:");
       if (confirmWord !== null) {
         if (confirmWord.trim().toLowerCase() === "yes") {
-          phoneDatabase = phoneDatabase.filter(item => item.id !== id);
+          phoneDatabase = phoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);
+          savePhoneStorage();
           if (typeof db !== 'undefined' && db && id) {
             db.collection('phones').doc(String(id)).delete().catch(console.error);
           }
@@ -7737,6 +7813,7 @@
       }
 
       soldPhoneDatabase = soldPhoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);
+      saveSoldPhoneStorage();
       if (typeof db !== 'undefined' && db && id) {
         db.collection('sold_phones').doc(String(id)).delete().catch(console.error);
       }
