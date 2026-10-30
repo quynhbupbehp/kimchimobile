@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261031_002734">
+  <link rel="stylesheet" href="css/style.css?v=20261031_003238">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261031_002734";
+    var CURRENT_PAGE_VERSION = "20261031_003238";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1753,7 +1753,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261031_002734" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261031_003238" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -2492,7 +2492,7 @@
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
 
-      <form id="ticketForm" onsubmit="saveTicket(event)">
+      <form id="ticketForm" onsubmit="saveTicket(event)" novalidate>
         <!-- HÀNG 1 -->
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 2.5;">
@@ -2531,7 +2531,7 @@
             <label class="form-ticket-label">Số lượng</label>
             <div class="qty-box" style="width: 100%;">
               <button type="button" class="qty-btn" onclick="adjustQty(-1)">-</button>
-              <input type="text" class="qty-input" id="tQty" value="1" inputmode="numeric" pattern="[0-9]*">
+              <input type="text" class="qty-input" id="tQty" value="1" inputmode="numeric">
               <button type="button" class="qty-btn" onclick="adjustQty(1)">+</button>
             </div>
           </div>
@@ -2543,7 +2543,7 @@
             <label class="form-ticket-label">Giá bán</label>
             <div class="input-with-actions">
               <input type="text" class="ticket-input" id="tPriceOut" placeholder=""
-                inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                inputmode="numeric" autocomplete="off"
                 oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)">
             </div>
           </div>
@@ -2552,7 +2552,7 @@
             <label class="form-ticket-label">Giá nhập</label>
             <div class="input-with-actions">
               <input type="text" class="ticket-input" id="tPriceIn" placeholder=""
-                inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                inputmode="numeric" autocomplete="off"
                 oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)">
             </div>
           </div>
@@ -2640,7 +2640,7 @@
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
 
-      <form onsubmit="saveNewPhone(event)">
+      <form onsubmit="saveNewPhone(event)" novalidate>
         <input type="hidden" id="mEditId" value="">
 
         <div class="form-ticket-row">
@@ -2868,13 +2868,13 @@
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá Nhập</label>
-            <input type="text" class="ticket-input" id="mPriceIn" inputmode="numeric" pattern="[0-9]*"
+            <input type="text" class="ticket-input" id="mPriceIn" inputmode="numeric"
               oninput="formatCurrencyInput(this); calcModalProfit();">
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá Bán *</label>
-            <input type="text" class="ticket-input" id="mPriceOut" inputmode="numeric" pattern="[0-9]*"
+            <input type="text" class="ticket-input" id="mPriceOut" inputmode="numeric"
               oninput="formatCurrencyInput(this); calcModalProfit();" required>
           </div>
         </div>
@@ -2922,7 +2922,7 @@
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
 
-      <form onsubmit="saveNewMainXac(event)">
+      <form onsubmit="saveNewMainXac(event)" novalidate>
         <input type="hidden" id="mxEditId" value="">
 
         <!-- HÀNG 1: TÊN MÁY | IMEI | MÀU SẮC -->
@@ -3209,7 +3209,7 @@
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
 
-      <form onsubmit="confirmSellPhone(event)">
+      <form onsubmit="confirmSellPhone(event)" novalidate>
         <input type="hidden" id="sellPhoneId">
 
         <div
@@ -3239,7 +3239,7 @@
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label" style="color: #facc15;">Giá Bán Thực Tế *</label>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="ticket-input default-dimmed-input" id="sellPriceOut" required
+            <input type="text" inputmode="numeric" class="ticket-input default-dimmed-input" id="sellPriceOut" required
               onfocus="handlePriceOutFocus(this)" onblur="handlePriceOutBlur(this)"
               oninput="formatCurrencyInput(this); calcSellProfit(); checkGiftsEntered();"
               style="color: #10b981; font-weight: 900; font-size: 1.15rem;">
@@ -3285,25 +3285,25 @@
         <div class="form-ticket-row" style="margin-bottom: 1.25rem; gap: 14px;">
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Sạc</span>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="giftSac" placeholder="0" onfocus="handleGiftFocus(this)"
+            <input type="text" inputmode="numeric" class="gift-input" id="giftSac" placeholder="0" onfocus="handleGiftFocus(this)"
               onblur="handleGiftBlur(this)" oninput="handleGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Ốp</span>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="giftOp" placeholder="0" onfocus="handleGiftFocus(this)"
+            <input type="text" inputmode="numeric" class="gift-input" id="giftOp" placeholder="0" onfocus="handleGiftFocus(this)"
               onblur="handleGiftBlur(this)" oninput="handleGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">C.Lực</span>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="giftCluc" placeholder="0" onfocus="handleGiftFocus(this)"
+            <input type="text" inputmode="numeric" class="gift-input" id="giftCluc" placeholder="0" onfocus="handleGiftFocus(this)"
               onblur="handleGiftBlur(this)" oninput="handleGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Khác</span>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="giftKhac" placeholder="0" onfocus="handleGiftFocus(this)"
+            <input type="text" inputmode="numeric" class="gift-input" id="giftKhac" placeholder="0" onfocus="handleGiftFocus(this)"
               onblur="handleGiftBlur(this)" oninput="handleGiftInput(this)">
           </div>
         </div>
@@ -3352,7 +3352,7 @@
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
 
-      <form onsubmit="confirmExternalSellPhone(event)">
+      <form onsubmit="confirmExternalSellPhone(event)" novalidate>
         <!-- KHỐI NHẬP THÔNG TIN MÁY NGOÀI KHO -->
         <div
           style="background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 12px 16px; margin-bottom: 1.1rem;">
@@ -3441,25 +3441,25 @@
         <div class="form-ticket-row" style="margin-bottom: 1.25rem; gap: 14px;">
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Sạc</span>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="extGiftSac" placeholder="0" onfocus="handleExtGiftFocus(this)"
+            <input type="text" inputmode="numeric" class="gift-input" id="extGiftSac" placeholder="0" onfocus="handleExtGiftFocus(this)"
               onblur="handleExtGiftBlur(this)" oninput="handleExtGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Ốp</span>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="extGiftOp" placeholder="0" onfocus="handleExtGiftFocus(this)"
+            <input type="text" inputmode="numeric" class="gift-input" id="extGiftOp" placeholder="0" onfocus="handleExtGiftFocus(this)"
               onblur="handleExtGiftBlur(this)" oninput="handleExtGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">C.Lực</span>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="extGiftCluc" placeholder="0" onfocus="handleExtGiftFocus(this)"
+            <input type="text" inputmode="numeric" class="gift-input" id="extGiftCluc" placeholder="0" onfocus="handleExtGiftFocus(this)"
               onblur="handleExtGiftBlur(this)" oninput="handleExtGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Khác</span>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="extGiftKhac" placeholder="0" onfocus="handleExtGiftFocus(this)"
+            <input type="text" inputmode="numeric" class="gift-input" id="extGiftKhac" placeholder="0" onfocus="handleExtGiftFocus(this)"
               onblur="handleExtGiftBlur(this)" oninput="handleExtGiftInput(this)">
           </div>
         </div>
@@ -3909,7 +3909,7 @@
           style="background: #1e293b; border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
       </div>
 
-      <form id="swTicketForm" onsubmit="saveSoftwareTicket(event)">
+      <form id="swTicketForm" onsubmit="saveSoftwareTicket(event)" novalidate>
         <input type="hidden" id="swEditId">
 
         <!-- HÀNG 1: KHÁCH HÀNG / THỢ & TÊN MÁY -->
@@ -3983,7 +3983,7 @@
           <div class="sw-input-col sw-price-col">
             <label class="sw-input-label">Báo giá <span class="req">*</span></label>
             <div class="sw-input-with-tools">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" class="sw-input-field" id="swPriceInput" placeholder="Nhập giá" required
+              <input type="text" inputmode="numeric" class="sw-input-field" id="swPriceInput" placeholder="Nhập giá" required
                 autocomplete="off" oninput="formatCurrencyInput(this); filterSwDropdown('price', this.value)"
                 onfocus="if(window.innerWidth > 768){ openSwDropdown('price'); }">
               <button type="button" class="sw-tool-btn sw-tool-dropdown" onclick="toggleSwDropdown('price')"
@@ -4014,7 +4014,7 @@
           <div class="sw-input-col sw-fee-col">
             <label class="sw-input-label">Phí dịch vụ <span class="req">*</span></label>
             <div class="sw-input-with-tools">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" class="sw-input-field" id="swFeeInput" placeholder="0" autocomplete="off"
+              <input type="text" inputmode="numeric" class="sw-input-field" id="swFeeInput" placeholder="0" autocomplete="off"
                 oninput="formatCurrencyInput(this); filterSwDropdown('fee', this.value)"
                 onfocus="if(window.innerWidth > 768){ openSwDropdown('fee'); }">
               <button type="button" class="sw-tool-btn sw-tool-dropdown" onclick="toggleSwDropdown('fee')"
@@ -5216,10 +5216,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261031_002734"></script>
+  <script src="js/seed_data.js?v=20261031_003238"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261031_002734"></script>
+  <script src="js/main.js?v=20261031_003238"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

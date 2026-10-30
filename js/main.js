@@ -1712,7 +1712,7 @@
       const applyNumeric = (el) => {
         if (isPriceOrImei(el)) {
           el.setAttribute('inputmode', 'numeric');
-          el.setAttribute('pattern', '[0-9]*');
+          el.removeAttribute('pattern');
         }
       };
 
