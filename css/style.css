@@ -1396,7 +1396,10 @@
       grid-template-columns: repeat(3, 1fr) !important;
       gap: calc(16px + 0.75cm) !important;
       align-items: start;
-      width: 100%;
+      width: 90% !important;
+      max-width: 90% !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
     }
 
     /* NÚT CHUYỂN ĐỔI CHẾ ĐỘ XEM HÀNG NGANG (ICON CỜ VN) */
@@ -1431,7 +1434,10 @@
 
     /* GIAO DIỆN BẢNG DANH SÁCH MÁY THEO HÀNG NGANG (MẪU CHUẨN) */
     .phone-table-container {
-      width: 100%;
+      width: 90% !important;
+      max-width: 90% !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
       box-sizing: border-box;
       overflow-x: auto;
       border-radius: 8px;
@@ -8263,6 +8269,10 @@
           display: grid !important;
           grid-template-columns: repeat(2, 1fr) !important;
           gap: 10px !important;
+          width: 90% !important;
+          max-width: 90% !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
         }
         #tab-phanmem .sw-top-header-bar {
           display: grid !important;
