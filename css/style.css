@@ -1564,6 +1564,18 @@
       flex-wrap: nowrap;
     }
 
+    .phone-brand-logo {
+      width: 25px;
+      height: 25px;
+      min-width: 25px;
+      border-radius: 6px;
+      object-fit: cover;
+      display: inline-block;
+      flex-shrink: 0;
+      vertical-align: middle;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+
     .phone-card-name {
       font-size: 1.32rem;
       font-weight: 900;
@@ -6987,6 +6999,17 @@
           flex: 1 1 auto !important;
           min-width: 0 !important;
           overflow: hidden !important;
+        }
+        .phone-brand-logo {
+          width: 25px !important;
+          height: 25px !important;
+          min-width: 25px !important;
+          border-radius: 6px !important;
+          object-fit: cover !important;
+          display: inline-block !important;
+          flex-shrink: 0 !important;
+          vertical-align: middle !important;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
         }
         .phone-card-name {
           font-size: 1.05rem !important;

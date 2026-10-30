@@ -8,9 +8,9 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_081952">
+  <link rel="stylesheet" href="css/style.css?v=20261030_084137">
   <script>
-    // === XÓA BỎ HOÀN TOÀN SERVICE WORKER ĐỀ PHÒNG CACHE NGẦM SAFARI/CHROME ===
+    // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function (registrations) {
         for (var i = 0; i < registrations.length; i++) {
@@ -19,57 +19,7 @@
       }).catch(function () {});
     }
 
-    // === DỌN SẠCH CÁC BẢNG CACHE LOCAL DỮ LIỆU CŨ, CHUYỂN HOÀN TOÀN SANG FIREBASE ===
-    (function () {
-      var obsoleteKeys = [
-        'KIMCHI_PHONE_DB', 'KIMCHI_SOLD_PHONE_DB', 'KIMCHI_SALES_DB', 'KIMCHI_BANGA_DB',
-        'KIMCHI_MAIN_XAC_DB', 'KIMCHI_REPAIR_DB', 'KIMCHI_PHANMEM_DB', 'KIMCHI_SALES_CLEARED',
-        'KIMCHI_BANGA_CLEARED', 'KIMCHI_PHONE_CLEARED', 'KIMCHI_SOLD_PHONE_CLEARED',
-        'KIMCHI_PHANMEM_CLEARED', 'KIMCHI_REPAIR_CLEARED', 'KIMCHI_SALES_CLEAR_OCT25'
-      ];
-      for (var i = 0; i < obsoleteKeys.length; i++) {
-        try { localStorage.removeItem(obsoleteKeys[i]); } catch (e) {}
-      }
-    })();
-
-    // === CƠ CHẾ TỰ ĐỘNG PHÁ CACHE SAFARI & DI ĐỘNG 100% ===
-    var CURRENT_PAGE_VERSION = "20261030_081952";
-    
-    function checkAppVersion() {
-      // Gọi version.json với tham số ngẫu nhiên thời gian thực để Safari KHÔNG THỂ lưu cache
-      fetch('version.json?_t=' + Date.now(), { cache: 'no-store' })
-        .then(function(res) {
-          if (!res.ok) return null;
-          return res.json();
-        })
-        .then(function(data) {
-          if (data && data.version && data.version !== CURRENT_PAGE_VERSION) {
-            console.log('[AUTO-CACHE-BUST] Phát hiện bản mới:', data.version, 'Bản hiện tại:', CURRENT_PAGE_VERSION);
-            if ('caches' in window) {
-              caches.keys().then(function(names) {
-                names.forEach(function(n) { caches.delete(n); });
-              });
-            }
-            var u = new URL(window.location.href);
-            u.searchParams.set('v', data.version);
-            u.searchParams.delete('_t');
-            window.location.replace(u.toString());
-          }
-        })
-        .catch(function(err) {});
-    }
-
-    // Xử lý Safari BFCache (khi mở lại tab cũ từ đa nhiệm hoặc nút back)
-    window.addEventListener('pageshow', function (e) {
-      if (e.persisted) {
-        checkAppVersion();
-      }
-    });
-
-    // Tự động kiểm tra ngay khi mở trang
-    checkAppVersion();
-
-    // Hàm làm mới cưỡng bức khi bấm nút 🔄 trên mobile
+    // === HÀM LÀM MỚI CƯỠNG BỨC KHI BẤM NÚT 🔄 TRÊN MOBILE ===
     window.hardRefreshApp = function() {
       if ('caches' in window) {
         caches.keys().then(function(names) {
@@ -1715,7 +1665,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_081952" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_084137" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5217,10 +5167,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_081952"></script>
+  <script src="js/seed_data.js?v=20261030_084137"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_081952"></script>
+  <script src="js/main.js?v=20261030_084137"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
