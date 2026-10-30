@@ -1654,6 +1654,39 @@
           }
         }, err => console.error("Lỗi sync repairs:", err));
       } catch (err) {}
+
+      // 7. Đồng bộ Phần Mềm (software) thời gian thực giữa Web và Mobile
+      try {
+        db.collection('software').onSnapshot(snapshot => {
+          let list = [];
+          snapshot.forEach(doc => {
+            let data = doc.data();
+            if (!data.id) data.id = doc.id;
+            list.push(data);
+          });
+          if (list.length > 0) {
+            // Sắp xếp ID lớn nhất / mới nhất lên đầu
+            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            softwareDatabase = list;
+            try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
+            if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+            if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+            if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+              renderSoftwareDebtTable();
+            }
+          } else if (snapshot.empty && typeof softwareDatabase !== 'undefined' && softwareDatabase.length > 0) {
+            // Nếu trên Firestore chưa có đơn phần mềm nào, tự động đẩy toàn bộ dữ liệu đang có lên Firestore
+            console.log("Đang khởi tạo đồng bộ dữ liệu phần mềm lên Cloud Firestore...");
+            softwareDatabase.forEach(item => {
+              if (item && item.id) {
+                db.collection('software').doc(String(item.id)).set(item).catch(console.error);
+              }
+            });
+          }
+        }, err => console.error("Lỗi sync software realtime:", err));
+      } catch (err) {
+        console.error("Lỗi setup sync software:", err);
+      }
     }
     window.initFirebaseRealtimeSync = initFirebaseRealtimeSync;
 
@@ -9367,9 +9400,20 @@
       softwareDatabase = [];
     }
 
-    function saveSoftwareStorage() {
+    function saveSoftwareStorage(itemToSync) {
       if (softwareDatabase.length > 0) localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
-      localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
+      try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
+      if (typeof db !== 'undefined' && db) {
+        if (itemToSync && itemToSync.id) {
+          db.collection('software').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+        } else {
+          softwareDatabase.forEach(item => {
+            if (item && item.id) {
+              db.collection('software').doc(String(item.id)).set(item).catch(console.error);
+            }
+          });
+        }
+      }
     }
 
     let swFilterDate = getVietnamDate();
@@ -9807,6 +9851,9 @@
         const item = softwareDatabase.find(x => x.id === id);
         softwareDatabase = softwareDatabase.filter(x => x.id !== id);
         saveSoftwareStorage();
+        if (typeof db !== 'undefined' && db && id) {
+          db.collection('software').doc(String(id)).delete().catch(console.error);
+        }
         if (item && typeof logActivity === 'function') {
           logActivity('DELETE', 'phanmem', 'Phần mềm', `Xóa đơn phần mềm: ${item.customer} - ${item.device} (Báo giá: ${item.price})`, item, null, id);
         }
