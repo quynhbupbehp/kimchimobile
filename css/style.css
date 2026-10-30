@@ -7926,21 +7926,24 @@
         #buyBackPhoneModal .bb-row-name-imei {
           display: flex !important;
           flex-direction: row !important;
-          flex-wrap: nowrap !important;
+          flex-wrap: wrap !important;
           gap: 8px !important;
           width: 100% !important;
         }
-        #buyBackPhoneModal .bb-row-name-imei > .form-ticket-group:first-child {
+        #buyBackPhoneModal .bb-group-name {
           flex: 0 0 calc(70% - 4px) !important;
           width: calc(70% - 4px) !important;
           max-width: calc(70% - 4px) !important;
           min-width: 0 !important;
         }
-        #buyBackPhoneModal .bb-row-name-imei > .form-ticket-group:last-child {
+        #buyBackPhoneModal .bb-group-imei {
           flex: 0 0 calc(30% - 4px) !important;
           width: calc(30% - 4px) !important;
           max-width: calc(30% - 4px) !important;
           min-width: 0 !important;
+        }
+        #buyBackPhoneModal .bb-group-color {
+          display: none !important;
         }
 
         /* TÙY CHỈNH RIÊNG MODAL MUA LẠI MÁY TRÊN MOBILE THEO YÊU CẦU */
@@ -7962,13 +7965,13 @@
           width: 50% !important;
           max-width: 50% !important;
         }
-        #buyBackPhoneModal .bb-profit-group {
+        #buyBackPhoneModal .bb-nextsell-box {
           flex: 1 1 50% !important;
           width: 50% !important;
           max-width: 50% !important;
         }
 
-        /* Đổi nhãn GIÁ MUA LẠI KHÁCH -> Giá Mua Lại */
+        /* Đổi nhãn GIÁ MUA LẠI KHÁCH -> Giá Mua Lại trên mobile */
         #buyBackPhoneModal .bb-label-buyback {
           font-size: 0 !important;
           line-height: 0 !important;
@@ -7983,37 +7986,19 @@
           display: inline-block !important;
         }
 
-        /* Đổi nhãn Tiền Lời Thu Lại -> Giá Bán Mới */
-        #buyBackPhoneModal .bb-label-profit {
+        /* Đổi nhãn GIÁ BÁN ĐỀ XUẤT -> Giá Bán Mới trên mobile */
+        #buyBackPhoneModal .bb-label-nextsell {
           font-size: 0 !important;
           line-height: 0 !important;
           display: block !important;
         }
-        #buyBackPhoneModal .bb-label-profit::after {
+        #buyBackPhoneModal .bb-label-nextsell::after {
           content: "Giá Bán Mới *" !important;
           font-size: 0.85rem !important;
           font-weight: 800 !important;
           color: #34d399 !important;
           line-height: 20px !important;
           display: inline-block !important;
-        }
-
-        /* Ẩn div hiển thị tiền lời, hiện ô nhập Giá Bán Mới */
-        #buyBackPhoneModal .bb-profit-display {
-          display: none !important;
-        }
-        #buyBackPhoneModal .bb-mobile-nextsell-input {
-          display: block !important;
-        }
-
-        /* 3. Xóa : Giá Nhập Mới (Hoàn Kho) */
-        #buyBackPhoneModal .bb-newcost-group {
-          display: none !important;
-        }
-
-        /* 4. Xóa hàng Giá Bán Mới và Ghi Chú cũ ở dưới */
-        #buyBackPhoneModal .bb-nextsell-row {
-          display: none !important;
         }
 
         /* 5. Chia đôi bảng dưới: bên trái Xóa Vĩnh Viễn, bên phải Thêm Vào Kho */

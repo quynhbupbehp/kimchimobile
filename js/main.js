@@ -7587,22 +7587,21 @@
       let origCost = document.getElementById('bbOriginalCost').value;
       let giftCost = document.getElementById('bbGiftCost').value;
       let buyBackPrice = document.getElementById('bbBuyBackPrice').value;
-      
-      const isMobile = window.innerWidth <= 768;
-      let nextSellPrice = '';
-      if (isMobile) {
-        const mobInput = document.getElementById('bbMobileNextSellPrice');
-        nextSellPrice = (mobInput && mobInput.value.trim()) ? mobInput.value.trim() : document.getElementById('bbNextSellPrice').value.trim();
-        if (!nextSellPrice) {
-          alert("Vui lòng nhập Giá Bán Mới!");
-          if (mobInput) mobInput.focus();
-          return;
-        }
-      } else {
-        nextSellPrice = document.getElementById('bbNextSellPrice').value || sellPrice;
+      let nextSellPrice = document.getElementById('bbNextSellPrice').value.trim();
+
+      if (!buyBackPrice || parsePriceNum(buyBackPrice) <= 0) {
+        alert("Vui lòng nhập Giá Mua Lại Khách!");
+        document.getElementById('bbBuyBackPrice').focus();
+        return;
       }
 
-      let note = document.getElementById('bbNote').value;
+      if (!nextSellPrice || parsePriceNum(nextSellPrice) <= 0) {
+        alert("Vui lòng nhập GIÁ BÁN ĐỀ XUẤT!");
+        document.getElementById('bbNextSellPrice').focus();
+        return;
+      }
+
+      let note = document.getElementById('bbNote') ? document.getElementById('bbNote').value : '';
 
       let sellPriceNum = parsePriceNum(sellPrice);
       let origCostNum = parsePriceNum(origCost);
@@ -7610,14 +7609,13 @@
       let buyBackPriceNum = parsePriceNum(buyBackPrice);
       let profitNum = sellPriceNum - buyBackPriceNum;
       
-      // Trên Mobile: Mặc định giá nhập hoàn kho chính là giá đã mua lại khách (buyBackPriceNum)
-      // Trên Web Desktop: Giữ nguyên công thức hoàn kho ban đầu (origCostNum - profitNum + giftCostNum)
-      let newCostNum = isMobile ? buyBackPriceNum : (origCostNum - profitNum + giftCostNum);
+      // Theo yêu cầu: Giá nhập = Giá mua lại của khách, Giá bán = Giá bán đề xuất
+      let newCostNum = buyBackPriceNum;
 
       // Xóa khỏi soldPhoneDatabase
       soldPhoneDatabase = soldPhoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);
 
-      // Tạo object hoàn kho về phoneDatabase
+      // Tạo object hoàn kho về phoneDatabase (Mục Bán Máy)
       let restoredPhone = {
         id: Date.now() + Math.random(),
         brand: p.brand || (isPhoneBrandIphone('', p.name) ? 'IPHONE' : 'KHÁC'),
