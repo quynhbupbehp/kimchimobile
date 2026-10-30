@@ -665,26 +665,60 @@
       let logoSrc = '';
       let altText = b || 'Logo';
 
-      if (b === 'IPHONE' || b === 'IPAD' || b.includes('APPLE') || isPhoneBrandIphone(b, n) || /^(?:\d{1,2}|X|XS|XR|SE)\b/i.test(n) || n.includes('PLUS') || n.includes('PRO MAX')) {
-        logoSrc = 'img/logo_apple.svg';
+      // 1. Nhận diện Apple / iPhone
+      if (
+        b === 'IPHONE' || b === 'IPAD' || b.includes('APPLE') ||
+        isPhoneBrandIphone(b, n) ||
+        /^(?:\d{1,2}|X|XS|XR|SE)\b/i.test(n) ||
+        n.includes('PRO MAX') || n.includes('PLUS') || n.includes('IPHONE') || n.includes('IPAD') ||
+        /^\d+/i.test(n)
+      ) {
+        logoSrc = 'img/logo_apple.jpg';
         altText = 'Apple';
-      } else if (b.includes('SAMSUNG') || n.includes('SAMSUNG') || /^(?:A\d+|S\d+|NOTE\s*\d+|M\d+|Z\s*FLIP|Z\s*FOLD)\b/i.test(n)) {
+      }
+      // 2. Nhận diện Samsung
+      else if (
+        b.includes('SAMSUNG') || n.includes('SAMSUNG') ||
+        /^(?:GALAXY|NOTE\s*\d+|Z\s*FLIP|Z\s*FOLD)\b/i.test(n) ||
+        /^(?:A\d+|S\d+|M\d+)\b/i.test(n)
+      ) {
         logoSrc = 'img/logo_samsung.jpg';
         altText = 'Samsung';
-      } else if (b.includes('XIAOMI') || b.includes('REDMI') || b.includes('POCO') || n.includes('REDMI') || n.includes('XIAOMI') || n.includes('POCO')) {
+      }
+      // 3. Nhận diện Xiaomi / Redmi / Poco
+      else if (
+        b.includes('XIAOMI') || b.includes('REDMI') || b.includes('POCO') ||
+        n.includes('REDMI') || n.includes('XIAOMI') || n.includes('POCO') ||
+        /^MI\b/i.test(n)
+      ) {
         logoSrc = 'img/logo_xiaomi.jpg';
         altText = 'Xiaomi';
-      } else if (b.includes('OPPO') || n.includes('OPPO') || n.includes('RENO')) {
+      }
+      // 4. Nhận diện Oppo
+      else if (
+        b.includes('OPPO') || n.includes('OPPO') || n.includes('RENO') ||
+        /^A\d+[XS]?\b/i.test(n) || /^F\d+\b/i.test(n)
+      ) {
         logoSrc = 'img/logo_oppo.jpg';
         altText = 'Oppo';
-      } else if (b.includes('VIVO') || n.includes('VIVO') || n.includes('IQOO')) {
+      }
+      // 5. Nhận diện Vivo
+      else if (
+        b.includes('VIVO') || n.includes('VIVO') || n.includes('IQOO') ||
+        /^Y\d+\b/i.test(n)
+      ) {
         logoSrc = 'img/logo_vivo.jpg';
         altText = 'Vivo';
-      } else if (b.includes('REALME') || n.includes('REALME')) {
-        logoSrc = 'img/logo_realme.svg';
+      }
+      // 6. Nhận diện Realme
+      else if (
+        b.includes('REALME') || n.includes('REALME') ||
+        /^C\d+\b/i.test(n)
+      ) {
+        logoSrc = 'img/logo_realme.jpg';
         altText = 'Realme';
-      } else if (/^\d+/i.test(n)) {
-        logoSrc = 'img/logo_apple.svg';
+      } else {
+        logoSrc = 'img/logo_apple.jpg';
         altText = 'Apple';
       }
 
