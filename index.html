@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_221945">
+  <link rel="stylesheet" href="css/style.css?v=20261030_222908">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261030_221945";
+    var CURRENT_PAGE_VERSION = "20261030_222908";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1752,7 +1752,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_221945" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_222908" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -3215,11 +3215,10 @@
           style="background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 12px 16px; margin-bottom: 1.2rem;">
           <div
             style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;">
-              <span style="font-size: 1.1rem; font-weight: 900; color: #fff;" id="sellPhoneSummaryTitle">IPHONE - 15 Pro
-                Max (256GB)</span>
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;">
+              <span style="font-size: 1.1rem; font-weight: 900; color: #fff;" id="sellPhoneSummaryTitle">IPHONE - 15 Pro Max (256GB)</span>
               <span id="sellPhoneSummaryDot"
-                style="width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0;"></span>
+                style="width: 28px; height: 28px; border-radius: 50%; display: inline-block; flex-shrink: 0; margin-left: 2px;"></span>
             </div>
             <span
               style="font-size: 0.95rem; font-weight: 900; color: var(--amber-color); background: #141c2b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 8px; border-radius: 6px;"
@@ -3232,13 +3231,15 @@
         <div class="form-ticket-row" style="margin-bottom: 0.9rem;">
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label" style="color: #facc15;">Tên Khách Hàng *</label>
-            <input type="text" class="ticket-input" id="sellCustomerName" required value="Khách lẻ"
+            <input type="text" class="ticket-input default-dimmed-input" id="sellCustomerName" required placeholder="Khách Lẻ"
+              onfocus="handleDefaultInputFocus(this)" onblur="handleDefaultInputBlur(this, 'Khách Lẻ')"
               style="font-weight: 800; text-transform: capitalize;">
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label" style="color: #facc15;">Giá Bán Thực Tế *</label>
-            <input type="text" class="ticket-input" id="sellPriceOut" required
+            <input type="text" inputmode="numeric" pattern="[0-9]*" class="ticket-input default-dimmed-input" id="sellPriceOut" required
+              onfocus="handlePriceOutFocus(this)" onblur="handlePriceOutBlur(this)"
               oninput="formatCurrencyInput(this); calcSellProfit(); checkGiftsEntered();"
               style="color: #10b981; font-weight: 900; font-size: 1.15rem;">
           </div>
@@ -3283,25 +3284,25 @@
         <div class="form-ticket-row" style="margin-bottom: 1.25rem; gap: 14px;">
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Sạc</span>
-            <input type="text" class="gift-input" id="giftSac" placeholder="0" onfocus="handleGiftFocus(this)"
+            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="giftSac" placeholder="0" onfocus="handleGiftFocus(this)"
               onblur="handleGiftBlur(this)" oninput="handleGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Ốp</span>
-            <input type="text" class="gift-input" id="giftOp" placeholder="0" onfocus="handleGiftFocus(this)"
+            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="giftOp" placeholder="0" onfocus="handleGiftFocus(this)"
               onblur="handleGiftBlur(this)" oninput="handleGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">C.Lực</span>
-            <input type="text" class="gift-input" id="giftCluc" placeholder="0" onfocus="handleGiftFocus(this)"
+            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="giftCluc" placeholder="0" onfocus="handleGiftFocus(this)"
               onblur="handleGiftBlur(this)" oninput="handleGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Khác</span>
-            <input type="text" class="gift-input" id="giftKhac" placeholder="0" onfocus="handleGiftFocus(this)"
+            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="giftKhac" placeholder="0" onfocus="handleGiftFocus(this)"
               onblur="handleGiftBlur(this)" oninput="handleGiftInput(this)">
           </div>
         </div>
@@ -3439,25 +3440,25 @@
         <div class="form-ticket-row" style="margin-bottom: 1.25rem; gap: 14px;">
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Sạc</span>
-            <input type="text" class="gift-input" id="extGiftSac" placeholder="0" onfocus="handleExtGiftFocus(this)"
+            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="extGiftSac" placeholder="0" onfocus="handleExtGiftFocus(this)"
               onblur="handleExtGiftBlur(this)" oninput="handleExtGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Ốp</span>
-            <input type="text" class="gift-input" id="extGiftOp" placeholder="0" onfocus="handleExtGiftFocus(this)"
+            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="extGiftOp" placeholder="0" onfocus="handleExtGiftFocus(this)"
               onblur="handleExtGiftBlur(this)" oninput="handleExtGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">C.Lực</span>
-            <input type="text" class="gift-input" id="extGiftCluc" placeholder="0" onfocus="handleExtGiftFocus(this)"
+            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="extGiftCluc" placeholder="0" onfocus="handleExtGiftFocus(this)"
               onblur="handleExtGiftBlur(this)" oninput="handleExtGiftInput(this)">
           </div>
 
           <div class="gift-box-item" style="flex: 1;">
             <span class="gift-label">Khác</span>
-            <input type="text" class="gift-input" id="extGiftKhac" placeholder="0" onfocus="handleExtGiftFocus(this)"
+            <input type="text" inputmode="numeric" pattern="[0-9]*" class="gift-input" id="extGiftKhac" placeholder="0" onfocus="handleExtGiftFocus(this)"
               onblur="handleExtGiftBlur(this)" oninput="handleExtGiftInput(this)">
           </div>
         </div>
@@ -5237,10 +5238,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_221945"></script>
+  <script src="js/seed_data.js?v=20261030_222908"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_221945"></script>
+  <script src="js/main.js?v=20261030_222908"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

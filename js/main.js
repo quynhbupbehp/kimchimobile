@@ -6800,8 +6800,14 @@
       let pinVal = formatPinByBrand(p.pin, p.brand, p.name);
       document.getElementById('sellPhoneSummaryDetails').innerText = `Tình trạng: ${p.condition || 'Zin Đẹp 99%'} | Pin : ${pinVal} | QG: ${p.origin || 'VN/A'}`;
 
-      document.getElementById('sellCustomerName').value = 'Khách Lẻ';
-      document.getElementById('sellPriceOut').value = p.price || '';
+      document.getElementById('sellCustomerName').value = '';
+      document.getElementById('sellCustomerName').placeholder = 'Khách Lẻ';
+
+      let defaultPrice = p.price || '';
+      let priceInput = document.getElementById('sellPriceOut');
+      priceInput.value = '';
+      priceInput.placeholder = defaultPrice;
+      priceInput.dataset.defaultPrice = defaultPrice;
       
       document.getElementById('sellTargetList').value = '';
       document.getElementById('sellPaymentMethod').value = '';
@@ -6822,6 +6828,35 @@
 
     function closeSellPhoneModal() {
       document.getElementById('sellPhoneModal').classList.remove('active');
+    }
+
+    function handleDefaultInputFocus(input) {
+      // Khi bấm vào tự ẩn placeholder/nội dung mờ để người dùng nhập mới
+      input.dataset.oldPlaceholder = input.placeholder;
+      input.placeholder = '';
+    }
+
+    function handleDefaultInputBlur(input, fallbackPlaceholder) {
+      if (!input.placeholder) {
+        input.placeholder = input.dataset.oldPlaceholder || fallbackPlaceholder;
+      }
+    }
+
+    function handlePriceOutFocus(input) {
+      // Khi bấm vào tự ẩn giá mờ để nhập giá mới
+      input.dataset.savedPlaceholder = input.placeholder;
+      input.placeholder = '';
+      if (input.value === input.dataset.defaultPrice) {
+        input.value = '';
+      }
+      calcSellProfit();
+    }
+
+    function handlePriceOutBlur(input) {
+      if (input.value.trim() === '') {
+        input.placeholder = input.dataset.savedPlaceholder || input.dataset.defaultPrice || '0';
+      }
+      calcSellProfit();
     }
 
     function handleGiftFocus(input) {
@@ -6861,7 +6896,9 @@
     function calcSellProfit() {
       if (!currentSellingPhone) return;
 
-      let priceOutNum = parsePriceNum(document.getElementById('sellPriceOut').value);
+      let priceInput = document.getElementById('sellPriceOut');
+      let priceValStr = priceInput.value.trim() || priceInput.dataset.defaultPrice || currentSellingPhone.price || '0';
+      let priceOutNum = parsePriceNum(priceValStr);
       let priceInNum = parsePriceNum(currentSellingPhone.priceIn);
 
       let gSac = parsePriceNum(document.getElementById('giftSac').value);
@@ -6914,7 +6951,8 @@
       }
 
       const customerName = toTitleCase(document.getElementById('sellCustomerName').value.trim()) || 'Khách Lẻ';
-      const actualPriceOut = document.getElementById('sellPriceOut').value.trim();
+      const priceInput = document.getElementById('sellPriceOut');
+      const actualPriceOut = priceInput.value.trim() || priceInput.dataset.defaultPrice || currentSellingPhone.price || '0';
       const dateVal = document.getElementById('sellDateVal').value.trim() || getCurrentDateStr();
       const timeVal = getCurrentTimeStr();
       const fullDateTime = `${timeVal} - ${dateVal}`;

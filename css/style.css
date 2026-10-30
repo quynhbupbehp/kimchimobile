@@ -2235,6 +2235,18 @@
       font-weight: 600;
     }
 
+    /* CHỮ MỜ CHO GIÁ TRỊ MẶC ĐỊNH (KHÁCH LẺ, GIÁ BÁN) THEO YÊU CẦU */
+    .default-dimmed-input::placeholder {
+      color: rgba(255, 255, 255, 0.38) !important;
+      font-weight: 700 !important;
+      opacity: 1 !important;
+    }
+    #sellPriceOut.default-dimmed-input::placeholder {
+      color: rgba(16, 185, 129, 0.42) !important;
+      font-weight: 800 !important;
+      opacity: 1 !important;
+    }
+
     .capitalize-ui label,
     .capitalize-ui select,
     .capitalize-ui option,
