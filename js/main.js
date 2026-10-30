@@ -1690,10 +1690,63 @@
     }
     window.initFirebaseRealtimeSync = initFirebaseRealtimeSync;
 
+    // HÀM TỰ ĐỘNG BẬT BÀN PHÍM SỐ TRÊN MOBILE CHO MỤC NHẬP GIÁ VÀ IMEI TOÀN BỘ WEB
+    function initNumericKeyboardsForMobile() {
+      const isPriceOrImei = (el) => {
+        if (!el || el.tagName !== 'INPUT') return false;
+        const type = (el.type || '').toLowerCase();
+        if (type === 'checkbox' || type === 'radio' || type === 'file' || type === 'date' || type === 'time') return false;
+        const id = (el.id || '').toLowerCase();
+        const cls = (el.className || '').toLowerCase();
+        const name = (el.name || '').toLowerCase();
+        const ph = (el.placeholder || '').toLowerCase();
+        const onin = (el.getAttribute('oninput') || '').toLowerCase();
+
+        // Kiểm tra từ khóa Giá hoặc IMEI
+        const keywords = ['price', 'gia', 'cost', 'fee', 'profit', 'imei', 'pin', 'thu', 'von', 'lai', 'sac', 'op', 'cluc', 'cuoc', 'bbrestsell', 'bbnextsell', 'bbbuyback', 'bbsell', 'bboriginal'];
+        if (keywords.some(k => id.includes(k) || cls.includes(k) || name.includes(k) || ph.includes(k))) return true;
+        if (onin.includes('currency') || onin.includes('formatprice') || onin.includes('parseprice') || onin.includes('imei') || onin.includes('battery')) return true;
+        return false;
+      };
+
+      const applyNumeric = (el) => {
+        if (isPriceOrImei(el)) {
+          el.setAttribute('inputmode', 'numeric');
+          el.setAttribute('pattern', '[0-9]*');
+        }
+      };
+
+      // 1. Quét toàn bộ input hiện có trong DOM
+      document.querySelectorAll('input').forEach(applyNumeric);
+
+      // 2. Lắng nghe sự kiện focusin để bắt mọi input mới mở hoặc modal mới render
+      document.addEventListener('focusin', (e) => {
+        if (e.target && e.target.tagName === 'INPUT') {
+          applyNumeric(e.target);
+        }
+      }, true);
+
+      // 3. Quan sát DOM tự động gán khi có modal hay thành phần mới xuất hiện
+      if (window.MutationObserver) {
+        const obs = new MutationObserver((mutations) => {
+          mutations.forEach(m => {
+            m.addedNodes.forEach(node => {
+              if (node.nodeType === 1) {
+                if (node.tagName === 'INPUT') applyNumeric(node);
+                node.querySelectorAll && node.querySelectorAll('input').forEach(applyNumeric);
+              }
+            });
+          });
+        });
+        obs.observe(document.body, { childList: true, subtree: true });
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       initAllTabsToVietnamToday();
       migrateStorageUnits();
       initFirebaseRealtimeSync();
+      initNumericKeyboardsForMobile();
       const curToken = sessionStorage.getItem('KIMCHI_AUTH_TOKEN') || localStorage.getItem('KIMCHI_AUTH_TOKEN');
       const isAuth = ['250991', 'Huyen@95'].includes(curToken);
       const sc = document.getElementById('loginScreen');
@@ -6704,6 +6757,7 @@
         ${isSold ? warrantyRows : ''}
         ${isSold && p.customer && p.customer !== 'Khách lẻ' ? `<div class="view-info-item"><span class="view-info-label">- Khách hàng:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.customer}</span></div>` : ''}
         <div class="view-info-item"><span class="view-info-label">- Ghi chú:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${noteDisplay}</span></div>
+        <div class="view-info-item"><span class="view-info-label">- Ngày nhập:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.date || getCurrentDateStr()}</span></div>
       `;
 
       // CẬP NHẬT 3 NÚT THAO TÁC Ở PHÍA CUỐI MODAL (BÁN, SỬA, XÓA)
@@ -8425,14 +8479,6 @@
                 <div class="phone-spec-col col-pin-status">${escapeHtml(displayPinStatus)}</div>
                 <div class="phone-spec-col col-pin-pct">${escapeHtml(displayPinPct)}</div>
               </div>
-
-              ${(p.isBuyBack || p.buyBackData) ? `
-                <div style="margin-top: 6px;" onclick="event.stopPropagation();">
-                  <button type="button" class="btn-card-buyback-view" onclick="openBuyBackExplanationModal('${p.id}')">
-                    📋 Xem Thu Khách
-                  </button>
-                </div>
-              ` : ''}
             </div>
           `;
         }).join('');
