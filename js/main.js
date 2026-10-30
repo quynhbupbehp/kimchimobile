@@ -9853,9 +9853,12 @@
     function saveSoftwareTicket(e) {
       e.preventDefault();
       const editId = document.getElementById('swEditId').value;
-      const customer = document.getElementById('swCustomerInput').value.trim();
-      const device = document.getElementById('swDeviceInput').value.trim();
-      const price = document.getElementById('swPriceInput').value.trim();
+      let customer = (document.getElementById('swCustomerInput').value || '').trim();
+      if (!customer) customer = 'Khách Lẻ';
+      const device = (document.getElementById('swDeviceInput').value || '').trim();
+      const price = (document.getElementById('swPriceInput').value || '').trim();
+      const feeInputEl = document.getElementById('swFeeInput');
+      const cost = feeInputEl ? feeInputEl.value.trim() : '0';
       const dateVal = document.getElementById('swFormDate').value.trim();
       const hourEl = document.getElementById('swFormHour');
       const minEl = document.getElementById('swFormMin');
