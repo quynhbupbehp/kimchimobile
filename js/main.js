@@ -2396,9 +2396,9 @@
       const salesCountEl = document.getElementById('salesCountText');
       if (salesCountEl) {
         if (isSalesSensitiveHidden) {
-          salesCountEl.innerHTML = `Hiển thị ${filtered.length} phiếu &nbsp;&nbsp;-&nbsp;&nbsp; Tổng : <span style="color: #ef4444; font-weight: 800;">***</span> &nbsp;&nbsp;-&nbsp;&nbsp; Vốn : <span style="color: #ffffff; font-weight: 800;">***</span> &nbsp;&nbsp;=&nbsp;&nbsp; Lãi : <span style="color: #eab308; font-weight: 800;">***</span>`;
+          salesCountEl.innerHTML = `Đã Bán : ${filtered.length} &nbsp;&nbsp;-&nbsp;&nbsp; Tổng : <span style="color: #ef4444; font-weight: 800;">***</span> &nbsp;&nbsp;-&nbsp;&nbsp; Vốn : <span style="color: #ffffff; font-weight: 800;">***</span> &nbsp;&nbsp;=&nbsp;&nbsp; Lãi : <span style="color: #eab308; font-weight: 800;">***</span>`;
         } else {
-          salesCountEl.innerHTML = `Hiển thị ${filtered.length} phiếu &nbsp;&nbsp;-&nbsp;&nbsp; Tổng : <span style="color: #ef4444; font-weight: 800;">${formatPriceStr(totalRevenue)}</span> &nbsp;&nbsp;-&nbsp;&nbsp; Vốn : <span style="color: #ffffff; font-weight: 800;">${formatPriceStr(totalCost)}</span> &nbsp;&nbsp;=&nbsp;&nbsp; Lãi : <span style="color: #eab308; font-weight: 800;">${formatPriceStr(salesProfit)}</span>`;
+          salesCountEl.innerHTML = `Đã Bán : ${filtered.length} &nbsp;&nbsp;-&nbsp;&nbsp; Tổng : <span style="color: #ef4444; font-weight: 800;">${formatPriceStr(totalRevenue)}</span> &nbsp;&nbsp;-&nbsp;&nbsp; Vốn : <span style="color: #ffffff; font-weight: 800;">${formatPriceStr(totalCost)}</span> &nbsp;&nbsp;=&nbsp;&nbsp; Lãi : <span style="color: #eab308; font-weight: 800;">${formatPriceStr(salesProfit)}</span>`;
         }
       }
 

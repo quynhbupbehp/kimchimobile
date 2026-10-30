@@ -964,6 +964,23 @@
       box-shadow: 0 3px 6px rgba(0, 0, 0, 0.45);
     }
 
+    /* ĐIỀU CHỈNH ĐỘ RỘNG CỘT BẢNG BÁN HÀNG: GIÁ NHẬP (+3%) & LÃI (-3%) */
+    #tab-banhang .sales-table th:nth-child(3),
+    #tab-banhang .sales-table td.sales-td-cost {
+      width: 17% !important;
+      min-width: 17% !important;
+      padding-left: 18px !important;
+      padding-right: 18px !important;
+    }
+
+    #tab-banhang .sales-table th:nth-child(4),
+    #tab-banhang .sales-table td.sales-td-profit {
+      width: 11% !important;
+      min-width: 11% !important;
+      padding-left: 6px !important;
+      padding-right: 6px !important;
+    }
+
     #tab-banga .sales-table th {
       background-color: #059669 !important;
       color: #ffffff !important;
