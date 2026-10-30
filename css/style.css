@@ -7024,11 +7024,11 @@
           box-sizing: border-box !important;
         }
 
-        /* ĐỊNH NGHĨA KÍCH THƯỚC COLGROUP TRÊN MOBILE (KHÁCH HÀNG 36.5% - TÊN MÁY 44% - GIÁ 19.5%) */
+        /* ĐỊNH NGHĨA KÍCH THƯỚC COLGROUP TRÊN MOBILE (KHÁCH HÀNG 45.6% - TÊN MÁY 35.2% - GIÁ 19.2%) */
         #tab-phanmem .sw-main-table col.sw-cg-check { width: 0% !important; display: none !important; }
-        #tab-phanmem .sw-main-table col.sw-cg-customer { width: 36.5% !important; }
-        #tab-phanmem .sw-main-table col.sw-cg-device { width: 44% !important; }
-        #tab-phanmem .sw-main-table col.sw-cg-price { width: 19.5% !important; }
+        #tab-phanmem .sw-main-table col.sw-cg-customer { width: 45.6% !important; }
+        #tab-phanmem .sw-main-table col.sw-cg-device { width: 35.2% !important; }
+        #tab-phanmem .sw-main-table col.sw-cg-price { width: 19.2% !important; }
         #tab-phanmem .sw-main-table col.sw-cg-extra { width: 0% !important; display: none !important; }
 
         /* ẨN CỘT CHECKBOX VÀ CÁC CỘT PHỤ TRÊN MOBILE */
@@ -7047,13 +7047,13 @@
           border: none !important;
         }
 
-        /* 3 CỘT CHÍNH TRÊN MOBILE: KHÁCH HÀNG (36.5%) - TÊN MÁY (44%) - GIÁ (19.5%) */
+        /* 3 CỘT CHÍNH TRÊN MOBILE: KHÁCH HÀNG (45.6%) - TÊN MÁY (35.2%) - GIÁ (19.2%) */
         #tab-phanmem .sw-main-table .sw-col-customer,
         #tab-phanmem .sw-main-table th.sw-col-customer,
         #tab-phanmem .sw-main-table td.sw-col-customer {
           display: table-cell !important;
-          width: 36.5% !important;
-          max-width: 36.5% !important;
+          width: 45.6% !important;
+          max-width: 45.6% !important;
           text-align: left !important;
           padding: 8px 4px !important;
           white-space: nowrap !important;
@@ -7065,8 +7065,8 @@
         #tab-phanmem .sw-main-table th.sw-col-device,
         #tab-phanmem .sw-main-table td.sw-col-device {
           display: table-cell !important;
-          width: 44% !important;
-          max-width: 44% !important;
+          width: 35.2% !important;
+          max-width: 35.2% !important;
           text-align: left !important;
           padding: 8px 4px !important;
           white-space: nowrap !important;
@@ -7078,8 +7078,8 @@
         #tab-phanmem .sw-main-table th.sw-col-price,
         #tab-phanmem .sw-main-table td.sw-col-price {
           display: table-cell !important;
-          width: 19.5% !important;
-          max-width: 19.5% !important;
+          width: 19.2% !important;
+          max-width: 19.2% !important;
           text-align: right !important;
           padding: 8px 4px 8px 2px !important;
           white-space: nowrap !important;

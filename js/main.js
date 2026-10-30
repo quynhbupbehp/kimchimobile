@@ -6661,21 +6661,25 @@
           }
         }
 
-        dateRow = `<div class="view-info-item"><span class="view-info-label">- Ngày Bán:</span> <span class="view-info-val" style="font-weight: 800;">${formattedSaleDate}</span></div>`;
+        dateRow = `
+          <div class="view-info-item"><span class="view-info-label">- Ngày nhập:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.date || getCurrentDateStr()}</span></div>
+          <div class="view-info-item"><span class="view-info-label">- Ngày bán:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${formattedSaleDate}</span></div>
+        `;
         warrantyRows = `
           <div class="view-info-item"><span class="view-info-label">- Đã mua:</span> <span class="view-info-val" style="color: #facc15; font-weight: 800;">${daysBoughtText}</span></div>
           <div class="view-info-item"><span class="view-info-label">- Bảo hành:</span> <span class="view-info-val" style="color: #38bdf8; font-weight: 800;">${toTitleCase(warrantyStr)}</span></div>
           <div class="view-info-item"><span class="view-info-label">- Còn bảo hành:</span> <span class="view-info-val" style="color: ${remainingColor}; font-weight: 800;">${remainingText}</span></div>
         `;
         statusRow = `<div class="view-info-item"><span class="view-info-label">- Trạng thái:</span> <span class="view-info-val" style="color: #ef4444; font-weight: 800;">Đã bán (Còn Cái Nịt)</span></div>`;
-        dateRow = `<div class="view-info-item"><span class="view-info-label">- Ngày nhập :</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.date || getCurrentDateStr()}</span></div>`;
+      } else {
+        dateRow = `<div class="view-info-item"><span class="view-info-label">- Ngày nhập:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.date || getCurrentDateStr()}</span></div>`;
         warrantyRows = `
           <div class="view-info-item"><span class="view-info-label">- Bảo hành:</span> <span class="view-info-val" style="color: #38bdf8; font-weight: 800;">${toTitleCase(p.warranty || '3 Tháng')}</span></div>
         `;
         let statusDisplay = (p.status || (isExternal ? 'Đã Bán (❤️)' : 'Còn Hàng'))
           .replace(/ngoài kho/gi, '<span style="color: #ef4444;">❤️</span>')
           .replace(/máy ngoài/gi, '<span style="color: #ef4444;">❤️</span>');
-        statusRow = `<div class="view-info-item"><span class="view-info-label">- Trạng thái :</span> <span class="view-info-val" style="color: #10b981; font-weight: 800;">${statusDisplay}</span></div>`;
+        statusRow = `<div class="view-info-item"><span class="view-info-label">- Trạng thái:</span> <span class="view-info-val" style="color: #10b981; font-weight: 800;">${statusDisplay}</span></div>`;
       }
 
       // TÍNH TOÁN PHỤ KIỆN ĐÃ TẶNG
@@ -6753,11 +6757,10 @@
         <div class="view-info-item"><span class="view-info-label">- Lãi Dự Kiến :</span> <span class="view-info-val" style="color: #facc15; font-weight: 900;">${expectedProfitStr}</span></div>
         ${statusRow}
         ${isSold && giftTotal > 0 ? giftRowHtml : ''}
-        ${dateRow}
-        ${isSold ? warrantyRows : ''}
+        ${warrantyRows}
         ${isSold && p.customer && p.customer !== 'Khách lẻ' ? `<div class="view-info-item"><span class="view-info-label">- Khách hàng:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.customer}</span></div>` : ''}
         <div class="view-info-item"><span class="view-info-label">- Ghi chú:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${noteDisplay}</span></div>
-        <div class="view-info-item"><span class="view-info-label">- Ngày nhập:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.date || getCurrentDateStr()}</span></div>
+        ${dateRow}
       `;
 
       // CẬP NHẬT 3 NÚT THAO TÁC Ở PHÍA CUỐI MODAL (BÁN, SỬA, XÓA)
