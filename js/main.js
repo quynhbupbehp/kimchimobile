@@ -7512,10 +7512,10 @@
       document.getElementById('bbBuyBackPrice').value = '';
       document.getElementById('bbProfitDisplay').innerText = '0 đ';
       document.getElementById('bbNewCostDisplay').innerText = formatPriceStr(origCost) + ' đ';
-      document.getElementById('bbNextSellPrice').value = formatPriceStr(sellPrice);
+      document.getElementById('bbNextSellPrice').value = '';
       const mobNextSell = document.getElementById('bbMobileNextSellPrice');
-      if (mobNextSell) mobNextSell.value = formatPriceStr(sellPrice);
-      document.getElementById('bbNote').value = `Thu lại máy từ ${p.customer || 'khách'}`;
+      if (mobNextSell) mobNextSell.value = '';
+      if (document.getElementById('bbNote')) document.getElementById('bbNote').value = '';
 
       calcBuyBackCalculation();
       let modal = document.getElementById('buyBackPhoneModal');

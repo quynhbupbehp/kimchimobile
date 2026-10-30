@@ -8005,32 +8005,49 @@
         #buyBackPhoneModal .bb-footer-actions {
           display: flex !important;
           flex-direction: row !important;
+          align-items: stretch !important;
+          justify-content: space-between !important;
           gap: 10px !important;
           width: 100% !important;
           margin-top: 15px !important;
           padding-top: 14px !important;
+          box-sizing: border-box !important;
         }
         #buyBackPhoneModal .bb-btn-delete {
           flex: 1 1 50% !important;
           width: 50% !important;
+          height: 46px !important;
+          min-height: 46px !important;
+          max-height: 46px !important;
           font-size: 0.88rem !important;
           font-weight: 800 !important;
-          padding: 12px 6px !important;
+          padding: 0 8px !important;
+          margin: 0 !important;
+          box-sizing: border-box !important;
+          border-radius: 8px !important;
           text-align: center !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
+          white-space: nowrap !important;
         }
         #buyBackPhoneModal .bb-btn-submit {
           flex: 1 1 50% !important;
           width: 50% !important;
+          height: 46px !important;
+          min-height: 46px !important;
+          max-height: 46px !important;
           font-size: 0.88rem !important;
           font-weight: 800 !important;
-          padding: 12px 6px !important;
+          padding: 0 8px !important;
+          margin: 0 !important;
+          box-sizing: border-box !important;
+          border-radius: 8px !important;
           text-align: center !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
+          white-space: nowrap !important;
         }
         #buyBackPhoneModal .bb-btn-submit-text-web {
           display: none !important;
