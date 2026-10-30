@@ -6989,39 +6989,17 @@
           border-right: none !important;
         }
 
-        /* Checkbox thead bo góc màu trắng y chang ảnh */
-        #tab-phanmem #swCheckAll,
-        #tab-phanmem .sw-main-table th:first-child input[type="checkbox"] {
-          appearance: none !important;
-          -webkit-appearance: none !important;
-          width: 18px !important;
-          height: 18px !important;
-          background-color: #ffffff !important;
-          border-radius: 4px !important;
-          border: 1px solid #cbd5e1 !important;
-          cursor: pointer !important;
-          display: inline-block !important;
-          vertical-align: middle !important;
-          margin: 0 !important;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
-        }
-        #tab-phanmem #swCheckAll:checked,
-        #tab-phanmem .sw-main-table th:first-child input[type="checkbox"]:checked {
-          background-color: #059669 !important;
-          border-color: #ffffff !important;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E") !important;
-          background-repeat: no-repeat !important;
-          background-position: center !important;
-        }
-
+        /* ẨN CỘT CHECKBOX (CỘT 1) TRÊN MOBILE THEO YÊU CẦU */
         #tab-phanmem .sw-main-table th:first-child,
         #tab-phanmem .sw-main-table td:first-child {
-          width: 38px !important;
-          max-width: 38px !important;
-          min-width: 38px !important;
-          text-align: center !important;
-          padding: 8px 2px !important;
+          display: none !important;
         }
+
+        /* 3 CỘT HIỂN THỊ ĐẦY ĐỦ VỪA KHÍT 100% KHUNG MÀN HÌNH:
+           - Cột 2: KHÁCH HÀNG (35%)
+           - Cột 3: TÊN MÁY (42%)
+           - Cột 4: BÁO GIÁ (23%)
+        */
         #tab-phanmem .sw-main-table th:nth-child(2),
         #tab-phanmem .sw-main-table td:nth-child(2) {
           width: 35% !important;
@@ -7033,7 +7011,7 @@
         }
         #tab-phanmem .sw-main-table th:nth-child(3),
         #tab-phanmem .sw-main-table td:nth-child(3) {
-          width: 33% !important;
+          width: 42% !important;
           text-align: left !important;
           padding: 8px 6px !important;
           white-space: nowrap !important;
@@ -7042,9 +7020,9 @@
         }
         #tab-phanmem .sw-main-table th:nth-child(4),
         #tab-phanmem .sw-main-table td:nth-child(4) {
-          width: calc(32% - 38px) !important;
+          width: 23% !important;
           text-align: right !important;
-          padding: 8px 6px !important;
+          padding: 8px 8px !important;
           white-space: nowrap !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
@@ -7060,13 +7038,13 @@
           vertical-align: middle !important;
         }
         #tab-phanmem .sw-main-table td:nth-child(2) span {
-          font-size: 1.05rem !important;
+          font-size: 0.98rem !important;
         }
         #tab-phanmem .sw-main-table td:nth-child(3) span {
-          font-size: 1.05rem !important;
+          font-size: 1.00rem !important;
         }
         #tab-phanmem .sw-main-table td:nth-child(4) span {
-          font-size: 1.15rem !important;
+          font-size: 1.10rem !important;
         }
         #tab-phanmem .sw-main-table td[colspan] {
           text-align: center !important;
