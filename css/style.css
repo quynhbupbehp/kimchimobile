@@ -6993,58 +6993,64 @@
         #tab-phanmem .sw-main-table th:first-child,
         #tab-phanmem .sw-main-table td:first-child {
           display: none !important;
+          width: 0 !important;
+          padding: 0 !important;
         }
 
         /* 3 CỘT HIỂN THỊ ĐẦY ĐỦ VỪA KHÍT 100% KHUNG MÀN HÌNH:
-           - Cột 2: KHÁCH HÀNG (35%)
-           - Cột 3: TÊN MÁY (42%)
-           - Cột 4: BÁO GIÁ (23%)
+           - Cột Khách Hàng: nhỏ lại 20% -> 28%
+           - Cột Tên Máy: nhỏ đi 10% -> 38%
+           - Cột Báo Giá: mở rộng lên 34% để số tiền và tiêu đề hiển thị trọn vẹn ra ngoài
         */
         #tab-phanmem .sw-main-table th:nth-child(2),
         #tab-phanmem .sw-main-table td:nth-child(2) {
-          width: 35% !important;
+          width: 28% !important;
           text-align: left !important;
-          padding: 8px 6px !important;
+          padding: 8px 4px !important;
           white-space: nowrap !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
         }
         #tab-phanmem .sw-main-table th:nth-child(3),
         #tab-phanmem .sw-main-table td:nth-child(3) {
-          width: 42% !important;
+          width: 38% !important;
           text-align: left !important;
-          padding: 8px 6px !important;
+          padding: 8px 4px !important;
           white-space: nowrap !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
         }
         #tab-phanmem .sw-main-table th:nth-child(4),
         #tab-phanmem .sw-main-table td:nth-child(4) {
-          width: 23% !important;
-          text-align: right !important;
-          padding: 8px 8px !important;
+          width: 34% !important;
+          text-align: center !important;
+          padding: 8px 4px !important;
           white-space: nowrap !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
         }
         /* ẨN TOÀN BỘ CỘT PHÍ DV, ĐỚP, THANH TOÁN, GIỜ-NGÀY, THAO TÁC TRÊN MOBILE */
         #tab-phanmem .sw-main-table th:nth-child(n+5),
-        #tab-phanmem .sw-main-table td:nth-child(n+5) {
+        #tab-phanmem .sw-main-table td:nth-child(n+5),
+        #tab-phanmem .sw-main-table .sw-col-hide-mobile {
           display: none !important;
+          width: 0 !important;
+          padding: 0 !important;
         }
         #tab-phanmem .sw-main-table td {
           padding: 8px 4px !important;
           border-bottom: 1px solid #1a2333 !important;
           vertical-align: middle !important;
         }
+        /* GIẢM CỠ CHỮ KHÁCH HÀNG, TÊN MÁY VÀ GIÁ 10% */
         #tab-phanmem .sw-main-table td:nth-child(2) span {
-          font-size: 0.98rem !important;
+          font-size: 0.88rem !important;
         }
         #tab-phanmem .sw-main-table td:nth-child(3) span {
-          font-size: 1.00rem !important;
+          font-size: 0.90rem !important;
         }
         #tab-phanmem .sw-main-table td:nth-child(4) span {
-          font-size: 1.10rem !important;
+          font-size: 0.98rem !important;
         }
         #tab-phanmem .sw-main-table td[colspan] {
           text-align: center !important;
