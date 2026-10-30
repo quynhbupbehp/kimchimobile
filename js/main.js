@@ -7513,6 +7513,8 @@
       document.getElementById('bbProfitDisplay').innerText = '0 đ';
       document.getElementById('bbNewCostDisplay').innerText = formatPriceStr(origCost) + ' đ';
       document.getElementById('bbNextSellPrice').value = formatPriceStr(sellPrice);
+      const mobNextSell = document.getElementById('bbMobileNextSellPrice');
+      if (mobNextSell) mobNextSell.value = formatPriceStr(sellPrice);
       document.getElementById('bbNote').value = `Thu lại máy từ ${p.customer || 'khách'}`;
 
       calcBuyBackCalculation();
@@ -7522,6 +7524,12 @@
         modal.classList.add('show');
       }
     }
+
+    function syncMobileNextSellPrice(val) {
+      const desktopInput = document.getElementById('bbNextSellPrice');
+      if (desktopInput) desktopInput.value = val;
+    }
+    window.syncMobileNextSellPrice = syncMobileNextSellPrice;
 
     function closeBuyBackPhoneModal() {
       let modal = document.getElementById('buyBackPhoneModal');
@@ -7579,7 +7587,21 @@
       let origCost = document.getElementById('bbOriginalCost').value;
       let giftCost = document.getElementById('bbGiftCost').value;
       let buyBackPrice = document.getElementById('bbBuyBackPrice').value;
-      let nextSellPrice = document.getElementById('bbNextSellPrice').value || sellPrice;
+      
+      const isMobile = window.innerWidth <= 768;
+      let nextSellPrice = '';
+      if (isMobile) {
+        const mobInput = document.getElementById('bbMobileNextSellPrice');
+        nextSellPrice = (mobInput && mobInput.value.trim()) ? mobInput.value.trim() : document.getElementById('bbNextSellPrice').value.trim();
+        if (!nextSellPrice) {
+          alert("Vui lòng nhập Giá Bán Mới!");
+          if (mobInput) mobInput.focus();
+          return;
+        }
+      } else {
+        nextSellPrice = document.getElementById('bbNextSellPrice').value || sellPrice;
+      }
+
       let note = document.getElementById('bbNote').value;
 
       let sellPriceNum = parsePriceNum(sellPrice);
@@ -7587,8 +7609,10 @@
       let giftCostNum = parsePriceNum(giftCost);
       let buyBackPriceNum = parsePriceNum(buyBackPrice);
       let profitNum = sellPriceNum - buyBackPriceNum;
-      // Giá nhập mới = Giá vốn ban đầu - Tiền lời khi thu lại + Tiền phụ kiện tặng kèm
-      let newCostNum = origCostNum - profitNum + giftCostNum;
+      
+      // Trên Mobile: Mặc định giá nhập hoàn kho chính là giá đã mua lại khách (buyBackPriceNum)
+      // Trên Web Desktop: Giữ nguyên công thức hoàn kho ban đầu (origCostNum - profitNum + giftCostNum)
+      let newCostNum = isMobile ? buyBackPriceNum : (origCostNum - profitNum + giftCostNum);
 
       // Xóa khỏi soldPhoneDatabase
       soldPhoneDatabase = soldPhoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);

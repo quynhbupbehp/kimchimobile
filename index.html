@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_230307">
+  <link rel="stylesheet" href="css/style.css?v=20261030_231221">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261030_230307";
+    var CURRENT_PAGE_VERSION = "20261030_231221";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1752,7 +1752,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_230307" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_231221" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5108,7 +5108,7 @@
                 style="background: #0f172a; color: #e2e8f0; font-weight: 800; font-size: 1rem; height: 38px; box-sizing: border-box; padding: 8px 10px;">
             </div>
 
-            <div class="form-ticket-group" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="form-ticket-group bb-gift-group" style="flex: 1; display: flex; flex-direction: column;">
               <label class="form-ticket-label"
                 style="color: #94a3b8; height: 20px; line-height: 20px; margin-bottom: 5px; display: block;">Phụ Kiện
                 Tặng Kèm</label>
@@ -5118,9 +5118,9 @@
             </div>
           </div>
 
-          <div class="form-ticket-row" style="margin-bottom: 0; display: flex; align-items: flex-start; gap: 12px;">
-            <div class="form-ticket-group" style="flex: 1.3; display: flex; flex-direction: column;">
-              <label class="form-ticket-label"
+          <div class="form-ticket-row bb-calc-row" style="margin-bottom: 0; display: flex; align-items: flex-start; gap: 12px;">
+            <div class="form-ticket-group bb-buyback-group" style="flex: 1.3; display: flex; flex-direction: column;">
+              <label class="form-ticket-label bb-label-buyback"
                 style="color: #f59e0b; height: 20px; line-height: 20px; margin-bottom: 5px; display: block; font-size: 0.88rem; font-weight: 800;">★
                 GIÁ MUA LẠI KHÁCH *</label>
               <input type="text" class="ticket-input" id="bbBuyBackPrice" required placeholder="Nhập giá mua lại..."
@@ -5128,16 +5128,19 @@
                 style="background: #1e1b4b; border: 2px solid #818cf8; color: #fbbf24; font-weight: 900; font-size: 1.15rem; padding: 0 14px; height: 44px; box-sizing: border-box; width: 100%; border-radius: 8px;">
             </div>
 
-            <div class="form-ticket-group" style="flex: 1; display: flex; flex-direction: column;">
-              <label class="form-ticket-label"
+            <div class="form-ticket-group bb-profit-group" style="flex: 1; display: flex; flex-direction: column;">
+              <label class="form-ticket-label bb-label-profit"
                 style="color: #4ade80; height: 20px; line-height: 20px; margin-bottom: 5px; display: block; font-size: 0.88rem; font-weight: 800;">Tiền
                 Lời Thu Lại</label>
-              <div id="bbProfitDisplay"
+              <div id="bbProfitDisplay" class="bb-profit-display"
                 style="background: #064e3b; border: 1px solid #059669; border-radius: 8px; height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; color: #34d399; font-weight: 900; font-size: 1.15rem; width: 100%;">
                 0 đ</div>
+              <input type="text" class="ticket-input bb-mobile-nextsell-input" id="bbMobileNextSellPrice" placeholder="Nhập giá bán mới..."
+                oninput="formatCurrencyInput(this); syncMobileNextSellPrice(this.value);"
+                style="display: none; background: #064e3b; border: 1px solid #059669; border-radius: 8px; height: 44px; box-sizing: border-box; color: #34d399; font-weight: 900; font-size: 1.15rem; width: 100%; text-align: center;">
             </div>
 
-            <div class="form-ticket-group" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="form-ticket-group bb-newcost-group" style="flex: 1; display: flex; flex-direction: column;">
               <label class="form-ticket-label"
                 style="color: #fbbf24; height: 20px; line-height: 20px; margin-bottom: 5px; display: block; font-size: 0.88rem; font-weight: 800;">Giá
                 Nhập Mới (Hoàn Kho)</label>
@@ -5149,7 +5152,7 @@
         </div>
 
         <!-- HÀNG THIẾT LẬP KHO: GIÁ BÁN RA TIẾP THEO & GHI CHÚ -->
-        <div class="form-ticket-row">
+        <div class="form-ticket-row bb-nextsell-row">
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá Bán Mới</label>
             <input type="text" class="ticket-input" id="bbNextSellPrice" oninput="formatCurrencyInput(this)"
@@ -5163,17 +5166,18 @@
         </div>
 
         <!-- FOOTER CÁC NÚT THAO TÁC -->
-        <div class="ticket-footer"
+        <div class="ticket-footer bb-footer-actions"
           style="margin-top: 1.2rem; display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid #334155; padding-top: 14px;">
-          <button type="button" onclick="confirmDeleteOnlySoldPhone()"
+          <button type="button" class="bb-btn-delete" onclick="confirmDeleteOnlySoldPhone()"
             style="background:rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color:#f87171; padding:10px 20px; border-radius:8px; font-weight:800; cursor:pointer;"
             title="Xóa hẳn khỏi danh sách bảo hành mà không thu lại vào kho">
             🗑 XÓA VĨNH VIỄN
           </button>
 
-          <button type="submit"
+          <button type="submit" class="bb-btn-submit"
             style="background: linear-gradient(135deg, #10b981, #059669); border:none; color:#000; padding:10px 22px; border-radius:8px; font-weight:900; cursor:pointer; box-shadow: 0 0 14px rgba(16,185,129,0.4);">
-            ✓ THU LẠI & HOÀN KHO
+            <span class="bb-btn-submit-text-web">✓ THU LẠI & HOÀN KHO</span>
+            <span class="bb-btn-submit-text-mobile" style="display: none;">Thêm Vào Kho</span>
           </button>
         </div>
       </form>
@@ -5231,10 +5235,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_230307"></script>
+  <script src="js/seed_data.js?v=20261030_231221"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_230307"></script>
+  <script src="js/main.js?v=20261030_231221"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

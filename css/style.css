@@ -7942,6 +7942,117 @@
           max-width: calc(30% - 4px) !important;
           min-width: 0 !important;
         }
+
+        /* TÙY CHỈNH RIÊNG MODAL MUA LẠI MÁY TRÊN MOBILE THEO YÊU CẦU */
+        /* 1. Xóa Phụ Kiện Tặng Kèm */
+        #buyBackPhoneModal .bb-gift-group {
+          display: none !important;
+        }
+
+        /* 2. Hàng Giá Mua Lại & Giá Bán Mới nằm cùng 1 hàng 50% - 50% */
+        #buyBackPhoneModal .bb-calc-row {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
+          gap: 10px !important;
+          width: 100% !important;
+        }
+        #buyBackPhoneModal .bb-buyback-group {
+          flex: 1 1 50% !important;
+          width: 50% !important;
+          max-width: 50% !important;
+        }
+        #buyBackPhoneModal .bb-profit-group {
+          flex: 1 1 50% !important;
+          width: 50% !important;
+          max-width: 50% !important;
+        }
+
+        /* Đổi nhãn GIÁ MUA LẠI KHÁCH -> Giá Mua Lại */
+        #buyBackPhoneModal .bb-label-buyback {
+          font-size: 0 !important;
+          line-height: 0 !important;
+          display: block !important;
+        }
+        #buyBackPhoneModal .bb-label-buyback::after {
+          content: "Giá Mua Lại *" !important;
+          font-size: 0.85rem !important;
+          font-weight: 800 !important;
+          color: #f59e0b !important;
+          line-height: 20px !important;
+          display: inline-block !important;
+        }
+
+        /* Đổi nhãn Tiền Lời Thu Lại -> Giá Bán Mới */
+        #buyBackPhoneModal .bb-label-profit {
+          font-size: 0 !important;
+          line-height: 0 !important;
+          display: block !important;
+        }
+        #buyBackPhoneModal .bb-label-profit::after {
+          content: "Giá Bán Mới *" !important;
+          font-size: 0.85rem !important;
+          font-weight: 800 !important;
+          color: #34d399 !important;
+          line-height: 20px !important;
+          display: inline-block !important;
+        }
+
+        /* Ẩn div hiển thị tiền lời, hiện ô nhập Giá Bán Mới */
+        #buyBackPhoneModal .bb-profit-display {
+          display: none !important;
+        }
+        #buyBackPhoneModal .bb-mobile-nextsell-input {
+          display: block !important;
+        }
+
+        /* 3. Xóa : Giá Nhập Mới (Hoàn Kho) */
+        #buyBackPhoneModal .bb-newcost-group {
+          display: none !important;
+        }
+
+        /* 4. Xóa hàng Giá Bán Mới và Ghi Chú cũ ở dưới */
+        #buyBackPhoneModal .bb-nextsell-row {
+          display: none !important;
+        }
+
+        /* 5. Chia đôi bảng dưới: bên trái Xóa Vĩnh Viễn, bên phải Thêm Vào Kho */
+        #buyBackPhoneModal .bb-footer-actions {
+          display: flex !important;
+          flex-direction: row !important;
+          gap: 10px !important;
+          width: 100% !important;
+          margin-top: 15px !important;
+          padding-top: 14px !important;
+        }
+        #buyBackPhoneModal .bb-btn-delete {
+          flex: 1 1 50% !important;
+          width: 50% !important;
+          font-size: 0.88rem !important;
+          font-weight: 800 !important;
+          padding: 12px 6px !important;
+          text-align: center !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        #buyBackPhoneModal .bb-btn-submit {
+          flex: 1 1 50% !important;
+          width: 50% !important;
+          font-size: 0.88rem !important;
+          font-weight: 800 !important;
+          padding: 12px 6px !important;
+          text-align: center !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        #buyBackPhoneModal .bb-btn-submit-text-web {
+          display: none !important;
+        }
+        #buyBackPhoneModal .bb-btn-submit-text-mobile {
+          display: inline !important;
+        }
         .form-ticket-label,
         .form-label {
           font-size: 0.8rem !important;
