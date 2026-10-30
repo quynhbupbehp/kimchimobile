@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_201630">
+  <link rel="stylesheet" href="css/style.css?v=20261030_205742">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261030_201630";
+    var CURRENT_PAGE_VERSION = "20261030_205742";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1741,7 +1741,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_201630" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_205742" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -3962,12 +3962,12 @@
 
         <!-- HÀNG 2: BÁO GIÁ & PHÍ DỊCH VỤ -->
         <div class="sw-input-row">
-          <div class="sw-input-col">
+          <div class="sw-input-col sw-price-col">
             <label class="sw-input-label">Báo giá <span class="req">*</span></label>
             <div class="sw-input-with-tools">
-              <input type="text" class="sw-input-field" id="swPriceInput" placeholder="Chọn hoặc nhập" required
+              <input type="text" inputmode="numeric" pattern="[0-9]*" class="sw-input-field" id="swPriceInput" placeholder="Nhập giá" required
                 autocomplete="off" oninput="formatCurrencyInput(this); filterSwDropdown('price', this.value)"
-                onfocus="openSwDropdown('price')">
+                onfocus="if(window.innerWidth > 768){ openSwDropdown('price'); }">
               <button type="button" class="sw-tool-btn sw-tool-dropdown" onclick="toggleSwDropdown('price')"
                 title="Xổ danh sách"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="6 9 12 15 18 9" />
@@ -3993,12 +3993,12 @@
             <div class="sw-dropdown-menu" id="swPriceDropdownMenu"></div>
           </div>
 
-          <div class="sw-input-col">
+          <div class="sw-input-col sw-fee-col">
             <label class="sw-input-label">Phí dịch vụ <span class="req">*</span></label>
             <div class="sw-input-with-tools">
-              <input type="text" class="sw-input-field" id="swFeeInput" placeholder="0" autocomplete="off"
+              <input type="text" inputmode="numeric" pattern="[0-9]*" class="sw-input-field" id="swFeeInput" placeholder="0" autocomplete="off"
                 oninput="formatCurrencyInput(this); filterSwDropdown('fee', this.value)"
-                onfocus="openSwDropdown('fee')">
+                onfocus="if(window.innerWidth > 768){ openSwDropdown('fee'); }">
               <button type="button" class="sw-tool-btn sw-tool-dropdown" onclick="toggleSwDropdown('fee')"
                 title="Xổ danh sách"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="6 9 12 15 18 9" />
@@ -5221,10 +5221,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_201630"></script>
+  <script src="js/seed_data.js?v=20261030_205742"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_201630"></script>
+  <script src="js/main.js?v=20261030_205742"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

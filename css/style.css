@@ -3175,6 +3175,28 @@
     .sw-tool-dropdown:hover { background: rgba(16, 185, 129, 0.15); color: #10b981; }
     .sw-tool-dropdown svg { width: 12px; height: 12px; }
 
+    /* TRÊN MOBILE (<= 768px): 
+       1. XÓA 3 ICON ĐÃ KHOANH (+, SỬA, XÓA) KHỎI HÀNG CÔNG CỤ
+       2. BÁO GIÁ & PHÍ DỊCH VỤ: CHỈ NHẬP, KHÔNG CHỌN (ẨN DROPDOWN)
+    */
+    @media (max-width: 768px) {
+      .sw-tool-btn.sw-tool-add,
+      .sw-tool-btn.sw-tool-edit,
+      .sw-tool-btn.sw-tool-del {
+        display: none !important;
+      }
+      /* Ô Báo giá và Phí dịch vụ: Ẩn nút mũi tên xổ dropdown */
+      .sw-price-col .sw-tool-dropdown,
+      .sw-fee-col .sw-tool-dropdown {
+        display: none !important;
+      }
+      /* Ẩn menu dropdown của Báo giá và Phí dịch vụ trên mobile */
+      #swPriceDropdownMenu,
+      #swFeeDropdownMenu {
+        display: none !important;
+      }
+    }
+
     /* Custom Dropdown Menu */
     .sw-input-col { position: relative; }
     .sw-dropdown-menu {

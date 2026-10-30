@@ -9074,6 +9074,9 @@
     }
 
     function openSwDropdown(type) {
+      if (window.innerWidth <= 768 && (type === 'price' || type === 'fee')) {
+        return; // Trên mobile: chỉ nhập giá/phí, không mở dropdown chọn
+      }
       closeAllSwDropdowns(type);
       const meta = SW_DROPDOWN_META[type];
       if (!meta) return;
