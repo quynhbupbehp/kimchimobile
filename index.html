@@ -8,7 +8,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_101118">
+  <link rel="stylesheet" href="css/style.css?v=20261030_102945">
   <script>
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1636,12 +1636,12 @@
             ĐÃ BÁN & BẢO HÀNH</span>
         </div>
 
-        <div class="sales-table-container">
-          <!-- TIÊU ĐỀ THÔNG TIN MÁY ĐÃ BÁN CỐ ĐỊNH TRÊN MOBILE (Y CHANG ẢNH MẪU) -->
-          <div class="baohanh-list-header-mobile">
-            <span style="color: #f59e0b; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.5px;">HÃNG / TÊN MÁY</span>
-          </div>
+        <!-- TIÊU ĐỀ HÃNG / TÊN MÁY CỐ ĐỊNH TRÊN MOBILE (Y CHANG ẢNH MẪU - NẰM TRÊN ĐẦU DANH SÁCH MÁY) -->
+        <div class="baohanh-list-header-mobile" style="display: none;">
+          <span style="color: #f59e0b; font-weight: 900; font-size: 1.12rem; letter-spacing: 0.5px;">HÃNG / TÊN MÁY</span>
+        </div>
 
+        <div class="sales-table-container">
           <table class="sales-table">
             <thead>
               <tr>
@@ -1668,7 +1668,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_101118" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_102945" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5170,10 +5170,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_101118"></script>
+  <script src="js/seed_data.js?v=20261030_102945"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_101118"></script>
+  <script src="js/main.js?v=20261030_102945"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
