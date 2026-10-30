@@ -346,10 +346,10 @@
 
     main {
       flex: 1;
-      max-width: 1450px;
+      max-width: 100%;
       width: 100%;
-      margin: 0 auto;
-      padding: 1.5rem;
+      margin: 0;
+      padding: 1.25rem 1.5rem 1.5rem 1.25rem;
     }
 
     .tab-content { display: none; }
@@ -1394,12 +1394,12 @@
     .phone-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr) !important;
-      gap: calc(16px + 0.75cm) !important;
+      gap: 12px !important;
       align-items: start;
-      width: 90% !important;
-      max-width: 90% !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
     }
 
     /* NÚT CHUYỂN ĐỔI CHẾ ĐỘ XEM HÀNG NGANG (ICON CỜ VN) */
@@ -1434,10 +1434,10 @@
 
     /* GIAO DIỆN BẢNG DANH SÁCH MÁY THEO HÀNG NGANG (MẪU CHUẨN) */
     .phone-table-container {
-      width: 90% !important;
-      max-width: 90% !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
       box-sizing: border-box;
       overflow-x: auto;
       border-radius: 8px;
@@ -1533,16 +1533,18 @@
     .phone-card {
       background-color: #0b111a;
       border: 1.5px solid #38bdf8 !important;
-      border-radius: 8px;
-      padding: 6px 10px 6px 10px;
+      border-radius: 7px;
+      padding: 5px 9px 5px 9px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       box-shadow: 0 0 10px rgba(56, 189, 248, 0.2), 0 4px 12px rgba(0, 0, 0, 0.45) !important;
       transition: transform 0.15s ease, border-color 0.15s ease, border-width 0.15s ease, box-shadow 0.15s ease;
       cursor: pointer;
       user-select: none;
       box-sizing: border-box;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .phone-card:hover {
@@ -1571,10 +1573,10 @@
     }
 
     .phone-brand-logo {
-      width: 25px;
-      height: 25px;
-      min-width: 25px;
-      border-radius: 6px;
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border-radius: 5px;
       object-fit: cover;
       display: inline-block;
       flex-shrink: 0;
@@ -1583,17 +1585,19 @@
     }
 
     .phone-card-name {
-      font-size: 1.32rem;
+      font-size: 1.18rem;
       font-weight: 900;
       color: #f1f5f9;
       letter-spacing: -0.3px;
       white-space: nowrap;
       line-height: 1.15;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .phone-card-dot {
-      width: 25px;
-      height: 25px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       flex-shrink: 0;
       display: inline-block;
@@ -1602,7 +1606,7 @@
     }
 
     .phone-card-storage {
-      font-size: 1.16rem;
+      font-size: 1.04rem;
       font-weight: 900;
       color: #10b981;
       white-space: nowrap;
@@ -1618,7 +1622,7 @@
     }
 
     .phone-card-price {
-      font-size: 1.42rem;
+      font-size: 1.28rem;
       font-weight: 900;
       color: #f59e0b;
       letter-spacing: -0.3px;
@@ -1634,15 +1638,15 @@
     }
 
     .phone-card-imei {
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       font-weight: 800;
       color: #f1f5f9;
       letter-spacing: 0.3px;
       white-space: nowrap;
       background: #141c2b;
       border: 1px solid #334155;
-      padding: 2px 6px;
-      border-radius: 5px;
+      padding: 2px 5px;
+      border-radius: 4px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1654,26 +1658,29 @@
     .phone-card-specs {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       width: 100%;
       background: #1c2430 !important;
       border: 1px solid rgba(255, 255, 255, 0.08) !important;
       border-radius: 5px;
-      padding: 3px 5px !important;
+      padding: 2px 4px !important;
       box-sizing: border-box;
       box-shadow: none;
       line-height: 1.2;
+      overflow: hidden;
     }
 
     .phone-spec-col {
-      text-align: center;
+      text-align: left;
       color: #ffffff !important;
       font-weight: 800 !important;
-      font-size: 0.82rem;
+      font-size: 0.74rem;
       letter-spacing: -0.2px;
       white-space: nowrap;
       border-right: 1px solid rgba(255, 255, 255, 0.18);
       padding: 0 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .phone-spec-col.col-origin {
