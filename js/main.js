@@ -1703,9 +1703,9 @@
         const onin = (el.getAttribute('oninput') || '').toLowerCase();
 
         // Kiểm tra từ khóa Giá hoặc IMEI
-        const keywords = ['price', 'gia', 'cost', 'fee', 'profit', 'imei', 'pin', 'thu', 'von', 'lai', 'sac', 'op', 'cluc', 'cuoc', 'bbrestsell', 'bbnextsell', 'bbbuyback', 'bbsell', 'bboriginal'];
+        const keywords = ['price', 'gia', 'cost', 'fee', 'profit', 'imei', 'thu', 'von', 'lai', 'sac', 'op', 'cluc', 'cuoc', 'bbrestsell', 'bbnextsell', 'bbbuyback', 'bbsell', 'bboriginal'];
         if (keywords.some(k => id.includes(k) || cls.includes(k) || name.includes(k) || ph.includes(k))) return true;
-        if (onin.includes('currency') || onin.includes('formatprice') || onin.includes('parseprice') || onin.includes('imei') || onin.includes('battery')) return true;
+        if (onin.includes('currency') || onin.includes('formatprice') || onin.includes('parseprice') || onin.includes('imei')) return true;
         return false;
       };
 

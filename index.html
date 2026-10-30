@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261031_001200">
+  <link rel="stylesheet" href="css/style.css?v=20261031_001753">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261031_001200";
+    var CURRENT_PAGE_VERSION = "20261031_001753";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1752,7 +1752,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261031_001200" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261031_001753" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5041,7 +5041,7 @@
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
 
-      <form onsubmit="confirmBuyBackPhone(event)" style="padding: 18px 20px;">
+      <form onsubmit="confirmBuyBackPhone(event)" novalidate style="padding: 18px 20px;">
         <input type="hidden" id="bbSoldId" value="">
 
         <!-- HÀNG 1: TÊN MÁY, IMEI, MÀU SẮC -->
@@ -5049,7 +5049,7 @@
           <div class="form-ticket-group bb-group-name" style="flex: 2; box-sizing: border-box;">
             <label class="form-ticket-label">Tên Máy *</label>
             <div style="position: relative; width: 100%; display: flex; align-items: center;">
-              <input type="text" class="ticket-input" id="bbName" required readonly
+              <input type="text" class="ticket-input" id="bbName" readonly
                 style="background: #111827; color: #60a5fa; font-weight: 800; width: 100%; padding-right: 36px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
               <span id="bbColorDot"
                 style="position: absolute; right: 10px; width: 18px; height: 18px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 6px rgba(0,0,0,0.6); pointer-events: none;"></span>
@@ -5062,7 +5062,7 @@
           </div>
           <div class="form-ticket-group bb-group-color" style="flex: 1.2; box-sizing: border-box;">
             <label class="form-ticket-label">Màu Sắc *</label>
-            <input type="text" class="ticket-input" id="bbColor" required oninput="formatTitleCaseInput(this)"
+            <input type="text" class="ticket-input" id="bbColor" oninput="formatTitleCaseInput(this)"
               style="background: #111827; color: #e2e8f0; font-weight: 700;">
           </div>
         </div>
@@ -5076,7 +5076,7 @@
           </div>
           <div class="form-ticket-group" style="flex: 1.2;">
             <label class="form-ticket-label">Tình Trạng Máy *</label>
-            <input type="text" class="ticket-input" id="bbCondition" required oninput="formatTitleCaseInput(this)">
+            <input type="text" class="ticket-input" id="bbCondition" oninput="formatTitleCaseInput(this)">
           </div>
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Tình Trạng Pin</label>
@@ -5219,10 +5219,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261031_001200"></script>
+  <script src="js/seed_data.js?v=20261031_001753"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261031_001200"></script>
+  <script src="js/main.js?v=20261031_001753"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
