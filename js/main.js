@@ -8607,7 +8607,6 @@
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
               <div class="phone-card-header">
                 <div class="phone-header-left">
-                  ${getPhoneBrandLogoHtml(p.brand, p.name, 20)}
                   <span class="phone-card-name">${escapeHtml(brandAndName)}</span>
                   ${getColorDotHtml(p.color, 20)}
                   ${storageWithGB ? `<span class="phone-card-storage">${escapeHtml(storageWithGB)}</span>` : ''}

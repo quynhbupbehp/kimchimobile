@@ -8,7 +8,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_085856">
+  <link rel="stylesheet" href="css/style.css?v=20261030_094945">
   <script>
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1163,7 +1163,7 @@
         </div>
 
         <div class="banmay-top-bar"
-          style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; flex-wrap: wrap;">
+          style="display: flex; align-items: center; gap: 12px; margin-bottom: 0.75rem; flex-wrap: wrap;">
           <!-- 1. Ô TÌM KIẾM -->
           <div class="search-box-bm" style="height: 38px; box-sizing: border-box; position: relative;">
             <span class="search-label-single-line">TÌM KIẾM</span>
@@ -1176,7 +1176,22 @@
             <div id="phoneSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;"></div>
           </div>
 
-          <!-- 2. BỘ LỌC THEO MỨC GIÁ (NẰM NGAY SAU TÌM KIẾM) -->
+          <!-- 5. NÚT HÀNH ĐỘNG GÓC PHẢI (CHUYỂN GIAO DIỆN Ở TAB TẤT CẢ / + THÊM MÁY MỚI Ở CÁC TAB KHÁC) -->
+          <div style="margin-left: auto; display: flex; align-items: center;" id="addPhoneBtnWrapper">
+            <button type="button" id="btnTopActionPhone" class="btn-add-phone-main" onclick="togglePhoneViewMode()"
+              style="height: 38px; box-sizing: border-box; background: #2563eb !important; color: #ffffff !important; border: 1px solid #3b82f6 !important; border-radius: 8px; padding: 0 18px; font-weight: 900; font-size: 0.88rem; letter-spacing: 0.5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(37, 99, 235, 0.45); white-space: nowrap;">
+              CHUYỂN GIAO DIỆN
+            </button>
+          </div>
+
+          <!-- Input File Excel Ẩn -->
+          <input type="file" id="phoneExcelFileInput" accept=".csv, .xlsx, .xls, text/csv" style="display: none;"
+            onchange="handleImportPhoneExcelFile(event)">
+        </div>
+
+        <!-- KHỐI GIÁ BÁN & MỌI MỨC GIÁ CỐ ĐỊNH TRÊN MOBILE (STICKY ROW) -->
+        <div class="banmay-sticky-price-row">
+          <!-- 2. BỘ LỌC THEO MỨC GIÁ -->
           <div class="price-filter-box-bm" style="height: 38px; box-sizing: border-box;">
             <span class="price-filter-label">GIÁ BÁN</span>
             <select id="phonePriceFilter" class="price-filter-select" onchange="handlePhonePriceFilterChange(this)">
@@ -1190,13 +1205,13 @@
             </select>
           </div>
 
-          <!-- 3. NÚT BÁN MÁY NGOÀI KHO (NẰM NGAY SAU GIÁ BÁN - DÀNH CHO DESKTOP) -->
+          <!-- 3. NÚT BÁN MÁY NGOÀI KHO (HIỆN TRÊN DESKTOP, TRÊN MOBILE ĐÃ CÓ Ở HÀNG TRÊN) -->
           <button type="button" class="btn-sell-external btn-sell-external-desktop" onclick="openExternalSellPhoneModal()"
             style="height: 38px; box-sizing: border-box; background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important; color: #ffffff !important; border: 1px solid #f472b6 !important; border-radius: 8px; padding: 0 16px; font-weight: 900; font-size: 0.88rem; letter-spacing: 0.5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.45); white-space: nowrap;">
             BÁN MÁY NGOÀI KHO
           </button>
 
-          <!-- 4. NÚT CHUYỂN ĐỔI CHẾ ĐỘ HIỂN THỊ HÀNG NGANG (LÁ CỜ VIỆT NAM - NẰM NGAY SAU BÁN MÁY NGOÀI KHO) -->
+          <!-- 4. NÚT CHUYỂN ĐỔI CHẾ ĐỘ HIỂN THỊ HÀNG NGANG (LÁ CỜ VIỆT NAM) -->
           <button type="button" id="btnPhoneViewModeToggle" class="btn-view-mode-toggle" onclick="togglePhoneViewMode()"
             title="Chuyển chế độ xem: Dạng hàng ngang / Dạng lưới ô">
             <svg width="25" height="19" viewBox="0 0 36 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1215,18 +1230,6 @@
                 fill="#facc15" stroke="#eab308" stroke-width="0.3" />
             </svg>
           </button>
-
-          <!-- 5. NÚT HÀNH ĐỘNG GÓC PHẢI (CHUYỂN GIAO DIỆN Ở TAB TẤT CẢ / + THÊM MÁY MỚI Ở CÁC TAB KHÁC) -->
-          <div style="margin-left: auto; display: flex; align-items: center;" id="addPhoneBtnWrapper">
-            <button type="button" id="btnTopActionPhone" class="btn-add-phone-main" onclick="togglePhoneViewMode()"
-              style="height: 38px; box-sizing: border-box; background: #2563eb !important; color: #ffffff !important; border: 1px solid #3b82f6 !important; border-radius: 8px; padding: 0 18px; font-weight: 900; font-size: 0.88rem; letter-spacing: 0.5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(37, 99, 235, 0.45); white-space: nowrap;">
-              CHUYỂN GIAO DIỆN
-            </button>
-          </div>
-
-          <!-- Input File Excel Ẩn -->
-          <input type="file" id="phoneExcelFileInput" accept=".csv, .xlsx, .xls, text/csv" style="display: none;"
-            onchange="handleImportPhoneExcelFile(event)">
         </div>
 
 
@@ -1634,9 +1637,9 @@
         </div>
 
         <div class="sales-table-container">
-          <!-- TIÊU ĐỀ THÔNG TIN MÁY ĐÃ BÁN CỐ ĐỊNH TRÊN MOBILE -->
+          <!-- TIÊU ĐỀ THÔNG TIN MÁY ĐÃ BÁN CỐ ĐỊNH TRÊN MOBILE (Y CHANG ẢNH MẪU) -->
           <div class="baohanh-list-header-mobile">
-            <span style="color: #f59e0b; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.5px;">THÔNG TIN MÁY ĐÃ BÁN</span>
+            <span style="color: #f59e0b; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.5px;">HÃNG / TÊN MÁY</span>
           </div>
 
           <table class="sales-table">
@@ -1665,7 +1668,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_085856" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_094945" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5167,10 +5170,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_085856"></script>
+  <script src="js/seed_data.js?v=20261030_094945"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_085856"></script>
+  <script src="js/main.js?v=20261030_094945"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
