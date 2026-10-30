@@ -3320,11 +3320,19 @@
       font-weight: 800;
       font-size: 0.9rem;
       border-radius: 8px;
-      padding: 7px 8px;
+      padding: 0 4px;
       outline: none;
       cursor: pointer;
-      width: 65px;
+      width: 44px;
       text-align: center;
+      text-align-last: center;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: none !important;
+    }
+    .sw-select-time::-ms-expand {
+      display: none;
     }
 
 
