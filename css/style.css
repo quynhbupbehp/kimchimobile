@@ -7921,6 +7921,27 @@
           flex: 1 1 100% !important;
           min-width: 100% !important;
         }
+
+        /* HÀNG TÊN MÁY (70%) & IMEI (30%) TRÊN MOBILE CÙNG 1 HÀNG */
+        #buyBackPhoneModal .bb-row-name-imei {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
+          gap: 8px !important;
+          width: 100% !important;
+        }
+        #buyBackPhoneModal .bb-row-name-imei > .form-ticket-group:first-child {
+          flex: 0 0 calc(70% - 4px) !important;
+          width: calc(70% - 4px) !important;
+          max-width: calc(70% - 4px) !important;
+          min-width: 0 !important;
+        }
+        #buyBackPhoneModal .bb-row-name-imei > .form-ticket-group:last-child {
+          flex: 0 0 calc(30% - 4px) !important;
+          width: calc(30% - 4px) !important;
+          max-width: calc(30% - 4px) !important;
+          min-width: 0 !important;
+        }
         .form-ticket-label,
         .form-label {
           font-size: 0.8rem !important;

@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261030_222908">
+  <link rel="stylesheet" href="css/style.css?v=20261030_225010">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261030_222908";
+    var CURRENT_PAGE_VERSION = "20261030_225010";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1752,7 +1752,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261030_222908" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261030_225010" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5036,7 +5036,7 @@
         style="background: linear-gradient(135deg, #1e293b, #0f172a); border-bottom: 1px solid #334155;">
         <span
           style="display: flex; align-items: center; gap: 8px; color: #f59e0b; font-weight: 900; font-size: 1.15rem;">
-          🔄 MUA LẠI MÁY ĐÃ BÁN (HOÀN KHO)
+          🔄 MUA LẠI MÁY ĐÃ BÁN
         </span>
         <button type="button" onclick="closeBuyBackPhoneModal()"
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
@@ -5044,22 +5044,23 @@
 
       <form onsubmit="confirmBuyBackPhone(event)" style="padding: 18px 20px;">
         <input type="hidden" id="bbSoldId" value="">
+        <input type="hidden" id="bbColor" value="">
 
-        <!-- HÀNG 1: TÊN MÁY, IMEI, MÀU -->
-        <div class="form-ticket-row">
-          <div class="form-ticket-group" style="flex: 1.2;">
+        <!-- HÀNG 1: TÊN MÁY (70%) CÙNG VÒNG TRÒN MÀU & IMEI (30%) CÙNG 1 HÀNG -->
+        <div class="form-ticket-row bb-row-name-imei" style="display: flex; flex-direction: row; gap: 8px; width: 100%; margin-bottom: 10px;">
+          <div class="form-ticket-group" style="flex: 7 1 70%; max-width: 70%; width: 70%; box-sizing: border-box;">
             <label class="form-ticket-label">Tên Máy *</label>
-            <input type="text" class="ticket-input" id="bbName" required readonly
-              style="background: #111827; color: #60a5fa; font-weight: 800;">
+            <div style="position: relative; width: 100%; display: flex; align-items: center;">
+              <input type="text" class="ticket-input" id="bbName" required readonly
+                style="background: #111827; color: #60a5fa; font-weight: 800; width: 100%; padding-right: 36px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
+              <span id="bbColorDot"
+                style="position: absolute; right: 10px; width: 18px; height: 18px; border-radius: 50%; display: inline-block; flex-shrink: 0; box-shadow: 0 0 6px rgba(0,0,0,0.6); pointer-events: none;"></span>
+            </div>
           </div>
-          <div class="form-ticket-group" style="width: 70px; flex-shrink: 0;">
+          <div class="form-ticket-group" style="flex: 3 1 30%; max-width: 30%; width: 30%; box-sizing: border-box;">
             <label class="form-ticket-label" style="text-align: center;">IMEI</label>
             <input type="text" class="ticket-input" id="bbImei" readonly
-              style="text-align: center; background: #111827; color: #fbbf24; font-weight: 800; padding: 9px 4px;">
-          </div>
-          <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Màu Sắc *</label>
-            <input type="text" class="ticket-input" id="bbColor" required oninput="formatTitleCaseInput(this)">
+              style="text-align: center; background: #111827; color: #fbbf24; font-weight: 900; padding: 9px 4px; width: 100%; letter-spacing: 0.5px;">
           </div>
         </div>
 
@@ -5089,22 +5090,20 @@
           style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 10px; padding: 14px 16px; margin: 12px 0;">
           <div
             style="font-size: 0.88rem; font-weight: 800; color: #38bdf8; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-            💰 THÔNG TIN GIÁ BÁN & GIÁ MUA LẠI CỦA KHÁCH
+            💰 GIÁ BÁN & GIÁ MUA LẠI
           </div>
 
           <div class="form-ticket-row" style="margin-bottom: 10px; display: flex; align-items: flex-start; gap: 12px;">
             <div class="form-ticket-group" style="flex: 1; display: flex; flex-direction: column;">
               <label class="form-ticket-label"
-                style="color: #94a3b8; height: 20px; line-height: 20px; margin-bottom: 5px; display: block;">Giá Bán
-                (Lúc Bán)</label>
+                style="color: #94a3b8; height: 20px; line-height: 20px; margin-bottom: 5px; display: block;">Giá Lúc Bán</label>
               <input type="text" class="ticket-input" id="bbSellPrice" readonly
                 style="background: #0f172a; color: #10b981; font-weight: 800; font-size: 1rem; height: 38px; box-sizing: border-box; padding: 8px 10px;">
             </div>
 
             <div class="form-ticket-group" style="flex: 1; display: flex; flex-direction: column;">
               <label class="form-ticket-label"
-                style="color: #94a3b8; height: 20px; line-height: 20px; margin-bottom: 5px; display: block;">Giá Vốn
-                (Lúc Nhập)</label>
+                style="color: #94a3b8; height: 20px; line-height: 20px; margin-bottom: 5px; display: block;">(Vốn - Lúc Nhập)</label>
               <input type="text" class="ticket-input" id="bbOriginalCost" readonly
                 style="background: #0f172a; color: #e2e8f0; font-weight: 800; font-size: 1rem; height: 38px; box-sizing: border-box; padding: 8px 10px;">
             </div>
@@ -5147,18 +5146,12 @@
                 0 đ</div>
             </div>
           </div>
-
-          <!-- DÒNG GIẢI THÍCH CHI TIẾT TÍNH TOÁN -->
-          <div id="bbFormulaExplanation"
-            style="margin-top: 10px; font-size: 0.84rem; color: #cbd5e1; line-height: 1.45; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 8px 12px; border-left: 3px solid #f59e0b;">
-            💡 <em>Giá Nhập Mới = Giá Vốn (Lúc Nhập) - Tiền Lời + Tiền Phụ Kiện</em>
-          </div>
         </div>
 
         <!-- HÀNG THIẾT LẬP KHO: GIÁ BÁN RA TIẾP THEO & GHI CHÚ -->
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Giá Bán Đề Xuất (Trong Kho)</label>
+            <label class="form-ticket-label">Giá Bán Mới</label>
             <input type="text" class="ticket-input" id="bbNextSellPrice" oninput="formatCurrencyInput(this)"
               style="font-weight: 800; color: #10b981;">
           </div>
@@ -5238,10 +5231,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261030_222908"></script>
+  <script src="js/seed_data.js?v=20261030_225010"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261030_222908"></script>
+  <script src="js/main.js?v=20261030_225010"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

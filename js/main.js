@@ -7444,6 +7444,14 @@
       document.getElementById('bbName').value = p.name || '';
       document.getElementById('bbImei').value = p.imei || '';
       document.getElementById('bbColor').value = p.color || 'Trắng';
+
+      let dotColor = getHexColor(p.color || 'Trắng');
+      let colorDot = document.getElementById('bbColorDot');
+      if (colorDot) {
+        colorDot.style.backgroundColor = dotColor;
+        colorDot.style.boxShadow = `0 0 8px ${dotColor}88`;
+      }
+
       let rawStorage = (p.storage || '').replace(/[()]/g, '').trim();
       document.getElementById('bbStorage').value = rawStorage;
       document.getElementById('bbCondition').value = p.condition || 'Zin Đẹp 99%';
