@@ -3335,7 +3335,8 @@
 
           // Dấu chấm màu: CHỈ hiển thị nếu có màu thực tế, KHÔNG tự ý vẽ chấm trắng mặc định
           let dotHtml = (details.color && details.color.trim()) ? `<span class="banga-color-dot-wrap">${getColorDotHtml(details.color, 28)}</span>` : '';
-          let storagePart = details.storage ? `<span>${formatStorageDisplay(details.storage)}</span>` : '';
+          let cleanStorageStr = details.storage ? formatStorageDisplay(details.storage).replace(/GB$/i, '').trim() : '';
+          let storagePart = cleanStorageStr ? `<span>${cleanStorageStr}</span>` : '';
           let imeiPart = details.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.27rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${details.imei}</span>` : '';
 
           nameHtml = `
