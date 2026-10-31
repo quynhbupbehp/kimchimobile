@@ -1095,8 +1095,8 @@
           let storageKey = 'KIMCHI_DL_' + listId.toUpperCase();
           let savedCustom = JSON.parse(localStorage.getItem(storageKey)) || [];
           if (Array.isArray(savedCustom) && savedCustom.length > 0) {
-            // Đưa các mục đã lưu lên trước hoặc bổ sung vào danh sách
-            options = [...savedCustom, ...options];
+            // Các mục thêm sau sẽ hiển thị ở cuối danh sách, KHÔNG nhảy lên đầu
+            options = [...options, ...savedCustom];
           }
         } catch(e){}
       }
@@ -1306,7 +1306,7 @@
           let cur = [];
           try { cur = JSON.parse(localStorage.getItem(storageKey)) || []; } catch(e){}
           if (!cur.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
-            cur.unshift(cleanVal);
+            cur.push(cleanVal);
             localStorage.setItem(storageKey, JSON.stringify(cur));
           }
         } catch(e){}
