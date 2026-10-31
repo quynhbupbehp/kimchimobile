@@ -6237,15 +6237,13 @@
         box-shadow: 16px 0 50px rgba(0, 0, 0, 0.95) !important;
       }
 
-      /* ẨN HOÀN TOÀN MENU SỬA CHỮA, BÁN GÀ, CÔNG NỢ, MAIN - XÁC, HỆ THỐNG TRÊN GIAO DIỆN MOBILE */
+      /* ẨN MENU SỬA CHỮA, CÔNG NỢ, MAIN - XÁC, HỆ THỐNG TRÊN GIAO DIỆN MOBILE (GIỮ BÁN GÀ) */
       .nav-item-desktop-only,
       aside.sidebar .main-nav-vertical button[onclick*="'suachua'"],
-      aside.sidebar .main-nav-vertical button[onclick*="'banga'"],
       aside.sidebar .main-nav-vertical button[onclick*="'congno'"],
       aside.sidebar .main-nav-vertical button[onclick*="'quynhbupbe'"],
       aside.sidebar .main-nav-vertical button[onclick*="'baocao'"],
       button[data-tab="suachua"],
-      button[data-tab="banga"],
       button[data-tab="congno"],
       button[data-tab="quynhbupbe"],
       button[data-tab="baocao"] {

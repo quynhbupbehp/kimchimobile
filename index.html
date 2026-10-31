@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261031_012108">
+  <link rel="stylesheet" href="css/style.css?v=20261031_082238">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261031_012108";
+    var CURRENT_PAGE_VERSION = "20261031_082238";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -300,13 +300,13 @@
       <ul class="main-nav-vertical">
         <li><button class="main-tab-btn-v active" onclick="switchMainTab('banhang', this)">🛒 <span>BÁN
               HÀNG</span></button></li>
-        <li><button class="main-tab-btn-v" onclick="switchMainTab('phanmem', this)">💻 <span>PHẦN MỀM</span></button>
-        </li>
         <li class="nav-item-desktop-only"><button class="main-tab-btn-v" onclick="switchMainTab('suachua', this)">🔧 <span>SỬA CHỮA</span></button>
         </li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('banmay', this)">📱 <span>BÁN MÁY</span></button></li>
-        <li class="nav-item-desktop-only"><button class="main-tab-btn-v" onclick="switchMainTab('banga', this)">🐓 <span>BÁN GÀ</span></button></li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('baohanh', this)">🛡️ <span>BẢO HÀNH</span></button>
+        </li>
+        <li><button class="main-tab-btn-v" onclick="switchMainTab('banga', this)" title="Bán Gà">🐓</button></li>
+        <li><button class="main-tab-btn-v" onclick="switchMainTab('phanmem', this)">💻 <span>PHẦN MỀM</span></button>
         </li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('baogia', this)">📋 <span>BÁO GIÁ SỬA</span></button>
         </li>
@@ -343,8 +343,8 @@
     <nav class="mobile-quick-nav">
       <button type="button" class="mobile-tab-pill active" data-tab="banhang" onclick="switchMainTab('banhang')">🛒 Bán Hàng</button>
       <button type="button" class="mobile-tab-pill" data-tab="banmay" onclick="switchMainTab('banmay')">📱 Bán Máy</button>
-      <button type="button" class="mobile-tab-pill" data-tab="banga" onclick="switchMainTab('banga')">🐓 Bán Gà</button>
       <button type="button" class="mobile-tab-pill" data-tab="baohanh" onclick="switchMainTab('baohanh')">🛡️ Bảo Hành</button>
+      <button type="button" class="mobile-tab-pill" data-tab="banga" onclick="switchMainTab('banga')" title="Bán Gà">🐓</button>
       <button type="button" class="mobile-tab-pill" data-tab="phanmem" onclick="switchMainTab('phanmem')">💻 Phần Mềm</button>
       <button type="button" class="mobile-tab-pill" data-tab="baogia" onclick="switchMainTab('baogia')">📋 Báo Giá</button>
     </nav>
@@ -1760,7 +1760,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261031_012108" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261031_082238" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5223,10 +5223,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261031_012108"></script>
+  <script src="js/seed_data.js?v=20261031_082238"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261031_012108"></script>
+  <script src="js/main.js?v=20261031_082238"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
