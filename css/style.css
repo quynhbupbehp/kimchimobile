@@ -7156,7 +7156,7 @@
           display: none !important;
         }
 
-        /* HÀNG 2 & 3: LƯỚI 6 NÚT PHÍM TẮT (3 CỘT X 2 HÀNG) */
+        /* HÀNG 2: 3 NÚT PHÍM TẮT TRÊN MOBILE (LINK TOOL - TESTPOINT - CÔNG NỢ) */
         .sw-shortcuts-container,
         #tab-phanmem .sw-top-header-bar > div:nth-child(2) {
           grid-column: 1 / -1 !important;
@@ -7166,6 +7166,21 @@
           gap: 6px !important;
           width: 100% !important;
           margin: 0 !important;
+        }
+        /* ẨN Ô TÀI KHOẢN, GHI CHÚ, LINK ROM TRÊN MOBILE THEO YÊU CẦU */
+        .sw-shortcuts-container .sw-shortcut-rom,
+        .sw-shortcuts-container .sw-shortcut-accounts,
+        .sw-shortcuts-container .sw-shortcut-notes {
+          display: none !important;
+        }
+        .sw-shortcuts-container .sw-shortcut-tool {
+          order: 1 !important;
+        }
+        .sw-shortcuts-container .sw-shortcut-testpoint {
+          order: 2 !important;
+        }
+        .sw-shortcuts-container .sw-shortcut-congno {
+          order: 3 !important;
         }
         .sw-shortcuts-container .sw-pill-btn,
         #tab-phanmem .sw-pill-btn {
@@ -8355,6 +8370,33 @@
         }
         #buyBackPhoneModal .bb-btn-submit-text-mobile {
           display: inline !important;
+        }
+
+        /* MODAL CHI TIẾT CÔNG NỢ PHẦN MỀM TRÊN MOBILE: HIỆN ĐỦ CỘT TÊN MÁY, SỐ TIỀN VÀ KHÔNG BỊ TRÀN */
+        #swCustomerDebtModal .sales-table-container {
+          height: auto !important;
+          max-height: 52vh !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: auto !important;
+          box-sizing: border-box !important;
+        }
+        #swCustomerDebtModal table.sales-table,
+        #swCustomerDebtModal table {
+          min-width: 100% !important;
+          width: 100% !important;
+          table-layout: auto !important;
+        }
+        #swCustomerDebtModal table th,
+        #swCustomerDebtModal table td {
+          white-space: nowrap !important;
+          padding: 8px 6px !important;
+        }
+        #swCustomerDebtModal table th:nth-child(3),
+        #swCustomerDebtModal table td:nth-child(3) {
+          text-align: right !important;
+          color: #facc15 !important;
+          font-weight: 900 !important;
         }
         .form-ticket-label,
         .form-label {

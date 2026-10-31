@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261031_145831">
+  <link rel="stylesheet" href="css/style.css?v=20261031_154234">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261031_145831";
+    var CURRENT_PAGE_VERSION = "20261031_154234";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -677,7 +677,7 @@
           <!-- Cột 2 (Giữa): CỤM NÚT SHORTCUTS (LINK TOOL, TESTPOINT, ROM, TÀI KHOẢN, GHI CHÚ, CÔNG NỢ) - CĂN CHÍNH GIỮA -->
           <div class="sw-shortcuts-container"
             style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
-            <div class="sw-pill-btn sw-btn-black" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
+            <div class="sw-pill-btn sw-btn-black sw-shortcut-tool" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
               <span class="sw-link-text" onclick="openSwUrl('tool')">LINK TOOL</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('tool', event)" title="Sao chép link Tool">
                 <svg viewBox="0 0 24 24" class="sw-copy-icon">
@@ -686,7 +686,7 @@
                 </svg>
               </button>
             </div>
-            <div class="sw-pill-btn sw-btn-black" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
+            <div class="sw-pill-btn sw-btn-black sw-shortcut-testpoint" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
               <span class="sw-link-text" onclick="openSwUrl('testpoint')">TESTPOINT</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('testpoint', event)"
                 title="Sao chép link Testpoint">
@@ -696,7 +696,7 @@
                 </svg>
               </button>
             </div>
-            <div class="sw-pill-btn sw-btn-black" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
+            <div class="sw-pill-btn sw-btn-black sw-shortcut-rom" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
               <span class="sw-link-text" onclick="openSwUrl('rom')">LINK ROM</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('rom', event)" title="Sao chép link ROM">
                 <svg viewBox="0 0 24 24" class="sw-copy-icon">
@@ -705,11 +705,11 @@
                 </svg>
               </button>
             </div>
-            <button type="button" class="sw-pill-btn sw-btn-black" onclick="openSwAccountsModal()"
+            <button type="button" class="sw-pill-btn sw-btn-black sw-shortcut-accounts" onclick="openSwAccountsModal()"
               title="Quản lý tài khoản tool / server">TÀI KHOẢN</button>
-            <button type="button" class="sw-pill-btn sw-btn-black" onclick="openSwNotesModal()"
+            <button type="button" class="sw-pill-btn sw-btn-black sw-shortcut-notes" onclick="openSwNotesModal()"
               title="Sổ ghi chú phần mềm">GHI CHÚ</button>
-            <button type="button" class="sw-pill-btn sw-btn-congno" id="swBtnCongNo" onclick="toggleSoftwareDebtView()"
+            <button type="button" class="sw-pill-btn sw-btn-congno sw-shortcut-congno" id="swBtnCongNo" onclick="toggleSoftwareDebtView()"
               title="Xem sổ công nợ phần mềm">CÔNG NỢ</button>
           </div>
 
@@ -1784,7 +1784,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261031_145831" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261031_154234" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5255,10 +5255,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261031_145831"></script>
+  <script src="js/seed_data.js?v=20261031_154234"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261031_145831"></script>
+  <script src="js/main.js?v=20261031_154234"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
