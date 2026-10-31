@@ -2724,7 +2724,7 @@
         repairsList = [];
       }
 
-      // 2. Tính LÃI NGÀY & DOANH THU NGÀY = Bán hàng + Sửa chữa + Bán gà (trong 1 ngày đang chọn)
+      // 2. Tính LÃI NGÀY & DOANH THU NGÀY = Lãi bán hàng + Lãi bán máy + Lãi bán gà + Lãi sửa chữa (trong 1 ngày đang chọn)
       let daySalesProfit = 0;
       let daySalesRevenue = 0;
       if (Array.isArray(salesDatabase)) {
@@ -2763,10 +2763,26 @@
         });
       }
 
-      let totalDayProfit = daySalesProfit + dayRepairProfit + dayBangaProfit;
-      let totalDayRevenue = daySalesRevenue + dayRepairRevenue + dayBangaRevenue;
+      // Lãi và doanh thu Bán Máy (soldPhoneDatabase) trong 1 ngày đang chọn
+      let dayPhoneProfit = 0;
+      let dayPhoneRevenue = 0;
+      if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
+        soldPhoneDatabase.forEach(p => {
+          let pDate = parseSoldPhoneDate(p);
+          if (!pDate) return;
+          let pDay = String(pDate.d).padStart(2, '0');
+          let pMonth = String(pDate.m + 1).padStart(2, '0');
+          let pDateStr = `${pDay}/${pMonth}/${pDate.y}`;
+          if (pDateStr === targetDateStr) {
+            let pOut = parsePriceNum(p.price || p.total);
+            let pIn = parsePriceNum(p.priceIn);
+            dayPhoneProfit += (pOut - pIn);
+            dayPhoneRevenue += pOut;
+          }
+        });
+      }
 
-      // 3. Tính LÃI THÁNG & DOANH THU THÁNG = Bán hàng + Sửa chữa + Bán gà (trong tháng đang chọn)
+      // 3. Tính LÃI THÁNG & DOANH THU THÁNG
       let monthSalesProfit = 0;
       let monthSalesRevenue = 0;
       if (Array.isArray(salesDatabase)) {
@@ -2826,8 +2842,31 @@
         });
       }
 
-      let totalMonthProfit = monthSalesProfit + monthRepairProfit + monthBangaProfit;
-      let totalMonthRevenue = monthSalesRevenue + monthRepairRevenue + monthBangaRevenue;
+      let monthPhoneProfit = 0;
+      let monthPhoneRevenue = 0;
+      if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
+        soldPhoneDatabase.forEach(p => {
+          let pDate = parseSoldPhoneDate(p);
+          if (!pDate) return;
+          if (pDate.m === targetMonth && pDate.y === targetYear) {
+            let pOut = parsePriceNum(p.price || p.total);
+            let pIn = parsePriceNum(p.priceIn);
+            monthPhoneProfit += (pOut - pIn);
+            monthPhoneRevenue += pOut;
+          }
+        });
+      }
+
+      // LÃI & DOANH THU THEO YÊU CẦU:
+      // - Doanh thu ngày = Doanh thu bán hàng của ngày đó
+      // - Doanh thu tháng = Doanh thu bán hàng của tháng đó
+      // - Lãi ngày = Lãi bán hàng + Lãi bán máy + Lãi bán gà + Lãi sửa chữa trong 1 ngày
+      // - Lãi tháng = Lãi bán hàng + Lãi bán máy + Lãi bán gà + Lãi sửa chữa trong 1 tháng
+      let totalDayRevenue = daySalesRevenue;
+      let totalDayProfit = daySalesProfit + dayPhoneProfit + dayBangaProfit + dayRepairProfit;
+
+      let totalMonthRevenue = monthSalesRevenue;
+      let totalMonthProfit = monthSalesProfit + monthPhoneProfit + monthBangaProfit + monthRepairProfit;
 
       // Cập nhật các ô hiển thị Doanh thu & Lãi
       const salesMonthRevenueEl = document.getElementById('salesMonthRevenueVal');
