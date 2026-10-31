@@ -1022,14 +1022,6 @@
 
     function closeUniversalSmartDropdown() {
       if (activeUniversalDropdown) {
-        if (currentUniversalInput) {
-          const inp = currentUniversalInput;
-          const listId = inp._universalListId || inp.dataset.originalList;
-          const opts = inp._universalOptions;
-          if (listId && opts) {
-            checkAndPromptSaveDropdownOption(inp, listId, opts);
-          }
-        }
         activeUniversalDropdown.remove();
         activeUniversalDropdown = null;
         currentUniversalInput = null;
@@ -1038,6 +1030,12 @@
 
     function openUniversalSmartDropdown(input, filterText = null) {
       if (!input) return;
+      // Nếu input đang nằm trong một modal bị ẩn thì không mở
+      const modal = input.closest('.modal-overlay, .modal, .sw-modal-overlay');
+      if (modal && (modal.style.display === 'none' || (modal.classList && !modal.classList.contains('active') && !modal.classList.contains('show') && getComputedStyle(modal).display === 'none'))) {
+        closeUniversalSmartDropdown();
+        return;
+      }
 
       // Xác định datalist id
       let listId = input.dataset.originalList || input.getAttribute('list');
@@ -1216,9 +1214,10 @@
         dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceBelow - dropDownOffset - 10))}px`;
       }
 
-      dropdownEl.style.left = `${Math.max(10, rect.left)}px`;
-      dropdownEl.style.minWidth = `${Math.max(rect.width, 160)}px`;
-      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 20, Math.max(rect.width, 340))}px`;
+      dropdownEl.style.left = `${Math.max(6, rect.left)}px`;
+      dropdownEl.style.width = `${Math.max(rect.width, 180)}px`;
+      dropdownEl.style.minWidth = `${Math.max(rect.width, 180)}px`;
+      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 20, Math.max(rect.width, 360))}px`;
       dropdownEl.style.overflowY = 'auto';
       dropdownEl.style.zIndex = '999999999';
     }
@@ -3827,6 +3826,7 @@
     window.openTicketModal = openTicketModal;
 
     function closeTicketModal() {
+      closeUniversalSmartDropdown();
       const m = document.getElementById('ticketModal');
       if (m) {
         m.classList.remove('active');
