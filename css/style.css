@@ -6961,66 +6961,83 @@
           text-overflow: ellipsis !important;
           vertical-align: middle !important;
         }
-        /* CỘT 1: TÊN HÀNG (50%) */
+        /* CỘT 1: TÊN HÀNG / GÀ - CHIM CÚT (37%) - Giảm 15% cỡ chữ */
         #tab-banga .sales-table th:nth-child(1) {
-          width: 50% !important;
-          max-width: 50% !important;
+          width: 37% !important;
+          max-width: 37% !important;
           min-width: 0 !important;
           text-align: left !important;
-          padding-left: 6px !important;
-          font-size: 0.95rem !important;
+          padding-left: 5px !important;
+          font-size: 0.81rem !important; /* Giảm 15% từ 0.95rem */
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
         }
         #tab-banga .sales-table td:nth-child(1) {
-          width: 50% !important;
-          max-width: 50% !important;
+          width: 37% !important;
+          max-width: 37% !important;
           min-width: 0 !important;
           text-align: left !important;
-          padding-left: 6px !important;
-          font-size: 1.25rem !important;
+          padding-left: 5px !important;
+          font-size: 1.06rem !important; /* Giảm 15% từ 1.25rem */
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
         }
-        /* ẨN CỘT 2: GIÁ BÁN TRÊN MOBILE */
-        #tab-banga .sales-table th:nth-child(2),
-        #tab-banga .sales-table td:nth-child(2) {
-          display: none !important;
+        #tab-banga .sales-table td:nth-child(1) * {
+          font-size: 1.06rem !important; /* Giảm 15% */
         }
-        /* CỘT 3: GIÁ NHẬP (25%) */
-        #tab-banga .sales-table th:nth-child(3) {
-          width: 25% !important;
-          max-width: 25% !important;
+        /* CỘT 2: GIÁ BÁN (HIỂN THỊ BÊN TRÁI GIÁ NHẬP, 21%) - Giảm 15% cỡ chữ */
+        #tab-banga .sales-table th:nth-child(2) {
+          display: table-cell !important;
+          width: 21% !important;
+          max-width: 21% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 0.95rem !important;
+          font-size: 0.81rem !important; /* Giảm 15% từ 0.95rem */
+          padding: 6px 1px !important;
+        }
+        #tab-banga .sales-table td:nth-child(2) {
+          display: table-cell !important;
+          width: 21% !important;
+          max-width: 21% !important;
+          min-width: 0 !important;
+          text-align: center !important;
+          font-size: 1.17rem !important; /* Giảm 15% từ 1.38rem */
+          padding: 6px 1px !important;
+        }
+        /* CỘT 3: GIÁ NHẬP (21%) - Giảm 15% cỡ chữ */
+        #tab-banga .sales-table th:nth-child(3) {
+          width: 21% !important;
+          max-width: 21% !important;
+          min-width: 0 !important;
+          text-align: center !important;
+          font-size: 0.81rem !important; /* Giảm 15% từ 0.95rem */
           padding: 6px 1px !important;
         }
         #tab-banga .sales-table td:nth-child(3) {
-          width: 25% !important;
-          max-width: 25% !important;
+          width: 21% !important;
+          max-width: 21% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 1.18rem !important;
+          font-size: 1.00rem !important; /* Giảm 15% từ 1.18rem */
           padding: 6px 1px !important;
         }
-        /* CỘT 4: LÃI (25%) */
+        /* CỘT 4: LÃI (21%) - Giảm 15% cỡ chữ */
         #tab-banga .sales-table th:nth-child(4) {
-          width: 25% !important;
-          max-width: 25% !important;
+          width: 21% !important;
+          max-width: 21% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 0.95rem !important;
+          font-size: 0.81rem !important; /* Giảm 15% từ 0.95rem */
           padding: 6px 1px !important;
         }
         #tab-banga .sales-table td:nth-child(4) {
-          width: 25% !important;
-          max-width: 25% !important;
+          width: 21% !important;
+          max-width: 21% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 1.18rem !important;
+          font-size: 1.00rem !important; /* Giảm 15% từ 1.18rem */
           padding: 6px 1px !important;
         }
         /* ẨN CỘT 5 (HÌNH THỨC), 6 (THAO TÁC), 7 (NGÀY BÁN), 8 (THANH TOÁN) TRÊN MOBILE */
