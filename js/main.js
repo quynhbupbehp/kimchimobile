@@ -1022,6 +1022,14 @@
 
     function closeUniversalSmartDropdown() {
       if (activeUniversalDropdown) {
+        if (currentUniversalInput) {
+          const inp = currentUniversalInput;
+          const listId = inp._universalListId || inp.dataset.originalList;
+          const opts = inp._universalOptions;
+          if (listId && opts) {
+            checkAndPromptSaveDropdownOption(inp, listId, opts);
+          }
+        }
         activeUniversalDropdown.remove();
         activeUniversalDropdown = null;
         currentUniversalInput = null;
@@ -1062,7 +1070,17 @@
         }
       }
 
-      // 2. Nếu chưa có hoặc mảng rỗng, đọc từ thẻ datalist
+      // 2. Kiểm tra repairDropdownConfigs nếu có
+      if (options.length === 0 && typeof repairDropdownConfigs !== 'undefined') {
+        for (let key in repairDropdownConfigs) {
+          if (repairDropdownConfigs[key].listId === listId) {
+            options = getRepairDropdownItems(key);
+            break;
+          }
+        }
+      }
+
+      // 3. Nếu chưa có hoặc mảng rỗng, đọc từ thẻ datalist
       if (options.length === 0) {
         const datalist = document.getElementById(listId);
         if (datalist) {
@@ -1078,6 +1096,8 @@
 
       // Khử trùng lặp
       options = Array.from(new Set(options));
+      input._universalOptions = options;
+      input._universalListId = listId;
 
       // Lọc nếu người dùng đang chủ động gõ phím vào ô nhập
       let displayOptions = options;
@@ -1177,6 +1197,81 @@
       dropdownEl.style.zIndex = '999999999';
     }
 
+    function checkAndPromptSaveDropdownOption(input, listId, options) {
+      if (typeof window === 'undefined' || window.innerWidth <= 768) return;
+      if (!input || !listId || !options || !Array.isArray(options)) return;
+      
+      const val = (input.value || '').trim();
+      if (!val) return;
+
+      const valLower = val.toLowerCase();
+      const exists = options.some(opt => (opt || '').toLowerCase().trim() === valLower);
+      if (exists) return;
+
+      // Tránh hỏi lặp lại trên cùng một giá trị cho ô nhập này
+      if (input._lastPromptedVal === valLower) return;
+      input._lastPromptedVal = valLower;
+
+      setTimeout(() => {
+        const cleanVal = toTitleCase ? toTitleCase(val) : val;
+        if (confirm(`"${cleanVal}" chưa có trong danh sách gợi ý.\nBạn có muốn lưu vào danh sách để dùng cho các lần sau không?`)) {
+          // 1. Kiểm tra dropdownConfigs của main.js
+          let saved = false;
+          if (typeof dropdownConfigs !== 'undefined') {
+            for (let key in dropdownConfigs) {
+              if (dropdownConfigs[key].listId === listId) {
+                let items = getDropdownItems(key);
+                if (!items.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
+                  items.unshift(cleanVal);
+                  saveDropdownItems(key, items);
+                  saved = true;
+                }
+                break;
+              }
+            }
+          }
+
+          // 2. Kiểm tra repairDropdownConfigs
+          if (!saved && typeof repairDropdownConfigs !== 'undefined') {
+            for (let key in repairDropdownConfigs) {
+              if (repairDropdownConfigs[key].listId === listId) {
+                let items = getRepairDropdownItems(key);
+                if (!items.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
+                  items.unshift(cleanVal);
+                  saveRepairDropdownItems(key, items);
+                  saved = true;
+                }
+                break;
+              }
+            }
+          }
+
+          // 3. Nếu là datalist thông thường (itemNameList, creditorDatalist, etc.)
+          const datalist = document.getElementById(listId);
+          if (datalist) {
+            let hasOpt = Array.from(datalist.options).some(o => (o.value || '').toLowerCase().trim() === cleanVal.toLowerCase());
+            if (!hasOpt) {
+              const optEl = document.createElement('option');
+              optEl.value = cleanVal;
+              datalist.appendChild(optEl);
+            }
+            // Lưu vào localStorage nếu có key tương ứng hoặc key datalist
+            try {
+              let storageKey = 'KIMCHI_DL_' + listId.toUpperCase();
+              let cur = [];
+              try { cur = JSON.parse(localStorage.getItem(storageKey)) || []; } catch(e){}
+              if (!cur.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
+                cur.unshift(cleanVal);
+                localStorage.setItem(storageKey, JSON.stringify(cur));
+              }
+            } catch(e){}
+          }
+
+          input.value = cleanVal;
+        }
+      }, 120);
+    }
+
     // Gắn sự kiện toàn cục cho toàn bộ trang web
     document.addEventListener('click', function(e) {
       if (activeUniversalDropdown && activeUniversalDropdown.contains(e.target)) return;
@@ -1196,6 +1291,17 @@
 
       closeUniversalSmartDropdown();
     }, true);
+
+    document.addEventListener('focusout', function(e) {
+      const input = e.target.closest('input');
+      if (input) {
+        const listId = input.dataset.originalList || input.getAttribute('list') ||
+          (input.id && (document.getElementById(input.id + 'List') ? input.id + 'List' : (document.getElementById(input.id + 'Datalist') ? input.id + 'Datalist' : null)));
+        if (listId && input._universalOptions) {
+          checkAndPromptSaveDropdownOption(input, listId, input._universalOptions);
+        }
+      }
+    });
 
     document.addEventListener('focusin', function(e) {
       const input = e.target.closest('input');
