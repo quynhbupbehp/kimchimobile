@@ -3581,30 +3581,29 @@
         let profitStr = profitVal < 0 ? `-${formatPriceStr(Math.abs(profitVal))}` : formatPriceStr(profitVal);
 
         return `
-          <div style="display: flex; align-items: center; justify-content: space-between; background: #0d121d; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 900; border: 1px solid rgba(245, 158, 11, 0.4);">PK</span>
-              <span style="font-weight: 800; font-size: 0.95rem; color: #fff;">${item.name}${item.qty > 1 ? ` <span style="color: var(--text-sub); font-size: 0.85rem;">(x${item.qty})</span>` : ''}</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #0d121d; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 10px; margin-bottom: 8px; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+              <span style="font-weight: 800; font-size: 0.95rem; color: #fff; word-break: break-word;">${item.name}${item.qty > 1 ? ` <span style="color: var(--text-sub); font-size: 0.85rem;">(x${item.qty})</span>` : ''}</span>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
               <div style="display: flex; flex-direction: column; align-items: center;">
-                <span style="font-size: 0.68rem; color: #9ca3af; font-weight: 700; margin-bottom: 2px;">Giá bán</span>
-                <input type="text" value="${item.rawOut}" onblur="updateCartItemField(${idx}, 'rawOut', this.value)" oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)" style="width: 75px; background: #141c2b; border: 1px solid #28354d; border-radius: 6px; color: #10b981; font-weight: 900; text-align: center; padding: 5px; font-size: 0.9rem; outline: none;">
+                <span style="font-size: 0.65rem; color: #9ca3af; font-weight: 700; margin-bottom: 2px;">Giá bán</span>
+                <input type="text" value="${item.rawOut}" onblur="updateCartItemField(${idx}, 'rawOut', this.value)" oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)" style="width: 66px; background: #141c2b; border: 1px solid #28354d; border-radius: 6px; color: #10b981; font-weight: 900; text-align: center; padding: 5px 2px; font-size: 0.81rem; outline: none; box-sizing: border-box;">
               </div>
 
               <div style="display: flex; flex-direction: column; align-items: center;">
-                <span style="font-size: 0.68rem; color: #9ca3af; font-weight: 700; margin-bottom: 2px;">Giá nhập</span>
-                <input type="text" value="${item.rawIn}" onblur="updateCartItemField(${idx}, 'rawIn', this.value)" oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)" style="width: 75px; background: #141c2b; border: 1px solid #28354d; border-radius: 6px; color: #fff; font-weight: 800; text-align: center; padding: 5px; font-size: 0.9rem; outline: none;">
+                <span style="font-size: 0.65rem; color: #9ca3af; font-weight: 700; margin-bottom: 2px;">Giá nhập</span>
+                <input type="text" value="${item.rawIn}" onblur="updateCartItemField(${idx}, 'rawIn', this.value)" oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)" style="width: 66px; background: #141c2b; border: 1px solid #28354d; border-radius: 6px; color: #fff; font-weight: 800; text-align: center; padding: 5px 2px; font-size: 0.81rem; outline: none; box-sizing: border-box;">
               </div>
 
               <div style="display: flex; flex-direction: column; align-items: center;">
-                <span style="font-size: 0.68rem; color: #9ca3af; font-weight: 700; margin-bottom: 2px;">Lãi</span>
-                <div id="profit_view_${idx}" style="width: 75px; background: rgba(255,255,255,0.03); border: 1px solid #1e293b; border-radius: 6px; color: var(--amber-color); font-weight: 900; text-align: center; padding: 5px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;">${profitStr}</div>
+                <span style="font-size: 0.65rem; color: #9ca3af; font-weight: 700; margin-bottom: 2px;">Lãi</span>
+                <div id="profit_view_${idx}" style="width: 66px; background: rgba(255,255,255,0.03); border: 1px solid #1e293b; border-radius: 6px; color: var(--amber-color); font-weight: 900; text-align: center; padding: 5px 2px; font-size: 0.81rem; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">${profitStr}</div>
               </div>
 
-              <button type="button" onclick="removeCartItem(${idx})" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; width: 34px; height: 34px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 14px;" title="Xóa">
-                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <button type="button" onclick="removeCartItem(${idx})" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 14px; flex-shrink: 0;" title="Xóa">
+                <svg viewBox="0 0 24 24" style="width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.2;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
               </button>
             </div>
           </div>
