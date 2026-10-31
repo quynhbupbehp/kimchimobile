@@ -1286,7 +1286,43 @@
     }
 
     // Gắn sự kiện toàn cục cho toàn bộ trang web
+    // Tự động gỡ bỏ thuộc tính list để trình duyệt không tự hiện dropdown xám đè lên menu tùy chỉnh
+    function detachNativeDatalists() {
+      document.querySelectorAll('input[list]').forEach(inp => {
+        const listId = inp.getAttribute('list');
+        if (listId) {
+          inp.dataset.originalList = listId;
+          inp.removeAttribute('list');
+          inp.setAttribute('autocomplete', 'off');
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', detachNativeDatalists);
+    } else {
+      detachNativeDatalists();
+    }
+
+    document.addEventListener('mousedown', function(e) {
+      const input = e.target.closest('input');
+      if (input) {
+        const listId = input.dataset.originalList || input.getAttribute('list');
+        const isDatalistInput = listId || 
+          (input.id && (document.getElementById(input.id + 'List') || document.getElementById(input.id + 'Datalist')));
+        if (isDatalistInput) {
+          if (input.hasAttribute('list')) {
+            input.dataset.originalList = input.getAttribute('list');
+            input.removeAttribute('list');
+          }
+          input.setAttribute('autocomplete', 'off');
+        }
+      }
+    }, true);
+
     document.addEventListener('click', function(e) {
+      detachNativeDatalists();
+
       if (activeUniversalDropdown && activeUniversalDropdown.contains(e.target)) return;
 
       const input = e.target.closest('input');
@@ -1296,7 +1332,6 @@
           (input.id && (document.getElementById(input.id + 'List') || document.getElementById(input.id + 'Datalist')));
 
         if (isDatalistInput) {
-          // Bấm vào ô: hiển thị TOÀN BỘ danh sách lựa chọn ngay lập tức, không cần xóa chữ đã nhập!
           openUniversalSmartDropdown(input);
           return;
         }
@@ -1305,10 +1340,6 @@
       closeUniversalSmartDropdown();
     }, true);
 
-    document.addEventListener('focusout', function(e) {
-      // Focusout không cần popup confirm phiền toái, đã có nút "+ Thêm vào gợi ý" hiển thị trực tiếp bên dưới ô
-    });
-
     document.addEventListener('focusin', function(e) {
       const input = e.target.closest('input');
       if (input) {
@@ -1316,6 +1347,11 @@
         const isDatalistInput = listId || 
           (input.id && (document.getElementById(input.id + 'List') || document.getElementById(input.id + 'Datalist')));
         if (isDatalistInput) {
+          if (input.hasAttribute('list')) {
+            input.dataset.originalList = input.getAttribute('list');
+            input.removeAttribute('list');
+          }
+          input.setAttribute('autocomplete', 'off');
           openUniversalSmartDropdown(input);
         }
       }
