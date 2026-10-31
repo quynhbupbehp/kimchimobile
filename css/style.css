@@ -6987,14 +6987,15 @@
         #tab-banga .sales-table td:nth-child(1) * {
           font-size: 0.77rem !important; /* Giảm 5% */
         }
-        /* VÒNG TRÒN MÀU SẮC: GIẢM TIẾP 50% KÍCH THƯỚC (~8px) VÀ CĂN ĐỐI CHÍNH GIỮA DÒNG */
+        /* VÒNG TRÒN MÀU SẮC: TRÒN VO 100% CHUẨN XÁC (~8px), KHÔNG BỊ BẦU DỤC */
         #tab-banga .sales-table td:nth-child(1) .banga-color-dot-wrap {
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
           vertical-align: middle !important;
           line-height: 1 !important;
-          margin: 0 1px !important;
+          margin: 0 2px !important;
+          flex-shrink: 0 !important;
         }
         #tab-banga .sales-table td:nth-child(1) .banga-color-dot-wrap span,
         #tab-banga .sales-table td:nth-child(1) span[title*="Màu:"] {
@@ -7004,9 +7005,13 @@
           max-width: 8px !important;
           min-height: 8px !important;
           max-height: 8px !important;
+          aspect-ratio: 1 / 1 !important;
+          border-radius: 50% !important;
           border-width: 1px !important;
           display: inline-block !important;
           vertical-align: middle !important;
+          flex-shrink: 0 !important;
+          box-sizing: border-box !important;
           box-shadow: 0 0 3px rgba(255, 255, 255, 0.4) !important;
         }
         /* CỘT 2: GIÁ BÁN (16% - GIẢM 5%) */

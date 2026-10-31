@@ -3356,7 +3356,7 @@
         }
 
         return `
-          <tr>
+          <tr ondblclick="editBangaSale('${item.id}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ editBangaSale('${item.id}'); } this._lastTap=now;" style="cursor: pointer;" title="Nháy đúp để xem và sửa chi tiết đơn">
             <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle; white-space: nowrap;">
               ${nameHtml}
             </td>
