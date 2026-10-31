@@ -1484,6 +1484,74 @@
       }
     }
 
+    // Xóa mệnh giá Bán / Nhập khi bấm thẳng vào chữ Giá bán / Giá nhập màu xanh trên giao diện Web/Desktop
+    function deleteTicketPriceOption(inputId, listId, labelName) {
+      const el = document.getElementById(inputId);
+      const currentVal = el ? el.value.trim() : '';
+      const datalist = document.getElementById(listId);
+      if (!datalist) return;
+
+      let targetVal = currentVal;
+      if (!targetVal) {
+        alert(`Vui lòng chọn hoặc nhập giá trị ${labelName} cần xóa trước!`);
+        if (el) el.focus();
+        return;
+      }
+
+      // Chuẩn hóa so sánh (ví dụ: 20, 50, 60 hoặc đã format)
+      let cleanTarget = targetVal.replace(/[^\d]/g, '');
+      if (!cleanTarget && targetVal === '0') cleanTarget = '0';
+      if (!cleanTarget) cleanTarget = targetVal.trim();
+
+      // Tìm trong thẻ datalist
+      let matchOpt = Array.from(datalist.options).find(o => {
+        let optVal = (o.value || '').trim();
+        let optClean = optVal.replace(/[^\d]/g, '');
+        if (!optClean && optVal === '0') optClean = '0';
+        return optClean === cleanTarget || optVal.toLowerCase() === targetVal.toLowerCase();
+      });
+
+      if (!matchOpt) {
+        alert(`Không tìm thấy "${targetVal}" trong danh sách sổ xuống của ${labelName}!`);
+        return;
+      }
+
+      const valToDelete = matchOpt.value;
+      if (confirm(`Bạn có muốn xóa "${valToDelete}" khỏi danh sách sổ xuống ${labelName} không?`)) {
+        matchOpt.remove();
+
+        // Xóa trong localStorage nếu đã từng lưu
+        try {
+          const storageKey = 'KIMCHI_DL_' + listId.toUpperCase();
+          let cur = JSON.parse(localStorage.getItem(storageKey)) || [];
+          if (Array.isArray(cur)) {
+            let filtered = cur.filter(x => {
+              let xClean = String(x).replace(/[^\d]/g, '');
+              if (!xClean && String(x).trim() === '0') xClean = '0';
+              return xClean !== cleanTarget && String(x).trim().toLowerCase() !== targetVal.toLowerCase();
+            });
+            localStorage.setItem(storageKey, JSON.stringify(filtered));
+          }
+        } catch (e) {}
+
+        // Đóng dropdown nổi nếu đang mở
+        if (typeof closeUniversalSmartDropdown === 'function') {
+          closeUniversalSmartDropdown();
+        }
+
+        // Xóa giá trị trong ô input
+        if (el) {
+          el.value = '';
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          el.focus();
+        }
+
+        alert(`Đã xóa thành công "${valToDelete}" khỏi danh sách ${labelName}!`);
+      }
+    }
+    window.deleteTicketPriceOption = deleteTicketPriceOption;
+
     function getVietnamDate() {
       try {
         const now = new Date();
