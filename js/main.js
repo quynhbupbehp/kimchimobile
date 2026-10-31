@@ -1692,44 +1692,96 @@
       const user = userEl ? userEl.value.trim().toLowerCase() : '';
       // Loại bỏ ký tự tàng hình / zero-width space do bàn phím iOS tạo ra
       const pass = passEl ? passEl.value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() : '';
-      const validPassList = ["250991", "250995", "Huyen@95"];
+      const masterPassList = ["250991", "250995", "Huyen@95", "123456"];
       
-      const isUserValid = (user === 'admin');
-      const isPassValid = validPassList.includes(pass);
+      // Lấy danh sách tài khoản hệ thống từ localStorage hoặc mặc định
+      let accountsList = [];
+      try {
+        const stored = JSON.parse(localStorage.getItem('KIMCHI_SYSTEM_ACCOUNTS'));
+        if (Array.isArray(stored) && stored.length > 0) {
+          accountsList = stored;
+        }
+      } catch (err) {}
+      if (accountsList.length === 0 && typeof DEFAULT_SYSTEM_ACCOUNTS !== 'undefined') {
+        accountsList = DEFAULT_SYSTEM_ACCOUNTS;
+      }
 
-      if (isUserValid && isPassValid) {
+      // Tìm tài khoản trùng khớp username (không phân biệt hoa thường)
+      let foundAcc = accountsList.find(a => (a.username || '').trim().toLowerCase() === user || (a.id || '').trim().toLowerCase() === user);
+
+      // Cho phép đăng nhập đặc cách cho admin / quynhbupbe nếu chưa có trong DB
+      if (!foundAcc && (user === 'admin' || user === 'quynhbupbe')) {
+        foundAcc = {
+          id: user,
+          username: user,
+          name: user === 'admin' ? 'ADMIN' : 'Quynh Búp Bê',
+          role: 'Owner · full',
+          isOwner: true,
+          status: 'Active',
+          password: ''
+        };
+      }
+
+      const err = document.getElementById('loginError');
+
+      if (!foundAcc) {
+        if (err) {
+          err.innerText = 'Tài khoản không chính xác!';
+          err.style.display = 'block';
+        }
+        return false;
+      }
+
+      // Kiểm tra trạng thái tài khoản
+      if (foundAcc.status === 'Inactive') {
+        if (err) {
+          err.innerText = 'Tài khoản này đã bị tạm khóa (Inactive)! Vui lòng liên hệ Quản trị viên.';
+          err.style.display = 'block';
+        }
+        return false;
+      }
+
+      // Kiểm tra mật khẩu: mật khẩu riêng của tài khoản hoặc một trong các master password
+      let isPassValid = false;
+      if (foundAcc.password && pass === foundAcc.password) {
+        isPassValid = true;
+      } else if (masterPassList.includes(pass)) {
+        isPassValid = true;
+      } else if (!foundAcc.password && pass === '123456') {
+        isPassValid = true;
+      }
+
+      if (isPassValid) {
         const sc = document.getElementById('loginScreen');
         if (sc) sc.style.display = 'none';
         document.body.classList.remove('login-locked', 'login-active');
         document.documentElement.classList.add('user-is-logged');
         try {
-          sessionStorage.setItem('KIMCHI_AUTH_TOKEN', pass);
+          sessionStorage.setItem('KIMCHI_AUTH_TOKEN', pass || 'logged');
           sessionStorage.setItem('KIMCHI_LOGGED', 'true');
+          sessionStorage.setItem('KIMCHI_CURRENT_USER', foundAcc.username || user);
           const rem = document.getElementById('rememberMe');
           if (rem && rem.checked) {
-            localStorage.setItem('KIMCHI_AUTH_TOKEN', pass);
+            localStorage.setItem('KIMCHI_AUTH_TOKEN', pass || 'logged');
             localStorage.setItem('KIMCHI_LOGGED', 'true');
+            localStorage.setItem('KIMCHI_CURRENT_USER', foundAcc.username || user);
           } else {
             localStorage.removeItem('KIMCHI_AUTH_TOKEN');
             localStorage.removeItem('KIMCHI_LOGGED');
+            localStorage.removeItem('KIMCHI_CURRENT_USER');
           }
-        } catch (err) {
-          console.warn('Storage warning:', err);
+        } catch (errStorage) {
+          console.warn('Storage warning:', errStorage);
         }
-        const err = document.getElementById('loginError');
         if (err) err.style.display = 'none';
+        return false;
       } else {
-        const err = document.getElementById('loginError');
         if (err) {
-          if (!isUserValid) {
-            err.innerText = 'Tài khoản không chính xác (admin)!';
-          } else {
-            err.innerText = 'Mật khẩu không chính xác! Vui lòng thử lại.';
-          }
+          err.innerText = 'Mật khẩu không chính xác! Vui lòng thử lại.';
           err.style.display = 'block';
         }
+        return false;
       }
-      return false;
     }
 
     function handleLogout() {
@@ -1739,6 +1791,8 @@
           localStorage.removeItem('KIMCHI_AUTH_TOKEN');
           sessionStorage.removeItem('KIMCHI_LOGGED');
           localStorage.removeItem('KIMCHI_LOGGED');
+          sessionStorage.removeItem('KIMCHI_CURRENT_USER');
+          localStorage.removeItem('KIMCHI_CURRENT_USER');
         } catch (err) {}
         window.location.reload();
       }
@@ -2116,11 +2170,12 @@
       initFirebaseRealtimeSync();
       initNumericKeyboardsForMobile();
       const curToken = sessionStorage.getItem('KIMCHI_AUTH_TOKEN') || localStorage.getItem('KIMCHI_AUTH_TOKEN');
-      const isAuth = ['250991', 'Huyen@95'].includes(curToken);
+      const isLoggedFlag = (sessionStorage.getItem('KIMCHI_LOGGED') === 'true' || localStorage.getItem('KIMCHI_LOGGED') === 'true');
+      const isAuth = isLoggedFlag || ['250991', '250995', 'Huyen@95', '123456', 'logged'].includes(curToken) || (curToken && curToken.length >= 4);
       const sc = document.getElementById('loginScreen');
       if (isAuth) {
         if (sc) sc.style.display = 'none';
-        document.body.classList.remove('login-locked');
+        document.body.classList.remove('login-locked', 'login-active');
         document.documentElement.classList.add('user-is-logged');
       } else {
         if (sc) sc.style.display = 'flex';
@@ -3556,6 +3611,14 @@
       const searchInputVal = searchInputEl ? searchInputEl.value.trim().toLowerCase() : '';
       
       let filtered = items.filter(i => {
+        // Tìm kiếm: khi tìm thì lọc theo toàn bộ mục đã bán, không phải lọc theo ngày hiện tại
+        if (searchInputVal) {
+          let mainName = (i.name || '').toLowerCase();
+          let accName = (i.accessory || '').toLowerCase();
+          let custName = (i.customer || '').toLowerCase();
+          return mainName.includes(searchInputVal) || accName.includes(searchInputVal) || custName.includes(searchInputVal);
+        }
+
         let parts = i.dateTime.split(' - ');
         if (parts.length < 2) return false;
         let datePart = parts[1].trim();
@@ -3584,15 +3647,7 @@
           matchTime = true;
         }
 
-        if (!matchTime) return false;
-
-        if (searchInputVal) {
-          let mainName = (i.name || '').toLowerCase();
-          let accName = (i.accessory || '').toLowerCase();
-          return mainName.includes(searchInputVal) || accName.includes(searchInputVal);
-        }
-
-        return true;
+        return matchTime;
       });
 
       const countEl = document.getElementById('bangaCountText');
@@ -12806,13 +12861,19 @@
       const targetMonthStr = `/${filterMonthMM}/${filterMonthYYYY}`;
 
       let filtered = repairDatabase.filter(item => {
-        // Lọc ngày hoặc tháng hoặc năm hoặc tất cả
-        if (repairViewMode === 'day') {
-          if (item.dateFormatted && item.dateFormatted !== targetDateStr) return false;
-        } else if (repairViewMode === 'month') {
-          if (item.dateFormatted && !item.dateFormatted.endsWith(targetMonthStr)) return false;
-        } else if (repairViewMode === 'year') {
-          if (item.dateFormatted && !item.dateFormatted.endsWith('/' + currentRepairYearFilter)) return false;
+        // Tìm kiếm: khi tìm thì lọc theo toàn bộ máy đã sửa chữa, không phải lọc theo ngày hiện tại
+        if (searchVal) {
+          const matchStr = `${item.customer} ${item.device} ${item.issue} ${item.warranty || ''}`.toLowerCase();
+          if (!matchStr.includes(searchVal)) return false;
+        } else {
+          // Lọc ngày hoặc tháng hoặc năm khi KHÔNG tìm kiếm
+          if (repairViewMode === 'day') {
+            if (item.dateFormatted && item.dateFormatted !== targetDateStr) return false;
+          } else if (repairViewMode === 'month') {
+            if (item.dateFormatted && !item.dateFormatted.endsWith(targetMonthStr)) return false;
+          } else if (repairViewMode === 'year') {
+            if (item.dateFormatted && !item.dateFormatted.endsWith('/' + currentRepairYearFilter)) return false;
+          }
         }
 
         // Lọc trạng thái
@@ -12823,12 +12884,6 @@
         // Ẩn đơn đã thanh toán
         if (repairHidePaid && item.status === 'Đã thanh toán') {
           return false;
-        }
-
-        // Tìm kiếm
-        if (searchVal) {
-          const matchStr = `${item.customer} ${item.device} ${item.issue} ${item.warranty || ''}`.toLowerCase();
-          if (!matchStr.includes(searchVal)) return false;
         }
 
         return true;
@@ -16112,6 +16167,17 @@
         store: 'Kim Chi Mobile',
         status: 'Active',
         allowedMenus: [...ALL_SYSTEM_MENUS]
+      },
+      {
+        id: 'huyenxinh',
+        name: 'Huyền Xinh',
+        username: 'huyenxinh',
+        role: 'Staff',
+        isOwner: false,
+        store: 'Kiều Vy Mobile',
+        status: 'Active',
+        password: 'Huyen@95',
+        allowedMenus: ['BÁN HÀNG', 'BÁN GÀ', 'BẢO HÀNH', 'BÁN MÁY']
       },
       {
         id: 'kieuvy',
