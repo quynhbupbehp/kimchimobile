@@ -12530,14 +12530,14 @@
 
           return `
             <tr>
-              <td style="color: ${rowColor}; font-weight: ${fwDevice}; font-size: 1.15rem;">${escapeHtml(formatBrandDeviceName(item.device))}</td>
-              <td style="color: ${rowColor}; font-weight: ${fwIssue}; font-size: 1.15rem;">${escapeHtml(item.issue || '—')}</td>
-              <td style="text-align: center; font-weight: 900; color: ${rowColor}; font-size: 1.15rem;">${formatNumberDisplay(item.price)}</td>
-              <td style="text-align: center; font-weight: ${fwNum}; color: ${rowColor}; font-size: 1.05rem;">${formatNumberDisplay(item.cost)}</td>
-              <td style="text-align: center; font-weight: ${fwNum}; color: ${rowColor}; font-size: 1.05rem;">${formatNumberDisplay(item.profit)}</td>
-              <td style="text-align: center; font-weight: ${fwNum}; color: ${rowColor}; font-size: 1.05rem;">${escapeHtml(formatWarrantyDisplay(item.warranty))}</td>
+              <td style="color: ${rowColor}; font-weight: ${fwDevice}; font-size: 1.21rem;">${escapeHtml(formatBrandDeviceName(item.device))}</td>
+              <td style="color: ${rowColor}; font-weight: ${fwIssue}; font-size: 1.21rem;">${escapeHtml(item.issue || '—')}</td>
+              <td style="text-align: center; font-weight: 900; color: ${rowColor}; font-size: 1.21rem;">${formatNumberDisplay(item.price)}</td>
+              <td style="text-align: center; font-weight: ${fwNum}; color: ${rowColor}; font-size: 1.10rem;">${formatNumberDisplay(item.cost)}</td>
+              <td style="text-align: center; font-weight: ${fwNum}; color: ${rowColor}; font-size: 1.10rem;">${formatNumberDisplay(item.profit)}</td>
+              <td style="text-align: center; font-weight: ${fwNum}; color: ${rowColor}; font-size: 1.10rem;">${escapeHtml(formatWarrantyDisplay(item.warranty))}</td>
               <td style="text-align: center;" class="cell-repair-time">
-                <span class="date-part" style="color: #38bdf8; font-weight: 800;">${fullDateStr}</span>
+                <span class="date-part" style="color: #38bdf8; font-weight: 800; font-size: 1.10rem;">${fullDateStr}</span>
               </td>
               <td class="repair-col-actions">
                 <div class="action-btn-group" style="justify-content: center; gap: 4px;">
@@ -12550,7 +12550,7 @@
                 </div>
               </td>
               <td class="repair-col-payment" style="text-align: center; vertical-align: middle;">
-                <span class="${(item.status === 'Nợ' || item.paymentStatus === 'Nợ Dai VL') ? 'badge-payment-debt' : 'badge-payment-paid'}" style="cursor: default; user-select: none; white-space: nowrap;">
+                <span class="${(item.status === 'Nợ' || item.paymentStatus === 'Nợ Dai VL') ? 'badge-payment-debt' : 'badge-payment-paid'}" style="cursor: default; user-select: none; white-space: nowrap; ${(item.status === 'Nợ' || item.paymentStatus === 'Nợ Dai VL') ? '' : 'color: #ffffff !important;'}">
                   ${(item.status === 'Nợ' || item.paymentStatus === 'Nợ Dai VL') ? '💀 NỢ DAI VL' : '✔ ĐÃ TRẢ <span style="font-size: 0.95rem; margin-left: 2px;">💰</span>'}
                 </span>
               </td>

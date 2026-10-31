@@ -4445,6 +4445,22 @@
       z-index: 25;
     }
 
+    #tab-suachua .repair-table th {
+      background-color: #7c3aed !important;
+      color: #ffffff !important;
+      font-size: 0.98rem !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.5px;
+      padding: 13px 10px;
+      border-bottom: 2px solid #5b21b6 !important;
+      white-space: nowrap;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 25 !important;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+    }
+
     .repair-table th {
       background: #000000 !important;
       color: #facc15 !important;
