@@ -8702,21 +8702,126 @@
           background: #070c14 !important;
           border: 1.5px solid #1e293b !important;
           border-radius: 10px !important;
-          padding: 8px 10px !important;
+          padding: 8px 6px !important;
           margin: 2px 0 !important;
           box-sizing: border-box !important;
         }
         #ticketModal .cart-title {
           color: #ef4444 !important;
           font-weight: 900 !important;
-          font-size: 0.9rem !important;
-          margin-bottom: 2px !important;
+          font-size: 0.72rem !important; /* Giảm 20% từ 0.9rem */
+          margin-bottom: 4px !important;
         }
         #ticketModal .cart-empty {
           color: #64748b !important;
-          font-size: 0.85rem !important;
+          font-size: 0.68rem !important; /* Giảm 20% từ 0.85rem */
           padding: 6px 0 !important;
           text-align: center !important;
+        }
+
+        /* TỐI ƯU CỘT GIỎ HÀNG MOBILE: CỘT TÊN 50% | GIÁ BÁN 27% | GIÁ NHẬP 23% & GIẢM CHỮ 20% */
+        #ticketModal .cart-row-item {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: flex-start !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+          padding: 6px 4px !important;
+          margin-bottom: 6px !important;
+          gap: 4px !important;
+          background: #0d121d !important;
+          border: 1px solid #1e293b !important;
+          border-radius: 8px !important;
+        }
+        /* CỘT 1: TÊN PHỤ KIỆN / HÀNG HÓA - 50% */
+        #ticketModal .cart-col-name {
+          flex: 0 0 50% !important;
+          width: 50% !important;
+          max-width: 50% !important;
+          min-width: 0 !important;
+          box-sizing: border-box !important;
+          padding-right: 4px !important;
+          display: flex !important;
+          align-items: center !important;
+        }
+        #ticketModal .cart-item-name {
+          font-size: 0.76rem !important; /* Giảm 20% từ 0.95rem */
+          font-weight: 800 !important;
+          color: #ffffff !important;
+          word-break: break-word !important;
+          line-height: 1.25 !important;
+          display: -webkit-box !important;
+          -webkit-line-clamp: 2 !important;
+          -webkit-box-orient: vertical !important;
+          overflow: hidden !important;
+        }
+        #ticketModal .cart-col-inputs {
+          flex: 0 0 50% !important;
+          width: 50% !important;
+          max-width: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 3px !important;
+          box-sizing: border-box !important;
+        }
+        /* CỘT 2: GIÁ BÁN - 27% (chiếm 54% của nửa bên phải) */
+        #ticketModal .cart-col-price-out {
+          flex: 0 0 54% !important;
+          width: 54% !important;
+          max-width: 54% !important;
+          min-width: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          box-sizing: border-box !important;
+        }
+        /* CỘT 3: GIÁ NHẬP - 23% (chiếm 46% của nửa bên phải) */
+        #ticketModal .cart-col-price-in {
+          flex: 1 1 auto !important;
+          min-width: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal .cart-sub-label {
+          font-size: 0.52rem !important; /* Giảm 20% từ 0.65rem */
+          color: #9ca3af !important;
+          font-weight: 700 !important;
+          margin-bottom: 1px !important;
+          white-space: nowrap !important;
+          line-height: 1 !important;
+        }
+        #ticketModal .cart-input-val {
+          width: 100% !important;
+          height: 30px !important;
+          background: #141c2b !important;
+          border: 1px solid #28354d !important;
+          border-radius: 6px !important;
+          font-size: 0.65rem !important; /* Giảm 20% từ 0.81rem */
+          font-weight: 900 !important;
+          text-align: center !important;
+          padding: 2px 1px !important;
+          outline: none !important;
+          box-sizing: border-box !important;
+        }
+        #ticketModal .cart-input-price-out {
+          color: #10b981 !important;
+        }
+        #ticketModal .cart-input-price-in {
+          color: #ffffff !important;
+        }
+        #ticketModal .cart-btn-del {
+          width: 22px !important;
+          height: 22px !important;
+          min-width: 22px !important;
+          border-radius: 5px !important;
+          margin-top: 11px !important;
+          padding: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          flex-shrink: 0 !important;
         }
 
         /* HÀNG 6: FOOTER (TỔNG Ở TRÁI, LƯU LẠI Ở PHẢI - CHỮ NHỎ LẠI 30%) */
