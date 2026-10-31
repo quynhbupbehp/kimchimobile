@@ -1222,25 +1222,36 @@
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
 
-      // Khoảng cách tụt xuống dưới đáy của khung ô nhập (luôn ở phía dưới ô nhập, không che viền hay chữ bên trong)
-      const dropDownOffset = 6;
+      // Khoảng cách tụt xuống dưới đáy của khung ô nhập (đảm bảo hoàn toàn nằm ngoài và dưới đáy ô nhập)
+      const dropDownOffset = 8;
 
-      if (spaceBelow < 120 && spaceAbove > spaceBelow) {
-        // Nằm PHÍA TRÊN ô nhập
-        dropdownEl.style.top = 'auto';
-        dropdownEl.style.bottom = `${Math.round(viewportHeight - rect.top + 6)}px`;
-        dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceAbove - 16))}px`;
-      } else {
-        // Nằm PHÍA DƯỚI ô nhập (tụt hẳn xuống dưới khung ô nhập)
+      if (window.innerWidth <= 768) {
+        // TRÊN MOBILE: Luôn hiển thị NGAY PHÍA DƯỚI ĐÁY Ô NHẬP, không bao giờ đè lên khung nhập
         dropdownEl.style.bottom = 'auto';
         dropdownEl.style.top = `${Math.round(rect.bottom + dropDownOffset)}px`;
-        dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceBelow - dropDownOffset - 12))}px`;
+        const availableHeight = Math.max(90, Math.min(240, spaceBelow - dropDownOffset - 10));
+        dropdownEl.style.maxHeight = `${availableHeight}px`;
+        dropdownEl.style.left = `${Math.max(6, Math.round(rect.left))}px`;
+        dropdownEl.style.width = `${Math.round(rect.width)}px`;
+        dropdownEl.style.minWidth = `${Math.round(rect.width)}px`;
+        dropdownEl.style.maxWidth = `${Math.round(rect.width)}px`;
+      } else {
+        // TRÊN DESKTOP:
+        if (spaceBelow < 120 && spaceAbove > spaceBelow) {
+          dropdownEl.style.top = 'auto';
+          dropdownEl.style.bottom = `${Math.round(viewportHeight - rect.top + 6)}px`;
+          dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceAbove - 16))}px`;
+        } else {
+          dropdownEl.style.bottom = 'auto';
+          dropdownEl.style.top = `${Math.round(rect.bottom + dropDownOffset)}px`;
+          dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceBelow - dropDownOffset - 12))}px`;
+        }
+        dropdownEl.style.left = `${Math.max(6, Math.round(rect.left))}px`;
+        dropdownEl.style.width = `${Math.max(Math.round(rect.width), 160)}px`;
+        dropdownEl.style.minWidth = `${Math.max(Math.round(rect.width), 160)}px`;
+        dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 12, Math.max(Math.round(rect.width), 340))}px`;
       }
 
-      dropdownEl.style.left = `${Math.max(6, Math.round(rect.left))}px`;
-      dropdownEl.style.width = `${Math.max(Math.round(rect.width), 160)}px`;
-      dropdownEl.style.minWidth = `${Math.max(Math.round(rect.width), 160)}px`;
-      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 12, Math.max(Math.round(rect.width), 340))}px`;
       dropdownEl.style.overflowY = 'auto';
       dropdownEl.style.zIndex = '999999999';
     }
@@ -3857,6 +3868,43 @@
       }
     }
     window.closeTicketModal = closeTicketModal;
+
+    function checkAndApplySoftwareTicketAutoSync() {
+      if (typeof window === 'undefined' || window.innerWidth <= 768) return;
+      const nameEl = document.getElementById('tItemName');
+      if (!nameEl) return;
+      const name = (nameEl.value || '').trim().toLowerCase();
+      // Kiểm tra tên có phải là phần mềm không
+      const isSoftware = name.includes('phần mềm') || name.includes('phan mem') || name === 'pm';
+      if (!isSoftware) return;
+
+      // 1. Thanh toán tự nhảy sang chuyển khoản
+      const paySelect = document.getElementById('tPaymentMethod');
+      if (paySelect && paySelect.value !== 'Chuyển khoản') {
+        paySelect.value = 'Chuyển khoản';
+      }
+
+      // 2. Giá nhập ghi bằng giá bán
+      const priceOutEl = document.getElementById('tPriceOut');
+      const priceInEl = document.getElementById('tPriceIn');
+      if (priceOutEl && priceInEl) {
+        priceInEl.value = priceOutEl.value;
+      }
+    }
+
+    document.addEventListener('input', function(e) {
+      if (typeof window === 'undefined' || window.innerWidth <= 768) return;
+      if (e.target && (e.target.id === 'tItemName' || e.target.id === 'tPriceOut')) {
+        checkAndApplySoftwareTicketAutoSync();
+      }
+    });
+
+    document.addEventListener('change', function(e) {
+      if (typeof window === 'undefined' || window.innerWidth <= 768) return;
+      if (e.target && (e.target.id === 'tItemName' || e.target.id === 'tPriceOut')) {
+        checkAndApplySoftwareTicketAutoSync();
+      }
+    });
 
     function adjustQty(val) {
       let qInput = document.getElementById('tQty');
