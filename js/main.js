@@ -1078,13 +1078,21 @@
         }
       }
 
-      // 3. Nếu chưa có hoặc mảng rỗng, đọc từ thẻ datalist
+      // 3. Nếu chưa có hoặc mảng rỗng, đọc từ thẻ datalist và kết hợp localStorage
       if (options.length === 0) {
         const datalist = document.getElementById(listId);
         if (datalist) {
           const opts = Array.from(datalist.querySelectorAll('option'));
           options = opts.map(o => (o.value || o.textContent || '').trim()).filter(Boolean);
         }
+        try {
+          let storageKey = 'KIMCHI_DL_' + listId.toUpperCase();
+          let savedCustom = JSON.parse(localStorage.getItem(storageKey)) || [];
+          if (Array.isArray(savedCustom) && savedCustom.length > 0) {
+            // Đưa các mục đã lưu lên trước hoặc bổ sung vào danh sách
+            options = [...savedCustom, ...options];
+          }
+        } catch(e){}
       }
 
       if (options.length === 0) {

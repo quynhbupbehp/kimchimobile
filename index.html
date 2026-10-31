@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261031_200107">
+  <link rel="stylesheet" href="css/style.css?v=20261031_200925">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261031_200107";
+    var CURRENT_PAGE_VERSION = "20261031_200925";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1792,7 +1792,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261031_200107" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261031_200925" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -2581,16 +2581,34 @@
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá bán</label>
             <div class="input-with-actions">
-              <input type="text" class="ticket-input" id="tPriceOut" placeholder="" inputmode="numeric"
+              <input type="text" list="tPriceOutList" class="ticket-input" id="tPriceOut" placeholder="" inputmode="numeric"
                 autocomplete="off" oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)">
+              <datalist id="tPriceOutList">
+                <option value="20">
+                <option value="50">
+                <option value="60">
+                <option value="70">
+                <option value="100">
+                <option value="150">
+                <option value="200">
+                <option value="250">
+              </datalist>
             </div>
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá nhập</label>
             <div class="input-with-actions">
-              <input type="text" class="ticket-input" id="tPriceIn" placeholder="" inputmode="numeric"
+              <input type="text" list="tPriceInList" class="ticket-input" id="tPriceIn" placeholder="" inputmode="numeric"
                 autocomplete="off" oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)">
+              <datalist id="tPriceInList">
+                <option value="0,5">
+                <option value="10">
+                <option value="20">
+                <option value="30">
+                <option value="50">
+                <option value="100">
+              </datalist>
             </div>
           </div>
 
@@ -5263,10 +5281,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261031_200107"></script>
+  <script src="js/seed_data.js?v=20261031_200925"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261031_200107"></script>
+  <script src="js/main.js?v=20261031_200925"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
