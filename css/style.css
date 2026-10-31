@@ -8544,6 +8544,19 @@
           stroke: currentColor !important;
         }
 
+        /* POPUP SỬA/THÊM THÔNG TIN MÁY (#phoneModal) TRÊN MOBILE: ẨN TOÀN BỘ 3 NÚT ICON (THÊM, SỬA, XÓA), INPUT FULL 100% */
+        #phoneModal .icon-btn-set {
+          display: none !important;
+        }
+        #phoneModal .input-with-actions {
+          display: block !important;
+          width: 100% !important;
+        }
+        #phoneModal .input-with-actions .ticket-input {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
         /* HÀNG 2: 3 CỘT (GIÁ BÁN, GIÁ NHẬP, SỐ LƯỢNG) */
         #ticketModal .form-ticket-group:has(#tPriceOut),
         #ticketModal .form-ticket-group:has(#tPriceIn),
