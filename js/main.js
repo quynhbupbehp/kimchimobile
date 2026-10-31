@@ -1100,13 +1100,15 @@
       input._universalListId = listId;
 
       // Lọc nếu người dùng đang chủ động gõ phím vào ô nhập
+      let isFiltering = false;
       let displayOptions = options;
-      if (filterText !== null && typeof filterText === 'string' && filterText.trim() !== '') {
-        const kw = filterText.trim().toLowerCase();
-        displayOptions = options.filter(opt => opt.toLowerCase().includes(kw));
-        // Nếu không có kết quả lọc nào khớp thì hiển thị full để người dùng nhìn thấy và chọn
-        if (displayOptions.length === 0) {
-          displayOptions = options;
+      let cleanFilter = '';
+      if (filterText !== null && typeof filterText === 'string') {
+        cleanFilter = filterText.trim();
+        if (cleanFilter !== '') {
+          isFiltering = true;
+          const kw = cleanFilter.toLowerCase();
+          displayOptions = options.filter(opt => opt.toLowerCase().includes(kw));
         }
       }
 
@@ -1120,31 +1122,55 @@
 
       const currentValue = (input.value || '').trim().toLowerCase();
 
-      displayOptions.forEach(opt => {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'universal-smart-item';
-        const isSelected = currentValue && (opt.toLowerCase() === currentValue);
-        if (isSelected) {
-          itemEl.classList.add('is-selected');
-        }
-
-        itemEl.innerHTML = `
-          <span>${opt}</span>
-          ${isSelected ? '<span class="smart-check">✓</span>' : ''}
+      // NẾU LỌC KHÔNG CÓ KẾT QUẢ VÀ NGƯỜI DÙNG ĐÃ GÕ CHỮ (ÁP DỤNG DESKTOP GIỐNG POPUP PHẦN MỀM)
+      if (isFiltering && displayOptions.length === 0) {
+        const escaped = cleanFilter.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const noResultBox = document.createElement('div');
+        noResultBox.style.cssText = 'padding: 10px 12px; text-align: center; width: 100%; box-sizing: border-box;';
+        noResultBox.innerHTML = `
+          <div style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">Chưa có trong danh sách gợi ý</div>
+          <button type="button" class="universal-btn-quick-add"
+            style="background: #10b981; color: #ffffff; border: none; border-radius: 6px; padding: 7px 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 8px rgba(16,185,129,0.3); width: 100%; max-width: 240px; margin: 0 auto; transition: all 0.15s ease;">
+            + Thêm "${escaped}" vào gợi ý
+          </button>
         `;
 
-        itemEl.addEventListener('mousedown', function(e) {
+        const quickBtn = noResultBox.querySelector('.universal-btn-quick-add');
+        quickBtn.addEventListener('mousedown', function(e) {
           e.preventDefault();
           e.stopPropagation();
-          input.value = opt;
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
+          saveUniversalNewOption(input, listId, cleanFilter);
           closeUniversalSmartDropdown();
-          input.focus();
         });
 
-        dropdownEl.appendChild(itemEl);
-      });
+        dropdownEl.appendChild(noResultBox);
+      } else {
+        displayOptions.forEach(opt => {
+          const itemEl = document.createElement('div');
+          itemEl.className = 'universal-smart-item';
+          const isSelected = currentValue && (opt.toLowerCase() === currentValue);
+          if (isSelected) {
+            itemEl.classList.add('is-selected');
+          }
+
+          itemEl.innerHTML = `
+            <span>${opt}</span>
+            ${isSelected ? '<span class="smart-check">✓</span>' : ''}
+          `;
+
+          itemEl.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            input.value = opt;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            closeUniversalSmartDropdown();
+            input.focus();
+          });
+
+          dropdownEl.appendChild(itemEl);
+        });
+      }
 
       document.body.appendChild(dropdownEl);
       activeUniversalDropdown = dropdownEl;
@@ -1176,100 +1202,87 @@
       const spaceAbove = rect.top;
 
       // Khoảng cách tụt xuống dưới ô nhập (cho tụt xuống thêm theo yêu cầu, đảm bảo không che chữ và viền ô nhập)
-      const dropDownOffset = 26;
+      const dropDownOffset = 8;
 
-      if (spaceBelow < 130 && spaceAbove > spaceBelow) {
+      if (spaceBelow < 140 && spaceAbove > spaceBelow) {
         // Nằm PHÍA TRÊN ô nhập
         dropdownEl.style.top = 'auto';
-        dropdownEl.style.bottom = `${viewportHeight - rect.top + 8}px`;
+        dropdownEl.style.bottom = `${viewportHeight - rect.top + 6}px`;
         dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceAbove - 16))}px`;
       } else {
-        // Nằm PHÍA DƯỚI ô nhập (tụt xuống dưới ô nhập 26px)
+        // Nằm PHÍA DƯỚI ô nhập
         dropdownEl.style.bottom = 'auto';
         dropdownEl.style.top = `${rect.bottom + dropDownOffset}px`;
         dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceBelow - dropDownOffset - 10))}px`;
       }
 
       dropdownEl.style.left = `${Math.max(10, rect.left)}px`;
-      dropdownEl.style.minWidth = `${Math.max(rect.width, 140)}px`;
-      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 20, Math.max(rect.width, 320))}px`;
+      dropdownEl.style.minWidth = `${Math.max(rect.width, 160)}px`;
+      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 20, Math.max(rect.width, 340))}px`;
       dropdownEl.style.overflowY = 'auto';
       dropdownEl.style.zIndex = '999999999';
     }
 
-    function checkAndPromptSaveDropdownOption(input, listId, options) {
-      if (typeof window === 'undefined' || window.innerWidth <= 768) return;
-      if (!input || !listId || !options || !Array.isArray(options)) return;
-      
-      const val = (input.value || '').trim();
-      if (!val) return;
+    function saveUniversalNewOption(input, listId, val) {
+      if (!input || !val) return;
+      const cleanVal = (typeof toTitleCase === 'function' && isNaN(Number(val))) ? toTitleCase(val) : val.trim();
+      if (!cleanVal) return;
 
-      const valLower = val.toLowerCase();
-      const exists = options.some(opt => (opt || '').toLowerCase().trim() === valLower);
-      if (exists) return;
-
-      // Tránh hỏi lặp lại trên cùng một giá trị cho ô nhập này
-      if (input._lastPromptedVal === valLower) return;
-      input._lastPromptedVal = valLower;
-
-      setTimeout(() => {
-        const cleanVal = toTitleCase ? toTitleCase(val) : val;
-        if (confirm(`"${cleanVal}" chưa có trong danh sách gợi ý.\nBạn có muốn lưu vào danh sách để dùng cho các lần sau không?`)) {
-          // 1. Kiểm tra dropdownConfigs của main.js
-          let saved = false;
-          if (typeof dropdownConfigs !== 'undefined') {
-            for (let key in dropdownConfigs) {
-              if (dropdownConfigs[key].listId === listId) {
-                let items = getDropdownItems(key);
-                if (!items.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
-                  items.unshift(cleanVal);
-                  saveDropdownItems(key, items);
-                  saved = true;
-                }
-                break;
-              }
+      // 1. Kiểm tra dropdownConfigs của main.js
+      let saved = false;
+      if (typeof dropdownConfigs !== 'undefined') {
+        for (let key in dropdownConfigs) {
+          if (dropdownConfigs[key].listId === listId) {
+            let items = getDropdownItems(key);
+            if (!items.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
+              items.unshift(cleanVal);
+              saveDropdownItems(key, items);
+              saved = true;
             }
+            break;
           }
-
-          // 2. Kiểm tra repairDropdownConfigs
-          if (!saved && typeof repairDropdownConfigs !== 'undefined') {
-            for (let key in repairDropdownConfigs) {
-              if (repairDropdownConfigs[key].listId === listId) {
-                let items = getRepairDropdownItems(key);
-                if (!items.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
-                  items.unshift(cleanVal);
-                  saveRepairDropdownItems(key, items);
-                  saved = true;
-                }
-                break;
-              }
-            }
-          }
-
-          // 3. Nếu là datalist thông thường (itemNameList, creditorDatalist, etc.)
-          const datalist = document.getElementById(listId);
-          if (datalist) {
-            let hasOpt = Array.from(datalist.options).some(o => (o.value || '').toLowerCase().trim() === cleanVal.toLowerCase());
-            if (!hasOpt) {
-              const optEl = document.createElement('option');
-              optEl.value = cleanVal;
-              datalist.appendChild(optEl);
-            }
-            // Lưu vào localStorage nếu có key tương ứng hoặc key datalist
-            try {
-              let storageKey = 'KIMCHI_DL_' + listId.toUpperCase();
-              let cur = [];
-              try { cur = JSON.parse(localStorage.getItem(storageKey)) || []; } catch(e){}
-              if (!cur.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
-                cur.unshift(cleanVal);
-                localStorage.setItem(storageKey, JSON.stringify(cur));
-              }
-            } catch(e){}
-          }
-
-          input.value = cleanVal;
         }
-      }, 120);
+      }
+
+      // 2. Kiểm tra repairDropdownConfigs
+      if (!saved && typeof repairDropdownConfigs !== 'undefined') {
+        for (let key in repairDropdownConfigs) {
+          if (repairDropdownConfigs[key].listId === listId) {
+            let items = getRepairDropdownItems(key);
+            if (!items.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
+              items.unshift(cleanVal);
+              saveRepairDropdownItems(key, items);
+              saved = true;
+            }
+            break;
+          }
+        }
+      }
+
+      // 3. Nếu là datalist thông thường (itemNameList, creditorDatalist, etc.)
+      const datalist = document.getElementById(listId);
+      if (datalist) {
+        let hasOpt = Array.from(datalist.options).some(o => (o.value || '').toLowerCase().trim() === cleanVal.toLowerCase());
+        if (!hasOpt) {
+          const optEl = document.createElement('option');
+          optEl.value = cleanVal;
+          datalist.appendChild(optEl);
+        }
+        try {
+          let storageKey = 'KIMCHI_DL_' + listId.toUpperCase();
+          let cur = [];
+          try { cur = JSON.parse(localStorage.getItem(storageKey)) || []; } catch(e){}
+          if (!cur.some(x => x.toLowerCase().trim() === cleanVal.toLowerCase())) {
+            cur.unshift(cleanVal);
+            localStorage.setItem(storageKey, JSON.stringify(cur));
+          }
+        } catch(e){}
+      }
+
+      input.value = cleanVal;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.focus();
     }
 
     // Gắn sự kiện toàn cục cho toàn bộ trang web
@@ -1293,14 +1306,7 @@
     }, true);
 
     document.addEventListener('focusout', function(e) {
-      const input = e.target.closest('input');
-      if (input) {
-        const listId = input.dataset.originalList || input.getAttribute('list') ||
-          (input.id && (document.getElementById(input.id + 'List') ? input.id + 'List' : (document.getElementById(input.id + 'Datalist') ? input.id + 'Datalist' : null)));
-        if (listId && input._universalOptions) {
-          checkAndPromptSaveDropdownOption(input, listId, input._universalOptions);
-        }
-      }
+      // Focusout không cần popup confirm phiền toái, đã có nút "+ Thêm vào gợi ý" hiển thị trực tiếp bên dưới ô
     });
 
     document.addEventListener('focusin', function(e) {
