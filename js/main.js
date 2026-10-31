@@ -1860,6 +1860,9 @@
       renderSoftwareTable(softwareDatabase);
       renderRepairTable();
       renderSystemAccountsTable();
+      if (typeof updateSidebarOverallProfits === 'function') {
+        updateSidebarOverallProfits();
+      }
     });
 
     // Dữ liệu Bán Hàng & Bán Gà: Khởi tạo an toàn kèm đồng bộ Firebase Firestore
@@ -2667,7 +2670,136 @@
           </tr>
         `;
       }).join('');
+
+      updateSidebarOverallProfits();
     }
+
+    /* ============================================================
+       CẬP NHẬT TỔNG LÃI THÁNG & LÃI NGÀY Ở NÚT DƯỚI CÙNG SIDEBAR (DESKTOP)
+       - Lãi tháng = Lãi bán hàng + Lãi sửa chữa + Lãi bán máy + Lãi bán gà trong tháng
+       - Lãi ngày = Lãi bán hàng + Lãi sửa chữa + Lãi bán máy + Lãi bán gà trong ngày
+       - Chỉ hiển thị số, không kèm chữ
+       ============================================================ */
+    function updateSidebarOverallProfits() {
+      const monthEl = document.getElementById('sidebarTotalMonthProfitVal');
+      const dayEl = document.getElementById('sidebarTotalDayProfitVal');
+      if (!monthEl && !dayEl) return;
+
+      const vnNow = getVietnamDate();
+      const curDay = vnNow.getDate();
+      const curMonth = vnNow.getMonth();
+      const curYear = vnNow.getFullYear();
+
+      const ddStr = String(curDay).padStart(2, '0');
+      const mmStr = String(curMonth + 1).padStart(2, '0');
+      const todayStr = `${ddStr}/${mmStr}/${curYear}`;
+
+      let totalMonth = 0;
+      let totalDay = 0;
+
+      // 1. BÁN HÀNG (salesDatabase)
+      if (Array.isArray(salesDatabase)) {
+        salesDatabase.forEach(item => {
+          if (!item.dateTime) return;
+          let parts = item.dateTime.split(' - ');
+          let dateStr = parts.length >= 2 ? parts[1].trim() : parts[0].trim();
+          let dp = dateStr.split('/');
+          if (dp.length === 3) {
+            let d = parseInt(dp[0], 10);
+            let m = parseInt(dp[1], 10) - 1;
+            let y = parseInt(dp[2], 10);
+            let prof = parsePriceNum(item.profit);
+            if (m === curMonth && y === curYear) {
+              totalMonth += prof;
+              if (d === curDay) {
+                totalDay += prof;
+              }
+            }
+          }
+        });
+      }
+
+      // 2. SỬA CHỮA (repairDatabase)
+      let rList = [];
+      try {
+        if (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) {
+          rList = repairDatabase;
+        } else {
+          const savedRep = localStorage.getItem('KIMCHI_REPAIR_DB');
+          rList = savedRep ? JSON.parse(savedRep) : [];
+        }
+      } catch (e) {
+        rList = [];
+      }
+      if (Array.isArray(rList)) {
+        rList.forEach(item => {
+          let dateStr = (item.dateFormatted || '').trim();
+          if (dateStr) {
+            let dp = dateStr.split('/');
+            if (dp.length === 3) {
+              let d = parseInt(dp[0], 10);
+              let m = parseInt(dp[1], 10) - 1;
+              let y = parseInt(dp[2], 10);
+              let prof = parsePriceNum(item.profit);
+              if (m === curMonth && y === curYear) {
+                totalMonth += prof;
+                if (d === curDay) {
+                  totalDay += prof;
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // 3. BÁN MÁY / BẢO HÀNH (soldPhoneDatabase)
+      if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
+        soldPhoneDatabase.forEach(p => {
+          let pDate = parseSoldPhoneDate(p);
+          if (!pDate) return;
+          let pOut = parsePriceNum(p.price || p.total);
+          let pIn = parsePriceNum(p.priceIn);
+          let prof = pOut - pIn;
+
+          if (pDate.m === curMonth && pDate.y === curYear) {
+            totalMonth += prof;
+            if (pDate.d === curDay) {
+              totalDay += prof;
+            }
+          }
+        });
+      }
+
+      // 4. BÁN GÀ (bangaDatabase)
+      if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
+        bangaDatabase.forEach(bg => {
+          if (!bg.dateTime) return;
+          let parts = bg.dateTime.split(' - ');
+          let dateStr = parts.length >= 2 ? parts[1].trim() : parts[0].trim();
+          let dp = dateStr.split('/');
+          if (dp.length === 3) {
+            let d = parseInt(dp[0], 10);
+            let m = parseInt(dp[1], 10) - 1;
+            let y = parseInt(dp[2], 10);
+            let prof = parsePriceNum(bg.profit);
+            if (m === curMonth && y === curYear) {
+              totalMonth += prof;
+              if (d === curDay) {
+                totalDay += prof;
+              }
+            }
+          }
+        });
+      }
+
+      if (monthEl) {
+        monthEl.innerText = formatPriceStr(totalMonth);
+      }
+      if (dayEl) {
+        dayEl.innerText = formatPriceStr(totalDay);
+      }
+    }
+    window.updateSidebarOverallProfits = updateSidebarOverallProfits;
 
     function toggleSalePaymentStatus(id) {
       const item = salesDatabase.find(x => x.id === id);
@@ -3433,6 +3565,10 @@
           </tr>
         `;
       }).join('');
+
+      if (typeof updateSidebarOverallProfits === 'function') {
+        updateSidebarOverallProfits();
+      }
     }
 
     function toggleBangaMethod(id) {
@@ -9153,6 +9289,10 @@
           </tr>
         `;
       }).join('');
+
+      if (typeof updateSidebarOverallProfits === 'function') {
+        updateSidebarOverallProfits();
+      }
     }
 
     /* ============================================================
@@ -12587,6 +12727,9 @@
       }
 
       updateRepairPayButtonVisibility();
+      if (typeof updateSidebarOverallProfits === 'function') {
+        updateSidebarOverallProfits();
+      }
     }
 
     function toggleRepairPaymentStatus(id) {

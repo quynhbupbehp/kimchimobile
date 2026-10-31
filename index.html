@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261031_154650">
+  <link rel="stylesheet" href="css/style.css?v=20261031_175215">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261031_154650";
+    var CURRENT_PAGE_VERSION = "20261031_175215";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -311,7 +311,7 @@
         <li><button class="main-tab-btn-v" onclick="switchMainTab('banmay', this)">📱 <span>BÁN MÁY</span></button></li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('baohanh', this)">🛡️ <span>BẢO HÀNH</span></button>
         </li>
-        <li><button class="main-tab-btn-v" onclick="switchMainTab('banga', this)" title="Bán Gà">🐓</button></li>
+        <li><button class="main-tab-btn-v" onclick="switchMainTab('banga', this)" title="Bán Gà">🐓 <span>BÁN GÀ</span></button></li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('phanmem', this)">💻 <span>PHẦN MỀM</span></button>
         </li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('baogia', this)">📋 <span>BÁO GIÁ SỬA</span></button>
@@ -327,7 +327,15 @@
 
     </div>
 
-    <button class="btn-logout-v" onclick="handleLogout()">🔒 <span>Đăng Xuất</span></button>
+    <!-- NÚT ĐĂNG XUẤT CHIA 2 PHẦN: BÊN TRÁI LÃI THÁNG (NỀN VÀNG), BÊN PHẢI LÃI NGÀY (NỀN HỒNG) -->
+    <div class="sidebar-profit-logout-box" onclick="handleLogout()" title="Bấm để Đăng Xuất (Bên trái: Lãi Tháng | Bên phải: Lãi Ngày)">
+      <div class="sidebar-profit-item profit-month-box">
+        <span id="sidebarTotalMonthProfitVal">0</span>
+      </div>
+      <div class="sidebar-profit-item profit-day-box">
+        <span id="sidebarTotalDayProfitVal">0</span>
+      </div>
+    </div>
   </aside>
 
   <!-- PHẦN NỘI DUNG CHÍNH -->
@@ -1784,7 +1792,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261031_154650" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261031_175215" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5255,10 +5263,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261031_154650"></script>
+  <script src="js/seed_data.js?v=20261031_175215"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261031_154650"></script>
+  <script src="js/main.js?v=20261031_175215"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
