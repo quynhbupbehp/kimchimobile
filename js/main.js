@@ -5867,11 +5867,12 @@
     window.restorePhoneToInventory = restorePhoneToInventory;
 
     function deleteSale(id) {
-      const item = salesDatabase.find(s => s.id === id);
+      const item = salesDatabase.find(s => String(s.id) === String(id) || s.id == id);
       if (!item) return;
 
-      let confirmText = prompt(`Bạn có chắc chắn muốn xóa phiếu "${item.name}" không?\nNếu là máy bán ra, hệ thống sẽ tự động lưu hoàn trả về mục BÁN MÁY.\nNhập 'yes' để xác nhận:`);
-      if (confirmText && confirmText.trim().toLowerCase() === 'yes') {
+      let confirmText = prompt(`Bạn có chắc chắn muốn xóa phiếu "${item.name}" không?\nNếu là máy bán ra, hệ thống sẽ tự động lưu hoàn trả về mục BÁN MÁY.\nNhập 'ok' hoặc 'yes' để xác nhận:`);
+      let normConfirm = (confirmText || '').trim().toLowerCase();
+      if (normConfirm === 'ok' || normConfirm === 'yes') {
         if (typeof logActivity === 'function') {
           logActivity('DELETE', 'banhang', 'Bán hàng', `Xóa đơn bán hàng: ${item.name} - ${item.total}`, item, null, id);
         }
@@ -5881,7 +5882,7 @@
           restorePhoneToInventory(item);
         }
 
-        salesDatabase = salesDatabase.filter(s => s.id !== id);
+        salesDatabase = salesDatabase.filter(s => String(s.id) !== String(id) && s.id != id);
         saveSalesStorage();
         if (typeof db !== 'undefined' && db) {
           db.collection('sales').doc(String(id)).delete().catch(console.error);
@@ -5894,7 +5895,7 @@
           alert("Đã xóa phiếu bán hàng thành công!");
         }
       } else if (confirmText !== null) {
-        alert("Thao tác xóa bị hủy. Bạn phải nhập chính xác chữ 'yes'.");
+        alert("Thao tác xóa bị hủy. Bạn phải nhập 'ok' hoặc 'yes'.");
       }
     }
 
@@ -5912,8 +5913,9 @@
         return;
       }
 
-      let confirmText = prompt(`Bạn có chắc chắn muốn xóa đơn "${item.name}" và hoàn trả về Kho Bán Máy không?\nNhập 'yes' để xác nhận:`);
-      if (confirmText && confirmText.trim().toLowerCase() === 'yes') {
+      let confirmText = prompt(`Bạn có chắc chắn muốn xóa đơn "${item.name}" và hoàn trả về Kho Bán Máy không?\nNhập 'ok' hoặc 'yes' để xác nhận:`);
+      let normConfirm = (confirmText || '').trim().toLowerCase();
+      if (normConfirm === 'ok' || normConfirm === 'yes') {
         bangaDatabase = bangaDatabase.filter(s => String(s.id) !== String(id) && s.id != id);
         saveBangaStorage();
         if (typeof db !== 'undefined' && db) {
@@ -5928,7 +5930,7 @@
 
         alert("Đã xóa đơn gà đã bán và tự động lưu hoàn trả máy vào mục Bán Máy thành công!");
       } else if (confirmText !== null) {
-        alert("Thao tác xóa bị hủy. Bạn phải nhập chính xác chữ 'yes'.");
+        alert("Thao tác xóa bị hủy. Bạn phải nhập 'ok' hoặc 'yes'.");
       }
     }
 
@@ -6129,6 +6131,26 @@
       if (modal) {
         modal.classList.remove('active');
         modal.style.display = 'none';
+      }
+    }
+
+    function deleteCurrentEditSale() {
+      const id = document.getElementById('editSaleId').value;
+      const type = document.getElementById('editSaleType').value;
+      if (!id) return;
+
+      if (type === 'banga') {
+        let beforeLen = bangaDatabase.length;
+        deleteBangaSale(id);
+        if (bangaDatabase.length < beforeLen) {
+          closeEditSaleModal();
+        }
+      } else {
+        let beforeLen = salesDatabase.length;
+        deleteSale(Number(id) || id);
+        if (salesDatabase.length < beforeLen) {
+          closeEditSaleModal();
+        }
       }
     }
 
