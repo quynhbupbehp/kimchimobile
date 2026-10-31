@@ -1146,18 +1146,18 @@
 
     .sales-table td {
       padding: 14px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.22) !important;
       color: var(--text-main);
       white-space: nowrap;
     }
 
     #tab-banhang .sales-table tbody tr {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.22) !important;
     }
 
     #tab-banhang .sales-table tbody tr:hover,
     .sales-table tr:hover { 
-      background-color: rgba(255, 255, 255, 0.04); 
+      background-color: rgba(255, 255, 255, 0.05); 
     }
 
     .sales-footer-stats {
