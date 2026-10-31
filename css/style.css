@@ -6961,10 +6961,10 @@
           text-overflow: ellipsis !important;
           vertical-align: middle !important;
         }
-        /* CỘT 1: TÊN HÀNG / GÀ - CHIM CÚT (50% - TĂNG THÊM 5%) */
+        /* CỘT 1: TÊN HÀNG / GÀ - CHIM CÚT (60% - TĂNG THÊM 10%) - Cỡ chữ giảm 5% */
         #tab-banga .sales-table th:nth-child(1) {
-          width: 50% !important;
-          max-width: 50% !important;
+          width: 60% !important;
+          max-width: 60% !important;
           min-width: 0 !important;
           text-align: left !important;
           padding-left: 5px !important;
@@ -6974,32 +6974,36 @@
           white-space: nowrap !important;
         }
         #tab-banga .sales-table td:nth-child(1) {
-          width: 50% !important;
-          max-width: 50% !important;
+          width: 60% !important;
+          max-width: 60% !important;
           min-width: 0 !important;
           text-align: left !important;
           padding-left: 5px !important;
-          font-size: 0.81rem !important;
+          font-size: 0.77rem !important; /* Giảm 5% từ 0.81rem */
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
         }
         #tab-banga .sales-table td:nth-child(1) * {
-          font-size: 0.81rem !important;
+          font-size: 0.77rem !important; /* Giảm 5% */
         }
-        /* VÒNG TRÒN MÀU: GIẢM 50% KÍCH THƯỚC TRÊN MOBILE */
+        /* VÒNG TRÒN MÀU SẮC: GIẢM KÍCH CỠ 50% (ĐƯỜNG KÍNH ~14px) */
+        #tab-banga .sales-table td:nth-child(1) .banga-color-dot-wrap,
+        #tab-banga .sales-table td:nth-child(1) .banga-color-dot-wrap > span,
         #tab-banga .sales-table td:nth-child(1) span[title*="Màu:"] {
           width: 14px !important;
           height: 14px !important;
           min-width: 14px !important;
           max-width: 14px !important;
           border-width: 1px !important;
+          display: inline-block !important;
+          vertical-align: middle !important;
         }
-        /* CỘT 2: GIÁ BÁN (HIỂN THỊ BÊN TRÁI GIÁ NHẬP, 21%) */
+        /* CỘT 2: GIÁ BÁN (16% - GIẢM 5%) */
         #tab-banga .sales-table th:nth-child(2) {
           display: table-cell !important;
-          width: 21% !important;
-          max-width: 21% !important;
+          width: 16% !important;
+          max-width: 16% !important;
           min-width: 0 !important;
           text-align: center !important;
           font-size: 0.73rem !important;
@@ -7007,31 +7011,31 @@
         }
         #tab-banga .sales-table td:nth-child(2) {
           display: table-cell !important;
-          width: 21% !important;
-          max-width: 21% !important;
+          width: 16% !important;
+          max-width: 16% !important;
           min-width: 0 !important;
           text-align: center !important;
           font-size: 0.89rem !important;
           padding: 6px 1px !important;
         }
-        /* CỘT 3: GIÁ NHẬP (21%) */
+        /* CỘT 3: GIÁ NHẬP (16% - GIẢM 5%) */
         #tab-banga .sales-table th:nth-child(3) {
-          width: 21% !important;
-          max-width: 21% !important;
+          width: 16% !important;
+          max-width: 16% !important;
           min-width: 0 !important;
           text-align: center !important;
           font-size: 0.73rem !important;
           padding: 6px 1px !important;
         }
         #tab-banga .sales-table td:nth-child(3) {
-          width: 21% !important;
-          max-width: 21% !important;
+          width: 16% !important;
+          max-width: 16% !important;
           min-width: 0 !important;
           text-align: center !important;
           font-size: 0.76rem !important;
           padding: 6px 1px !important;
         }
-        /* CỘT 4: LÃI (8% - GIẢM THÊM 5%) - Giảm cỡ chữ dòng dữ liệu 5% */
+        /* CỘT 4: LÃI (8%) */
         #tab-banga .sales-table th:nth-child(4) {
           width: 8% !important;
           max-width: 8% !important;
@@ -7045,7 +7049,7 @@
           max-width: 8% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 0.72rem !important; /* Giảm 5% từ 0.76rem */
+          font-size: 0.72rem !important;
           padding: 6px 1px !important;
         }
         /* ẨN CỘT 5 (HÌNH THỨC), 6 (THAO TÁC), 7 (NGÀY BÁN), 8 (THANH TOÁN) TRÊN MOBILE */
