@@ -9296,11 +9296,15 @@
             <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle;">
               ${nameHtml}
             </td>
-            <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${formatPriceStr(p.price || p.total) || '0'}</td>
+            <td style="text-align: center; vertical-align: middle;">
+              <span style="display: inline-block; background: #ec4899; color: #ffffff; font-weight: 900; font-size: 1.58rem; padding: 4px 12px; border-radius: 8px; border: 1.5px solid #f472b6; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4); line-height: 1.2;">
+                ${formatPriceStr(p.price || p.total) || '0'}
+              </span>
+            </td>
             <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(p.priceIn || '0')}</td>
             <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(profitVal)}</td>
             <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; font-size: 1.05rem; color: ${methodColor};">${method}</span></td>
-            <td style="color: #ec4899; font-weight: 800; font-size: 1.05rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
+            <td style="color: #ffffff; font-weight: 800; font-size: 1.05rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
             <td style="text-align: center; vertical-align: middle;">
               <div class="action-btn-group" style="justify-content: center;">
                 <button type="button" class="action-btn-icon action-btn-view" onclick="viewPhone('${p.id}', true)" title="Xem chi tiết">
