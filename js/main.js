@@ -1030,6 +1030,12 @@
 
     function openUniversalSmartDropdown(input, filterText = null) {
       if (!input) return;
+      // TRÊN GIAO DIỆN MOBILE: Chỉ gợi ý tên phụ kiện (tItemName), KHÔNG mở dropdown cho giá bán và giá nhập (chỉ nhập trực tiếp)
+      if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) {
+        closeUniversalSmartDropdown();
+        return;
+      }
+
       // Nếu input đang nằm trong một modal bị ẩn thì không mở
       const modal = input.closest('.modal-overlay, .modal, .sw-modal-overlay');
       if (modal && (modal.style.display === 'none' || (modal.classList && !modal.classList.contains('active') && !modal.classList.contains('show') && getComputedStyle(modal).display === 'none'))) {
@@ -1128,8 +1134,12 @@
 
       const currentValue = (input.value || '').trim().toLowerCase();
 
-      // NẾU LỌC KHÔNG CÓ KẾT QUẢ VÀ NGƯỜI DÙNG ĐÃ GÕ CHỮ (ÁP DỤNG DESKTOP GIỐNG POPUP PHẦN MỀM)
+      // NẾU LỌC KHÔNG CÓ KẾT QUẢ VÀ NGƯỜI DÙNG ĐÃ GÕ CHỮ (ÁP DỤNG TRÊN DESKTOP HOẶC TÊN PHỤ KIỆN MOBILE)
       if (isFiltering && displayOptions.length === 0) {
+        if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) {
+          closeUniversalSmartDropdown();
+          return;
+        }
         const escaped = cleanFilter.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const noResultBox = document.createElement('div');
         noResultBox.style.cssText = 'padding: 10px 12px; text-align: center; width: 100%; box-sizing: border-box;';
@@ -1189,12 +1199,17 @@
         if (activeUniversalDropdown === dropdownEl && currentUniversalInput === input) {
           positionUniversalSmartDropdown(input, dropdownEl);
         }
-      }, 100);
+      }, 50);
       setTimeout(() => {
         if (activeUniversalDropdown === dropdownEl && currentUniversalInput === input) {
           positionUniversalSmartDropdown(input, dropdownEl);
         }
-      }, 250);
+      }, 150);
+      setTimeout(() => {
+        if (activeUniversalDropdown === dropdownEl && currentUniversalInput === input) {
+          positionUniversalSmartDropdown(input, dropdownEl);
+        }
+      }, 300);
     }
 
     function positionUniversalSmartDropdown(input, dropdownEl) {
@@ -1207,25 +1222,25 @@
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
 
-      // Khoảng cách tụt xuống dưới ô nhập (cho tụt xuống thêm theo yêu cầu, đảm bảo không che chữ và viền ô nhập)
-      const dropDownOffset = 8;
+      // Khoảng cách tụt xuống dưới đáy của khung ô nhập (luôn ở phía dưới ô nhập, không che viền hay chữ bên trong)
+      const dropDownOffset = 6;
 
-      if (spaceBelow < 140 && spaceAbove > spaceBelow) {
+      if (spaceBelow < 120 && spaceAbove > spaceBelow) {
         // Nằm PHÍA TRÊN ô nhập
         dropdownEl.style.top = 'auto';
-        dropdownEl.style.bottom = `${viewportHeight - rect.top + 6}px`;
-        dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceAbove - 16))}px`;
+        dropdownEl.style.bottom = `${Math.round(viewportHeight - rect.top + 6)}px`;
+        dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceAbove - 16))}px`;
       } else {
-        // Nằm PHÍA DƯỚI ô nhập
+        // Nằm PHÍA DƯỚI ô nhập (tụt hẳn xuống dưới khung ô nhập)
         dropdownEl.style.bottom = 'auto';
-        dropdownEl.style.top = `${rect.bottom + dropDownOffset}px`;
-        dropdownEl.style.maxHeight = `${Math.min(260, Math.max(90, spaceBelow - dropDownOffset - 10))}px`;
+        dropdownEl.style.top = `${Math.round(rect.bottom + dropDownOffset)}px`;
+        dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceBelow - dropDownOffset - 12))}px`;
       }
 
-      dropdownEl.style.left = `${Math.max(6, rect.left)}px`;
-      dropdownEl.style.width = `${Math.max(rect.width, 180)}px`;
-      dropdownEl.style.minWidth = `${Math.max(rect.width, 180)}px`;
-      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 20, Math.max(rect.width, 360))}px`;
+      dropdownEl.style.left = `${Math.max(6, Math.round(rect.left))}px`;
+      dropdownEl.style.width = `${Math.max(Math.round(rect.width), 160)}px`;
+      dropdownEl.style.minWidth = `${Math.max(Math.round(rect.width), 160)}px`;
+      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 12, Math.max(Math.round(rect.width), 340))}px`;
       dropdownEl.style.overflowY = 'auto';
       dropdownEl.style.zIndex = '999999999';
     }
