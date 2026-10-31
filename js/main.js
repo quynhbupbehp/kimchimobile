@@ -6174,6 +6174,9 @@
         if (bangaDatabase.length < beforeLen) {
           closeEditSaleModal();
         }
+      } else if (type === 'soldPhone') {
+        closeEditSaleModal();
+        deleteSoldPhone(id);
       } else {
         let beforeLen = salesDatabase.length;
         deleteSale(Number(id) || id);
@@ -6937,14 +6940,22 @@
       if (btnEdit) {
         btnEdit.onclick = function() {
           closeViewPhoneModal();
-          editPhone(p.id);
+          if (isSold) {
+            editSoldPhone(p.id);
+          } else {
+            editPhone(p.id);
+          }
         };
       }
 
       if (btnDel) {
         btnDel.onclick = function() {
           closeViewPhoneModal();
-          deletePhone(p.id);
+          if (isSold) {
+            deleteSoldPhone(p.id);
+          } else {
+            deletePhone(p.id);
+          }
         };
       }
 
