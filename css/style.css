@@ -6993,12 +6993,12 @@
           align-items: center !important;
           justify-content: center !important;
           vertical-align: middle !important;
-          width: 10px !important;
-          height: 10px !important;
-          min-width: 10px !important;
-          max-width: 10px !important;
-          min-height: 10px !important;
-          max-height: 10px !important;
+          width: 20px !important;
+          height: 20px !important;
+          min-width: 20px !important;
+          max-width: 20px !important;
+          min-height: 20px !important;
+          max-height: 20px !important;
           margin: 0 3px !important;
           flex-shrink: 0 !important;
           line-height: 0 !important;
@@ -7006,12 +7006,12 @@
         }
         #tab-banga .sales-table td:nth-child(1) .banga-dot-circle svg {
           display: block !important;
-          width: 10px !important;
-          height: 10px !important;
-          min-width: 10px !important;
-          max-width: 10px !important;
-          min-height: 10px !important;
-          max-height: 10px !important;
+          width: 20px !important;
+          height: 20px !important;
+          min-width: 20px !important;
+          max-width: 20px !important;
+          min-height: 20px !important;
+          max-height: 20px !important;
           flex-shrink: 0 !important;
           border-radius: 50% !important;
         }

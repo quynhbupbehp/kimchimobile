@@ -3342,7 +3342,7 @@
             let strokeColor = isW ? '#94a3b8' : 'rgba(255, 255, 255, 0.7)';
             dotHtml = `
               <span class="banga-dot-circle" title="Màu: ${escapeHtml(details.color)}">
-                <svg viewBox="0 0 20 20" width="10" height="10" style="display: block; width: 10px; height: 10px; min-width: 10px; min-height: 10px;">
+                <svg viewBox="0 0 20 20" width="20" height="20" style="display: block; width: 20px; height: 20px; min-width: 20px; min-height: 20px;">
                   <circle cx="10" cy="10" r="8.5" fill="${hex}" stroke="${strokeColor}" stroke-width="1.8"></circle>
                 </svg>
               </span>
