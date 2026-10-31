@@ -7498,7 +7498,7 @@
       }
 
       let pinVal = formatPinByBrand(p.pin, p.brand, p.name);
-      document.getElementById('sellPhoneSummaryDetails').innerText = `Tình trạng: ${p.condition || 'Zin Đẹp 99%'} | Pin : ${pinVal} | QG: ${p.origin || 'VN/A'}`;
+      document.getElementById('sellPhoneSummaryDetails').innerText = `${p.condition || 'Zin Đẹp 99%'} - Pin : ${pinVal} - QG: ${p.origin || 'VN/A'} - Giá Nhập : ${p.priceIn || '0'}`;
 
       document.getElementById('sellCustomerName').value = '';
       document.getElementById('sellCustomerName').placeholder = 'Khách Lẻ';
