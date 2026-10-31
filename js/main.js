@@ -2763,26 +2763,7 @@
         });
       }
 
-      // Lãi và doanh thu Bán Máy (soldPhoneDatabase) trong 1 ngày đang chọn
-      let dayPhoneProfit = 0;
-      let dayPhoneRevenue = 0;
-      if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
-        soldPhoneDatabase.forEach(p => {
-          let pDate = parseSoldPhoneDate(p);
-          if (!pDate) return;
-          let pDay = String(pDate.d).padStart(2, '0');
-          let pMonth = String(pDate.m + 1).padStart(2, '0');
-          let pDateStr = `${pDay}/${pMonth}/${pDate.y}`;
-          if (pDateStr === targetDateStr) {
-            let pOut = parsePriceNum(p.price || p.total);
-            let pIn = parsePriceNum(p.priceIn);
-            dayPhoneProfit += (pOut - pIn);
-            dayPhoneRevenue += pOut;
-          }
-        });
-      }
-
-      // 3. Tính LÃI THÁNG & DOANH THU THÁNG
+      // 3. Tính LÃI THÁNG & DOANH THU THÁNG = Bán hàng + Bán gà + Sửa chữa
       let monthSalesProfit = 0;
       let monthSalesRevenue = 0;
       if (Array.isArray(salesDatabase)) {
@@ -2842,31 +2823,16 @@
         });
       }
 
-      let monthPhoneProfit = 0;
-      let monthPhoneRevenue = 0;
-      if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
-        soldPhoneDatabase.forEach(p => {
-          let pDate = parseSoldPhoneDate(p);
-          if (!pDate) return;
-          if (pDate.m === targetMonth && pDate.y === targetYear) {
-            let pOut = parsePriceNum(p.price || p.total);
-            let pIn = parsePriceNum(p.priceIn);
-            monthPhoneProfit += (pOut - pIn);
-            monthPhoneRevenue += pOut;
-          }
-        });
-      }
-
       // LÃI & DOANH THU THEO YÊU CẦU:
       // - Doanh thu ngày = Doanh thu bán hàng của ngày đó
       // - Doanh thu tháng = Doanh thu bán hàng của tháng đó
-      // - Lãi ngày = Lãi bán hàng + Lãi bán máy + Lãi bán gà + Lãi sửa chữa trong 1 ngày
-      // - Lãi tháng = Lãi bán hàng + Lãi bán máy + Lãi bán gà + Lãi sửa chữa trong 1 tháng
+      // - Lãi ngày = Lãi bán hàng + Lãi bán gà + Lãi sửa chữa trong 1 ngày đó
+      // - Lãi tháng = Lãi bán hàng + Lãi bán gà + Lãi sửa chữa trong 1 tháng đó
       let totalDayRevenue = daySalesRevenue;
-      let totalDayProfit = daySalesProfit + dayPhoneProfit + dayBangaProfit + dayRepairProfit;
+      let totalDayProfit = daySalesProfit + dayBangaProfit + dayRepairProfit;
 
       let totalMonthRevenue = monthSalesRevenue;
-      let totalMonthProfit = monthSalesProfit + monthPhoneProfit + monthBangaProfit + monthRepairProfit;
+      let totalMonthProfit = monthSalesProfit + monthBangaProfit + monthRepairProfit;
 
       // Cập nhật các ô hiển thị Doanh thu & Lãi
       const salesMonthRevenueEl = document.getElementById('salesMonthRevenueVal');
@@ -3068,23 +3034,7 @@
         });
       }
 
-      // 3. BÁN MÁY / BẢO HÀNH (soldPhoneDatabase)
-      if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
-        soldPhoneDatabase.forEach(p => {
-          let pDate = parseSoldPhoneDate(p);
-          if (!pDate) return;
-          let pOut = parsePriceNum(p.price || p.total);
-          let pIn = parsePriceNum(p.priceIn);
-          let prof = pOut - pIn;
-
-          if (pDate.m === curMonth && pDate.y === curYear) {
-            totalMonth += prof;
-            if (pDate.d === curDay) {
-              totalDay += prof;
-            }
-          }
-        });
-      }
+      // (Lãi tổng chỉ bao gồm: Bán Hàng + Bán Gà + Sửa Chữa)
 
       // 4. BÁN GÀ (bangaDatabase)
       if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
