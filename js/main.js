@@ -9247,16 +9247,21 @@
       }
 
       tbody.innerHTML = filtered.map(p => {
-        let brandDisplay = formatBrandDeviceName(p.brand || '');
+        let brandDisplay = (p.brand || '').trim();
         let pName = formatBrandDeviceName(p.name || '');
-        // Bỏ tên hãng đi theo yêu cầu (ví dụ: IPHONE - SE - 2020 thì chỉ hiển thị SE - 2020)
         let brandNamePart = pName;
+
         if (brandDisplay && brandDisplay !== 'MÁY NGOÀI' && brandDisplay !== '❤️❤️❤️') {
-          const regex = new RegExp(`^${brandDisplay}\\s*[-–—:]*\\s*`, 'i');
-          brandNamePart = brandNamePart.replace(regex, '');
-        }
-        if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️') {
-          brandNamePart = `<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${brandNamePart}`;
+          let cleanBrand = brandDisplay.toUpperCase();
+          let cleanNameUpper = brandNamePart.toUpperCase();
+          if (!cleanNameUpper.startsWith(cleanBrand)) {
+            brandNamePart = `${brandDisplay} - ${brandNamePart}`;
+          }
+        } else if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️') {
+          let cleanNameUpper = brandNamePart.toUpperCase();
+          if (!cleanNameUpper.startsWith('❤️❤️❤️') && !cleanNameUpper.startsWith('MÁY NGOÀI')) {
+            brandNamePart = `<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${brandNamePart}`;
+          }
         }
         brandNamePart = formatBrandDeviceName(brandNamePart);
         let cleanStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
