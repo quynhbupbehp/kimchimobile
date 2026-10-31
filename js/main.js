@@ -1975,8 +1975,19 @@
 
     // HÀM TỰ ĐỘNG BẬT BÀN PHÍM SỐ TRÊN MOBILE CHO MỤC NHẬP GIÁ VÀ IMEI TOÀN BỘ WEB
     function initNumericKeyboardsForMobile() {
+      const isSearchInput = (el) => {
+        if (!el || el.tagName !== 'INPUT') return false;
+        const id = (el.id || '').toLowerCase();
+        const cls = (el.className || '').toLowerCase();
+        const name = (el.name || '').toLowerCase();
+        const ph = (el.placeholder || '').toLowerCase();
+        return id.includes('search') || cls.includes('search') || name.includes('search') ||
+               ph.includes('tìm') || ph.includes('search') || id.includes('tim') || cls.includes('tim');
+      };
+
       const isPriceOrImei = (el) => {
         if (!el || el.tagName !== 'INPUT') return false;
+        if (isSearchInput(el)) return false; // CÁC Ô TÌM KIẾM LUÔN DÙNG BÀN PHÍM CHỮ!
         const type = (el.type || '').toLowerCase();
         if (type === 'checkbox' || type === 'radio' || type === 'file' || type === 'date' || type === 'time') return false;
         const id = (el.id || '').toLowerCase();
@@ -1993,6 +2004,12 @@
       };
 
       const applyNumeric = (el) => {
+        if (isSearchInput(el)) {
+          // BẮT BUỘC BẬT BÀN PHÍM VIẾT CHỮ (TEXT) CHO TẤT CẢ CÁC Ô TÌM KIẾM TRÊN CÁC TAB
+          el.setAttribute('inputmode', 'text');
+          el.removeAttribute('pattern');
+          return;
+        }
         if (isPriceOrImei(el)) {
           el.setAttribute('inputmode', 'numeric');
           el.removeAttribute('pattern');

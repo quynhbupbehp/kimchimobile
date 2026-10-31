@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261031_204110">
+  <link rel="stylesheet" href="css/style.css?v=20261031_204811">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261031_204110";
+    var CURRENT_PAGE_VERSION = "20261031_204811";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -465,7 +465,7 @@
             <span
               style="height: 36px; display: inline-flex; align-items: center; font-size: 0.82rem; font-weight: 900; color: #94a3b8; letter-spacing: 0.5px; white-space: nowrap;">TÌM
               KIẾM:</span>
-            <input type="text" class="search-sales-input"
+            <input type="text" class="search-sales-input" inputmode="text"
               style="height: 36px; line-height: 36px; box-sizing: border-box; width: 220px; padding: 0 12px; font-size: 0.85rem; border-radius: 8px; background: #0c121e; border: 1.5px solid #1e293b; color: #ffffff;"
               placeholder="🔍 Tìm khách / hàng..." oninput="handleSearchSales(this)">
           </div>
@@ -913,7 +913,7 @@
               <div class="sw-debt-search-box-row" style="display: flex; align-items: center; gap: 6px;">
                 <span class="sw-debt-search-label" style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">TÌM
                   KIẾM:</span>
-                <input type="text" id="swDebtSearchInput" class="search-sales-input" placeholder="🔍 Tên người nợ..."
+                <input type="text" id="swDebtSearchInput" class="search-sales-input" inputmode="text" placeholder="🔍 Tên người nợ..."
                   style="width: 340px;" oninput="renderSoftwareDebtTable()">
               </div>
               <select id="swDebtAmountFilter" class="debt-range-select" onchange="renderSoftwareDebtTable()">
@@ -993,7 +993,7 @@
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-                <input type="text" id="repairSearchInput" placeholder="Tìm tên máy, khách hàng"
+                <input type="text" id="repairSearchInput" placeholder="Tìm tên máy, khách hàng" inputmode="text"
                   oninput="handleRepairSearchInput(this.value)"
                   style="padding-right: 28px; width: 100%; border: none; background: transparent; outline: none; padding-left: 8px; color: #fff; font-size: 0.85rem; font-weight: 600;">
                 <button type="button" id="btnClearRepairSearch" onclick="clearRepairSearch()"
@@ -1285,7 +1285,7 @@
             <!-- 1. Ô TÌM KIẾM -->
             <div class="search-box-bm" style="height: 38px; box-sizing: border-box; position: relative;">
               <span class="search-label-single-line">TÌM KIẾM</span>
-              <input type="text" id="phoneSearchInput" class="search-input-field"
+              <input type="text" id="phoneSearchInput" class="search-input-field" inputmode="text"
                 placeholder="🔍 tìm theo tên máy hoặc imei" oninput="handlePhoneSearchInput(this)"
                 onfocus="handlePhoneSearchInput(this)" onkeydown="handlePhoneSearchKeydown(event)" autocomplete="off">
               <button type="button" id="btnClearPhoneSearch" class="btn-clear-search" onclick="clearPhoneSearch()"
@@ -1454,7 +1454,7 @@
                 style="font-size: 0.8rem; font-weight: 800; color: #f59e0b; letter-spacing: 0.5px; white-space: nowrap;">TÌM
                 KIẾM</span>
               <span style="color: #94a3b8; font-size: 0.85rem;">🔍</span>
-              <input type="text" class="search-input-field" placeholder="Tìm tên máy, phụ kiện..."
+              <input type="text" class="search-input-field" placeholder="Tìm tên máy, phụ kiện..." inputmode="text"
                 oninput="handleSearchBanga(this)"
                 style="background: transparent; border: none; outline: none; color: #ffffff; font-size: 0.85rem; width: 175px;">
               <button type="button" class="btn-clear-search" onclick="clearBangaSearch(this)" title="Xóa tìm kiếm"
@@ -1698,7 +1698,7 @@
           <div class="search-box-bm"
             style="flex: 1; height: 38px; box-sizing: border-box; padding: 6px 12px; position: relative;">
             <span class="search-label-single-line" style="color: #ffffff; font-weight: 800;">TÌM KIẾM</span>
-            <input type="text" id="soldPhoneSearchInput" class="search-input-field" placeholder="🔍 Tìm tên máy, IMEI"
+            <input type="text" id="soldPhoneSearchInput" class="search-input-field" inputmode="text" placeholder="🔍 Tìm tên máy, IMEI"
               oninput="handleSoldPhoneSearchInput(this)" onfocus="handleSoldPhoneSearchInput(this)"
               onkeydown="handleSoldPhoneSearchKeydown(event)" autocomplete="off">
             <button type="button" id="btnClearSoldPhoneSearch" class="btn-clear-search" onclick="clearSoldPhoneSearch()"
@@ -1792,7 +1792,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261031_204110" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261031_204811" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -1951,7 +1951,7 @@
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <span style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">TÌM KIẾM:</span>
-                <input type="text" id="debtSearchCustomer" class="search-sales-input" placeholder="🔍 Tên người nợ..."
+                <input type="text" id="debtSearchCustomer" class="search-sales-input" inputmode="text" placeholder="🔍 Tên người nợ..."
                   style="width: 340px;" oninput="handleDebtSearch('customer', this.value)">
               </div>
               <select id="debtRangeSelect_customer" class="debt-range-select"
@@ -2016,7 +2016,7 @@
               <div style="display: flex; align-items: center; gap: 6px;">
                 <span style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">TÌM
                   KIẾM:</span>
-                <input type="text" id="debtSearchOther" class="search-sales-input" placeholder="🔍 Tên người nợ..."
+                <input type="text" id="debtSearchOther" class="search-sales-input" inputmode="text" placeholder="🔍 Tên người nợ..."
                   style="width: 320px;" oninput="handleDebtSearch('other', this.value)">
               </div>
               <select id="debtRangeSelect_other" class="debt-range-select"
@@ -2070,7 +2070,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <span style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">TÌM KIẾM</span>
-              <input type="text" id="debtSearchInput" class="search-sales-input" placeholder="Tên người nợ..."
+              <input type="text" id="debtSearchInput" class="search-sales-input" inputmode="text" placeholder="Tên người nợ..."
                 style="width: 280px;" oninput="renderMyDebtTable()">
               <button type="button" class="sw-select-box"
                 style="font-weight: 800; font-size: 0.88rem; padding: 7px 16px; color: #fff; background: #111723; border: 1px solid #1f293d; border-radius: 8px; cursor: pointer;"
@@ -2236,7 +2236,7 @@
             <!-- Ô TÌM KIẾM CÓ CHỮ TÌM KIẾM Ở TRƯỚC -->
             <div class="search-box-bm" style="width: 280px; height: 38px; box-sizing: border-box; padding: 6px 12px;">
               <span class="search-label-single-line" style="color: #ffffff;">TÌM KIẾM</span>
-              <input type="text" id="mainXacSearchInput" class="search-input-field"
+              <input type="text" id="mainXacSearchInput" class="search-input-field" inputmode="text"
                 placeholder="🔍 Tìm tên máy, IMEI, khác..." oninput="handleMainXacSearchInput(this)">
               <button type="button" id="btnClearMainXacSearch" class="btn-clear-search" onclick="clearMainXacSearch()"
                 title="Xóa tìm kiếm">✕</button>
@@ -2416,7 +2416,7 @@
               <div style="display: flex; align-items: center; gap: 6px;">
                 <span style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">TÌM
                   KIẾM:</span>
-                <input type="text" id="logSearchInput" class="search-sales-input"
+                <input type="text" id="logSearchInput" class="search-sales-input" inputmode="text"
                   placeholder="🔍 Tên, nội dung, sản phẩm..." style="width: 280px;"
                   oninput="setLogFilter('search', this.value)">
               </div>
@@ -4146,7 +4146,7 @@
           🔑 TÀI KHOẢN TOOL & SERVER
         </div>
         <div class="sw-acc-header-tools">
-          <input type="text" id="swAccSearchInput" class="sw-acc-search-input" placeholder="🔍 Tìm kiếm tài khoản..."
+          <input type="text" id="swAccSearchInput" class="sw-acc-search-input" inputmode="text" placeholder="🔍 Tìm kiếm tài khoản..."
             oninput="renderSwAccountsList()">
           <button type="button" class="sw-acc-btn-add" onclick="toggleSwAccountForm()">
             <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;">
@@ -5283,10 +5283,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261031_204110"></script>
+  <script src="js/seed_data.js?v=20261031_204811"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261031_204110"></script>
+  <script src="js/main.js?v=20261031_204811"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
