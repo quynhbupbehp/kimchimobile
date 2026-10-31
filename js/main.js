@@ -9271,7 +9271,7 @@
 
         let nameHtml = `
           <div style="display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; flex-wrap: nowrap; white-space: nowrap;">
-            <span style="font-size: 1.27rem; font-weight: 800; white-space: nowrap;">${brandNamePart}</span>
+            <span style="font-size: 1.33rem; font-weight: 800; white-space: nowrap;">${brandNamePart}</span>
             ${dotHtml}
             ${storagePart}
             ${imeiPart}
@@ -9297,12 +9297,12 @@
               ${nameHtml}
             </td>
             <td style="text-align: center; vertical-align: middle;">
-              <span style="display: inline-block; background: #ec4899; color: #ffffff; font-weight: 900; font-size: 1.58rem; padding: 4px 12px; border-radius: 8px; border: 1.5px solid #f472b6; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4); line-height: 1.2;">
+              <span style="display: inline-block; background: #ec4899; color: #ffffff; font-weight: 900; font-size: 1.50rem; padding: 4px 12px; border-radius: 8px; border: 1.5px solid #f472b6; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4); line-height: 1.2;">
                 ${formatPriceStr(p.price || p.total) || '0'}
               </span>
             </td>
-            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(p.priceIn || '0')}</td>
-            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(profitVal)}</td>
+            <td style="color: #ffffff; font-weight: 900; font-size: 1.155rem; text-align: center; vertical-align: middle;">${formatPriceStr(p.priceIn || '0')}</td>
+            <td style="font-weight: 900; color: #eab308; font-size: 1.155rem; text-align: center; vertical-align: middle;">${formatPriceStr(profitVal)}</td>
             <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; font-size: 1.05rem; color: ${methodColor};">${method}</span></td>
             <td style="color: #ffffff; font-weight: 800; font-size: 1.05rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
             <td style="text-align: center; vertical-align: middle;">
