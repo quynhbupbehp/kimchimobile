@@ -3333,8 +3333,21 @@
             displayName = formatBrandDeviceName(rawDeviceName);
           }
 
-          // Dấu chấm màu: CHỈ hiển thị nếu có màu thực tế, KHÔNG tự ý vẽ chấm trắng mặc định
-          let dotHtml = (details.color && details.color.trim()) ? `<span class="banga-color-dot-wrap">${getColorDotHtml(details.color, 28)}</span>` : '';
+          // Dấu chấm màu: CHỈ hiển thị nếu có màu thực tế, vẽ SVG Circle để đảm bảo TRÒN TUYỆT ĐỐI 100%, không bao giờ bị méo elip
+          let dotHtml = '';
+          if (details.color && details.color.trim()) {
+            let hex = getHexColor(details.color);
+            let rawC = String(details.color).toLowerCase();
+            let isW = rawC.includes('trắng') || rawC.includes('trang') || rawC.includes('white');
+            let strokeColor = isW ? '#94a3b8' : 'rgba(255, 255, 255, 0.7)';
+            dotHtml = `
+              <span class="banga-dot-circle" title="Màu: ${escapeHtml(details.color)}">
+                <svg viewBox="0 0 20 20" width="10" height="10" style="display: block; width: 10px; height: 10px; min-width: 10px; min-height: 10px;">
+                  <circle cx="10" cy="10" r="8.5" fill="${hex}" stroke="${strokeColor}" stroke-width="1.8"></circle>
+                </svg>
+              </span>
+            `;
+          }
           let cleanStorageStr = details.storage ? formatStorageDisplay(details.storage).replace(/GB$/i, '').trim() : '';
           let storagePart = cleanStorageStr ? `<span>${cleanStorageStr}</span>` : '';
           let imeiPart = details.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.27rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${details.imei}</span>` : '';

@@ -6987,32 +6987,33 @@
         #tab-banga .sales-table td:nth-child(1) * {
           font-size: 0.77rem !important; /* Giảm 5% */
         }
-        /* VÒNG TRÒN MÀU SẮC: TRÒN VO 100% CHUẨN XÁC (~8px), KHÔNG BỊ BẦU DỤC */
-        #tab-banga .sales-table td:nth-child(1) .banga-color-dot-wrap {
+        /* VÒNG TRÒN MÀU SẮC: TRÒN VO 100% BẰNG SVG CIRCLE, KHÔNG THỂ BỊ BẦU DỤC */
+        #tab-banga .sales-table td:nth-child(1) .banga-dot-circle {
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
           vertical-align: middle !important;
-          line-height: 1 !important;
-          margin: 0 2px !important;
+          width: 10px !important;
+          height: 10px !important;
+          min-width: 10px !important;
+          max-width: 10px !important;
+          min-height: 10px !important;
+          max-height: 10px !important;
+          margin: 0 3px !important;
           flex-shrink: 0 !important;
-        }
-        #tab-banga .sales-table td:nth-child(1) .banga-color-dot-wrap span,
-        #tab-banga .sales-table td:nth-child(1) span[title*="Màu:"] {
-          width: 8px !important;
-          height: 8px !important;
-          min-width: 8px !important;
-          max-width: 8px !important;
-          min-height: 8px !important;
-          max-height: 8px !important;
-          aspect-ratio: 1 / 1 !important;
+          line-height: 0 !important;
           border-radius: 50% !important;
-          border-width: 1px !important;
-          display: inline-block !important;
-          vertical-align: middle !important;
+        }
+        #tab-banga .sales-table td:nth-child(1) .banga-dot-circle svg {
+          display: block !important;
+          width: 10px !important;
+          height: 10px !important;
+          min-width: 10px !important;
+          max-width: 10px !important;
+          min-height: 10px !important;
+          max-height: 10px !important;
           flex-shrink: 0 !important;
-          box-sizing: border-box !important;
-          box-shadow: 0 0 3px rgba(255, 255, 255, 0.4) !important;
+          border-radius: 50% !important;
         }
         /* CỘT 2: GIÁ BÁN (16% - GIẢM 5%) */
         #tab-banga .sales-table th:nth-child(2) {
