@@ -1579,6 +1579,14 @@
           });
           if (list.length > 0) {
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            list.forEach(item => {
+              if (item) {
+                if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
+                if (item.price !== undefined && item.price !== null && item.price !== '') item.price = formatPriceStr(item.price);
+                if (item.priceIn !== undefined && item.priceIn !== null && item.priceIn !== '') item.priceIn = formatPriceStr(item.priceIn);
+                if (item.profit !== undefined && item.profit !== null && item.profit !== '') item.profit = formatPriceStr(item.profit);
+              }
+            });
             salesDatabase = list;
             try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
             if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
@@ -1606,6 +1614,14 @@
           });
           if (list.length > 0) {
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            list.forEach(item => {
+              if (item) {
+                if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
+                if (item.price !== undefined && item.price !== null && item.price !== '') item.price = formatPriceStr(item.price);
+                if (item.priceIn !== undefined && item.priceIn !== null && item.priceIn !== '') item.priceIn = formatPriceStr(item.priceIn);
+                if (item.profit !== undefined && item.profit !== null && item.profit !== '') item.profit = formatPriceStr(item.profit);
+              }
+            });
             bangaDatabase = list;
             try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
             if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
@@ -1850,7 +1866,17 @@
     let salesDatabase = [];
     try {
       const sRaw = localStorage.getItem('KIMCHI_SALES_DB');
-      if (sRaw) salesDatabase = JSON.parse(sRaw) || [];
+      if (sRaw) {
+        salesDatabase = JSON.parse(sRaw) || [];
+        salesDatabase.forEach(item => {
+          if (item) {
+            if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
+            if (item.price !== undefined && item.price !== null && item.price !== '') item.price = formatPriceStr(item.price);
+            if (item.priceIn !== undefined && item.priceIn !== null && item.priceIn !== '') item.priceIn = formatPriceStr(item.priceIn);
+            if (item.profit !== undefined && item.profit !== null && item.profit !== '') item.profit = formatPriceStr(item.profit);
+          }
+        });
+      }
     } catch(e) {}
 
     function clearAllSalesData() {
@@ -1903,6 +1929,14 @@
       } else if (Array.isArray(window.SEED_BANGA_DATA) && window.SEED_BANGA_DATA.length > 0) {
         bangaDatabase = JSON.parse(JSON.stringify(window.SEED_BANGA_DATA));
       }
+      bangaDatabase.forEach(item => {
+        if (item) {
+          if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
+          if (item.price !== undefined && item.price !== null && item.price !== '') item.price = formatPriceStr(item.price);
+          if (item.priceIn !== undefined && item.priceIn !== null && item.priceIn !== '') item.priceIn = formatPriceStr(item.priceIn);
+          if (item.profit !== undefined && item.profit !== null && item.profit !== '') item.profit = formatPriceStr(item.profit);
+        }
+      });
     } catch(e) {}
 
     function saveSalesStorage(itemToSync) {
