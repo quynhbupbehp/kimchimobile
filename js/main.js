@@ -8614,7 +8614,7 @@
                   ${storageWithGB ? `<span class="phone-card-storage">${escapeHtml(storageWithGB)}</span>` : ''}
                 </div>
                 <div class="phone-header-center">
-                  <span class="phone-card-price">${isPhonePricesHidden ? '*****' : p.price}</span>
+                  <span class="phone-card-price">${isPhonePricesHidden ? '*****' : (formatPriceStr(p.price) || '0')}</span>
                 </div>
                 <div class="phone-header-right">
                   <span class="phone-card-imei">${escapeHtml(p.imei)}</span>
@@ -9127,8 +9127,8 @@
               ${nameHtml}
             </td>
             <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${formatPriceStr(p.price || p.total) || '0'}</td>
-            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${p.priceIn || '0'}</td>
-            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${profitVal}</td>
+            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(p.priceIn || '0')}</td>
+            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(profitVal)}</td>
             <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; font-size: 1.05rem; color: ${methodColor};">${method}</span></td>
             <td style="color: #ec4899; font-weight: 800; font-size: 1.05rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
             <td style="text-align: center; vertical-align: middle;">
@@ -11841,7 +11841,7 @@
               <span class="parts-text-kieu">${styleDisplay}</span>
             </td>
             <td style="text-align: center;">
-              <span class="parts-price-sell">${item.priceSell}</span>
+              <span class="parts-price-sell">${formatPriceStr(item.priceSell)}</span>
             </td>
             <td style="text-align: center;">
               <span class="parts-qty-badge ${isZero ? 'zero' : ''}">${item.qty}</span>
@@ -11860,10 +11860,10 @@
               </div>
             </td>
             <td class="parts-td-cost" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
-              <span class="parts-cost-text">${item.priceCost}</span>
+              <span class="parts-cost-text">${formatPriceStr(item.priceCost)}</span>
             </td>
             <td class="parts-td-profit" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
-              <span class="parts-profit-text">${item.profit}</span>
+              <span class="parts-profit-text">${formatPriceStr(item.profit)}</span>
             </td>
           </tr>
         `;
@@ -15445,9 +15445,9 @@
             <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle;">
               ${nameHtml}
             </td>
-            <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${item.price || '0'}</td>
-            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${item.priceIn || '0'}</td>
-            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${profitStr}</td>
+            <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${formatPriceStr(item.price || '0')}</td>
+            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(item.priceIn || '0')}</td>
+            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(profitStr)}</td>
             <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; font-size: 1.05rem; color: ${stColor};">${item.status || 'Còn Hàng'}</span></td>
             <td style="color: #ec4899; font-weight: 800; font-size: 1.05rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
             <td style="text-align: center; vertical-align: middle;">
