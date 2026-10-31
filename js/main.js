@@ -8745,13 +8745,36 @@
           let displayCondition = p.condition || 'Zin Đẹp 99%';
           let dotColor = getHexColor(p.color);
 
+          let isDesktop = typeof window !== 'undefined' && window.innerWidth > 768;
+          let displayName = pName;
+          let logoHtml = '';
+
+          if (isDesktop) {
+            let brandStr = (p.brand || '').trim();
+            if (brandStr && brandStr !== 'MÁY NGOÀI' && brandStr !== '❤️❤️❤️') {
+              let cleanBrand = brandStr.toUpperCase();
+              let cleanNameUpper = displayName.toUpperCase();
+              if (!cleanNameUpper.startsWith(cleanBrand)) {
+                displayName = `${brandStr} - ${displayName}`;
+              }
+            } else if (brandStr === 'MÁY NGOÀI' || brandStr === '❤️❤️❤️') {
+              let cleanNameUpper = displayName.toUpperCase();
+              if (!cleanNameUpper.startsWith('❤️❤️❤️') && !cleanNameUpper.startsWith('MÁY NGOÀI')) {
+                displayName = `${brandStr} - ${displayName}`;
+              }
+            }
+            logoHtml = '';
+          } else {
+            logoHtml = getPhoneBrandLogoHtml(p.brand, p.name, 25);
+          }
+
           return `
             <div class="phone-card" ondblclick="viewPhone('${p.id}')" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
               <div class="phone-card-header">
                 <div class="phone-header-left">
-                  ${getPhoneBrandLogoHtml(p.brand, p.name, 25)}
-                  <span class="phone-card-name">${escapeHtml(pName)}</span>
+                  ${logoHtml}
+                  <span class="phone-card-name">${escapeHtml(displayName)}</span>
                   ${getColorDotHtml(p.color, 25)}
                   ${storageWithGB ? `<span class="phone-card-storage">${escapeHtml(storageWithGB)}</span>` : ''}
                 </div>
