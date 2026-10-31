@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261031_235951">
+  <link rel="stylesheet" href="css/style.css?v=20261101_004252">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261031_235951";
+    var CURRENT_PAGE_VERSION = "20261101_004252";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1076,12 +1076,12 @@
               <div class="unified-date-filter-box">
                 <select class="unified-mode-select" id="repairModeSelect" onchange="setRepairMode(this.value)"
                   title="Xem theo Ngày / Tháng / Năm">
-                  <option value="year" selected>Năm</option>
-                  <option value="day">Ngày</option>
+                  <option value="day" selected>Ngày</option>
                   <option value="month">Tháng</option>
+                  <option value="year">Năm</option>
                 </select>
 
-                <div class="unified-date-ctrls" id="repairDateFilterBox" style="display: none;">
+                <div class="unified-date-ctrls" id="repairDateFilterBox" style="display: inline-flex;">
                   <button type="button" class="unified-arrow-btn" onclick="changeRepairFilterDate(-1)"
                     title="Lùi 1 ngày">
                     <svg viewBox="0 0 24 24">
@@ -1128,7 +1128,7 @@
                   </button>
                 </div>
 
-                <div class="unified-date-ctrls" id="repairYearFilterBox">
+                <div class="unified-date-ctrls" id="repairYearFilterBox" style="display: none;">
                   <button type="button" class="unified-arrow-btn" onclick="changeRepairFilterYear(-1)"
                     title="Lùi 1 năm">
                     <svg viewBox="0 0 24 24">
@@ -1472,13 +1472,13 @@
             <div class="unified-date-filter-box" style="margin: 0;">
               <select class="unified-mode-select" id="bangaModeSelect" onchange="setBangaMode(this.value)"
                 title="Xem theo Ngày / Tháng / Năm / Tất cả">
-                <option value="year" selected>Năm</option>
-                <option value="day">Ngày</option>
+                <option value="day" selected>Ngày</option>
                 <option value="month">Tháng</option>
+                <option value="year">Năm</option>
                 <option value="all">Tất cả</option>
               </select>
 
-              <div class="unified-date-ctrls" id="bangaDateFilterBox" style="display: none;">
+              <div class="unified-date-ctrls" id="bangaDateFilterBox" style="display: inline-flex;">
                 <button type="button" class="unified-arrow-btn" onclick="changeBangaFilterDate(-1)" title="Lùi 1 ngày">
                   <svg viewBox="0 0 24 24">
                     <path d="M15 18l-6-6 6-6" />
@@ -1797,7 +1797,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261031_235951" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261101_004252" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5287,10 +5287,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261031_235951"></script>
+  <script src="js/seed_data.js?v=20261101_004252"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261031_235951"></script>
+  <script src="js/main.js?v=20261101_004252"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

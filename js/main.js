@@ -1614,6 +1614,12 @@
       if (bangaDateDisp) bangaDateDisp.innerText = dateStr;
       const bangaMonthDisp = document.getElementById('filterBangaMonthDisplay');
       if (bangaMonthDisp) bangaMonthDisp.innerText = monthStr;
+      const bangaModeSelect = document.getElementById('bangaModeSelect');
+      if (bangaModeSelect) bangaModeSelect.value = 'day';
+      const bangaDayBox = document.getElementById('bangaDateFilterBox');
+      if (bangaDayBox) bangaDayBox.style.display = 'inline-flex';
+      const bangaMonthBox = document.getElementById('bangaMonthFilterBox');
+      if (bangaMonthBox) bangaMonthBox.style.display = 'none';
 
       // 3. Tab PHẦN MỀM
       swFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
@@ -1624,6 +1630,14 @@
       repairFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
       const repDateDisp = document.getElementById('filterRepairDateDisplay');
       if (repDateDisp) repDateDisp.innerText = dateStr;
+      const repairModeSelect = document.getElementById('repairModeSelect');
+      if (repairModeSelect) repairModeSelect.value = 'day';
+      const repairDayBox = document.getElementById('repairDateFilterBox');
+      if (repairDayBox) repairDayBox.style.display = 'inline-flex';
+      const repairMonthBox = document.getElementById('repairMonthFilterBox');
+      if (repairMonthBox) repairMonthBox.style.display = 'none';
+      const repairYearBox = document.getElementById('repairYearFilterBox');
+      if (repairYearBox) repairYearBox.style.display = 'none';
       if (typeof updateRepairDateDisplay === 'function') {
         updateRepairDateDisplay();
       }
@@ -3441,7 +3455,7 @@
 
 
     // BÁN GÀ VIEW MODE (DAY / MONTH / YEAR)
-    let bangaViewMode = 'year';
+    let bangaViewMode = 'day';
     let currentBangaDateFilter = getVietnamDate();
     let currentBangaMonthFilter = { month: currentBangaDateFilter.getMonth(), year: currentBangaDateFilter.getFullYear() };
     let currentBangaYearFilter = currentBangaDateFilter.getFullYear();
@@ -12743,7 +12757,7 @@
       }
     }
 
-    let repairViewMode = 'year';
+    let repairViewMode = 'day';
     let currentRepairMonthFilter = { month: repairFilterDate.getMonth(), year: repairFilterDate.getFullYear() };
     let currentRepairYearFilter = repairFilterDate.getFullYear();
 
