@@ -7167,21 +7167,6 @@
           width: 100% !important;
           margin: 0 !important;
         }
-        /* ẨN Ô TÀI KHOẢN, GHI CHÚ, LINK ROM TRÊN MOBILE THEO YÊU CẦU */
-        .sw-shortcuts-container .sw-shortcut-rom,
-        .sw-shortcuts-container .sw-shortcut-accounts,
-        .sw-shortcuts-container .sw-shortcut-notes {
-          display: none !important;
-        }
-        .sw-shortcuts-container .sw-shortcut-tool {
-          order: 1 !important;
-        }
-        .sw-shortcuts-container .sw-shortcut-testpoint {
-          order: 2 !important;
-        }
-        .sw-shortcuts-container .sw-shortcut-congno {
-          order: 3 !important;
-        }
         .sw-shortcuts-container .sw-pill-btn,
         #tab-phanmem .sw-pill-btn {
           width: 100% !important;
@@ -7211,6 +7196,28 @@
           border-color: #a78bfa !important;
           color: #ffffff !important;
           box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4) !important;
+        }
+
+        /* ẨN Ô TÀI KHOẢN, GHI CHÚ, LINK ROM TRÊN MOBILE THEO YÊU CẦU */
+        .sw-shortcuts-container .sw-shortcut-rom,
+        .sw-shortcuts-container .sw-shortcut-accounts,
+        .sw-shortcuts-container .sw-shortcut-notes,
+        #tab-phanmem .sw-shortcut-rom,
+        #tab-phanmem .sw-shortcut-accounts,
+        #tab-phanmem .sw-shortcut-notes {
+          display: none !important;
+        }
+        .sw-shortcuts-container .sw-shortcut-tool,
+        #tab-phanmem .sw-shortcut-tool {
+          order: 1 !important;
+        }
+        .sw-shortcuts-container .sw-shortcut-testpoint,
+        #tab-phanmem .sw-shortcut-testpoint {
+          order: 2 !important;
+        }
+        .sw-shortcuts-container .sw-shortcut-congno,
+        #tab-phanmem .sw-shortcut-congno {
+          order: 3 !important;
         }
 
         /* HÀNG 4 & 5: BỘ LỌC NGÀY & NÚT DANH SÁCH PHẦN MỀM / TẠO ĐƠN MỚI */
