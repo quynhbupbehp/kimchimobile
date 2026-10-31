@@ -3034,9 +3034,7 @@
         });
       }
 
-      // (Lãi tổng chỉ bao gồm: Bán Hàng + Bán Gà + Sửa Chữa)
-
-      // 4. BÁN GÀ (bangaDatabase)
+      // 3. BÁN GÀ (bangaDatabase)
       if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
         bangaDatabase.forEach(bg => {
           if (!bg.dateTime) return;
@@ -3049,6 +3047,27 @@
             let y = parseInt(dp[2], 10);
             let prof = parsePriceNum(bg.profit);
             if (m === curMonth && y === curYear) {
+              totalMonth += prof;
+              if (d === curDay) {
+                totalDay += prof;
+              }
+            }
+          }
+        });
+      }
+
+      // 4. PHẦN MỀM (softwareDatabase)
+      // Lãi ngày = Lãi Bán Hàng + Lãi Bán Gà + Lãi Sửa Chữa + Lãi Phần Mềm trong ngày
+      // Lãi tháng = Lãi Bán Hàng + Lãi Bán Gà + Lãi Sửa Chữa + Lãi Phần Mềm trong tháng
+      if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
+        softwareDatabase.forEach(item => {
+          let prof = parsePriceNum(item.profit) || 0;
+          let itemYear = parseInt(item.year || curYear, 10);
+          let itemParts = (item.dayMonth || '').replace(/\//g, '-').split('-');
+          if (itemParts.length === 2) {
+            let d = parseInt(itemParts[0], 10);
+            let m = parseInt(itemParts[1], 10) - 1;
+            if (m === curMonth && itemYear === curYear) {
               totalMonth += prof;
               if (d === curDay) {
                 totalDay += prof;
@@ -10630,6 +10649,10 @@
       if (dayRevEl) dayRevEl.innerText = swHideProfits ? '***' : formatPriceStr(dayRevenue);
       const monthRevEl = document.getElementById('swMonthRevenueText');
       if (monthRevEl) monthRevEl.innerText = swHideProfits ? '***' : formatPriceStr(monthRevenue);
+
+      if (typeof updateSidebarOverallProfits === 'function') {
+        updateSidebarOverallProfits();
+      }
     }
 
     const SW_QUICK_LINKS = {
