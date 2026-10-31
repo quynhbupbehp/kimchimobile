@@ -2598,14 +2598,18 @@
         let methodColorVal = isMissing ? '#ffffff' : methodColor;
         let dateTimeColor = isMissing ? '#ffffff' : '#ffffff';
 
+        let displayTotal = formatPriceStr(item.total);
+        let displayPriceIn = formatPriceStr(item.priceIn || '0');
+        let displayProfit = formatPriceStr(item.profit || '0');
+
         return `
           <tr${trClass}${missingTitle} ondblclick="editSale(${item.id})" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ editSale(${item.id}); } this._lastTap=now;" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết phiếu">
             <td${tdClass} class="sales-td-name" style="font-weight: 800; font-size: 1.26rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; ${nameColorStyle}">${displayName}</td>
             <td${tdClass} class="sales-td-price" style="text-align: center; vertical-align: middle;">
-              <span class="sales-price-badge" style="display: inline-block; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); color: #ffffff !important; font-weight: 900; font-size: 1.12rem; padding: 2px 8px; border-radius: 6px; border: 1px solid #fcd34d; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.45); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); letter-spacing: 0.5px;">${item.total}</span>
+              <span class="sales-price-badge" style="display: inline-block; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); color: #ffffff !important; font-weight: 900; font-size: 1.12rem; padding: 2px 8px; border-radius: 6px; border: 1px solid #fcd34d; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.45); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); letter-spacing: 0.5px;">${displayTotal}</span>
             </td>
-            <td${tdClass} class="sales-td-cost" style="color: ${priceInColor} !important; font-weight: 900; font-size: 1.18rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.priceIn}</td>
-            <td${tdClass} class="sales-td-profit" style="font-weight: 900; color: ${profitColor} !important; font-size: 1.18rem; text-align: center;">${isSalesSensitiveHidden ? '***' : item.profit}</td>
+            <td${tdClass} class="sales-td-cost" style="color: ${priceInColor} !important; font-weight: 900; font-size: 1.18rem; text-align: center;">${isSalesSensitiveHidden ? '***' : displayPriceIn}</td>
+            <td${tdClass} class="sales-td-profit" style="font-weight: 900; color: ${profitColor} !important; font-size: 1.18rem; text-align: center;">${isSalesSensitiveHidden ? '***' : displayProfit}</td>
             <td${tdClass} style="text-align: center;"><span style="font-weight: 800; font-size: 1.1rem; color: ${methodColorVal} !important; cursor: default; user-select: none;">${item.method}</span></td>
             <td${tdClass} style="text-align: center;">
               <div class="action-btn-group" style="justify-content: center;">
@@ -3049,9 +3053,9 @@
             let lastWord = restWords[restWords.length - 1];
             if (lastWord && lastWord.toUpperCase().includes('GB')) {
               storage = storage || lastWord;
-              phoneName = phoneName || restWords.slice(0, -1).join(' ');
+              phoneName = restWords.slice(0, -1).join(' ');
             } else {
-              phoneName = phoneName || rest;
+              phoneName = rest;
             }
           }
         }
@@ -3316,20 +3320,12 @@
         let nameHtml = '';
         if (details.isPhone) {
           let displayName = '';
-          // Nếu có brand hợp lệ VÀ tên máy chưa chứa tên hãng (TUYỆT ĐỐI KHÔNG GHÉP nếu tên máy đã có tên hãng khác như Oppo, Samsung...)
-          if (details.brand && details.phoneName && 
-              !details.phoneName.toLowerCase().startsWith(details.brand.toLowerCase()) &&
-              !/^(?:iphone|samsung|oppo|xiaomi|redmi|vivo|realme|nokia|huawei|ipad|sony|vsmart|google|pixel)\b/i.test(details.phoneName)) {
-            let brandDisplay = formatBrandDeviceName(details.brand);
-            let pPhoneName = formatBrandDeviceName(details.phoneName);
-            if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️') {
-              displayName = `<span style="color: #ef4444; font-size: 1.15rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${pPhoneName}`;
-            } else {
-              displayName = `${brandDisplay} - ${pPhoneName}`;
-            }
+          let rawDeviceName = details.phoneName || item.name || '';
+          // Bỏ tiền tố hãng nếu có ở đầu
+          rawDeviceName = rawDeviceName.replace(/^(?:iphone|samsung|oppo|xiaomi|redmi|vivo|realme|nokia|huawei|ipad|sony|vsmart|google|pixel)\s*[-–]?\s*/i, '');
+          if (details.brand && (details.brand === 'MÁY NGOÀI' || details.brand === '❤️❤️❤️')) {
+            displayName = `<span style="color: #ef4444; font-size: 1.15rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${formatBrandDeviceName(rawDeviceName)}`;
           } else {
-            // Tên máy trực tiếp (ví dụ: "12 PRO MAX", "OPPO A78", "Note 12", "Gen 11", "6S Plus"...)
-            let rawDeviceName = details.phoneName || item.name || '';
             displayName = formatBrandDeviceName(rawDeviceName);
           }
 
@@ -3368,14 +3364,18 @@
           nameHtml = `<div style="display: inline-flex; align-items: center; justify-content: flex-start; width: 100%; white-space: nowrap;"><span style="font-size: 1.27rem; font-weight: 800; white-space: nowrap;">${customName}</span></div>`;
         }
 
+        let bangaTotal = formatPriceStr(item.total);
+        let bangaPriceIn = formatPriceStr(item.priceIn || '0');
+        let bangaProfit = formatPriceStr(item.profit || '0');
+
         return `
           <tr ondblclick="editBangaSale('${item.id}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ editBangaSale('${item.id}'); } this._lastTap=now;" style="cursor: pointer;" title="Nháy đúp để xem và sửa chi tiết đơn">
             <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle; white-space: nowrap;">
               ${nameHtml}
             </td>
-            <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${item.total}</td>
-            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${isBangaSensitiveHidden ? '***' : (item.priceIn || '0')}</td>
-            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${isBangaSensitiveHidden ? '***' : item.profit}</td>
+            <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${bangaTotal}</td>
+            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${isBangaSensitiveHidden ? '***' : bangaPriceIn}</td>
+            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${isBangaSensitiveHidden ? '***' : bangaProfit}</td>
             <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 900; font-size: 1.05rem; color: ${methodColor}; cursor: default; user-select: none;">${item.method || 'Tiền mặt'}</span></td>
             <td style="color: #ec4899; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${item.dateTime}</td>
             <td style="text-align: center; vertical-align: middle;">
