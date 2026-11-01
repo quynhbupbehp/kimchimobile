@@ -2967,16 +2967,41 @@
         });
       }
 
+      let daySoftwareProfit = 0;
+      let daySoftwareRevenue = 0;
+      let monthSoftwareProfit = 0;
+      let monthSoftwareRevenue = 0;
+      if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
+        softwareDatabase.forEach(item => {
+          let prof = parsePriceNum(item.profit) || 0;
+          let rev = parsePriceNum(item.price) || 0;
+          let itemYear = parseInt(item.year || targetYear, 10);
+          let itemParts = (item.dayMonth || '').replace(/\//g, '-').split('-');
+          if (itemParts.length === 2) {
+            let d = parseInt(itemParts[0], 10);
+            let m = parseInt(itemParts[1], 10) - 1;
+            if (m === targetMonth && itemYear === targetYear) {
+              monthSoftwareProfit += prof;
+              monthSoftwareRevenue += rev;
+              if (d === currentSalesDateFilter.getDate()) {
+                daySoftwareProfit += prof;
+                daySoftwareRevenue += rev;
+              }
+            }
+          }
+        });
+      }
+
       // LÃI & DOANH THU THEO YÊU CẦU:
       // - Doanh thu ngày = Doanh thu bán hàng của ngày đó
       // - Doanh thu tháng = Doanh thu bán hàng của tháng đó
-      // - Lãi ngày = Lãi bán hàng + Lãi bán gà + Lãi sửa chữa trong 1 ngày đó
-      // - Lãi tháng = Lãi bán hàng + Lãi bán gà + Lãi sửa chữa trong 1 tháng đó
+      // - Lãi ngày = Lãi bán hàng + Lãi sửa chữa + Lãi phần mềm + Lãi bán gà
+      // - Lãi tháng = Lãi bán hàng + Lãi sửa chữa + Lãi phần mềm + Lãi bán gà
       let totalDayRevenue = daySalesRevenue;
-      let totalDayProfit = daySalesProfit + dayBangaProfit + dayRepairProfit;
+      let totalDayProfit = daySalesProfit + dayRepairProfit + daySoftwareProfit + dayBangaProfit;
 
       let totalMonthRevenue = monthSalesRevenue;
-      let totalMonthProfit = monthSalesProfit + monthBangaProfit + monthRepairProfit;
+      let totalMonthProfit = monthSalesProfit + monthRepairProfit + monthSoftwareProfit + monthBangaProfit;
 
       // Cập nhật các ô hiển thị Doanh thu & Lãi
       const salesMonthRevenueEl = document.getElementById('salesMonthRevenueVal');
@@ -3117,33 +3142,48 @@
       const dayEl = document.getElementById('sidebarTotalDayProfitVal');
       if (!monthEl && !dayEl) return;
 
-      const vnNow = getVietnamDate();
-      const curDay = vnNow.getDate();
-      const curMonth = vnNow.getMonth();
-      const curYear = vnNow.getFullYear();
-
-      const ddStr = String(curDay).padStart(2, '0');
-      const mmStr = String(curMonth + 1).padStart(2, '0');
-      const todayStr = `${ddStr}/${mmStr}/${curYear}`;
+      // Xác định ngày và tháng mục tiêu:
+      // Ưu tiên ngày đang xem trên giao diện Bán Hàng (nếu có), fallback là ngày hiện tại Việt Nam
+      let targetD, targetM, targetY;
+      if (typeof currentSalesDateFilter !== 'undefined' && currentSalesDateFilter instanceof Date && !isNaN(currentSalesDateFilter.getTime())) {
+        targetD = currentSalesDateFilter.getDate();
+        targetM = currentSalesDateFilter.getMonth();
+        targetY = currentSalesDateFilter.getFullYear();
+      } else {
+        const vnNow = getVietnamDate();
+        targetD = vnNow.getDate();
+        targetM = vnNow.getMonth();
+        targetY = vnNow.getFullYear();
+      }
 
       let totalMonth = 0;
       let totalDay = 0;
 
+      // Helper bóc tách ngày, tháng, năm từ chuỗi bất kỳ ("DD/MM/YYYY", "HH:mm - DD/MM/YYYY", "DD-MM-YYYY", v.v.)
+      function parseItemDMY(dateRaw) {
+        if (!dateRaw) return null;
+        let s = String(dateRaw).trim();
+        let parts = s.split(' - ');
+        let dStr = parts.length >= 2 ? parts[1].trim() : parts[0].trim();
+        let match = dStr.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}))?/);
+        if (match) {
+          let d = parseInt(match[1], 10);
+          let m = parseInt(match[2], 10) - 1;
+          let y = match[3] ? parseInt(match[3], 10) : targetY;
+          return { d, m, y };
+        }
+        return null;
+      }
+
       // 1. BÁN HÀNG (salesDatabase)
       if (Array.isArray(salesDatabase)) {
         salesDatabase.forEach(item => {
-          if (!item.dateTime) return;
-          let parts = item.dateTime.split(' - ');
-          let dateStr = parts.length >= 2 ? parts[1].trim() : parts[0].trim();
-          let dp = dateStr.split('/');
-          if (dp.length === 3) {
-            let d = parseInt(dp[0], 10);
-            let m = parseInt(dp[1], 10) - 1;
-            let y = parseInt(dp[2], 10);
-            let prof = parsePriceNum(item.profit);
-            if (m === curMonth && y === curYear) {
+          let prof = parsePriceNum(item.profit || 0);
+          let dmy = parseItemDMY(item.dateTime);
+          if (dmy) {
+            if (dmy.m === targetM && dmy.y === targetY) {
               totalMonth += prof;
-              if (d === curDay) {
+              if (dmy.d === targetD) {
                 totalDay += prof;
               }
             }
@@ -3165,19 +3205,13 @@
       }
       if (Array.isArray(rList)) {
         rList.forEach(item => {
-          let dateStr = (item.dateFormatted || '').trim();
-          if (dateStr) {
-            let dp = dateStr.split('/');
-            if (dp.length === 3) {
-              let d = parseInt(dp[0], 10);
-              let m = parseInt(dp[1], 10) - 1;
-              let y = parseInt(dp[2], 10);
-              let prof = parsePriceNum(item.profit);
-              if (m === curMonth && y === curYear) {
-                totalMonth += prof;
-                if (d === curDay) {
-                  totalDay += prof;
-                }
+          let prof = parsePriceNum(item.profit || 0);
+          let dmy = parseItemDMY(item.dateFormatted || item.dateTime);
+          if (dmy) {
+            if (dmy.m === targetM && dmy.y === targetY) {
+              totalMonth += prof;
+              if (dmy.d === targetD) {
+                totalDay += prof;
               }
             }
           }
@@ -3187,18 +3221,12 @@
       // 3. BÁN GÀ (bangaDatabase)
       if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
         bangaDatabase.forEach(bg => {
-          if (!bg.dateTime) return;
-          let parts = bg.dateTime.split(' - ');
-          let dateStr = parts.length >= 2 ? parts[1].trim() : parts[0].trim();
-          let dp = dateStr.split('/');
-          if (dp.length === 3) {
-            let d = parseInt(dp[0], 10);
-            let m = parseInt(dp[1], 10) - 1;
-            let y = parseInt(dp[2], 10);
-            let prof = parsePriceNum(bg.profit);
-            if (m === curMonth && y === curYear) {
+          let prof = parsePriceNum(bg.profit || 0);
+          let dmy = parseItemDMY(bg.dateTime);
+          if (dmy) {
+            if (dmy.m === targetM && dmy.y === targetY) {
               totalMonth += prof;
-              if (d === curDay) {
+              if (dmy.d === targetD) {
                 totalDay += prof;
               }
             }
@@ -3207,19 +3235,16 @@
       }
 
       // 4. PHẦN MỀM (softwareDatabase)
-      // Lãi ngày = Lãi Bán Hàng + Lãi Bán Gà + Lãi Sửa Chữa + Lãi Phần Mềm trong ngày
-      // Lãi tháng = Lãi Bán Hàng + Lãi Bán Gà + Lãi Sửa Chữa + Lãi Phần Mềm trong tháng
       if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
         softwareDatabase.forEach(item => {
-          let prof = parsePriceNum(item.profit) || 0;
-          let itemYear = parseInt(item.year || curYear, 10);
-          let itemParts = (item.dayMonth || '').replace(/\//g, '-').split('-');
-          if (itemParts.length === 2) {
-            let d = parseInt(itemParts[0], 10);
-            let m = parseInt(itemParts[1], 10) - 1;
-            if (m === curMonth && itemYear === curYear) {
+          let prof = parsePriceNum(item.profit || 0);
+          let itemYear = parseInt(item.year || targetY, 10);
+          let rawDM = item.dayMonth || '';
+          let dmy = parseItemDMY(rawDM + (item.year ? `-${item.year}` : `-${targetY}`));
+          if (dmy) {
+            if (dmy.m === targetM && itemYear === targetY) {
               totalMonth += prof;
-              if (d === curDay) {
+              if (dmy.d === targetD) {
                 totalDay += prof;
               }
             }
@@ -3229,9 +3254,11 @@
 
       if (monthEl) {
         monthEl.innerText = formatPriceStr(totalMonth);
+        monthEl.title = `Lãi Tháng = Bán Hàng + Sửa Chữa + Phần Mềm + Bán Gà (${formatPriceStr(totalMonth)})`;
       }
       if (dayEl) {
         dayEl.innerText = formatPriceStr(totalDay);
+        dayEl.title = `Lãi Ngày = Bán Hàng + Sửa Chữa + Phần Mềm + Bán Gà (${formatPriceStr(totalDay)})`;
       }
     }
     window.updateSidebarOverallProfits = updateSidebarOverallProfits;
