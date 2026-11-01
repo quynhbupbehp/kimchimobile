@@ -2992,26 +2992,32 @@
         });
       }
 
-      // LÃI & DOANH THU THEO YÊU CẦU:
-      // - Doanh thu ngày = Doanh thu bán hàng của ngày đó
-      // - Doanh thu tháng = Doanh thu bán hàng của tháng đó
-      // - Lãi ngày = Lãi bán hàng + Lãi sửa chữa + Lãi phần mềm + Lãi bán gà
-      // - Lãi tháng = Lãi bán hàng + Lãi sửa chữa + Lãi phần mềm + Lãi bán gà
-      let totalDayRevenue = daySalesRevenue;
-      let totalDayProfit = daySalesProfit + dayRepairProfit + daySoftwareProfit + dayBangaProfit;
+      // ============================================================
+      // CÔNG THỨC CHUẨN XÁC THEO YÊU CẦU:
+      // 1. Ô DOANH THU BÁN HÀNG (trên nút Danh sách bán hàng):
+      //    - Doanh thu ngày = Tổng giá bán của tab Bán Hàng trong 1 ngày (daySalesRevenue)
+      //    - Doanh thu tháng = Tổng giá bán của tab Bán Hàng trong 1 tháng (monthSalesRevenue)
+      //
+      // 2. Ô LÃI BÁN HÀNG (trên nút Tạo phiếu mới):
+      //    - Lãi ngày = Lãi của riêng tab Bán Hàng trong 1 ngày (daySalesProfit)
+      //    - Lãi tháng = Lãi của riêng tab Bán Hàng trong 1 tháng (monthSalesProfit)
+      //
+      // 3. CỤM LÃI ĐĂNG XUẤT (ở góc dưới sidebar):
+      //    - Lãi ngày = Lãi của (Bán hàng + Sửa chữa + Bán gà + Phần mềm) trong 1 ngày
+      //    - Lãi tháng = Lãi của (Bán hàng + Sửa chữa + Bán gà + Phần mềm) trong 1 tháng
+      // ============================================================
 
-      let totalMonthRevenue = monthSalesRevenue;
-      let totalMonthProfit = monthSalesProfit + monthRepairProfit + monthSoftwareProfit + monthBangaProfit;
-
-      // Cập nhật các ô hiển thị Doanh thu & Lãi
+      // 1. Cập nhật Ô DOANH THU BÁN HÀNG
       const salesMonthRevenueEl = document.getElementById('salesMonthRevenueVal');
       if (salesMonthRevenueEl) {
-        salesMonthRevenueEl.innerText = isSalesSensitiveHidden ? '***' : formatPriceStr(totalMonthRevenue);
+        salesMonthRevenueEl.innerText = isSalesSensitiveHidden ? '***' : formatPriceStr(monthSalesRevenue);
+        salesMonthRevenueEl.title = `Doanh thu Tháng Bán Hàng (${formatPriceStr(monthSalesRevenue)})`;
       }
 
       const salesDayRevenueEl = document.getElementById('salesDayRevenueVal');
       if (salesDayRevenueEl) {
-        salesDayRevenueEl.innerText = isSalesSensitiveHidden ? '***' : formatPriceStr(totalDayRevenue);
+        salesDayRevenueEl.innerText = isSalesSensitiveHidden ? '***' : formatPriceStr(daySalesRevenue);
+        salesDayRevenueEl.title = `Doanh thu Ngày Bán Hàng (${formatPriceStr(daySalesRevenue)})`;
       }
 
       const salesDoanhThuEl = document.getElementById('salesDoanhThuVal');
@@ -3019,26 +3025,29 @@
         salesDoanhThuEl.innerText = isSalesSensitiveHidden ? '***' : formatPriceStr(totalRevenue);
       }
 
+      // 2. Cập nhật Ô LÃI BÁN HÀNG (CHỈ TÍNH RIÊNG TAB BÁN HÀNG)
       const salesMonthProfitEl = document.getElementById('salesMonthProfitVal');
       if (salesMonthProfitEl) {
-        salesMonthProfitEl.innerText = isSalesSensitiveHidden ? '***' : formatPriceStr(totalMonthProfit);
+        salesMonthProfitEl.innerText = isSalesSensitiveHidden ? '***' : formatPriceStr(monthSalesProfit);
+        salesMonthProfitEl.title = `Lãi Tháng Bán Hàng (${formatPriceStr(monthSalesProfit)})`;
       }
 
       const salesDayProfitEl = document.getElementById('salesDayProfitVal') || document.getElementById('salesLaiVal');
       if (salesDayProfitEl) {
-        salesDayProfitEl.innerText = isSalesSensitiveHidden ? '***' : formatPriceStr(totalDayProfit);
+        salesDayProfitEl.innerText = isSalesSensitiveHidden ? '***' : formatPriceStr(daySalesProfit);
+        salesDayProfitEl.title = `Lãi Ngày Bán Hàng (${formatPriceStr(daySalesProfit)})`;
       }
 
-      // CẬP NHẬT ICON LÃI NGÀY: 0 - 999 MẶT KHÓC, >= 1000 MẶT CƯỜI
+      // CẬP NHẬT ICON LÃI NGÀY BÁN HÀNG: 0 - 999 MẶT KHÓC, >= 1000 MẶT CƯỜI
       const salesProfitEmojiEl = document.getElementById('salesProfitEmojiIcon');
       if (salesProfitEmojiEl) {
-        let dayProfitVal = parsePriceNum(totalDayProfit);
+        let dayProfitVal = parsePriceNum(daySalesProfit);
         if (dayProfitVal >= 1000) {
           salesProfitEmojiEl.src = 'img/icon_happy.png';
-          salesProfitEmojiEl.title = 'Lãi ngày: ' + formatPriceStr(totalDayProfit) + ' (Đạt từ 1.000 trở lên)';
+          salesProfitEmojiEl.title = 'Lãi ngày bán hàng: ' + formatPriceStr(daySalesProfit) + ' (Đạt từ 1.000 trở lên)';
         } else {
           salesProfitEmojiEl.src = 'img/icon_crying.png';
-          salesProfitEmojiEl.title = 'Lãi ngày: ' + formatPriceStr(totalDayProfit) + ' (Từ 0 - 999)';
+          salesProfitEmojiEl.title = 'Lãi ngày bán hàng: ' + formatPriceStr(daySalesProfit) + ' (Từ 0 - 999)';
         }
       }
 
