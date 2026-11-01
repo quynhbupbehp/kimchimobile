@@ -2102,6 +2102,11 @@
               }
             });
           }
+        }, err => console.error("Lỗi sync software realtime:", err));
+      } catch (err) {
+        console.error("Lỗi setup sync software:", err);
+      }
+
       // 8. Đồng bộ Danh sách Hãng Điện Thoại Mới (custom brands)
       try {
         db.collection('settings').doc('custom_brands').onSnapshot(doc => {
