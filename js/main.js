@@ -4314,7 +4314,7 @@
         let profitVal = formatPriceStr(sumTotalNum - sumPriceInNum);
 
         let record = {
-          id: Date.now() + Math.random(),
+          id: Date.now(),
           name: combinedNames,
           accessory: combinedNames,
           total: totalVal,
@@ -9214,7 +9214,7 @@
           } else {
             logoHtml = getPhoneBrandLogoHtml(p.brand, p.name, 25);
             // Trên Mobile: Thay thế cụm PRO MAX thành PRM để tên máy không bị dài che khuất
-            displayName = displayName.replace(/\bpro\s*max\b/gi, 'PRM');
+            displayName = displayName.replace(/pro\s*max/gi, 'PRM');
           }
 
           return `
