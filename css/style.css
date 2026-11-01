@@ -1762,7 +1762,13 @@
 
     .phone-spec-col.col-origin {
       flex: 0 0 auto;
-      margin-right: 8px;
+      margin-right: 6px;
+    }
+    .phone-spec-col.col-origin::after {
+      content: "-";
+      margin-left: 6px;
+      color: #64748b;
+      display: inline-block;
     }
 
     .phone-spec-col.col-condition {
@@ -1775,10 +1781,16 @@
       margin-left: 8px;
       text-align: right;
     }
+    .phone-spec-col.col-pin-status::after {
+      content: "-";
+      margin-left: 6px;
+      color: #64748b;
+      display: inline-block;
+    }
 
     .phone-spec-col.col-pin-pct {
       flex: 0 0 auto;
-      margin-left: 8px;
+      margin-left: 6px;
       text-align: right;
     }
 
@@ -7871,6 +7883,9 @@
           flex: 0 0 auto !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
+        }
+        .phone-spec-col::after {
+          content: none !important;
         }
         .phone-spec-col.col-condition {
           flex: 1 1 auto !important;
