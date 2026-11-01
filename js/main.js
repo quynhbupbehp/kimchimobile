@@ -262,6 +262,9 @@
       if (typeof initUniversalSearchClearButtons === 'function') {
         setTimeout(initUniversalSearchClearButtons, 30);
       }
+      if (typeof updateSidebarOverallProfits === 'function') {
+        updateSidebarOverallProfits();
+      }
     }
     window.switchMainTab = switchMainTab;
 
@@ -1919,6 +1922,7 @@
             try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
             if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
             if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+            if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
           } else if (snapshot.empty && typeof salesDatabase !== 'undefined' && salesDatabase.length > 0) {
             salesDatabase.forEach(item => {
               if (item && item.id) {
@@ -1953,6 +1957,7 @@
             bangaDatabase = list;
             try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
             if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+            if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
           } else if (snapshot.empty && typeof bangaDatabase !== 'undefined' && bangaDatabase.length > 0) {
             bangaDatabase.forEach(item => {
               if (item && item.id) {
@@ -2061,6 +2066,7 @@
             repairDatabase = list;
             try { localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase)); } catch(e){}
             if (typeof renderRepairTable === 'function') renderRepairTable();
+            if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
           } else if (snapshot.empty && typeof repairDatabase !== 'undefined' && repairDatabase.length > 0) {
             console.log("Đang khởi tạo đồng bộ dữ liệu Sửa Chữa lên Cloud Firestore...");
             repairDatabase.forEach(item => {
@@ -2093,6 +2099,7 @@
             if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
               renderSoftwareDebtTable();
             }
+            if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
           } else if (snapshot.empty && typeof softwareDatabase !== 'undefined' && softwareDatabase.length > 0) {
             // Nếu trên Firestore chưa có đơn phần mềm nào, tự động đẩy toàn bộ dữ liệu đang có lên Firestore
             console.log("Đang khởi tạo đồng bộ dữ liệu phần mềm lên Cloud Firestore...");
@@ -2376,6 +2383,7 @@
           });
         }
       }
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
 
     function saveBangaStorage(itemToSync) {
@@ -2391,6 +2399,7 @@
           });
         }
       }
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
 
     let tempCart = [];
@@ -2570,6 +2579,9 @@
           renderMainXacGrid();
         }
       }
+      if (typeof updateSidebarOverallProfits === 'function') {
+        updateSidebarOverallProfits();
+      }
     }
     window.applyCustomDateFilter = applyCustomDateFilter;
 
@@ -2651,6 +2663,9 @@
         const el = document.getElementById('filterMainXacDateDisplay');
         if (el) el.innerText = formatted;
         renderMainXacGrid();
+      }
+      if (typeof updateSidebarOverallProfits === 'function') {
+        updateSidebarOverallProfits();
       }
     }
     window.handleNativeDateChange = handleNativeDateChange;
@@ -10373,6 +10388,7 @@
           });
         }
       }
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
 
     let swFilterDate = getVietnamDate();
@@ -12891,6 +12907,7 @@
           });
         }
       }
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
     const saveRepairStorage = saveRepairDb;
 
@@ -16754,3 +16771,29 @@
         }
       }
     }, true);
+
+    // =========================================================
+    // TỰ ĐỘNG LÀM MỚI TỨC THÌ CỤM LÃI ĐĂNG XUẤT (REALTIME HEARTBEAT)
+    // Giúp cụm lãi đăng xuất luôn chính xác tức thì mà không cần F5
+    // =========================================================
+    (function initRealtimeSidebarProfitWatcher() {
+      // 1. Cập nhật ngay khi người dùng chuyển lại tab trình duyệt
+      window.addEventListener('focus', function () {
+        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+      });
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && typeof updateSidebarOverallProfits === 'function') {
+          updateSidebarOverallProfits();
+        }
+      });
+      window.addEventListener('pageshow', function () {
+        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+      });
+
+      // 2. Heartbeat chu kỳ 3 giây nhẹ nhàng đồng bộ lại lãi tổng thể
+      setInterval(function () {
+        if (typeof updateSidebarOverallProfits === 'function') {
+          updateSidebarOverallProfits();
+        }
+      }, 3000);
+    })();
