@@ -6778,7 +6778,7 @@
           z-index: 25 !important;
         }
         #tab-banhang .sales-table td {
-          padding: 9px 2px !important;
+          padding: 8px 2px !important;
           box-sizing: border-box !important;
           white-space: nowrap !important;
           overflow: hidden !important;
@@ -6802,7 +6802,7 @@
           min-width: 0 !important;
           text-align: left !important;
           padding-left: 6px !important;
-          font-size: 1.25rem !important;
+          font-size: 1.125rem !important; /* Giảm 10% từ 1.25rem */
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
@@ -6820,7 +6820,11 @@
           max-width: 22% !important;
           min-width: 0 !important;
           text-align: center !important;
-          padding: 6px 1px !important;
+          padding: 5px 1px !important;
+        }
+        #tab-banhang .sales-table td:nth-child(2) .sales-price-badge {
+          font-size: 1.11rem !important; /* Giảm 10% từ 1.232rem */
+          padding: 1px 7px !important;
         }
         #tab-banhang .sales-table th:nth-child(3) {
           width: 25% !important;
@@ -6835,8 +6839,8 @@
           max-width: 25% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 1.06rem !important; /* Giảm 10% từ 1.18rem */
-          padding: 6px 1px !important;
+          font-size: 0.954rem !important; /* Giảm 10% từ 1.06rem */
+          padding: 5px 1px !important;
         }
         #tab-banhang .sales-table th:nth-child(4) {
           width: 15% !important;
@@ -6851,8 +6855,8 @@
           max-width: 15% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 1.06rem !important; /* Giảm 10% từ 1.18rem */
-          padding: 6px 1px !important;
+          font-size: 0.954rem !important; /* Giảm 10% từ 1.06rem */
+          padding: 5px 1px !important;
         }
         /* Ẩn cột HÌNH THỨC (5), THAO TÁC (6), GIỜ - NGÀY BÁN (7), THANH TOÁN (8) trên Mobile theo yêu cầu */
         #tab-banhang .sales-table th:nth-child(5),
@@ -8627,37 +8631,15 @@
           width: 100% !important;
         }
         #ticketModal .icon-btn-set {
-          display: flex !important;
-          gap: 3px !important;
-          flex-shrink: 0 !important;
+          display: none !important;
         }
-        #ticketModal .btn-svg-action {
-          width: 28px !important;
-          height: 38px !important;
-          flex: 0 0 28px !important;
-          border-radius: 7px !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          background: #0f172a !important;
-          padding: 0 !important;
+        #ticketModal .input-with-actions {
+          display: block !important;
+          width: 100% !important;
         }
-        #ticketModal .btn-svg-add {
-          border: 1.5px solid #2563eb !important;
-          color: #60a5fa !important;
-        }
-        #ticketModal .btn-svg-edit {
-          border: 1.5px solid #059669 !important;
-          color: #34d399 !important;
-        }
-        #ticketModal .btn-svg-del {
-          border: 1.5px solid #dc2626 !important;
-          color: #f87171 !important;
-        }
-        #ticketModal .btn-svg-action svg {
-          width: 16px !important;
-          height: 16px !important;
-          stroke: currentColor !important;
+        #ticketModal .input-with-actions .ticket-input {
+          width: 100% !important;
+          max-width: 100% !important;
         }
 
         /* POPUP SỬA/THÊM THÔNG TIN MÁY (#phoneModal) TRÊN MOBILE: ẨN TOÀN BỘ 3 NÚT ICON (THÊM, SỬA, XÓA), INPUT FULL 100% */
