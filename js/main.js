@@ -4586,11 +4586,11 @@
         sheetName = `BanHang_${timeSuffix}`;
         headerArr = ["Mã Phiếu", "Tên Hàng Hóa", "Giá Bán", "Giá Nhập", "Lãi", "Hình Thức", "Giờ - Ngày Bán", "Khách Hàng"];
         colsArr = [
-          { wch: 16 }, // Mã Phiếu
+          { wch: 18 }, // Mã Phiếu
           { wch: 35 }, // Tên Hàng Hóa
-          { wch: 14 }, // Giá Bán
-          { wch: 14 }, // Giá Nhập
-          { wch: 14 }, // Lãi
+          { wch: 15 }, // Giá Bán
+          { wch: 15 }, // Giá Nhập
+          { wch: 15 }, // Lãi
           { wch: 16 }, // Hình Thức
           { wch: 22 }, // Giờ - Ngày Bán
           { wch: 20 }  // Khách Hàng
@@ -4599,13 +4599,15 @@
         rowsArr = items.map(item => {
           let id = String(item.id || '');
           let name = String(item.name || '');
-          let total = item.total ? String(item.total) : '0';
-          let priceIn = item.priceIn ? String(item.priceIn) : '0';
-          let profit = item.profit ? String(item.profit) : '0';
+          let totalNum = parsePriceNum(item.total || item.price);
+          let priceInNum = parsePriceNum(item.priceIn);
+          let profitNum = item.profit !== undefined && item.profit !== null && item.profit !== '' 
+            ? parsePriceNum(item.profit) 
+            : (totalNum - priceInNum);
           let method = String(item.method || '');
           let dateTime = String(item.dateTime || '');
           let customer = String(item.customer || 'Khách lẻ');
-          return [id, name, total, priceIn, profit, method, dateTime, customer];
+          return [id, name, totalNum, priceInNum, profitNum, method, dateTime, customer];
         });
       } else {
         // Kiểu 2: Rút gọn (Tên hàng hóa, Giá bán, Hình thức, Giờ - Ngày bán)
@@ -4621,10 +4623,10 @@
 
         rowsArr = items.map(item => {
           let name = String(item.name || '');
-          let total = item.total ? String(item.total) : '0';
+          let totalNum = parsePriceNum(item.total || item.price);
           let method = String(item.method || '');
           let dateTime = String(item.dateTime || '');
-          return [name, total, method, dateTime];
+          return [name, totalNum, method, dateTime];
         });
       }
 
@@ -4637,7 +4639,7 @@
           ws['!cols'] = colsArr;
           XLSX.utils.book_append_sheet(wb, ws, sheetName);
           XLSX.writeFile(wb, `${fileName}.xlsx`);
-          closeSalesExportModal();
+          if (typeof closeSalesExportModal === 'function') closeSalesExportModal();
           alert(`Đã xuất thành công ${items.length} phiếu (${type === 'full' ? 'Kiểu 1: Đầy đủ' : 'Kiểu 2: Rút gọn'}) ra file Excel: ${fileName}.xlsx`);
           return;
         } catch (err) {
@@ -4660,7 +4662,7 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      closeSalesExportModal();
+      if (typeof closeSalesExportModal === 'function') closeSalesExportModal();
       alert(`Đã xuất thành công ${items.length} phiếu Bán Hàng!`);
     }
     window.executeExportSales = executeExportSales;
