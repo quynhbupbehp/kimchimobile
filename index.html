@@ -8,10 +8,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=20261101_155441">
+  <link rel="stylesheet" href="css/style.css?v=20261101_160632">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261101_155441";
+    var CURRENT_PAGE_VERSION = "20261101_160632";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -465,13 +465,14 @@
             </div>
           </div>
 
-          <!-- Cụm ở giữa: TÌM KIẾM -->
-          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: nowrap;">
+          <!-- Cụm ở giữa: TÌM KIẾM TRONG KHUNG -->
+          <div
+            style="display: flex; align-items: center; gap: 8px; height: 36px; box-sizing: border-box; background: #0c121e; border: 1.5px solid #1e293b; border-radius: 8px; padding: 0 12px; flex-shrink: 0; flex-wrap: nowrap;">
             <span
-              style="height: 36px; display: inline-flex; align-items: center; font-size: 0.82rem; font-weight: 900; color: #94a3b8; letter-spacing: 0.5px; white-space: nowrap;">TÌM
+              style="display: inline-flex; align-items: center; font-size: 0.82rem; font-weight: 900; color: #94a3b8; letter-spacing: 0.5px; white-space: nowrap; user-select: none;">TÌM
               KIẾM:</span>
             <input type="text" class="search-sales-input" inputmode="text"
-              style="height: 36px; line-height: 36px; box-sizing: border-box; width: 220px; padding: 0 12px; font-size: 0.85rem; border-radius: 8px; background: #0c121e; border: 1.5px solid #1e293b; color: #ffffff;"
+              style="height: 100%; line-height: 36px; box-sizing: border-box; width: 200px; padding: 0 4px; font-size: 0.85rem; border: none !important; outline: none !important; background: transparent !important; color: #ffffff; box-shadow: none !important;"
               placeholder="🔍 Tìm khách / hàng..." oninput="handleSearchSales(this)">
           </div>
 
@@ -1786,7 +1787,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261101_155441" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261101_160632" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5276,10 +5277,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261101_155441"></script>
+  <script src="js/seed_data.js?v=20261101_160632"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261101_155441"></script>
+  <script src="js/main.js?v=20261101_160632"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
