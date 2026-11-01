@@ -10,10 +10,10 @@
   <meta http-equiv="Expires" content="0">
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261101_181052">
+  <link rel="stylesheet" href="css/style.css?v=20261101_182425">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261101_181052";
+    var CURRENT_PAGE_VERSION = "20261101_182425";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -430,9 +430,9 @@
                   📤 Xuất
                 </button>
                 <button type="button" class="btn-action-sales" onclick="clearAllSalesData()"
-                  title="Xóa toàn bộ danh sách Bán Hàng để nhập lại từ đầu"
+                  title="Xóa danh sách Bán Hàng theo phạm vi thời gian đang chọn (Ngày, Tháng, Năm, Tất Cả)"
                   style="height: 36px; background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer; box-sizing: border-box;">
-                  🗑️ Xóa Hết
+                  🗑️ Xóa
                 </button>
                 <input type="file" id="salesExcelFileInput" accept=".csv, .xlsx, .xls, text/csv" style="display: none;"
                   onchange="handleImportSalesExcelFile(event)">
@@ -518,11 +518,12 @@
                 ❤️
               </button>
               <select class="unified-mode-select" id="salesModeSelect" onchange="setSalesMode(this.value)"
-                title="Xem theo Ngày / Tháng / Năm"
+                title="Xem theo Ngày / Tháng / Năm / Tất Cả"
                 style="height: 32px; font-size: 0.92rem; font-weight: 900; padding: 0 26px 0 12px; box-sizing: border-box; display: inline-flex; align-items: center;">
                 <option value="day" selected>Ngày</option>
                 <option value="month">Tháng</option>
                 <option value="year">Năm</option>
+                <option value="all">Tất Cả</option>
               </select>
 
               <div class="unified-date-ctrls" id="salesDateFilterBox"
@@ -1789,7 +1790,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261101_181052" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261101_182425" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5279,10 +5280,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261101_181052"></script>
+  <script src="js/seed_data.js?v=20261101_182425"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261101_181052"></script>
+  <script src="js/main.js?v=20261101_182425"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

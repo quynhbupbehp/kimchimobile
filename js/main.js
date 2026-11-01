@@ -2244,25 +2244,84 @@
       }
     } catch(e) {}
 
+    // Helper kiểm tra một phiếu bán hàng có khớp với phạm vi thời gian đang chọn (Ngày, Tháng, Năm, Tất Cả) hay không
+    function isSaleItemMatchingCurrentFilter(item) {
+      if (!item || !item.dateTime) return false;
+      if (typeof salesViewMode === 'undefined' || salesViewMode === 'all') return true;
+      let parts = String(item.dateTime).split(' - ');
+      if (parts.length < 2) return false;
+      let datePart = parts[1].trim();
+      let [d, m, y] = datePart.split('/').map(n => parseInt(n, 10));
+      if (!y || !m) return false;
+
+      if (salesViewMode === 'day') {
+        const curD = currentSalesDateFilter.getDate();
+        const curM = currentSalesDateFilter.getMonth() + 1;
+        const curY = currentSalesDateFilter.getFullYear();
+        return d === curD && m === curM && y === curY;
+      } else if (salesViewMode === 'month') {
+        return (m - 1) === currentSalesMonthFilter.month && y === currentSalesMonthFilter.year;
+      } else if (salesViewMode === 'year') {
+        return y === currentSalesYearFilter;
+      }
+      return true;
+    }
+    window.isSaleItemMatchingCurrentFilter = isSaleItemMatchingCurrentFilter;
+
+    // Helper lấy nhãn phạm vi thời gian đang chọn của tab Bán Hàng
+    function getCurrentSalesScopeLabel() {
+      if (typeof salesViewMode === 'undefined' || salesViewMode === 'all') {
+        return 'TẤT CẢ thời gian';
+      }
+      if (salesViewMode === 'day') {
+        const dd = String(currentSalesDateFilter.getDate()).padStart(2, '0');
+        const mm = String(currentSalesDateFilter.getMonth() + 1).padStart(2, '0');
+        const yyyy = currentSalesDateFilter.getFullYear();
+        return `NGÀY ${dd}/${mm}/${yyyy}`;
+      }
+      if (salesViewMode === 'month') {
+        const mm = String(currentSalesMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentSalesMonthFilter.year;
+        return `THÁNG ${mm}/${yyyy}`;
+      }
+      if (salesViewMode === 'year') {
+        return `NĂM ${currentSalesYearFilter}`;
+      }
+      return 'TẤT CẢ thời gian';
+    }
+    window.getCurrentSalesScopeLabel = getCurrentSalesScopeLabel;
+
     function clearAllSalesData() {
-      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Bán Hàng trên Firebase!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
+      let scopeLabel = getCurrentSalesScopeLabel();
+      let itemsToDelete = salesDatabase.filter(isSaleItemMatchingCurrentFilter);
+
+      if (itemsToDelete.length === 0) {
+        alert(`Không có phiếu bán hàng nào thuộc [${scopeLabel}] để xóa!`);
+        return;
+      }
+
+      let confirmText = prompt(`⚠️ CẢNH BÁO: Thao tác này sẽ xóa vĩnh viễn ${itemsToDelete.length} phiếu Bán Hàng thuộc [${scopeLabel}]!\n\nVui lòng nhập: "đồng ý" (hoặc "ok") để xác nhận xóa:`);
       if (confirmText === null) {
         return; // Người dùng bấm Hủy
       }
       
       let clean = confirmText.trim().toLowerCase();
-      if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
+      if (clean === 'đồng ý' || clean === 'dong y' || clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok') {
+        let deleteIds = new Set(itemsToDelete.map(it => String(it.id)));
+        
         if (typeof db !== 'undefined' && db) {
-          salesDatabase.forEach(item => {
+          itemsToDelete.forEach(item => {
             if (item && item.id) {
               db.collection('sales').doc(String(item.id)).delete().catch(console.error);
             }
           });
         }
-        salesDatabase = [];
-        try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify([])); } catch(e){}
+
+        // Cập nhật lại salesDatabase: chỉ giữ lại các mục không bị xóa
+        salesDatabase = salesDatabase.filter(it => !deleteIds.has(String(it.id)));
+        try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
         renderSalesTable(salesDatabase);
-        alert('Đã xóa sạch toàn bộ dữ liệu Bán Hàng trên Firebase thành công!');
+        alert(`Đã xóa thành công ${itemsToDelete.length} phiếu Bán Hàng thuộc [${scopeLabel}]!`);
       } else {
         alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
       }
@@ -4442,78 +4501,17 @@
     window.toggleSalesExcelActions = toggleSalesExcelActions;
 
     /* ============================================================
-       XUẤT EXCEL BÁN HÀNG THEO THÁNG & 2 KIỂU DÙNG SHEETJS (.XLSX)
+       XUẤT EXCEL BÁN HÀNG THEO NGÀY, THÁNG, NĂM HOẶC TẤT CẢ DÙNG SHEETJS (.XLSX)
        ============================================================ */
-    let exportSalesSelectedMonth = { month: 0, year: 2026, allMonths: false };
-
-    function openSalesExportModal() {
-      if (typeof currentSalesMonthFilter !== 'undefined' && currentSalesMonthFilter) {
-        exportSalesSelectedMonth.month = currentSalesMonthFilter.month;
-        exportSalesSelectedMonth.year = currentSalesMonthFilter.year;
-      } else {
-        const now = new Date();
-        exportSalesSelectedMonth.month = now.getMonth();
-        exportSalesSelectedMonth.year = now.getFullYear();
-      }
-      exportSalesSelectedMonth.allMonths = false;
-      updateSalesExportModalUI();
-      const modal = document.getElementById('salesExportModal');
-      if (modal) {
-        modal.style.display = 'flex';
-      } else {
-        // Fallback nếu chưa có modal thì xuất luôn kiểu 1 theo tháng đang chọn
-        executeExportSales('full');
-      }
+    function exportSalesToExcel(type = 'full') {
+      executeExportSales(type);
     }
-    window.openSalesExportModal = openSalesExportModal;
-    window.exportSalesToExcel = openSalesExportModal;
-
-    function closeSalesExportModal() {
-      const modal = document.getElementById('salesExportModal');
-      if (modal) modal.style.display = 'none';
-    }
-    window.closeSalesExportModal = closeSalesExportModal;
-
-    function changeExportSalesMonth(delta) {
-      exportSalesSelectedMonth.allMonths = false;
-      exportSalesSelectedMonth.month += delta;
-      if (exportSalesSelectedMonth.month > 11) {
-        exportSalesSelectedMonth.month = 0;
-        exportSalesSelectedMonth.year++;
-      } else if (exportSalesSelectedMonth.month < 0) {
-        exportSalesSelectedMonth.month = 11;
-        exportSalesSelectedMonth.year--;
-      }
-      updateSalesExportModalUI();
-    }
-    window.changeExportSalesMonth = changeExportSalesMonth;
-
-    function toggleExportAllMonths() {
-      exportSalesSelectedMonth.allMonths = !exportSalesSelectedMonth.allMonths;
-      updateSalesExportModalUI();
-    }
-    window.toggleExportAllMonths = toggleExportAllMonths;
+    window.exportSalesToExcel = exportSalesToExcel;
+    window.openSalesExportModal = exportSalesToExcel;
 
     function getSalesDataForExport() {
       if (!Array.isArray(salesDatabase)) return [];
-      if (exportSalesSelectedMonth.allMonths) {
-        return [...salesDatabase];
-      }
-      const targetMonth = exportSalesSelectedMonth.month;
-      const targetYear = exportSalesSelectedMonth.year;
-
-      return salesDatabase.filter(item => {
-        if (!item.dateTime) return false;
-        let parts = item.dateTime.split(' - ');
-        if (parts.length < 2) return false;
-        let datePieces = parts[1].trim().split('/');
-        if (datePieces.length === 3) {
-          let m = parseInt(datePieces[1], 10) - 1;
-          let y = parseInt(datePieces[2], 10);
-          return m === targetMonth && y === targetYear;
-        }
-        return false;
-      });
+      return salesDatabase.filter(isSaleItemMatchingCurrentFilter);
     }
 
     function updateSalesExportModalUI() {
@@ -4556,14 +4554,25 @@
 
     function executeExportSales(type) {
       const items = getSalesDataForExport();
+      let scopeLabel = getCurrentSalesScopeLabel();
       if (items.length === 0) {
-        alert("Không có dữ liệu phiếu bán hàng nào phù hợp với thời gian đã chọn để xuất!");
+        alert(`Không có phiếu bán hàng nào phù hợp với [${scopeLabel}] để xuất!`);
         return;
       }
 
-      const mm = String(exportSalesSelectedMonth.month + 1).padStart(2, '0');
-      const yyyy = exportSalesSelectedMonth.year;
-      const timeSuffix = exportSalesSelectedMonth.allMonths ? "TatCa" : `Thang_${mm}_${yyyy}`;
+      let timeSuffix = "TatCa";
+      if (salesViewMode === 'day') {
+        const dd = String(currentSalesDateFilter.getDate()).padStart(2, '0');
+        const mm = String(currentSalesDateFilter.getMonth() + 1).padStart(2, '0');
+        const yyyy = currentSalesDateFilter.getFullYear();
+        timeSuffix = `Ngay_${dd}_${mm}_${yyyy}`;
+      } else if (salesViewMode === 'month') {
+        const mm = String(currentSalesMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentSalesMonthFilter.year;
+        timeSuffix = `Thang_${mm}_${yyyy}`;
+      } else if (salesViewMode === 'year') {
+        timeSuffix = `Nam_${currentSalesYearFilter}`;
+      }
 
       let headerArr = [];
       let rowsArr = [];
@@ -4960,6 +4969,13 @@
             // Chuẩn hóa ngày giờ sang dạng "HH:mm - DD/MM/YYYY"
             let dateTime = formatImportDateTime(rawDate);
 
+            // Kiểm tra xem dòng này có thuộc phạm vi thời gian đang chọn (Ngày/Tháng/Năm/Tất Cả) hay không
+            let itemForCheck = { dateTime: dateTime };
+            if (!isSaleItemMatchingCurrentFilter(itemForCheck)) {
+              // Nếu dòng này không thuộc phạm vi thời gian đang chọn thì bỏ qua
+              continue;
+            }
+
             // Kiểm tra xem đơn hàng này đã tồn tại trong salesDatabase chưa (theo dateTime + name + totalNum)
             let existingItem = salesDatabase.find(s => 
               s.dateTime === dateTime && 
@@ -5015,20 +5031,22 @@
 
             saveSalesStorage();
 
-            // Chuyển sang chế độ xem "Tất Cả" để người dùng nhìn thấy ngay 100% dữ liệu vừa nhập
-            setSalesMode('all');
+            // Hiển thị lại bảng theo đúng chế độ lọc thời gian hiện tại
+            renderSalesTable(salesDatabase);
 
+            let scopeLabel = getCurrentSalesScopeLabel();
             let msg = '';
             if (updatedCount > 0 && newRecords.length > 0) {
-              msg = `Đã nhập thêm ${newRecords.length} phiếu mới và cập nhật chính xác cho ${updatedCount} phiếu có sẵn!`;
+              msg = `Đã nhập thêm ${newRecords.length} phiếu mới và cập nhật chính xác cho ${updatedCount} phiếu thuộc [${scopeLabel}]!`;
             } else if (updatedCount > 0) {
-              msg = `Đã cập nhật chuẩn xác thông tin cho ${updatedCount} phiếu từ file Excel!`;
+              msg = `Đã cập nhật chuẩn xác thông tin cho ${updatedCount} phiếu thuộc [${scopeLabel}] từ file Excel!`;
             } else {
-              msg = `Đã nhập thành công ${newRecords.length} phiếu bán hàng từ file Excel!`;
+              msg = `Đã nhập thành công ${newRecords.length} phiếu bán hàng thuộc [${scopeLabel}] từ file Excel!`;
             }
             alert(msg);
           } else {
-            alert("Không tìm thấy dữ liệu hàng hóa hợp lệ trong file Excel!");
+            let scopeLabel = getCurrentSalesScopeLabel();
+            alert(`Không tìm thấy dữ liệu hàng hóa nào phù hợp với phạm vi [${scopeLabel}] trong file Excel!`);
           }
         } catch (err) {
           console.error("Lỗi đọc file Excel:", err);
