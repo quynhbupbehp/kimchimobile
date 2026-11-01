@@ -10,10 +10,10 @@
   <meta http-equiv="Expires" content="0">
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261101_163303">
+  <link rel="stylesheet" href="css/style.css?v=20261101_170249">
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261101_163303";
+    var CURRENT_PAGE_VERSION = "20261101_170249";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -386,7 +386,7 @@
         <!-- HÀNG 1: DOANH THU & HÌNH THỨC & EXCEL (TRÁI) + TÌM KIẾM (GIỮA) + LÃI (PHẢI) -->
         <div class="sales-header-bar"
           style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: nowrap; white-space: nowrap;">
-          <!-- Cụm bên trái: DOANH THU + HÌNH THỨC THANH TOÁN (💰) + MŨI TÊN EXCEL -->
+          <!-- Cụm bên trái: DOANH THU + MŨI TÊN EXCEL -->
           <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: nowrap;">
             <!-- 1. DOANH THU THÁNG (XANH) & DOANH THU NGÀY (TRẮNG) NỀN ĐEN -->
             <div id="salesRevenueBadge"
@@ -409,26 +409,7 @@
                 title="Doanh thu Ngày">0</span>
             </div>
 
-            <!-- 2. BỘ LỌC HÌNH THỨC THANH TOÁN (💰 Tất Cả | Tiền Mặt | Chuyển Tiền) -->
-            <div class="view-mode-group sm"
-              style="height: 36px; padding: 0 4px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 4px; margin: 0; flex-shrink: 0; background: #0c121e; border: 1.5px solid #1e293b; border-radius: 8px;">
-              <button type="button" class="view-mode-btn static-label" title="Hình thức thanh toán"
-                style="height: 28px; line-height: 28px; padding: 0 4px; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; color: #facc15; cursor: default;">💰</button>
-              <button type="button" id="salesMethodAllBtn" class="view-mode-btn action-btn active"
-                onclick="setSalesPaymentFilter('ALL')"
-                style="height: 28px; line-height: 28px; padding: 0 12px; font-size: 0.85rem; font-weight: 900; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;">Tất
-                Cả</button>
-              <button type="button" id="salesMethodTmBtn" class="view-mode-btn action-btn"
-                onclick="setSalesPaymentFilter('Tiền Mặt')"
-                style="height: 28px; line-height: 28px; padding: 0 10px; font-size: 0.85rem; font-weight: 800; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;">Tiền
-                Mặt</button>
-              <button type="button" id="salesMethodCkBtn" class="view-mode-btn action-btn"
-                onclick="setSalesPaymentFilter('Chuyển Tiền')"
-                style="height: 28px; line-height: 28px; padding: 0 10px; font-size: 0.85rem; font-weight: 800; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;">Chuyển
-                Tiền</button>
-            </div>
-
-            <!-- 3. CỤM MŨI TÊN & NHẬP / XUẤT EXCEL -->
+            <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL -->
             <div class="sales-excel-wrapper"
               style="display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
               <button type="button" id="btnSalesExcelToggle" class="btn-excel-toggle-custom"
@@ -467,7 +448,26 @@
             </div>
           </div>
 
-          <!-- Cụm ở giữa: TÌM KIẾM TRONG KHUNG -->
+          <!-- CỤM Ở GIỮA DOANH THU & TÌM KIẾM: BỘ LỌC HÌNH THỨC THANH TOÁN (💰 Tất Cả | Tiền Mặt | Chuyển Tiền) -->
+          <div class="view-mode-group sm"
+            style="height: 36px; padding: 0 4px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: 0 auto; flex-shrink: 0; background: #0c121e; border: 1.5px solid #1e293b; border-radius: 8px;">
+            <button type="button" class="view-mode-btn static-label" title="Hình thức thanh toán"
+              style="height: 28px; line-height: 28px; padding: 0 4px; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; color: #facc15; cursor: default;">💰</button>
+            <button type="button" id="salesMethodAllBtn" class="view-mode-btn action-btn active"
+              onclick="setSalesPaymentFilter('ALL')"
+              style="height: 28px; line-height: 28px; padding: 0 12px; font-size: 0.85rem; font-weight: 900; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;">Tất
+              Cả</button>
+            <button type="button" id="salesMethodTmBtn" class="view-mode-btn action-btn"
+              onclick="setSalesPaymentFilter('Tiền Mặt')"
+              style="height: 28px; line-height: 28px; padding: 0 10px; font-size: 0.85rem; font-weight: 800; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;">Tiền
+              Mặt</button>
+            <button type="button" id="salesMethodCkBtn" class="view-mode-btn action-btn"
+              onclick="setSalesPaymentFilter('Chuyển Tiền')"
+              style="height: 28px; line-height: 28px; padding: 0 10px; font-size: 0.85rem; font-weight: 800; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;">Chuyển
+              Tiền</button>
+          </div>
+
+          <!-- Cụm TÌM KIẾM TRONG KHUNG -->
           <div
             style="display: flex; align-items: center; gap: 8px; height: 36px; box-sizing: border-box; background: #0c121e; border: 1.5px solid #1e293b; border-radius: 8px; padding: 0 12px; flex-shrink: 0; flex-wrap: nowrap;">
             <span
@@ -1789,7 +1789,7 @@
       <!-- TAB 5: BÁO GIÁ (SAO CHÉP TOÀN BỘ TỪ HTTPS://QUYNHBUPBEHP.GITHUB.IO/BAOGIA/) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261101_163303" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261101_170249" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5279,10 +5279,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261101_163303"></script>
+  <script src="js/seed_data.js?v=20261101_170249"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261101_163303"></script>
+  <script src="js/main.js?v=20261101_170249"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
