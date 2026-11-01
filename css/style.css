@@ -1661,7 +1661,7 @@
     }
 
     .phone-card-name {
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       font-weight: 900;
       color: #ffffff;
       letter-spacing: -0.2px;
@@ -1682,7 +1682,7 @@
     }
 
     .phone-card-storage {
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 900;
       color: #10b981;
       white-space: nowrap;
@@ -1698,7 +1698,7 @@
     }
 
     .phone-card-price {
-      font-size: 1.15rem;
+      font-size: 1.21rem;
       font-weight: 900;
       color: #f59e0b;
       letter-spacing: -0.2px;
@@ -1714,7 +1714,7 @@
     }
 
     .phone-card-imei {
-      font-size: 0.8rem;
+      font-size: 0.84rem;
       font-weight: 900;
       color: #ffffff;
       letter-spacing: 0.3px;
@@ -1743,7 +1743,7 @@
       box-shadow: none;
       line-height: 1.2;
       overflow: hidden;
-      font-size: 0.76rem;
+      font-size: 0.8rem;
       color: #94a3b8;
     }
 
@@ -1751,7 +1751,7 @@
       text-align: left;
       color: #94a3b8 !important;
       font-weight: 600 !important;
-      font-size: 0.76rem;
+      font-size: 0.8rem;
       letter-spacing: -0.2px;
       white-space: nowrap;
       border-right: none;
