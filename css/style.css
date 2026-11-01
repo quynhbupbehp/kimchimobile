@@ -6778,7 +6778,7 @@
           z-index: 25 !important;
         }
         #tab-banhang .sales-table td {
-          padding: 8px 2px !important;
+          padding: 7px 2px !important;
           box-sizing: border-box !important;
           white-space: nowrap !important;
           overflow: hidden !important;
@@ -6786,23 +6786,23 @@
           vertical-align: middle !important;
         }
         #tab-banhang .sales-table th:nth-child(1) {
-          width: 38% !important;
-          max-width: 38% !important;
+          width: 48% !important; /* Tăng kích cỡ cột TÊN HÀNG HÓA 10% (từ 38% lên 48%) */
+          max-width: 48% !important;
           min-width: 0 !important;
           text-align: left !important;
           padding-left: 6px !important;
-          font-size: 0.90rem !important; /* Giảm 5% */
+          font-size: 0.90rem !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
         }
         #tab-banhang .sales-table td:nth-child(1) {
-          width: 38% !important;
-          max-width: 38% !important;
+          width: 48% !important;
+          max-width: 48% !important;
           min-width: 0 !important;
           text-align: left !important;
           padding-left: 6px !important;
-          font-size: 1.125rem !important; /* Giảm 10% từ 1.25rem */
+          font-size: 1.01rem !important; /* Giảm 10% từ 1.125rem */
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
@@ -6812,42 +6812,56 @@
           max-width: 22% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 0.90rem !important; /* Giảm 5% */
+          font-size: 0 !important; /* Ẩn chữ GIÁ BÁN để thay bằng $ BÁN */
           padding: 6px 1px !important;
+        }
+        #tab-banhang .sales-table th:nth-child(2)::after {
+          content: "$ BÁN" !important;
+          font-size: 0.90rem !important;
+          font-weight: 900 !important;
+          color: #ffffff !important;
+          letter-spacing: 0.2px !important;
         }
         #tab-banhang .sales-table td:nth-child(2) {
           width: 22% !important;
           max-width: 22% !important;
           min-width: 0 !important;
           text-align: center !important;
-          padding: 5px 1px !important;
+          padding: 4px 1px !important;
         }
         #tab-banhang .sales-table td:nth-child(2) .sales-price-badge {
-          font-size: 1.11rem !important; /* Giảm 10% từ 1.232rem */
-          padding: 1px 7px !important;
+          font-size: 1.00rem !important; /* Giảm 10% từ 1.11rem */
+          padding: 1px 6px !important;
         }
         #tab-banhang .sales-table th:nth-child(3) {
-          width: 25% !important;
-          max-width: 25% !important;
+          width: 15% !important; /* Giảm kích thước cột $ NHẬP 10% (từ 25% xuống 15%) */
+          max-width: 15% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 0.90rem !important; /* Giảm 5% */
+          font-size: 0 !important; /* Ẩn chữ GIÁ NHẬP để thay bằng $ NHẬP */
           padding: 6px 1px !important;
         }
+        #tab-banhang .sales-table th:nth-child(3)::after {
+          content: "$ NHẬP" !important;
+          font-size: 0.90rem !important;
+          font-weight: 900 !important;
+          color: #ffffff !important;
+          letter-spacing: 0.2px !important;
+        }
         #tab-banhang .sales-table td:nth-child(3) {
-          width: 25% !important;
-          max-width: 25% !important;
+          width: 15% !important;
+          max-width: 15% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 0.954rem !important; /* Giảm 10% từ 1.06rem */
-          padding: 5px 1px !important;
+          font-size: 0.858rem !important; /* Giảm 10% từ 0.954rem */
+          padding: 4px 1px !important;
         }
         #tab-banhang .sales-table th:nth-child(4) {
           width: 15% !important;
           max-width: 15% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 0.90rem !important; /* Giảm 5% */
+          font-size: 0.90rem !important;
           padding: 6px 1px !important;
         }
         #tab-banhang .sales-table td:nth-child(4) {
@@ -6855,8 +6869,8 @@
           max-width: 15% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 0.954rem !important; /* Giảm 10% từ 1.06rem */
-          padding: 5px 1px !important;
+          font-size: 0.858rem !important; /* Giảm 10% từ 0.954rem */
+          padding: 4px 1px !important;
         }
         /* Ẩn cột HÌNH THỨC (5), THAO TÁC (6), GIỜ - NGÀY BÁN (7), THANH TOÁN (8) trên Mobile theo yêu cầu */
         #tab-banhang .sales-table th:nth-child(5),
