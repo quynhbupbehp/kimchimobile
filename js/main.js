@@ -9177,14 +9177,7 @@
         container.innerHTML = filtered.map(p => {
           let pName = formatBrandDeviceName(p.name || '');
           let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
-          let storageWithGB = rawStorage.replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
-          if (storageWithGB) {
-            if (!/gb|tb/i.test(storageWithGB)) {
-              storageWithGB += 'GB';
-            } else {
-              storageWithGB = storageWithGB.toUpperCase();
-            }
-          }
+          let storageDisplay = rawStorage.replace(/\s*g+b$/i, '').replace(/\s*g$/i, '').trim();
 
           let displayPinStatus = p.pinStatus || 'Pin Thay';
           let displayPinPct = formatPinByBrand(p.pin, p.brand, p.name);
@@ -9225,7 +9218,7 @@
                   ${logoHtml}
                   <span class="phone-card-name">${escapeHtml(displayName)}</span>
                   ${getColorDotHtml(p.color, 25)}
-                  ${storageWithGB ? `<span class="phone-card-storage">${escapeHtml(storageWithGB)}</span>` : ''}
+                  ${storageDisplay ? `<span class="phone-card-storage">${escapeHtml(storageDisplay)}</span>` : ''}
                 </div>
                 <div class="phone-header-center">
                   <span class="phone-card-price">${isPhonePricesHidden ? '*****' : (formatPriceStr(p.price) || '0')}</span>
@@ -9651,14 +9644,7 @@
           brandAndName = formatBrandDeviceName(brandAndName);
 
           let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
-          let storageWithGB = rawStorage.replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
-          if (storageWithGB) {
-            if (!/gb|tb/i.test(storageWithGB)) {
-              storageWithGB += 'GB';
-            } else {
-              storageWithGB = storageWithGB.toUpperCase();
-            }
-          }
+          let storageDisplay = rawStorage.replace(/\s*g+b$/i, '').replace(/\s*g$/i, '').trim();
 
           let displayPinStatus = p.pinStatus || 'Pin Zin';
           let displayPinPct = formatPinByBrand(p.pin, p.brand, p.name);
@@ -9673,7 +9659,7 @@
                 <div class="phone-header-left">
                   <span class="phone-card-name">${escapeHtml(brandAndName)}</span>
                   ${getColorDotHtml(p.color, 20)}
-                  ${storageWithGB ? `<span class="phone-card-storage">${escapeHtml(storageWithGB)}</span>` : ''}
+                  ${storageDisplay ? `<span class="phone-card-storage">${escapeHtml(storageDisplay)}</span>` : ''}
                 </div>
                 <div class="phone-header-center">
                   <span class="phone-card-price">${isPhonePricesHidden ? '*****' : formattedPrice}</span>
