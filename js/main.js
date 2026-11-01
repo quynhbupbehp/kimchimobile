@@ -2970,9 +2970,9 @@
       const salesSummaryEl = document.getElementById('salesSummaryStats');
       if (salesSummaryEl) {
         if (isSalesSensitiveHidden) {
-          salesSummaryEl.innerHTML = `Tiền Mặt = <span style="color: #10b981; font-weight: 800;">***</span> &nbsp;&nbsp;-&nbsp;&nbsp; Chuyển Khoản = <span style="color: #ef4444; font-weight: 800;">***</span> &nbsp;&nbsp;,&nbsp;&nbsp; Nợ = <span style="color: #eab308; font-weight: 800;">***</span>`;
+          salesSummaryEl.innerHTML = `Tiền Mặt = <span style="color: #10b981; font-weight: 800;">***</span> &nbsp;&nbsp;-&nbsp;&nbsp; Chuyển Tiền = <span style="color: #ef4444; font-weight: 800;">***</span> &nbsp;&nbsp;,&nbsp;&nbsp; Nợ = <span style="color: #eab308; font-weight: 800;">***</span>`;
         } else {
-          salesSummaryEl.innerHTML = `Tiền Mặt = <span style="color: #10b981; font-weight: 800;">${formatPriceStr(tmTotal)}</span> &nbsp;&nbsp;-&nbsp;&nbsp; Chuyển Khoản = <span style="color: #ef4444; font-weight: 800;">${formatPriceStr(ckTotal)}</span> &nbsp;&nbsp;,&nbsp;&nbsp; Nợ = <span style="color: #eab308; font-weight: 800;">${formatPriceStr(debtTotal)}</span>`;
+          salesSummaryEl.innerHTML = `Tiền Mặt = <span style="color: #10b981; font-weight: 800;">${formatPriceStr(tmTotal)}</span> &nbsp;&nbsp;-&nbsp;&nbsp; Chuyển Tiền = <span style="color: #ef4444; font-weight: 800;">${formatPriceStr(ckTotal)}</span> &nbsp;&nbsp;,&nbsp;&nbsp; Nợ = <span style="color: #eab308; font-weight: 800;">${formatPriceStr(debtTotal)}</span>`;
         }
       }
 
@@ -3005,6 +3005,7 @@
         let displayTotal = formatPriceStr(item.total);
         let displayPriceIn = formatPriceStr(item.priceIn || '0');
         let displayProfit = formatPriceStr(item.profit || '0');
+        let displayMethod = (item.method === 'Chuyển khoản' || item.method === 'Chuyển Khoản' || (item.method && item.method.toLowerCase().includes('chuyển'))) ? 'Chuyển Tiền' : item.method;
 
         return `
           <tr${trClass}${missingTitle} ondblclick="editSale(${item.id})" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ editSale(${item.id}); } this._lastTap=now;" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết phiếu">
@@ -3014,7 +3015,7 @@
             </td>
             <td${tdClass} class="sales-td-cost" style="color: ${priceInColor} !important; font-weight: 900; font-size: 1.239rem; text-align: center;">${isSalesSensitiveHidden ? '***' : displayPriceIn}</td>
             <td${tdClass} class="sales-td-profit" style="font-weight: 900; color: ${profitColor} !important; font-size: 1.239rem; text-align: center;">${isSalesSensitiveHidden ? '***' : displayProfit}</td>
-            <td${tdClass} style="text-align: center;"><span style="font-weight: 800; font-size: 1.1rem; color: ${methodColorVal} !important; cursor: default; user-select: none;">${item.method}</span></td>
+            <td${tdClass} style="text-align: center;"><span style="font-weight: 800; font-size: 1.1rem; color: ${methodColorVal} !important; cursor: default; user-select: none;">${displayMethod}</span></td>
             <td${tdClass} style="text-align: center;">
               <div class="action-btn-group" style="justify-content: center;">
                 <button type="button" class="action-btn-icon action-btn-view" onclick="viewSale(${item.id})" title="Xem chi tiết">
