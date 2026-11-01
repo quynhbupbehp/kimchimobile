@@ -10222,7 +10222,7 @@
     const DEFAULT_SOFTWARE_DATA = [
       { id: 1, customer: "A Huy", device: "A3s", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "11:37", paymentStatus: "ĐÃ THANH TOÁN", selected: false },
       { id: 2, customer: "Tấn Phát", device: "A3s", price: "150", cost: "0", profit: "150", dayMonth: "23-10", year: "2026", time: "11:36", paymentStatus: "ĐÃ THANH TOÁN", selected: false },
-      { id: 3, customer: "Kỳ Hường", device: "C71", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "11:36", paymentStatus: "NỢ DAI", selected: true },
+      { id: 3, customer: "Kỳ Hường", device: "C71", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "11:36", paymentStatus: "NỢ DAI", selected: false },
       { id: 4, customer: "Tấn Phát", device: "A3s", price: "150", cost: "0", profit: "150", dayMonth: "23-10", year: "2026", time: "11:20", paymentStatus: "NỢ DAI", selected: false },
       { id: 5, customer: "Kỳ Hường", device: "C71 + F11", price: "250", cost: "0", profit: "250", dayMonth: "23-10", year: "2026", time: "11:15", paymentStatus: "NỢ DAI", selected: false },
       { id: 6, customer: "Diệu (An Lâm)", device: "iPhone 7 Plus", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "10:50", paymentStatus: "NỢ DAI", selected: false },
@@ -12155,8 +12155,7 @@
             </td>
             <td class="sw-col-extra">
               <div class="sw-time-display">
-                <span class="sw-d-day">${(item.dayMonth || '').replace(/-/g, '/')}</span>
-                <span class="sw-d-year">${item.year || '2026'}</span>
+                <span class="sw-d-date">${(item.dayMonth || '').replace(/-/g, '/')}/${item.year || '2026'}</span>
                 <span class="sw-d-time">${item.time}</span>
               </div>
             </td>
