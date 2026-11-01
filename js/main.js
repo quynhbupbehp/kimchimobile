@@ -4287,17 +4287,36 @@
       const fullDateTime = `${timeVal} - ${dateVal}`;
       const paymentStatus = document.getElementById('tPaymentStatus') ? document.getElementById('tPaymentStatus').value : 'Đã Trả';
 
-      tempCart.forEach(item => {
-        let qtyLabel = (item.qty && Number(item.qty) > 1) ? ` (x${item.qty})` : '';
-        let totalVal = formatPriceStr(parsePriceNum(item.total));
-        let priceInVal = formatPriceStr(parsePriceNum(item.priceIn));
-        let profitVal = formatPriceStr(parsePriceNum(item.profit));
-        let isMissing = isMissingRequiredSalesInfo(item.name, totalVal, priceInVal);
+      if (tempCart.length >= 2) {
+        // KHI THÊM VÀO GIỎ HÀNG TỪ 2 SẢN PHẨM TRỞ LÊN:
+        // Gộp toàn bộ thành 1 phiếu hiển thị duy nhất: Tên 1 + Tên 2 (kèm số lượng nếu có), tổng giá bán và tổng giá nhập
+        let combinedNames = tempCart.map(item => {
+          let qtyLabel = (item.qty && Number(item.qty) > 1) ? ` (x${item.qty})` : '';
+          return `${item.name}${qtyLabel}`;
+        }).join(' + ');
+
+        let sumTotalNum = 0;
+        let sumPriceInNum = 0;
+        let hasMissing = false;
+
+        tempCart.forEach(item => {
+          let tNum = parsePriceNum(item.total);
+          let inNum = parsePriceNum(item.priceIn);
+          sumTotalNum += tNum;
+          sumPriceInNum += inNum;
+          if (isMissingRequiredSalesInfo(item.name, item.total, item.priceIn)) {
+            hasMissing = true;
+          }
+        });
+
+        let totalVal = formatPriceStr(sumTotalNum);
+        let priceInVal = formatPriceStr(sumPriceInNum);
+        let profitVal = formatPriceStr(sumTotalNum - sumPriceInNum);
 
         let record = {
           id: Date.now() + Math.random(),
-          name: `${item.name}${qtyLabel}`,
-          accessory: item.name,
+          name: combinedNames,
+          accessory: combinedNames,
           total: totalVal,
           priceIn: priceInVal,
           profit: profitVal,
@@ -4305,7 +4324,8 @@
           dateTime: fullDateTime,
           customer: "Khách lẻ",
           paymentStatus: paymentStatus,
-          isMissingInfo: isMissing
+          isMissingInfo: hasMissing,
+          cartItems: JSON.parse(JSON.stringify(tempCart))
         };
 
         if (targetList === 'Bán Gà') {
@@ -4319,7 +4339,42 @@
             logActivity('ADD', 'banhang', 'Bán hàng', `Tạo phiếu bán hàng: ${record.name} - ${record.total}`, null, record, record.id);
           }
         }
-      });
+      } else {
+        // Trường hợp 1 sản phẩm: lưu bình thường
+        tempCart.forEach(item => {
+          let qtyLabel = (item.qty && Number(item.qty) > 1) ? ` (x${item.qty})` : '';
+          let totalVal = formatPriceStr(parsePriceNum(item.total));
+          let priceInVal = formatPriceStr(parsePriceNum(item.priceIn));
+          let profitVal = formatPriceStr(parsePriceNum(item.profit));
+          let isMissing = isMissingRequiredSalesInfo(item.name, totalVal, priceInVal);
+
+          let record = {
+            id: Date.now() + Math.random(),
+            name: `${item.name}${qtyLabel}`,
+            accessory: item.name,
+            total: totalVal,
+            priceIn: priceInVal,
+            profit: profitVal,
+            method: method,
+            dateTime: fullDateTime,
+            customer: "Khách lẻ",
+            paymentStatus: paymentStatus,
+            isMissingInfo: isMissing
+          };
+
+          if (targetList === 'Bán Gà') {
+            bangaDatabase.unshift(record);
+            if (typeof logActivity === 'function') {
+              logActivity('ADD', 'banga', 'Bán gà', `Tạo đơn bán gà: ${record.name} - ${record.total}`, null, record, record.id);
+            }
+          } else {
+            salesDatabase.unshift(record);
+            if (typeof logActivity === 'function') {
+              logActivity('ADD', 'banhang', 'Bán hàng', `Tạo phiếu bán hàng: ${record.name} - ${record.total}`, null, record, record.id);
+            }
+          }
+        });
+      }
 
       saveSalesStorage();
       saveBangaStorage();
