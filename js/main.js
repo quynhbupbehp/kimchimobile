@@ -10472,19 +10472,26 @@
       renderSoftwareTable(softwareDatabase);
     }
 
-    function togglePaymentStatus(id) {
+    function markSoftwareAsPaidOnDblClick(id) {
       const item = softwareDatabase.find(x => x.id === id);
       if (!item) return;
 
+      // Chỉ khi nợ dai vl mới chuyển sang đã trả, đã trả thì không có tác dụng
       if (isSoftwareDebt(item)) {
+        const oldData = JSON.parse(JSON.stringify(item));
         item.paymentStatus = 'ĐÃ TRẢ';
         item.selected = false;
-      } else {
-        item.paymentStatus = 'NỢ DAI VL';
+        saveSoftwareStorage(item);
+        if (typeof logActivity === 'function') {
+          logActivity('EDIT', 'phanmem', 'Phần mềm', `Thanh toán công nợ đơn phần mềm: ${item.customer} - ${item.device} sang ĐÃ TRẢ`, oldData, item, id);
+        }
+        renderSoftwareTable(softwareDatabase);
+        if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+        if (typeof updateSoftwareProfits === 'function') updateSoftwareProfits();
+        if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+          renderSoftwareDebtTable();
+        }
       }
-      saveSoftwareStorage();
-      renderSoftwareTable(softwareDatabase);
-      updateSoftwarePayButtonVisibility();
     }
 
     function openSoftwareModal(editId = null) {
@@ -12118,17 +12125,14 @@
       tbody.innerHTML = filtered.map(item => {
         let isDebt = isSoftwareDebt(item);
         let statusBadgeHtml = isDebt
-          ? `<span class="sw-badge-debt" style="cursor: default; user-select: none;">💀 NỢ DAI VL</span>`
+          ? `<span class="sw-badge-debt" ondblclick="markSoftwareAsPaidOnDblClick(${item.id})" title="Nháy đúp 2 lần để chuyển sang ĐÃ TRẢ" style="cursor: pointer; user-select: none;">💀 NỢ DAI VL</span>`
           : `<span class="sw-badge-paid" style="cursor: default; user-select: none;">✔ ĐÃ TRẢ <span style="font-size: 0.95rem; margin-left: 2px;">💰</span></span>`;
 
         return `
           <tr>
             <td class="sw-col-check" style="text-align: center;">
               ${isDebt ? `
-                <input type="checkbox" class="sw-checkbox"
-                  ${item.selected ? 'checked' : ''}
-                  onchange="toggleSelectSoftwareItem(${item.id}, this)"
-                  style="accent-color: #10b981; width: 17px; height: 17px; cursor: pointer;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem; color: #ffffff; filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.45)); user-select: none;" title="Khách nợ dai VL">💀</span>
               ` : `
                 <img src="images/customer_paid_smile.png"
                   style="width: 22px; height: 22px; display: inline-block; vertical-align: middle; user-select: none; filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.45));"
@@ -12179,20 +12183,7 @@
     }
 
     function togglePaymentStatus(id) {
-      const item = softwareDatabase.find(x => x.id === id);
-      if (item) {
-        const oldData = JSON.parse(JSON.stringify(item));
-        let isDebt = isSoftwareDebt(item);
-        item.paymentStatus = isDebt ? 'ĐÃ THANH TOÁN' : 'NỢ DAI VL';
-        saveSoftwareStorage();
-        if (typeof logActivity === 'function') {
-          logActivity('EDIT', 'phanmem', 'Phần mềm', `Đổi trạng thái thanh toán đơn phần mềm: ${item.customer} - ${item.device} sang ${item.paymentStatus}`, oldData, item, id);
-        }
-        renderSoftwareTable(softwareDatabase);
-        if (typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
-          renderSoftwareDebtTable();
-        }
-      }
+      markSoftwareAsPaidOnDblClick(id);
     }
 
     // =========================================================
