@@ -1136,7 +1136,7 @@
 
       // NẾU LỌC KHÔNG CÓ KẾT QUẢ VÀ NGƯỜI DÙNG ĐÃ GÕ CHỮ (ÁP DỤNG TRÊN DESKTOP HOẶC TÊN PHỤ KIỆN MOBILE)
       if (isFiltering && displayOptions.length === 0) {
-        if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) {
+        if (window.innerWidth <= 768) {
           closeUniversalSmartDropdown();
           return;
         }
@@ -9987,6 +9987,10 @@
       }
 
       if (filtered.length === 0) {
+        if (window.innerWidth <= 768) {
+          closeSwDropdown();
+          return;
+        }
         const cleanKw = keyword ? keyword.trim() : '';
         if (cleanKw) {
           const escaped = cleanKw.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
