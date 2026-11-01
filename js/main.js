@@ -9158,6 +9158,8 @@
             logoHtml = '';
           } else {
             logoHtml = getPhoneBrandLogoHtml(p.brand, p.name, 25);
+            // Trên Mobile: Thay thế cụm PRO MAX thành PRM để tên máy không bị dài che khuất
+            displayName = displayName.replace(/\bpro\s*max\b/gi, 'PRM');
           }
 
           return `
