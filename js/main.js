@@ -3064,7 +3064,12 @@
         let displayTotal = formatPriceStr(item.total);
         let displayPriceIn = formatPriceStr(item.priceIn || '0');
         let displayProfit = formatPriceStr(item.profit || '0');
-        let displayMethod = (item.method === 'Chuyển khoản' || item.method === 'Chuyển Khoản' || (item.method && item.method.toLowerCase().includes('chuyển'))) ? 'Chuyển Tiền' : item.method;
+        let displayMethod = 'Tiền Mặt 😊';
+        if (item.method === 'Chuyển khoản' || item.method === 'Chuyển Khoản' || (item.method && item.method.toLowerCase().includes('chuyển'))) {
+          displayMethod = 'Chuyển Tiền';
+        } else if (item.method === 'Nợ' || item.method === 'nợ') {
+          displayMethod = 'Nợ';
+        }
 
         return `
           <tr${trClass}${missingTitle} ondblclick="editSale(${item.id})" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ editSale(${item.id}); } this._lastTap=now;" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết phiếu">
@@ -3964,15 +3969,22 @@
         let bangaPriceIn = formatPriceStr(item.priceIn || '0');
         let bangaProfit = formatPriceStr(item.profit || '0');
 
-        return `
-          <tr ondblclick="editBangaSale('${item.id}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ editBangaSale('${item.id}'); } this._lastTap=now;" style="cursor: pointer;" title="Nháy đúp để xem và sửa chi tiết đơn">
-            <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle; white-space: nowrap;">
-              ${nameHtml}
-            </td>
-            <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${bangaTotal}</td>
-            <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${isBangaSensitiveHidden ? '***' : bangaPriceIn}</td>
-            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${isBangaSensitiveHidden ? '***' : bangaProfit}</td>
-            <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 900; font-size: 1.05rem; color: ${methodColor}; cursor: default; user-select: none;">${item.method || 'Tiền mặt'}</span></td>
+            let bangaMethodDisplay = 'Tiền Mặt 😊';
+            if (item.method === 'Chuyển khoản' || item.method === 'Chuyển Khoản' || (item.method && item.method.toLowerCase().includes('chuyển'))) {
+              bangaMethodDisplay = 'Chuyển Tiền';
+            } else if (item.method === 'Nợ' || item.method === 'nợ') {
+              bangaMethodDisplay = 'Nợ';
+            }
+
+            return `
+              <tr ondblclick="editBangaSale('${item.id}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ editBangaSale('${item.id}'); } this._lastTap=now;" style="cursor: pointer;" title="Nháy đúp để xem và sửa chi tiết đơn">
+                <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle; white-space: nowrap;">
+                  ${nameHtml}
+                </td>
+                <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${bangaTotal}</td>
+                <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${isBangaSensitiveHidden ? '***' : bangaPriceIn}</td>
+                <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${isBangaSensitiveHidden ? '***' : bangaProfit}</td>
+                <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 900; font-size: 1.05rem; color: ${methodColor}; cursor: default; user-select: none;">${bangaMethodDisplay}</span></td>
             <td style="color: #ec4899; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${item.dateTime}</td>
             <td style="text-align: center; vertical-align: middle;">
               <div class="action-btn-group" style="justify-content: center;">
