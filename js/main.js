@@ -2102,9 +2102,19 @@
               }
             });
           }
-        }, err => console.error("Lỗi sync software realtime:", err));
+      // 8. Đồng bộ Danh sách Hãng Điện Thoại Mới (custom brands)
+      try {
+        db.collection('settings').doc('custom_brands').onSnapshot(doc => {
+          if (doc.exists) {
+            let data = doc.data();
+            if (data && Array.isArray(data.list)) {
+              try { localStorage.setItem('KIMCHI_CUSTOM_BRANDS', JSON.stringify(data.list)); } catch(e){}
+              if (typeof renderCustomBrandTabs === 'function') renderCustomBrandTabs();
+            }
+          }
+        }, err => console.error("Lỗi sync custom brands:", err));
       } catch (err) {
-        console.error("Lỗi setup sync software:", err);
+        console.error("Lỗi setup sync custom brands:", err);
       }
     }
     window.initFirebaseRealtimeSync = initFirebaseRealtimeSync;
@@ -2198,6 +2208,7 @@
       }
       renderAllDropdowns();
       renderAllRepairDropdowns();
+      if (typeof renderCustomBrandTabs === 'function') renderCustomBrandTabs();
       filterBrand('ALL', document.querySelector('.brand-tabs-horizontal .brand-btn-h'));
       renderSalesTable(salesDatabase);
       renderBangaTable(bangaDatabase);
@@ -7043,18 +7054,58 @@
       renderPhoneGrid();
     }
 
+    function loadCustomBrands() {
+      try {
+        let stored = localStorage.getItem('KIMCHI_CUSTOM_BRANDS');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCustomBrands(brands) {
+      try {
+        localStorage.setItem('KIMCHI_CUSTOM_BRANDS', JSON.stringify(brands));
+      } catch (e) {}
+      if (typeof db !== 'undefined' && db) {
+        db.collection('settings').doc('custom_brands').set({ list: brands }).catch(console.error);
+      }
+    }
+
+    function renderCustomBrandTabs() {
+      const container = document.getElementById('brandTabsContainer');
+      if (!container) return;
+
+      const addBtn = container.querySelector('.brand-btn-add');
+      if (!addBtn) return;
+
+      // Xóa các nút custom đã render trước đó để tránh trùng lặp
+      container.querySelectorAll('.brand-btn-custom').forEach(b => b.remove());
+
+      const customBrands = loadCustomBrands();
+      customBrands.forEach(brand => {
+        const btn = document.createElement('button');
+        btn.className = 'brand-btn-h brand-btn-custom';
+        if (currentBrandFilter === brand) btn.classList.add('active');
+        btn.innerText = brand;
+        btn.onclick = function() { filterBrand(brand, btn); };
+        container.insertBefore(btn, addBtn);
+      });
+    }
+
     function addNewBrand() {
       let brand = prompt("Nhập tên hãng điện thoại mới:");
       if (brand && brand.trim() !== "") {
         let cleanBrand = brand.trim().toUpperCase();
+        let customBrands = loadCustomBrands();
+        if (!customBrands.includes(cleanBrand)) {
+          customBrands.push(cleanBrand);
+          saveCustomBrands(customBrands);
+        }
+        renderCustomBrandTabs();
         const container = document.getElementById('brandTabsContainer');
-        const newBtn = document.createElement('button');
-        newBtn.className = 'brand-btn-h';
-        newBtn.innerText = cleanBrand;
-        newBtn.onclick = function() { filterBrand(cleanBrand, newBtn); };
-        const addBtn = container.querySelector('.brand-btn-add');
-        container.insertBefore(newBtn, addBtn || container.lastElementChild);
-        filterBrand(cleanBrand, newBtn);
+        const targetBtn = Array.from(container.querySelectorAll('.brand-btn-h')).find(b => b.innerText.trim() === cleanBrand);
+        filterBrand(cleanBrand, targetBtn);
       }
     }
 
