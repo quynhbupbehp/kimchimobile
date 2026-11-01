@@ -397,17 +397,18 @@
     </div>
 
     <script>
+        // Cấu hình kết nối trực tiếp đến cơ sở dữ liệu chính của Kim Chi Mobile
         const firebaseConfig = {
-            apiKey: "AIzaSyBLC4dPLEP84yj6vkvf--DM8u_dN9YPJEs",
-            authDomain: "bao-gia-sua-chua.firebaseapp.com",
-            projectId: "bao-gia-sua-chua",
-            storageBucket: "bao-gia-sua-chua.firebasestorage.app",
-            messagingSenderId: "775400571262",
-            appId: "1:775400571262:web:b264070746f5fbb6fbf32f"
+            apiKey: "AIzaSyA2jHq2KLEnso0L-Ii2VSFY4xD8yPjUpb8",
+            authDomain: "kimchimobile-250b1.firebaseapp.com",
+            projectId: "kimchimobile-250b1",
+            storageBucket: "kimchimobile-250b1.firebasestorage.app",
+            messagingSenderId: "54846969891",
+            appId: "1:54846969891:web:450f26a367a9ee62e64e36"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const mainApp = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(mainApp);
 
         let devices = [];
         let importOrders = JSON.parse(localStorage.getItem('local_import_orders') || '[]'); 
@@ -600,7 +601,7 @@
                 statusEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-amber-400 text-xs"></i>`;
             }
 
-            db.collection("store_data").doc("main").onSnapshot((doc) => {
+            db.collection("store_data").doc("main").onSnapshot(async (doc) => {
                 if (doc.exists) {
                     const data = doc.data();
                     if (data.devices) devices = data.devices;
@@ -623,6 +624,27 @@
                         if (d.part === 'BO SẠC') d.part = 'CÁP SẠC';
                     });
                 } else {
+                    // Nếu trên cơ sở dữ liệu chính Kim Chi Mobile chưa có dữ liệu Báo Giá, tự động copy từ cơ sở dữ liệu cũ sang 1 lần
+                    try {
+                        const oldApp = firebase.initializeApp({
+                            apiKey: "AIzaSyBLC4dPLEP84yj6vkvf--DM8u_dN9YPJEs",
+                            authDomain: "bao-gia-sua-chua.firebaseapp.com",
+                            projectId: "bao-gia-sua-chua"
+                        }, "oldBaogiaApp_" + Date.now());
+                        const oldDoc = await oldApp.firestore().collection("store_data").doc("main").get();
+                        if (oldDoc.exists) {
+                            const oldData = oldDoc.data();
+                            if (oldData.devices) devices = oldData.devices;
+                            if (oldData.brands) brands = oldData.brands;
+                            if (oldData.categories) categories = oldData.categories;
+                            if (oldData.types) types = oldData.types;
+                            if (oldData.names) names = oldData.names;
+                            if (oldData.suppliers) suppliers = oldData.suppliers;
+                            if (oldData.importOrders) importOrders = oldData.importOrders;
+                        }
+                    } catch (migrationErr) {
+                        console.warn("Không thể di chuyển từ app cũ, lưu dữ liệu hiện tại:", migrationErr);
+                    }
                     saveAllToCloud();
                 }
                 if(statusEl) {
