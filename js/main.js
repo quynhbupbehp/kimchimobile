@@ -13235,6 +13235,63 @@
       }
     }
 
+    function getPartsCustomKey(type) {
+      return 'KIMCHI_PARTS_CUSTOM_' + (type || 'COMMON').toUpperCase();
+    }
+
+    function getPartsCustomOptions(type) {
+      try {
+        const stored = localStorage.getItem(getPartsCustomKey(type));
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function savePartsCustomOptions(type, list) {
+      try {
+        localStorage.setItem(getPartsCustomKey(type), JSON.stringify(list || []));
+      } catch (e) {}
+    }
+
+    function getPartsOptionField(type) {
+      if (type === 'brand') return 'brand';
+      if (type === 'device') return 'device';
+      if (type === 'type') return 'type';
+      if (type === 'style') return 'style';
+      return null;
+    }
+
+    function getPartsLabelName(type) {
+      if (type === 'brand') return 'Hãng';
+      if (type === 'device') return 'Tên máy';
+      if (type === 'type') return 'Loại linh kiện';
+      if (type === 'style') return 'Kiểu';
+      return 'mục';
+    }
+
+    function getAllPartsOptionsForType(type) {
+      const field = getPartsOptionField(type);
+      let set = new Set();
+      if (type === 'brand') {
+        ['IPHONE', 'SAMSUNG', 'OPPO', 'XIAOMI', 'REALME', 'VIVO', 'IPAD'].forEach(b => set.add(b));
+      } else if (type === 'type') {
+        ['MÀN HÌNH', 'PIN', 'LƯNG', 'KÍNH', 'CÁP SẠC', 'CAMERA', 'VỎ'].forEach(t => set.add(t));
+      } else if (type === 'style') {
+        ['ZIN', 'GX', 'JK', 'OLED', 'LÔ - RẺ', 'DẺO', 'BÓC MÁY'].forEach(s => set.add(s));
+      }
+      if (field && Array.isArray(partsDatabase)) {
+        partsDatabase.forEach(item => {
+          if (item && item[field]) set.add(String(item[field]).trim());
+        });
+      }
+      const customs = getPartsCustomOptions(type);
+      customs.forEach(c => {
+        if (c && String(c).trim()) set.add(String(c).trim());
+      });
+      return Array.from(set).filter(Boolean);
+    }
+
     function addNewPartsOption(type, inputId, promptText) {
       const input = document.getElementById(inputId);
       const currentVal = input ? input.value.trim() : '';
@@ -13243,13 +13300,20 @@
       if (currentVal !== '') {
         clean = currentVal;
       } else {
-        let val = prompt(promptText || 'Thêm mục mới:');
+        let val = prompt(promptText || `Thêm ${getPartsLabelName(type)} mới:`);
         if (val && val.trim()) clean = val.trim();
       }
 
       if (clean) {
         if (input) input.value = clean;
+        let customs = getPartsCustomOptions(type);
+        if (!customs.some(x => x.toLowerCase() === clean.toLowerCase())) {
+          customs.push(clean);
+          savePartsCustomOptions(type, customs);
+        }
         renderPartsDatalists();
+        if (typeof renderPartsTypeTabs === 'function') renderPartsTypeTabs();
+        if (typeof renderPartsStyleTabs === 'function') renderPartsStyleTabs();
         alert(`✓ Đã thêm "${clean}" thành công!`);
       }
     }
@@ -13257,27 +13321,102 @@
     function editPartsOption(type, inputId, promptText) {
       const input = document.getElementById(inputId);
       if (!input) return;
-      let val = prompt(promptText, input.value);
+      const currentVal = input.value.trim();
+      let val = prompt(promptText || `Sửa ${getPartsLabelName(type)}:`, currentVal);
       if (val !== null && val.trim()) {
-        input.value = val.trim();
+        const newVal = val.trim();
+        input.value = newVal;
+
+        let customs = getPartsCustomOptions(type);
+        const customIdx = customs.findIndex(x => x.toLowerCase() === currentVal.toLowerCase());
+        if (customIdx !== -1) {
+          customs[customIdx] = newVal;
+        } else {
+          customs.push(newVal);
+        }
+        savePartsCustomOptions(type, customs);
+
+        const field = getPartsOptionField(type);
+        if (field && Array.isArray(partsDatabase)) {
+          let count = 0;
+          partsDatabase.forEach(item => {
+            if (item && item[field] && String(item[field]).toLowerCase() === currentVal.toLowerCase()) {
+              item[field] = newVal;
+              count++;
+            }
+          });
+          if (count > 0) {
+            savePartsStorage();
+            if (typeof renderPartsTable === 'function') renderPartsTable();
+          }
+        }
+
         renderPartsDatalists();
+        if (typeof renderPartsTypeTabs === 'function') renderPartsTypeTabs();
+        if (typeof renderPartsStyleTabs === 'function') renderPartsStyleTabs();
+        alert(`✓ Đã đổi thành "${newVal}" thành công!`);
       }
     }
 
     function deletePartsOption(type, inputId) {
       const input = document.getElementById(inputId);
-      if (!input) return;
-      if (confirm(`Bạn có chắc muốn xóa giá trị "${input.value}"?`)) {
+      const label = getPartsLabelName(type);
+      const allOptions = getAllPartsOptionsForType(type);
+
+      let targetVal = input ? input.value.trim() : '';
+
+      if (!targetVal) {
+        let pick = prompt(`Nhập chính xác ${label} muốn xóa khỏi danh mục:\n(Hiện có: ${allOptions.join(', ')})`);
+        if (!pick || !pick.trim()) return;
+        targetVal = pick.trim();
+      }
+
+      const cleanLower = targetVal.toLowerCase();
+      const matched = allOptions.find(o => o.toLowerCase() === cleanLower) || targetVal;
+
+      if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn "${matched}" khỏi danh mục gợi ý ${label} không?`)) {
+        return;
+      }
+
+      // 1. Xóa khỏi danh sách custom tùy chỉnh
+      let customs = getPartsCustomOptions(type);
+      customs = customs.filter(x => x.toLowerCase() !== cleanLower);
+      savePartsCustomOptions(type, customs);
+
+      // 2. Xóa hoặc làm rỗng trường này trong partsDatabase nếu có linh kiện đang dùng
+      const field = getPartsOptionField(type);
+      let updatedCount = 0;
+      if (field && Array.isArray(partsDatabase)) {
+        partsDatabase.forEach(item => {
+          if (item && item[field] && String(item[field]).toLowerCase() === cleanLower) {
+            item[field] = '';
+            updatedCount++;
+          }
+        });
+        if (updatedCount > 0) {
+          savePartsStorage();
+          if (typeof renderPartsTable === 'function') renderPartsTable();
+        }
+      }
+
+      // 3. Xóa giá trị trong ô nhập nếu đang hiển thị
+      if (input && input.value.trim().toLowerCase() === cleanLower) {
         input.value = '';
       }
+
+      // 4. Cập nhật lại datalists và bộ lọc giao diện
+      renderPartsDatalists();
+      if (typeof renderPartsTypeTabs === 'function') renderPartsTypeTabs();
+      if (typeof renderPartsStyleTabs === 'function') renderPartsStyleTabs();
+
+      alert(`✓ Đã xóa "${matched}" khỏi danh mục ${label} thành công!`);
     }
 
     function renderPartsDatalists() {
-      // Tự động thu thập các tùy chọn đã có từ database
-      const brands = Array.from(new Set(partsDatabase.map(x => x.brand).filter(Boolean)));
-      const devices = Array.from(new Set(partsDatabase.map(x => x.device).filter(Boolean)));
-      const types = Array.from(new Set(partsDatabase.map(x => x.type).filter(Boolean)));
-      const styles = Array.from(new Set(partsDatabase.map(x => x.style).filter(Boolean)));
+      const brands = getAllPartsOptionsForType('brand');
+      const devices = getAllPartsOptionsForType('device');
+      const types = getAllPartsOptionsForType('type');
+      const styles = getAllPartsOptionsForType('style');
 
       const dlBrand = document.getElementById('partsBrandDatalist');
       if (dlBrand) {
