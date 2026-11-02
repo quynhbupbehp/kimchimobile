@@ -13432,6 +13432,10 @@
       // 3. Xóa giá trị trong ô nhập nếu đang hiển thị
       if (input && input.value.trim().toLowerCase() === cleanLower) {
         input.value = '';
+        if (typeof closeUniversalSmartDropdown === 'function') closeUniversalSmartDropdown();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        input.blur();
       }
 
       // 4. Cập nhật lại datalists và bộ lọc giao diện

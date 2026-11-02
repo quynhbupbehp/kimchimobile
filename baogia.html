@@ -346,15 +346,12 @@
                         MÁY</label>
                     <div class="flex items-center gap-2">
                         <div class="relative flex-1">
-                            <select id="device-name-select" onchange="onModalNameSelectChange(this.value)"
-                                class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 appearance-none pr-8 cursor-pointer shadow-inner">
-                            </select>
-                            <span
-                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 text-xs">
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </span>
+                            <input type="text" id="device-name" list="device-name-datalist" required
+                                placeholder="Nhập tên máy (VD: 11 PRO MAX, A05...)"
+                                class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 pr-8 shadow-inner"
+                                oninput="onModalNameInputChange(this.value)">
+                            <datalist id="device-name-datalist"></datalist>
                         </div>
-                        <input type="hidden" id="device-name">
                         <div class="flex items-center gap-1.5 shrink-0">
                             <button type="button" onclick="handleEntity('names', 'add')"
                                 class="w-9 h-9 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
@@ -1645,8 +1642,9 @@
 
         function updateModalNameOptions(selectedName = '') {
             const brandSelect = document.getElementById('device-brand-select');
-            const nameSelect = document.getElementById('device-name-select');
-            if (!brandSelect || !nameSelect) return;
+            const nameInput = document.getElementById('device-name');
+            const datalist = document.getElementById('device-name-datalist');
+            if (!brandSelect || !datalist) return;
 
             const selectedBrand = brandSelect.value.trim().toUpperCase();
 
@@ -1666,16 +1664,14 @@
                 sortedNames.sort((a, b) => a.localeCompare(b, 'vi', { numeric: true }));
             }
 
-            nameSelect.innerHTML = `<option value="" class="bg-[#0b0f19] text-gray-400">-- CHỌN HOẶC THÊM TÊN MÁY --</option>` +
-                sortedNames.map(n => `<option value="${n}" class="bg-[#0b0f19] text-white" ${n === selectedName ? 'selected' : ''}>${n}</option>`).join('');
+            datalist.innerHTML = sortedNames.map(n => `<option value="${n}">`).join('');
 
-            if (selectedName) {
-                nameSelect.value = selectedName;
-                document.getElementById('device-name').value = selectedName;
-            } else if (nameSelect.value) {
-                document.getElementById('device-name').value = nameSelect.value;
-            } else {
-                document.getElementById('device-name').value = '';
+            if (nameInput) {
+                if (selectedName) {
+                    nameInput.value = selectedName;
+                } else if (!nameInput.value) {
+                    nameInput.value = '';
+                }
             }
         }
 
@@ -1684,8 +1680,12 @@
             updateModalNameOptions();
         }
 
-        function onModalNameSelectChange(name) {
-            document.getElementById('device-name').value = name;
+        function onModalNameInputChange(val) {
+            // Tên máy khi người dùng nhập trực tiếp
+            const nameInput = document.getElementById('device-name');
+            if (nameInput) {
+                // Tự động giữ giá trị viết hoa chuẩn
+            }
         }
 
         function onModalPartSelectChange(part) {
@@ -2092,7 +2092,7 @@
             } else if (entityType === 'types') {
                 listRef = types; inputId = 'device-type'; selectId = 'device-type-select'; labelName = 'KIỂU';
             } else if (entityType === 'names') {
-                listRef = names; inputId = 'device-name'; selectId = 'device-name-select'; labelName = 'TÊN MÁY';
+                listRef = names; inputId = 'device-name'; selectId = null; labelName = 'TÊN MÁY';
             }
 
             const inputEl = document.getElementById(inputId);
@@ -2111,12 +2111,12 @@
                     populateModalSelects();
                     if (selectEl) selectEl.value = cleanVal;
                     if (inputEl) inputEl.value = cleanVal;
-                    if (entityType === 'brands') updateModalNameOptions();
+                    if (entityType === 'brands' || entityType === 'names') updateModalNameOptions(entityType === 'names' ? cleanVal : '');
                     initTabs();
                     renderTable();
                 }
             } else if (action === 'edit') {
-                if (!val) { alert(`VUI LÒNG CHỌN ${labelName} CẦN SỬA!`); return; }
+                if (!val) { alert(`VUI LÒNG CHỌN HOẶC NHẬP ${labelName} CẦN SỬA!`); return; }
                 const oldVal = prompt(`NHẬP TÊN MỚI THAY THẾ CHO "${val}":`, val);
                 if (oldVal) {
                     let newVal = oldVal.trim().toUpperCase();
@@ -2126,9 +2126,7 @@
 
                     devices.forEach(d => {
                         if (entityType === 'brands' && d.brand === val) d.brand = newVal;
-                        if (entityType === 'categories') {
-                            if (d.part === val) d.part = newVal;
-                        }
+                        if (entityType === 'categories' && d.part === val) d.part = newVal;
                         if (entityType === 'types' && d.type === val) d.type = newVal;
                         if (entityType === 'names' && d.name === val) d.name = newVal;
                     });
@@ -2137,19 +2135,35 @@
                     populateModalSelects();
                     if (selectEl) selectEl.value = newVal;
                     if (inputEl) inputEl.value = newVal;
-                    if (entityType === 'brands') updateModalNameOptions();
+                    if (entityType === 'brands' || entityType === 'names') updateModalNameOptions(entityType === 'names' ? newVal : '');
                     initTabs();
                     renderTable();
                 }
             } else if (action === 'delete') {
-                if (!val) { alert(`VUI LÒNG CHỌN ${labelName} CẦN XÓA!`); return; }
-                if (confirm(`BẠN CÓ CHẮC MUỐN XÓA "${val}" KHỎI DANH SÁCH?`)) {
+                if (!val) { alert(`VUI LÒNG CHỌN HOẶC NHẬP ${labelName} CẦN XÓA!`); return; }
+                if (confirm(`BẠN CÓ CHẮC MUỐN XÓA "${val}" KHỎI DANH SÁCH ${labelName}?`)) {
+                    // 1. Xóa khỏi danh sách cấu hình
                     const idx = listRef.indexOf(val);
                     if (idx !== -1) listRef.splice(idx, 1);
+
+                    // 2. Xóa khỏi danh sách tên máy / thuộc tính trong devices
+                    devices.forEach(d => {
+                        if (entityType === 'brands' && d.brand === val) d.brand = '';
+                        if (entityType === 'categories' && d.part === val) d.part = '';
+                        if (entityType === 'types' && d.type === val) d.type = '';
+                        if (entityType === 'names' && d.name === val) d.name = '';
+                    });
+
+                    // 3. Xóa dữ liệu hiển thị trên ô nhập
+                    if (inputEl) inputEl.value = '';
+                    if (selectEl) selectEl.value = '';
+
                     saveAllToCloud();
                     populateModalSelects();
+                    if (entityType === 'brands' || entityType === 'names') updateModalNameOptions();
                     initTabs();
                     renderTable();
+                    alert(`✓ ĐÃ XÓA "${val}" KHỎI DANH SÁCH THÀNH CÔNG!`);
                 }
             }
         }
