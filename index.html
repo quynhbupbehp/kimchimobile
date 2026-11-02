@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261102_093757">
+  <link rel="stylesheet" href="css/style.css?v=20261102_094816">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -20,7 +20,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261102_093757";
+    var CURRENT_PAGE_VERSION = "20261102_094816";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1875,12 +1875,32 @@
           <!-- Render tự động bởi renderPartsStyleTabs() -->
         </div>
 
-        <!-- HÀNG 4: Ô TÌM KIẾM THEO TÊN MÁY HOẶC IMEI -->
-        <div class="bg-search-imei-row">
-          <div class="bg-search-imei-box">
-            <span class="bg-search-imei-label">TÌM KIẾM</span>
-            <span class="bg-search-imei-icon">🔍</span>
-            <input type="text" id="bgSearchDeviceInput" placeholder="tìm theo tên máy hoặc imei" oninput="handlePartsSearchFilter(this.value)">
+        <!-- HÀNG 4: TOÀN BỘ CỤM TÌM KIẾM CỦA TAB BÁN MÁY CHUYỂN SANG BÁO GIÁ SỬA -->
+        <div class="banmay-top-bar" style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.1rem; flex-wrap: nowrap;">
+          <!-- 1. Ô TÌM KIẾM CÓ DROPDOWN GỢI Ý & NÚT X ĐỎ -->
+          <div class="search-box-bm" style="height: 38px; box-sizing: border-box; position: relative;">
+            <span class="search-label-single-line">TÌM KIẾM</span>
+            <input type="text" id="bgSearchDeviceInput" class="search-input-field" inputmode="text"
+              placeholder="🔍 tìm theo tên máy hoặc imei" oninput="handlePartsSearchFilter(this.value)"
+              onfocus="handlePartsSearchFilter(this.value)" onkeydown="handlePartsSearchKeydown(event)" autocomplete="off">
+            <button type="button" id="btnClearPartsSearch" class="btn-clear-search" onclick="clearPartsSearch()"
+              title="Xóa tìm kiếm">✕</button>
+            <!-- DROPDOWN GỢI Ý TÊN MÁY TỰ ĐỘNG -->
+            <div id="partsSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;"></div>
+          </div>
+
+          <!-- 2. BỘ LỌC THEO MỨC GIÁ BÁN -->
+          <div class="price-filter-box-bm" style="height: 38px; box-sizing: border-box;">
+            <span class="price-filter-label">GIÁ BÁN</span>
+            <select id="partsPriceFilter" class="price-filter-select" onchange="handlePartsPriceFilterChange(this)">
+              <option value="ALL">Mọi Mức Giá</option>
+              <option value="UNDER_1">Dưới 1 Cụ</option>
+              <option value="1_2">1 - 2 Cụ</option>
+              <option value="2_4">2 - 4 Cụ</option>
+              <option value="4_6">4 - 6 Cụ</option>
+              <option value="6_10">6 - 10 Cụ</option>
+              <option value="OVER_10">Trên 10 Cụ</option>
+            </select>
           </div>
         </div>
 
@@ -5344,10 +5364,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261102_093757"></script>
+  <script src="js/seed_data.js?v=20261102_094816"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261102_093757"></script>
+  <script src="js/main.js?v=20261102_094816"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

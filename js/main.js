@@ -12600,10 +12600,169 @@
       }
     }
 
+    let partsCurrentPriceFilter = 'ALL';
+    let currentPartsSuggestionIndex = -1;
+
+    function handlePartsPriceFilterChange(select) {
+      partsCurrentPriceFilter = select.value || 'ALL';
+      renderPartsTable();
+    }
+    window.handlePartsPriceFilterChange = handlePartsPriceFilterChange;
+
+    function getPartsNameSuggestions(query) {
+      if (!query || !query.trim()) return [];
+      const qNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(query.trim()).toLowerCase() : query.trim().toLowerCase();
+
+      let pool = partsDatabase;
+      if (partsCurrentBrand && partsCurrentBrand !== 'ALL') {
+        const cbf = partsCurrentBrand.toUpperCase().trim();
+        pool = pool.filter(p => (p.brand || '').toUpperCase().trim() === cbf);
+      }
+
+      const nameMap = new Map();
+      pool.forEach(p => {
+        let rawName = (p.device || '').trim();
+        if (!rawName) return;
+        let key = rawName.toLowerCase();
+
+        let normModel = (typeof normalizeQuery === 'function') ? normalizeQuery(rawName).toLowerCase() : rawName.toLowerCase();
+        let isMatch = normModel.includes(qNorm) || rawName.toLowerCase().includes(qNorm);
+
+        if (isMatch) {
+          if (!nameMap.has(key)) {
+            nameMap.set(key, { name: rawName, count: 1, brand: p.brand || '' });
+          } else {
+            nameMap.get(key).count++;
+          }
+        }
+      });
+
+      const list = Array.from(nameMap.values());
+      list.sort((a, b) => {
+        let aLower = a.name.toLowerCase();
+        let bLower = b.name.toLowerCase();
+        let aExact = aLower === qNorm;
+        let bExact = bLower === qNorm;
+        if (aExact && !bExact) return -1;
+        if (!aExact && bExact) return 1;
+
+        let aStarts = aLower.startsWith(qNorm);
+        let bStarts = bLower.startsWith(qNorm);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+
+        return a.name.length - b.name.length;
+      });
+
+      return list.slice(0, 10);
+    }
+
+    function renderPartsSearchSuggestions(query) {
+      const dropdown = document.getElementById('partsSearchSuggestions');
+      if (!dropdown) return;
+
+      const suggestions = getPartsNameSuggestions(query);
+      currentPartsSuggestionIndex = -1;
+
+      if (!suggestions || suggestions.length === 0) {
+        dropdown.style.display = 'none';
+        dropdown.innerHTML = '';
+        return;
+      }
+
+      dropdown.innerHTML = suggestions.map((item, index) => {
+        return `
+          <div class="phone-suggestion-item" data-index="${index}" data-name="${escapeHtml(item.name)}" onclick="selectPartsSearchSuggestion(this.getAttribute('data-name'))">
+            <span class="suggestion-model-name">
+              <span style="font-size: 1.05rem;">📱</span>
+              <span>${highlightSuggestionMatch(item.name, query)}</span>
+            </span>
+            <span class="suggestion-count">${item.count} dòng</span>
+          </div>
+        `;
+      }).join('');
+
+      dropdown.style.display = 'block';
+    }
+
+    function selectPartsSearchSuggestion(name) {
+      const input = document.getElementById('bgSearchDeviceInput');
+      if (!input) return;
+      input.value = name;
+      const clearBtn = document.getElementById('btnClearPartsSearch');
+      if (clearBtn) clearBtn.style.display = 'block';
+      hidePartsSearchSuggestions();
+      partsFilterKeyword = name.trim().toLowerCase();
+      renderPartsTable();
+    }
+    window.selectPartsSearchSuggestion = selectPartsSearchSuggestion;
+
+    function hidePartsSearchSuggestions() {
+      const dropdown = document.getElementById('partsSearchSuggestions');
+      if (dropdown) {
+        dropdown.style.display = 'none';
+      }
+      currentPartsSuggestionIndex = -1;
+    }
+    window.hidePartsSearchSuggestions = hidePartsSearchSuggestions;
+
+    function handlePartsSearchKeydown(e) {
+      const dropdown = document.getElementById('partsSearchSuggestions');
+      if (!dropdown || dropdown.style.display === 'none') return;
+      const items = dropdown.querySelectorAll('.phone-suggestion-item');
+      if (items.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        currentPartsSuggestionIndex = (currentPartsSuggestionIndex + 1) % items.length;
+        updateSuggestionHighlight(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        currentPartsSuggestionIndex = (currentPartsSuggestionIndex - 1 + items.length) % items.length;
+        updateSuggestionHighlight(items);
+      } else if (e.key === 'Enter') {
+        if (currentPartsSuggestionIndex >= 0 && currentPartsSuggestionIndex < items.length) {
+          e.preventDefault();
+          items[currentPartsSuggestionIndex].click();
+        } else {
+          hidePartsSearchSuggestions();
+        }
+      } else if (e.key === 'Escape') {
+        hidePartsSearchSuggestions();
+      }
+    }
+    window.handlePartsSearchKeydown = handlePartsSearchKeydown;
+
+    function clearPartsSearch() {
+      const input = document.getElementById('bgSearchDeviceInput');
+      if (input) input.value = '';
+      const clearBtn = document.getElementById('btnClearPartsSearch');
+      if (clearBtn) clearBtn.style.display = 'none';
+      hidePartsSearchSuggestions();
+      partsFilterKeyword = '';
+      if (input) input.focus();
+      renderPartsTable();
+    }
+    window.clearPartsSearch = clearPartsSearch;
+
     function handlePartsSearchFilter(val) {
+      const clearBtn = document.getElementById('btnClearPartsSearch');
+      if (val && val.trim() !== '') {
+        if (clearBtn) clearBtn.style.display = 'block';
+        renderPartsSearchSuggestions(val);
+      } else {
+        if (clearBtn) clearBtn.style.display = 'none';
+        hidePartsSearchSuggestions();
+      }
       partsFilterKeyword = (val || '').trim().toLowerCase();
       renderPartsTable();
     }
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#tab-baogia .search-box-bm')) {
+        hidePartsSearchSuggestions();
+      }
+    });
 
     function exportPartsToExcel() {
       const dd = document.getElementById('bgPartsExcelDropdown');
@@ -12661,6 +12820,31 @@
           const itemStyleUpper = (item.style || '').toUpperCase();
           const curStyleUpper = partsCurrentStyle.toUpperCase();
           if (!itemStyleUpper.includes(curStyleUpper) && !curStyleUpper.includes(itemStyleUpper)) return false;
+        }
+
+        // LỌC THEO KHOẢNG GIÁ BÁN (Y CHANG TAB BÁN MÁY)
+        if (partsCurrentPriceFilter && partsCurrentPriceFilter !== 'ALL') {
+          let pVal = 0;
+          if (typeof parsePriceNum === 'function') {
+            pVal = parsePriceNum(item.priceSell);
+          } else {
+            pVal = parseFloat((item.priceSell || '0').replace(/\./g, '')) || 0;
+          }
+          if (pVal >= 100000) pVal = Math.round(pVal / 1000);
+
+          if (partsCurrentPriceFilter === 'UNDER_1') {
+            return pVal > 0 && pVal < 1000;
+          } else if (partsCurrentPriceFilter === '1_2') {
+            return pVal >= 1000 && pVal <= 2000;
+          } else if (partsCurrentPriceFilter === '2_4') {
+            return pVal > 2000 && pVal <= 4000;
+          } else if (partsCurrentPriceFilter === '4_6') {
+            return pVal > 4000 && pVal <= 6000;
+          } else if (partsCurrentPriceFilter === '6_10') {
+            return pVal > 6000 && pVal <= 10000;
+          } else if (partsCurrentPriceFilter === 'OVER_10') {
+            return pVal > 10000;
+          }
         }
 
         return true;
@@ -13013,6 +13197,11 @@
     window.addNewBrandTab = addNewBrandTab;
     window.togglePartsCostVisibility = togglePartsCostVisibility;
     window.handlePartsSearchFilter = handlePartsSearchFilter;
+    window.clearPartsSearch = clearPartsSearch;
+    window.handlePartsSearchKeydown = handlePartsSearchKeydown;
+    window.selectPartsSearchSuggestion = selectPartsSearchSuggestion;
+    window.hidePartsSearchSuggestions = hidePartsSearchSuggestions;
+    window.handlePartsPriceFilterChange = handlePartsPriceFilterChange;
     window.toggleQuoteExcelExportMenu = toggleQuoteExcelExportMenu;
     window.triggerQuoteExcelImport = triggerQuoteExcelImport;
     window.handleQuoteExcelImport = handleQuoteExcelImport;
