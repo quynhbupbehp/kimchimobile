@@ -14135,34 +14135,45 @@
     }
 
     function openRepairModal(editId = null) {
-      initRepairTimeSelectors();
-      renderAllRepairDropdowns();
+      try {
+        if (typeof initRepairTimeSelectors === 'function') initRepairTimeSelectors();
+        if (typeof renderAllRepairDropdowns === 'function') renderAllRepairDropdowns();
+      } catch (e) {
+        console.warn('Lỗi tiền xử lý modal sửa chữa:', e);
+      }
+
       const modal = document.getElementById('repairModal');
       const form = document.getElementById('repairForm');
       const title = document.getElementById('repairModalTitle');
       const btnSubmit = document.getElementById('rBtnSubmit');
 
-      if (!modal || !form) return;
-      form.reset();
-      document.getElementById('repairEditId').value = '';
+      if (!modal) {
+        console.error('Không tìm thấy element repairModal!');
+        return;
+      }
+      if (form) form.reset();
+      const editIdEl = document.getElementById('repairEditId');
+      if (editIdEl) editIdEl.value = '';
 
-      const now = getVietnamDate();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const curHour = String(now.getHours()).padStart(2, '0');
-      const curMin = String(now.getMinutes()).padStart(2, '0');
+      try {
+        const now = (typeof getVietnamDate === 'function') ? getVietnamDate() : new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const curHour = String(now.getHours()).padStart(2, '0');
+        const curMin = String(now.getMinutes()).padStart(2, '0');
 
-      if (document.getElementById('rFormDate')) document.getElementById('rFormDate').value = `${yyyy}-${mm}-${dd}`;
-      if (document.getElementById('rFormHour')) document.getElementById('rFormHour').value = curHour;
-      if (document.getElementById('rFormMinute')) document.getElementById('rFormMinute').value = curMin;
+        if (document.getElementById('rFormDate')) document.getElementById('rFormDate').value = `${yyyy}-${mm}-${dd}`;
+        if (document.getElementById('rFormHour')) document.getElementById('rFormHour').value = curHour;
+        if (document.getElementById('rFormMinute')) document.getElementById('rFormMinute').value = curMin;
+      } catch (e) {}
 
       if (editId !== null && editId !== undefined && editId !== '') {
-        const item = repairDatabase.find(x => String(x.id) === String(editId));
+        const item = (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) ? repairDatabase.find(x => String(x.id) === String(editId)) : null;
         if (item) {
-          title.innerText = 'CẬP NHẬT ĐƠN SỬA CHỮA';
-          btnSubmit.innerHTML = 'LƯU ĐƠN';
-          document.getElementById('repairEditId').value = item.id;
+          if (title) title.innerText = 'CẬP NHẬT ĐƠN SỬA CHỮA';
+          if (btnSubmit) btnSubmit.innerHTML = 'LƯU ĐƠN';
+          if (editIdEl) editIdEl.value = item.id;
           if (document.getElementById('rFormCustomer')) document.getElementById('rFormCustomer').value = item.customer || '';
           if (document.getElementById('rFormDevice')) document.getElementById('rFormDevice').value = item.device || '';
           if (document.getElementById('rFormIssue')) document.getElementById('rFormIssue').value = item.issue || '';
@@ -14185,11 +14196,11 @@
               if (document.getElementById('rFormMinute')) document.getElementById('rFormMinute').value = tp[1];
             }
           }
-          updateRepairFormProfit();
+          if (typeof updateRepairFormProfit === 'function') updateRepairFormProfit();
         }
       } else {
-        title.innerText = 'TẠO ĐƠN SỬA CHỮA';
-        btnSubmit.innerHTML = 'TẠO ĐƠN';
+        if (title) title.innerText = 'TẠO ĐƠN SỬA CHỮA';
+        if (btnSubmit) btnSubmit.innerHTML = 'TẠO ĐƠN';
         if (document.getElementById('rFormCustomer')) document.getElementById('rFormCustomer').value = 'Khách lẻ';
         if (document.getElementById('rFormWarranty')) document.getElementById('rFormWarranty').value = '';
         if (document.getElementById('rFormPaymentStatus')) document.getElementById('rFormPaymentStatus').value = 'Đã thanh toán';
@@ -14198,6 +14209,7 @@
         if (disp) disp.innerText = '';
       }
 
+      modal.style.zIndex = '99999';
       modal.classList.add('active');
       modal.style.display = 'flex';
     }
@@ -14213,6 +14225,11 @@
         modal.style.display = 'none';
       }
     }
+
+    // Gắn vào window để gọi từ các sự kiện onclick trên HTML
+    window.openRepairModal = openRepairModal;
+    window.editRepairItem = editRepairItem;
+    window.closeRepairModal = closeRepairModal;
 
     function saveRepairItem(e) {
       if (e) e.preventDefault();
