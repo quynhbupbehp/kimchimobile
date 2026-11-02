@@ -13111,56 +13111,68 @@
     }
 
     function savePartsItem(e) {
-      e.preventDefault();
-      const editIdStr = document.getElementById('partsEditId').value;
-      const brand = document.getElementById('partsFormBrand').value.trim().toUpperCase();
-      const device = document.getElementById('partsFormDevice').value.trim();
-      const type = document.getElementById('partsFormType').value.trim().toUpperCase();
-      const style = document.getElementById('partsFormStyle').value.trim();
-      const priceSell = document.getElementById('partsFormPriceSell').value.trim();
-      const priceCost = document.getElementById('partsFormPriceCost').value.trim();
-      const qty = parseInt(document.getElementById('partsFormQty').value, 10) || 0;
-      const color = document.getElementById('partsFormColor').value.trim();
-
-      let sellVal = parseFloat(priceSell.replace(/\./g, '')) || 0;
-      let costVal = parseFloat(priceCost.replace(/\./g, '')) || 0;
-      let profit = formatNumberDisplay(sellVal - costVal);
-
-      if (!brand || !device || !type || !priceSell || !priceCost) {
-        alert('Vui lòng điền đầy đủ các thông tin bắt buộc!');
-        return;
+      if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
       }
 
-      if (editIdStr) {
-        const editId = parseInt(editIdStr, 10);
-        const idx = partsDatabase.findIndex(x => x.id === editId);
-        if (idx !== -1) {
-          const oldData = JSON.parse(JSON.stringify(partsDatabase[idx]));
-          partsDatabase[idx] = {
-            ...partsDatabase[idx],
+      try {
+        const editIdStr = document.getElementById('partsEditId') ? document.getElementById('partsEditId').value : '';
+        const brand = (document.getElementById('partsFormBrand') ? document.getElementById('partsFormBrand').value : '').trim().toUpperCase();
+        const device = (document.getElementById('partsFormDevice') ? document.getElementById('partsFormDevice').value : '').trim();
+        const type = (document.getElementById('partsFormType') ? document.getElementById('partsFormType').value : '').trim().toUpperCase();
+        const style = (document.getElementById('partsFormStyle') ? document.getElementById('partsFormStyle').value : '').trim();
+        const priceSell = (document.getElementById('partsFormPriceSell') ? document.getElementById('partsFormPriceSell').value : '').trim();
+        const priceCost = (document.getElementById('partsFormPriceCost') ? document.getElementById('partsFormPriceCost').value : '').trim();
+        const qty = parseInt(document.getElementById('partsFormQty') ? document.getElementById('partsFormQty').value : '1', 10) || 0;
+        const color = (document.getElementById('partsFormColor') ? document.getElementById('partsFormColor').value : '').trim();
+
+        let sellVal = parseFloat(priceSell.replace(/\./g, '')) || 0;
+        let costVal = parseFloat(priceCost.replace(/\./g, '')) || 0;
+        let profit = (typeof formatNumberDisplay === 'function') ? formatNumberDisplay(sellVal - costVal) : (sellVal - costVal);
+
+        if (!brand || !device || !type || !priceSell || !priceCost) {
+          alert('Vui lòng điền đầy đủ các thông tin: Hãng, Tên máy, Linh kiện, Giá bán, Giá nhập!');
+          return;
+        }
+
+        if (editIdStr) {
+          const editId = parseInt(editIdStr, 10);
+          const idx = partsDatabase.findIndex(x => x.id === editId);
+          if (idx !== -1) {
+            const oldData = JSON.parse(JSON.stringify(partsDatabase[idx]));
+            partsDatabase[idx] = {
+              ...partsDatabase[idx],
+              brand, device, type, style, priceSell, priceCost, profit, qty, color
+            };
+            if (typeof logActivity === 'function') {
+              try {
+                logActivity('EDIT', 'linhkien', 'Linh kiện', `Sửa linh kiện: ${brand} ${device} (${type}) - Bán: ${priceSell}`, oldData, partsDatabase[idx], editId);
+              } catch(err) {}
+            }
+          }
+        } else {
+          const newItem = {
+            id: Date.now(),
             brand, device, type, style, priceSell, priceCost, profit, qty, color
           };
+          partsDatabase.unshift(newItem);
           if (typeof logActivity === 'function') {
-            logActivity('EDIT', 'linhkien', 'Linh kiện', `Sửa linh kiện: ${brand} ${device} (${type}) - Bán: ${priceSell}`, oldData, partsDatabase[idx], editId);
+            try {
+              logActivity('ADD', 'linhkien', 'Linh kiện', `Thêm linh kiện: ${brand} ${device} (${type}) - Bán: ${priceSell}`, null, newItem, newItem.id);
+            } catch(err) {}
           }
         }
-      } else {
-        const newItem = {
-          id: Date.now(),
-          brand, device, type, style, priceSell, priceCost, profit, qty, color
-        };
-        partsDatabase.unshift(newItem);
-        if (typeof logActivity === 'function') {
-          logActivity('ADD', 'linhkien', 'Linh kiện', `Thêm linh kiện: ${brand} ${device} (${type}) - Bán: ${priceSell}`, null, newItem, newItem.id);
-        }
-      }
 
-      savePartsStorage();
-      renderPartsTypeTabs();
-      renderPartsStyleTabs();
-      renderPartsDatalists();
-      renderPartsTable();
-      closePartsModal();
+        savePartsStorage();
+        if (typeof renderPartsTypeTabs === 'function') renderPartsTypeTabs();
+        if (typeof renderPartsStyleTabs === 'function') renderPartsStyleTabs();
+        if (typeof renderPartsDatalists === 'function') renderPartsDatalists();
+        if (typeof renderPartsTable === 'function') renderPartsTable();
+        closePartsModal();
+      } catch (err) {
+        console.error('Lỗi khi lưu linh kiện:', err);
+        alert('Có lỗi xảy ra khi lưu: ' + err.message);
+      }
     }
 
     function clonePartsItem(id) {
