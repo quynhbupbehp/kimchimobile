@@ -9899,7 +9899,7 @@
               ${nameHtml}
             </td>
             <td style="text-align: center; vertical-align: middle;">
-              <span style="display: inline-block; background: #ec4899; color: #ffffff; font-weight: 900; font-size: 1.50rem; padding: 4px 12px; border-radius: 8px; border: 1.5px solid #f472b6; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4); line-height: 1.2;">
+              <span style="display: inline-block; background: #ec4899; color: #ffffff; font-weight: 900; font-size: 1.425rem; padding: 4px 12px; border-radius: 8px; border: 1.5px solid #f472b6; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4); line-height: 1.2;">
                 ${formatPriceStr(p.price || p.total) || '0'}
               </span>
             </td>
