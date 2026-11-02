@@ -980,11 +980,17 @@
         if (el.value.trim() !== "") {
           if (confirm(`Bạn có muốn xóa dữ liệu ô này không?`)) {
             el.value = '';
-            el.focus();
+            if (typeof closeUniversalSmartDropdown === 'function') closeUniversalSmartDropdown();
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.blur();
           }
         } else {
           el.value = '';
-          el.focus();
+          if (typeof closeUniversalSmartDropdown === 'function') closeUniversalSmartDropdown();
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          el.blur();
         }
       }
     }
@@ -1504,9 +1510,16 @@
       const el = document.getElementById('tItemName');
       let currentVal = el ? el.value.trim() : '';
       const datalist = document.getElementById('itemNameList');
-      if (!datalist) return;
 
-      let options = Array.from(datalist.options).map(o => o.value);
+      let options = [];
+      if (datalist) {
+        options = Array.from(datalist.options).map(o => o.value).filter(Boolean);
+      }
+      try {
+        let saved = JSON.parse(localStorage.getItem('KIMCHI_DL_ITEMNAMELIST')) || [];
+        options = Array.from(new Set([...options, ...saved]));
+      } catch(e){}
+
       let targetVal = currentVal;
       if (!targetVal) {
         let pick = prompt(`Nhập chính xác tên phụ kiện muốn xóa khỏi danh mục:\n(Hiện có: ${options.join(', ')})`);
@@ -1515,20 +1528,33 @@
       }
 
       let cleanTarget = targetVal.toLowerCase().trim();
-      let matchOpt = Array.from(datalist.options).find(o => o.value.toLowerCase().trim() === cleanTarget);
+      let matchVal = options.find(o => o.toLowerCase().trim() === cleanTarget);
 
-      if (!matchOpt) {
+      if (!matchVal) {
         alert(`Không tìm thấy "${targetVal}" trong danh mục gợi ý!`);
         return;
       }
 
-      if (confirm(`Bạn có chắc chắn muốn xóa "${matchOpt.value}" khỏi danh mục gợi ý không?`)) {
-        matchOpt.remove();
+      if (confirm(`Bạn có chắc chắn muốn xóa "${matchVal}" khỏi danh mục gợi ý không?`)) {
+        if (datalist) {
+          Array.from(datalist.options).forEach(o => {
+            if (o.value.toLowerCase().trim() === cleanTarget) o.remove();
+          });
+        }
+        try {
+          let saved = JSON.parse(localStorage.getItem('KIMCHI_DL_ITEMNAMELIST')) || [];
+          saved = saved.filter(x => x.toLowerCase().trim() !== cleanTarget);
+          localStorage.setItem('KIMCHI_DL_ITEMNAMELIST', JSON.stringify(saved));
+        } catch(e){}
+
         if (el && el.value.trim().toLowerCase() === cleanTarget) {
           el.value = '';
-          el.focus();
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          el.blur();
         }
-        alert(`Đã xóa "${matchOpt.value}" khỏi danh mục thành công!`);
+        if (typeof closeUniversalSmartDropdown === 'function') closeUniversalSmartDropdown();
+        alert(`Đã xóa "${matchVal}" khỏi danh mục thành công!`);
       }
     }
 
@@ -1599,6 +1625,10 @@
       }
     }
     window.deleteTicketPriceOption = deleteTicketPriceOption;
+    window.clearInput = clearInput;
+    window.addItemNameOption = addItemNameOption;
+    window.editItemNameOption = editItemNameOption;
+    window.deleteItemNameOption = deleteItemNameOption;
 
     function getVietnamDate() {
       try {

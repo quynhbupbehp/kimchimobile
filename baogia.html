@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,15 +11,27 @@
     <title>BÁO GIÁ SỬA CHỮA & NHẬP HÀNG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- FIREBASE COMPAT SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&display=swap');
-        body { background-color: #060913; color: #f3f4f6; font-family: 'Montserrat', system-ui, -apple-system, sans-serif; font-size: 1.15rem; font-weight: 700; }
-        .card-dark { background-color: #0b0f19; border: 1px solid #141c2e; }
+
+        body {
+            background-color: #060913;
+            color: #f3f4f6;
+            font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .card-dark {
+            background-color: #0b0f19;
+            border: 1px solid #141c2e;
+        }
+
         .custom-select-dark {
             background-color: #0b0f19;
             color: #ffffff;
@@ -31,25 +44,54 @@
             background-position: right 0.5rem center;
             background-size: 0.85rem;
         }
-        .card-dark { background-color: #111827; border: 1px solid #1f2937; }
-        .row-hover:hover { background-color: rgba(31, 41, 55, 0.5); cursor: pointer; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .card-dark {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+        }
+
+        .row-hover:hover {
+            background-color: rgba(31, 41, 55, 0.5);
+            cursor: pointer;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
 
         @keyframes yellowRowPulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 background-color: rgba(234, 179, 8, 0.35);
                 box-shadow: inset 0 0 12px rgba(234, 179, 8, 0.3);
             }
+
             50% {
                 background-color: rgba(234, 179, 8, 0.05);
                 box-shadow: none;
             }
         }
-        .yellow-pulse-row { animation: yellowRowPulse 1.6s ease-in-out infinite; cursor: pointer; }
+
+        .yellow-pulse-row {
+            animation: yellowRowPulse 1.6s ease-in-out infinite;
+            cursor: pointer;
+        }
 
         .clicked-pink-row {
             background-color: rgba(236, 72, 153, 0.4) !important;
@@ -57,34 +99,51 @@
         }
 
         @keyframes yellowSelectionPulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 background-color: rgba(234, 179, 8, 0.95);
                 box-shadow: 0 0 12px rgba(234, 179, 8, 0.6);
             }
+
             50% {
                 background-color: rgba(234, 179, 8, 0.4);
                 box-shadow: 0 0 4px rgba(234, 179, 8, 0.2);
             }
         }
-        .yellow-pulse-selected { animation: yellowSelectionPulse 1.6s ease-in-out infinite; color: #000 !important; font-weight: bold; }
+
+        .yellow-pulse-selected {
+            animation: yellowSelectionPulse 1.6s ease-in-out infinite;
+            color: #000 !important;
+            font-weight: bold;
+        }
 
         @keyframes purpleSelectionPulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 background-color: rgba(168, 85, 247, 0.95);
                 box-shadow: 0 0 14px rgba(168, 85, 247, 0.7);
             }
+
             50% {
                 background-color: rgba(168, 85, 247, 0.4);
                 box-shadow: 0 0 4px rgba(168, 85, 247, 0.2);
             }
         }
-        .purple-pulse-selected { animation: purpleSelectionPulse 1.6s ease-in-out infinite; color: #fff !important; font-weight: bold; }
+
+        .purple-pulse-selected {
+            animation: purpleSelectionPulse 1.6s ease-in-out infinite;
+            color: #fff !important;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body class="min-h-screen p-2 md:p-6 uppercase">
 
     <div class="w-full max-w-[1450px] mx-auto space-y-3 flex flex-col items-center px-1 md:px-3">
-        
+
         <!-- CỤM CỐ ĐỊNH KHI CUỘN -->
         <div class="sticky top-0 z-40 w-full flex flex-col gap-2 pt-1 bg-[#060913]">
             <!-- THANH TIÊU ĐỀ CHÍNH & NÚT TIỆN ÍCH TRÊN CÙNG -->
@@ -92,16 +151,21 @@
                 <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white uppercase m-0 flex items-center">
                     BÁO GIÁ SỬA CHỮA
                 </h1>
-                
+
                 <div class="flex items-center gap-2">
-                    <button onclick="togglePrivacyMode()" class="w-9 h-9 rounded-xl bg-[#0b0f19] hover:bg-[#131b2e] border border-[#1e293b] text-emerald-400 hover:text-emerald-300 transition flex items-center justify-center shadow-sm" title="Ẩn / Hiện Giá Nhập & Lãi">
+                    <button onclick="togglePrivacyMode()"
+                        class="w-9 h-9 rounded-xl bg-[#0b0f19] hover:bg-[#131b2e] border border-[#1e293b] text-emerald-400 hover:text-emerald-300 transition flex items-center justify-center shadow-sm"
+                        title="Ẩn / Hiện Giá Nhập & Lãi">
                         <i class="fa-solid fa-eye text-sm" id="privacy-icon"></i>
                     </button>
-                    <button onclick="exportToExcel()" class="w-9 h-9 rounded-xl bg-[#0b0f19] hover:bg-[#131b2e] border border-[#1e293b] text-emerald-400 hover:text-emerald-300 transition flex items-center justify-center shadow-sm" title="Xuất Danh Sách">
+                    <button onclick="exportToExcel()"
+                        class="w-9 h-9 rounded-xl bg-[#0b0f19] hover:bg-[#131b2e] border border-[#1e293b] text-emerald-400 hover:text-emerald-300 transition flex items-center justify-center shadow-sm"
+                        title="Xuất Danh Sách">
                         <i class="fa-solid fa-file-lines text-sm"></i>
                     </button>
                     <div id="cloud-status" class="hidden"></div>
-                    <div class="flex items-center bg-[#0b0f19] border border-[#1e293b] px-3.5 py-1.5 rounded-xl text-sm font-black shadow-sm">
+                    <div
+                        class="flex items-center bg-[#0b0f19] border border-[#1e293b] px-3.5 py-1.5 rounded-xl text-sm font-black shadow-sm">
                         <span class="text-amber-500 font-extrabold mr-1.5">VỐN :</span>
                         <span id="total-cost" class="text-sky-400 font-black">0</span>
                     </div>
@@ -109,7 +173,8 @@
             </div>
 
             <!-- THANH BỘ LỌC CÁC CẤP (TABS HÃNG, LINH KIỆN, KIỂU, TÌM KIẾM) -->
-            <div class="bg-[#0b0f19] p-3 md:p-4 rounded-2xl border border-[#151d2f] flex flex-col gap-3 shadow-2xl w-full">
+            <div
+                class="bg-[#0b0f19] p-3 md:p-4 rounded-2xl border border-[#151d2f] flex flex-col gap-3 shadow-2xl w-full">
                 <!-- HÀNG 1: TABS HÃNG -->
                 <div class="flex items-center gap-2 overflow-x-auto no-scrollbar w-full" id="brand-tabs"></div>
 
@@ -119,19 +184,23 @@
                 </div>
 
                 <!-- HÀNG 3: TABS KIỂU -->
-                <div class="flex items-center gap-2 overflow-x-auto no-scrollbar w-full" id="type-tabs-container-desktop"></div>
+                <div class="flex items-center gap-2 overflow-x-auto no-scrollbar w-full"
+                    id="type-tabs-container-desktop"></div>
 
                 <!-- THANH BỘ LỌC RIÊNG CHO TAB NHẬP HÀNG (ẨN MẶC ĐỊNH) -->
                 <div id="import-filters-desktop" class="hidden items-center gap-4 pt-1">
                     <div class="flex items-center gap-1.5">
                         <span class="text-xs font-bold text-emerald-400 uppercase shrink-0">NHÀ PHÂN PHỐI:</span>
-                        <select id="filter-supplier-desktop" onchange="handleSupplierFilterChange(this.value)" class="bg-[#060913] border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white uppercase focus:outline-none focus:border-emerald-500 w-44 md:w-48"></select>
+                        <select id="filter-supplier-desktop" onchange="handleSupplierFilterChange(this.value)"
+                            class="bg-[#060913] border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white uppercase focus:outline-none focus:border-emerald-500 w-44 md:w-48"></select>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <span class="text-xs font-bold text-emerald-400 uppercase shrink-0">LINH KIỆN:</span>
-                        <select id="filter-import-cat-desktop" onchange="handleCategoryFilterChange(this.value)" class="bg-[#060913] border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white uppercase focus:outline-none focus:border-emerald-500 w-40 md:w-44"></select>
+                        <select id="filter-import-cat-desktop" onchange="handleCategoryFilterChange(this.value)"
+                            class="bg-[#060913] border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white uppercase focus:outline-none focus:border-emerald-500 w-40 md:w-44"></select>
                     </div>
-                    <button id="btn-delete-selected" onclick="deleteSelectedImportOrders()" class="hidden bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition items-center gap-1 shadow shrink-0">
+                    <button id="btn-delete-selected" onclick="deleteSelectedImportOrders()"
+                        class="hidden bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition items-center gap-1 shadow shrink-0">
                         <i class="fa-solid fa-trash text-xs"></i> XÓA ĐÃ CHỌN
                     </button>
                 </div>
@@ -141,46 +210,56 @@
                     <div class="flex items-center gap-3 flex-wrap flex-1 min-w-0">
                         <!-- Ô TÌM KIẾM VỚI AUTOCOMPLETE DROPDOWN -->
                         <div class="relative w-full max-w-sm md:w-80">
-                            <div class="flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-xs md:text-sm font-bold focus-within:border-amber-500 shadow-inner">
+                            <div
+                                class="flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-xs md:text-sm font-bold focus-within:border-amber-500 shadow-inner">
                                 <span class="text-amber-500 font-black mr-2 whitespace-nowrap">TÌM KIẾM</span>
                                 <i class="fa-solid fa-magnifying-glass text-xs text-gray-400 mr-2 shrink-0"></i>
-                                <input type="text" id="search-input-desktop" oninput="handleSearchInput(this)" onfocus="showSearchDropdown()" placeholder="Tên máy, Linh kiện, Kiểu" 
+                                <input type="text" id="search-input-desktop" oninput="handleSearchInput(this)"
+                                    onfocus="showSearchDropdown()" placeholder="Tên máy, Linh kiện, Kiểu"
                                     class="w-full bg-transparent text-white placeholder-gray-500 text-xs md:text-sm font-bold focus:outline-none uppercase">
-                                <button id="btn-clear-search-desktop" onclick="clearSearch()" class="hidden text-red-500 hover:text-red-400 font-bold ml-1 text-sm cursor-pointer" title="Xóa tìm kiếm">
+                                <button id="btn-clear-search-desktop" onclick="clearSearch()"
+                                    class="hidden text-red-500 hover:text-red-400 font-bold ml-1 text-sm cursor-pointer"
+                                    title="Xóa tìm kiếm">
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
                             </div>
 
                             <!-- POPUP DROPDOWN AUTOCOMPLETE CHO TÌM KIẾM (Y CHANG ẢNH MẪU 3) -->
-                            <div id="search-suggestions-dropdown" class="hidden absolute top-full left-0 w-full mt-1.5 bg-[#090f1d] border border-[#1e293b] rounded-xl shadow-2xl z-50 overflow-hidden max-h-60 overflow-y-auto p-1.5">
+                            <div id="search-suggestions-dropdown"
+                                class="hidden absolute top-full left-0 w-full mt-1.5 bg-[#090f1d] border border-[#1e293b] rounded-xl shadow-2xl z-50 overflow-hidden max-h-60 overflow-y-auto p-1.5">
                                 <div id="search-suggestions-list" class="space-y-1"></div>
                             </div>
                         </div>
 
                         <!-- DROPDOWN TÌNH TRẠNG (CÒN HÀNG / HẾT HÀNG / TẤT CẢ) -->
-                        <div class="flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-xs md:text-sm font-bold shadow-inner shrink-0">
+                        <div
+                            class="flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-xs md:text-sm font-bold shadow-inner shrink-0">
                             <span class="text-sky-400 font-black mr-2 whitespace-nowrap">TÌNH TRẠNG</span>
-                            <select id="stock-status-select" onchange="changeStockStatus(this.value)" class="bg-transparent text-amber-400 font-bold focus:outline-none cursor-pointer border-none p-0 pr-1 text-xs md:text-sm">
-                                <option value="IN_STOCK" class="bg-[#0b0f19] text-amber-400">Còn Hàng ∨</option>
-                                <option value="OUT_OF_STOCK" class="bg-[#0b0f19] text-red-400">Hết Hàng ∨</option>
-                                <option value="ALL" class="bg-[#0b0f19] text-white">Tất Cả ∨</option>
+                            <select id="stock-status-select" onchange="changeStockStatus(this.value)"
+                                class="bg-transparent text-amber-400 font-bold focus:outline-none cursor-pointer border-none p-0 pr-1 text-xs md:text-sm">
+                                <option value="IN_STOCK" class="bg-[#0b0f19] text-amber-400">Còn Hàng</option>
+                                <option value="OUT_OF_STOCK" class="bg-[#0b0f19] text-red-400">Hết Hàng</option>
+                                <option value="ALL" class="bg-[#0b0f19] text-white">Tất Cả</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- NÚT THÊM MỚI MÀU XANH LÁ (ẢNH MẪU 3) -->
                     <div class="shrink-0 ml-auto">
-                        <button id="main-action-btn" onclick="openModal()" class="bg-[#10b981] hover:bg-[#059669] text-white font-extrabold px-4 py-2 rounded-xl text-xs md:text-sm transition flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 shrink-0 uppercase tracking-wide">
+                        <button id="main-action-btn" onclick="openModal()"
+                            class="bg-[#10b981] hover:bg-[#059669] text-white font-extrabold px-4 py-2 rounded-xl text-xs md:text-sm transition flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 shrink-0 uppercase tracking-wide">
                             <i class="fa-solid fa-plus text-xs"></i> THÊM MỚI
                         </button>
                     </div>
                 </div>
             </div>
-<!-- TIÊU ĐỀ BẢNG CHO DESKTOP -->
+            <!-- TIÊU ĐỀ BẢNG CHO DESKTOP -->
             <div class="hidden md:block card-dark rounded-t-2xl overflow-hidden shadow-md">
                 <table class="w-full text-center border-collapse table-fixed">
                     <thead>
-                        <tr id="desktop-table-header" class="bg-[#f59e0b] text-white text-xs md:text-sm uppercase tracking-wider whitespace-nowrap"></tr>
+                        <tr id="desktop-table-header"
+                            class="bg-[#f59e0b] text-white text-xs md:text-sm uppercase tracking-wider whitespace-nowrap">
+                        </tr>
                     </thead>
                 </table>
             </div>
@@ -202,7 +281,8 @@
             </div>
 
             <!-- PHẦN HIỂN THỊ SỐ LƯỢNG DÒNG -->
-            <div class="px-5 py-3.5 bg-[#070b14] border-t border-[#141c2e] flex justify-between items-center text-xs md:text-sm font-extrabold text-gray-400 tracking-wider">
+            <div
+                class="px-5 py-3.5 bg-[#070b14] border-t border-[#141c2e] flex justify-between items-center text-xs md:text-sm font-extrabold text-gray-400 tracking-wider">
                 <div>
                     <span>TỔNG SỐ DÒNG: </span>
                     <strong id="row-count" class="text-[#f59e0b] font-black text-sm md:text-base ml-1">0</strong>
@@ -215,53 +295,76 @@
     </div>
 
     <!-- MODAL THÊM / SỬA BÁO GIÁ LINH KIỆN (Y CHANG ẢNH MẪU 2) -->
-    <div id="device-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
-        <div class="bg-[#0b0f19] w-full max-w-xl rounded-2xl p-5 md:p-6 shadow-2xl border border-[#1e293b] max-h-[92vh] overflow-y-auto">
+    <div id="device-modal"
+        class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div
+            class="bg-[#0b0f19] w-full max-w-xl rounded-2xl p-5 md:p-6 shadow-2xl border border-[#1e293b] max-h-[92vh] overflow-y-auto">
             <!-- HEADER MODAL -->
             <div class="flex justify-between items-center mb-5">
-                <h3 id="modal-title" class="text-lg md:text-xl font-extrabold text-[#f59e0b] uppercase tracking-wide">THÊM LINH KIỆN MỚI</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-white p-1 transition cursor-pointer"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <h3 id="modal-title" class="text-lg md:text-xl font-extrabold text-[#f59e0b] uppercase tracking-wide">
+                    THÊM LINH KIỆN MỚI</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white p-1 transition cursor-pointer"><i
+                        class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            
+
             <form id="device-form" onsubmit="saveDevice(event)" class="space-y-4">
                 <input type="hidden" id="device-index" value="-1">
 
                 <!-- 1. HÃNG -->
                 <div>
-                    <label class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">HÃNG</label>
+                    <label
+                        class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">HÃNG</label>
                     <div class="flex items-center gap-2">
                         <div class="relative flex-1">
-                            <select id="device-brand-select" onchange="onModalBrandChange(this.value)" class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 appearance-none pr-8 cursor-pointer shadow-inner">
+                            <select id="device-brand-select" onchange="onModalBrandChange(this.value)"
+                                class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 appearance-none pr-8 cursor-pointer shadow-inner">
                             </select>
-                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 text-xs">
+                            <span
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 text-xs">
                                 <i class="fa-solid fa-chevron-down"></i>
                             </span>
                         </div>
                         <input type="hidden" id="device-brand">
                         <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" onclick="handleEntity('brands', 'add')" class="w-9 h-9 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow" title="THÊM HÃNG"><i class="fa-solid fa-plus"></i></button>
-                            <button type="button" onclick="handleEntity('brands', 'edit')" class="w-9 h-9 bg-[#2563eb] hover:bg-blue-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow" title="SỬA HÃNG"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button type="button" onclick="handleEntity('brands', 'delete')" class="w-9 h-9 bg-[#dc2626] hover:bg-red-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow" title="XÓA HÃNG"><i class="fa-solid fa-trash text-xs"></i></button>
+                            <button type="button" onclick="handleEntity('brands', 'add')"
+                                class="w-9 h-9 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
+                                title="THÊM HÃNG"><i class="fa-solid fa-plus"></i></button>
+                            <button type="button" onclick="handleEntity('brands', 'edit')"
+                                class="w-9 h-9 bg-[#2563eb] hover:bg-blue-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
+                                title="SỬA HÃNG"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button type="button" onclick="handleEntity('brands', 'delete')"
+                                class="w-9 h-9 bg-[#dc2626] hover:bg-red-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
+                                title="XÓA HÃNG"><i class="fa-solid fa-trash text-xs"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <!-- 2. TÊN MÁY -->
                 <div>
-                    <label class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">TÊN MÁY</label>
+                    <label
+                        class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">TÊN
+                        MÁY</label>
                     <div class="flex items-center gap-2">
                         <div class="relative flex-1">
-                            <select id="device-name-select" onchange="onModalNameSelectChange(this.value)" class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 appearance-none pr-8 cursor-pointer shadow-inner">
+                            <select id="device-name-select" onchange="onModalNameSelectChange(this.value)"
+                                class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 appearance-none pr-8 cursor-pointer shadow-inner">
                             </select>
-                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 text-xs">
+                            <span
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 text-xs">
                                 <i class="fa-solid fa-chevron-down"></i>
                             </span>
                         </div>
                         <input type="hidden" id="device-name">
                         <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" onclick="handleEntity('names', 'add')" class="w-9 h-9 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow" title="THÊM TÊN MÁY"><i class="fa-solid fa-plus"></i></button>
-                            <button type="button" onclick="handleEntity('names', 'edit')" class="w-9 h-9 bg-[#2563eb] hover:bg-blue-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow" title="SỬA TÊN MÁY"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button type="button" onclick="handleEntity('names', 'delete')" class="w-9 h-9 bg-[#dc2626] hover:bg-red-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow" title="XÓA TÊN MÁY"><i class="fa-solid fa-trash text-xs"></i></button>
+                            <button type="button" onclick="handleEntity('names', 'add')"
+                                class="w-9 h-9 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
+                                title="THÊM TÊN MÁY"><i class="fa-solid fa-plus"></i></button>
+                            <button type="button" onclick="handleEntity('names', 'edit')"
+                                class="w-9 h-9 bg-[#2563eb] hover:bg-blue-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
+                                title="SỬA TÊN MÁY"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button type="button" onclick="handleEntity('names', 'delete')"
+                                class="w-9 h-9 bg-[#dc2626] hover:bg-red-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
+                                title="XÓA TÊN MÁY"><i class="fa-solid fa-trash text-xs"></i></button>
                         </div>
                     </div>
                 </div>
@@ -269,39 +372,58 @@
                 <!-- 3. LINH KIỆN & KIỂU (NẰM TRÊN 1 HÀNG NGANG) -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">LINH KIỆN</label>
+                        <label
+                            class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">LINH
+                            KIỆN</label>
                         <div class="flex items-center gap-2">
                             <div class="relative flex-1 min-w-0">
-                                <select id="device-part-select" onchange="onModalPartSelectChange(this.value)" class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 appearance-none pr-7 cursor-pointer shadow-inner">
+                                <select id="device-part-select" onchange="onModalPartSelectChange(this.value)"
+                                    class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 appearance-none pr-7 cursor-pointer shadow-inner">
                                 </select>
-                                <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400 text-xs">
+                                <span
+                                    class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400 text-xs">
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </span>
                             </div>
                             <input type="hidden" id="device-part">
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" onclick="handleEntity('categories', 'add')" class="w-8 h-8 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow" title="THÊM"><i class="fa-solid fa-plus"></i></button>
-                                <button type="button" onclick="handleEntity('categories', 'edit')" class="w-8 h-8 bg-[#2563eb] hover:bg-blue-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow" title="SỬA"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                                <button type="button" onclick="handleEntity('categories', 'delete')" class="w-8 h-8 bg-[#dc2626] hover:bg-red-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow" title="XÓA"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                <button type="button" onclick="handleEntity('categories', 'add')"
+                                    class="w-8 h-8 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="THÊM"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" onclick="handleEntity('categories', 'edit')"
+                                    class="w-8 h-8 bg-[#2563eb] hover:bg-blue-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="SỬA"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                <button type="button" onclick="handleEntity('categories', 'delete')"
+                                    class="w-8 h-8 bg-[#dc2626] hover:bg-red-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="XÓA"><i class="fa-solid fa-trash text-[10px]"></i></button>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">KIỂU</label>
+                        <label
+                            class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">KIỂU</label>
                         <div class="flex items-center gap-2">
                             <div class="relative flex-1 min-w-0">
-                                <select id="device-type-select" onchange="onModalTypeSelectChange(this.value)" class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 appearance-none pr-7 cursor-pointer shadow-inner">
+                                <select id="device-type-select" onchange="onModalTypeSelectChange(this.value)"
+                                    class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 appearance-none pr-7 cursor-pointer shadow-inner">
                                 </select>
-                                <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400 text-xs">
+                                <span
+                                    class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400 text-xs">
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </span>
                             </div>
                             <input type="hidden" id="device-type">
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" onclick="handleEntity('types', 'add')" class="w-8 h-8 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow" title="THÊM"><i class="fa-solid fa-plus"></i></button>
-                                <button type="button" onclick="handleEntity('types', 'edit')" class="w-8 h-8 bg-[#2563eb] hover:bg-blue-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow" title="SỬA"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                                <button type="button" onclick="handleEntity('types', 'delete')" class="w-8 h-8 bg-[#dc2626] hover:bg-red-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow" title="XÓA"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                <button type="button" onclick="handleEntity('types', 'add')"
+                                    class="w-8 h-8 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="THÊM"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" onclick="handleEntity('types', 'edit')"
+                                    class="w-8 h-8 bg-[#2563eb] hover:bg-blue-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="SỬA"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                <button type="button" onclick="handleEntity('types', 'delete')"
+                                    class="w-8 h-8 bg-[#dc2626] hover:bg-red-500 text-white rounded-xl transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="XÓA"><i class="fa-solid fa-trash text-[10px]"></i></button>
                             </div>
                         </div>
                     </div>
@@ -310,12 +432,20 @@
                 <!-- 4. GIÁ BÁN & GIÁ NHẬP -->
                 <div class="grid grid-cols-2 gap-3 pt-1">
                     <div>
-                        <label class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center tracking-wider">GIÁ BÁN</label>
-                        <input type="text" id="device-price" required maxlength="12" oninput="formatCurrencyInput(this); updateModalStats();" class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-base font-black text-white text-center focus:outline-none focus:border-amber-500 shadow-inner">
+                        <label
+                            class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center tracking-wider">GIÁ
+                            BÁN</label>
+                        <input type="text" id="device-price" required maxlength="12"
+                            oninput="formatCurrencyInput(this); updateModalStats();"
+                            class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-base font-black text-white text-center focus:outline-none focus:border-amber-500 shadow-inner">
                     </div>
                     <div>
-                        <label class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center tracking-wider">GIÁ NHẬP</label>
-                        <input type="text" id="device-cost" required maxlength="12" oninput="formatCurrencyInput(this); updateModalStats();" class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-base font-black text-white text-center focus:outline-none focus:border-amber-500 shadow-inner">
+                        <label
+                            class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center tracking-wider">GIÁ
+                            NHẬP</label>
+                        <input type="text" id="device-cost" required maxlength="12"
+                            oninput="formatCurrencyInput(this); updateModalStats();"
+                            class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-base font-black text-white text-center focus:outline-none focus:border-amber-500 shadow-inner">
                     </div>
                 </div>
 
@@ -323,91 +453,134 @@
                 <div class="flex items-end gap-2.5 pt-2 flex-wrap sm:flex-nowrap">
                     <!-- Ô SL -->
                     <div class="flex flex-col items-center">
-                        <label class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center w-full tracking-wider">SL</label>
-                        <div class="flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl overflow-hidden p-0.5 h-10 shadow-inner">
-                            <button type="button" onclick="adjustQty(-1)" class="w-8 h-9 bg-transparent hover:bg-gray-800 text-white font-bold transition flex items-center justify-center rounded-lg cursor-pointer"><i class="fa-solid fa-minus text-xs"></i></button>
-                            <input type="number" id="device-qty" required value="1" min="0" oninput="updateModalStats()" class="w-8 bg-transparent text-sm font-black text-white text-center focus:outline-none">
-                            <button type="button" onclick="adjustQty(1)" class="w-8 h-9 bg-transparent hover:bg-gray-800 text-white font-bold transition flex items-center justify-center rounded-lg cursor-pointer"><i class="fa-solid fa-plus text-xs"></i></button>
+                        <label
+                            class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center w-full tracking-wider">SL</label>
+                        <div
+                            class="flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl overflow-hidden p-0.5 h-10 shadow-inner">
+                            <button type="button" onclick="adjustQty(-1)"
+                                class="w-8 h-9 bg-transparent hover:bg-gray-800 text-white font-bold transition flex items-center justify-center rounded-lg cursor-pointer"><i
+                                    class="fa-solid fa-minus text-xs"></i></button>
+                            <input type="number" id="device-qty" required value="1" min="0" oninput="updateModalStats()"
+                                class="w-8 bg-transparent text-sm font-black text-white text-center focus:outline-none">
+                            <button type="button" onclick="adjustQty(1)"
+                                class="w-8 h-9 bg-transparent hover:bg-gray-800 text-white font-bold transition flex items-center justify-center rounded-lg cursor-pointer"><i
+                                    class="fa-solid fa-plus text-xs"></i></button>
                         </div>
                     </div>
 
                     <!-- Ô MÀU -->
                     <div class="flex flex-col items-center">
-                        <label class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center w-full tracking-wider">MÀU</label>
-                        <input type="text" id="device-color" placeholder="" class="w-24 md:w-28 bg-[#070b14] border border-[#1e293b] rounded-xl px-2 py-2 text-sm font-bold text-white text-center focus:outline-none focus:border-amber-500 uppercase h-10 shadow-inner">
+                        <label
+                            class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center w-full tracking-wider">MÀU</label>
+                        <input type="text" id="device-color" placeholder=""
+                            class="w-24 md:w-28 bg-[#070b14] border border-[#1e293b] rounded-xl px-2 py-2 text-sm font-bold text-white text-center focus:outline-none focus:border-amber-500 uppercase h-10 shadow-inner">
                     </div>
 
                     <!-- Ô LÃI / SP -->
                     <div class="flex-1 flex flex-col items-center min-w-[70px]">
-                        <label class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center w-full tracking-wider whitespace-nowrap">LÃI / SP</label>
-                        <div class="w-full bg-[#070b14] border border-[#1e293b] px-2 rounded-xl h-10 flex items-center justify-center shadow-inner">
-                            <div id="modal-profit-preview" class="text-sm font-black text-emerald-500 leading-none truncate text-center w-full">0</div>
+                        <label
+                            class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 text-center w-full tracking-wider whitespace-nowrap">LÃI
+                            / SP</label>
+                        <div
+                            class="w-full bg-[#070b14] border border-[#1e293b] px-2 rounded-xl h-10 flex items-center justify-center shadow-inner">
+                            <div id="modal-profit-preview"
+                                class="text-sm font-black text-emerald-500 leading-none truncate text-center w-full">0
+                            </div>
                         </div>
                     </div>
 
                     <!-- NÚT HỦY & LƯU -->
                     <div class="flex items-center gap-2 shrink-0">
-                        <button type="button" onclick="closeModal()" class="px-4 h-10 rounded-xl text-sm font-extrabold bg-[#1e293b] text-gray-300 hover:bg-gray-700 hover:text-white transition uppercase">HỦY</button>
-                        <button type="submit" class="px-5 h-10 rounded-xl text-sm font-extrabold bg-[#f59e0b] text-white hover:bg-amber-600 transition shadow-lg shadow-amber-500/30 whitespace-nowrap uppercase tracking-wider">LƯU</button>
+                        <button type="button" onclick="closeModal()"
+                            class="px-4 h-10 rounded-xl text-sm font-extrabold bg-[#1e293b] text-gray-300 hover:bg-gray-700 hover:text-white transition uppercase">HỦY</button>
+                        <button type="submit"
+                            class="px-5 h-10 rounded-xl text-sm font-extrabold bg-[#f59e0b] text-white hover:bg-amber-600 transition shadow-lg shadow-amber-500/30 whitespace-nowrap uppercase tracking-wider">LƯU</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
-    
+
     <!-- MODAL NHẬP HÀNG -->
-    <div id="import-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
-        <div class="card-dark w-full max-w-xl rounded-2xl p-4 md:p-6 shadow-2xl border border-gray-700 relative max-h-[90vh] overflow-y-auto">
-            <button onclick="closeImportModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <div id="import-modal"
+        class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div
+            class="card-dark w-full max-w-xl rounded-2xl p-4 md:p-6 shadow-2xl border border-gray-700 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeImportModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
             <div class="mb-4">
                 <h3 class="text-lg md:text-xl font-bold text-white uppercase">Nhập hàng</h3>
             </div>
-            
+
             <form id="import-form" onsubmit="saveImportOrder(event)" class="space-y-4">
                 <input type="hidden" id="import-index" value="-1">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold text-white mb-1">Nhà phân phối <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-bold text-white mb-1">Nhà phân phối <span
+                                class="text-red-500">*</span></label>
                         <div class="flex items-center gap-1.5">
-                            <input type="text" id="import-supplier" required list="supplier-suggestions" placeholder="" class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase">
+                            <input type="text" id="import-supplier" required list="supplier-suggestions" placeholder=""
+                                class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase">
                             <datalist id="supplier-suggestions"></datalist>
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" onclick="handleImportEntity('suppliers', 'add')" class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="THÊM NHÀ PHÂN PHỐI"><i class="fa-solid fa-plus"></i></button>
-                                <button type="button" onclick="handleImportEntity('suppliers', 'edit')" class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="SỬA NHÀ PHÂN PHỐI"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                                <button type="button" onclick="handleImportEntity('suppliers', 'delete')" class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="XÓA NHÀ PHÂN PHỐI"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                <button type="button" onclick="handleImportEntity('suppliers', 'add')"
+                                    class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="THÊM NHÀ PHÂN PHỐI"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" onclick="handleImportEntity('suppliers', 'edit')"
+                                    class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="SỬA NHÀ PHÂN PHỐI"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                <button type="button" onclick="handleImportEntity('suppliers', 'delete')"
+                                    class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="XÓA NHÀ PHÂN PHỐI"><i class="fa-solid fa-trash text-[10px]"></i></button>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-white mb-1">Loại linh kiện <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-bold text-white mb-1">Loại linh kiện <span
+                                class="text-red-500">*</span></label>
                         <div class="flex items-center gap-1.5">
-                            <input type="text" id="import-category" required list="import-category-suggestions" placeholder="" class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase">
+                            <input type="text" id="import-category" required list="import-category-suggestions"
+                                placeholder=""
+                                class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase">
                             <datalist id="import-category-suggestions"></datalist>
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" onclick="handleImportEntity('categories', 'add')" class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="THÊM LOẠI LINH KIỆN"><i class="fa-solid fa-plus"></i></button>
-                                <button type="button" onclick="handleImportEntity('categories', 'edit')" class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="SỬA LOẠI LINH KIỆN"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                                <button type="button" onclick="handleImportEntity('categories', 'delete')" class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow" title="XÓA LOẠI LINH KIỆN"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                <button type="button" onclick="handleImportEntity('categories', 'add')"
+                                    class="w-6 h-7 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="THÊM LOẠI LINH KIỆN"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" onclick="handleImportEntity('categories', 'edit')"
+                                    class="w-6 h-7 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="SỬA LOẠI LINH KIỆN"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                <button type="button" onclick="handleImportEntity('categories', 'delete')"
+                                    class="w-6 h-7 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex items-center justify-center font-bold text-xs shadow"
+                                    title="XÓA LOẠI LINH KIỆN"><i class="fa-solid fa-trash text-[10px]"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-white mb-1">Tên linh kiện <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-bold text-white mb-1">Tên linh kiện <span
+                            class="text-red-500">*</span></label>
                     <div id="import-items-container" class="space-y-2">
                         <div class="flex items-center gap-2 item-row">
-                            <input type="text" required placeholder="" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase item-name-input">
-                            <button type="button" onclick="addImportItemRow()" class="w-11 h-11 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xl rounded-xl transition flex items-center justify-center shadow-lg shrink-0" title="Thêm dòng linh kiện"><i class="fa-solid fa-plus"></i></button>
+                            <input type="text" required placeholder=""
+                                class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 uppercase item-name-input">
+                            <button type="button" onclick="addImportItemRow()"
+                                class="w-11 h-11 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xl rounded-xl transition flex items-center justify-center shadow-lg shrink-0"
+                                title="Thêm dòng linh kiện"><i class="fa-solid fa-plus"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="border-t border-gray-800 pt-3 flex justify-end gap-2">
-                    <button type="button" onclick="closeImportModal()" class="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 transition">Hủy</button>
-                    <button type="submit" id="btn-save-import-submit" class="px-5 py-2 rounded-xl text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/35 flex items-center gap-1.5">
-                        <i class="fa-solid fa-plus text-xs"></i> <span id="import-modal-submit-text">Lưu phiếu nhập</span>
+                    <button type="button" onclick="closeImportModal()"
+                        class="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 transition">Hủy</button>
+                    <button type="submit" id="btn-save-import-submit"
+                        class="px-5 py-2 rounded-xl text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/35 flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus text-xs"></i> <span id="import-modal-submit-text">Lưu phiếu
+                            nhập</span>
                     </button>
                 </div>
             </form>
@@ -428,7 +601,7 @@
         const db = firebase.firestore();
 
         let devices = [];
-        let importOrders = JSON.parse(localStorage.getItem('local_import_orders') || '[]'); 
+        let importOrders = JSON.parse(localStorage.getItem('local_import_orders') || '[]');
         let brands = ['IPHONE', 'SAMSUNG', 'OPPO - REALME', 'REDMI - POCO', 'VIVO'];
         let categories = ['MÀN HÌNH', 'PIN', 'CÁP SẠC', 'KÍNH ÉP', 'LƯNG', 'CÁP NỐI'];
         let types = ['ZIN', 'GX', 'ZIN BÓC MÁY', 'ZIN HÃNG', 'OLED', 'LINH KIỆN'];
@@ -447,7 +620,7 @@
 
         let originalQtyBeforeEdit = null;
 
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             if (activeInlineQtyIndex !== null) {
                 const container = document.getElementById(`inline-qty-container-${activeInlineQtyIndex}`);
                 if (container && !container.contains(event.target)) {
@@ -460,7 +633,7 @@
             if (!colorName) return '';
             const c = colorName.trim().toUpperCase();
             const sizeClass = isMobile ? 'w-4 h-4' : 'w-5 h-5';
-            
+
             if (c.includes('ĐEN') || c.includes('BLACK')) {
                 return `<span class="inline-block ${sizeClass} rounded-full ml-1.5 mr-1 shrink-0 align-middle shadow-md" style="background-color: #000000; border: 2px solid #ffffff;" title="MÀU: ${colorName}"></span>`;
             }
@@ -484,7 +657,7 @@
 
         function renderDeviceNames(nameStr, colorStr, isMobile = false) {
             if (!nameStr) return '';
-            
+
             // Icon điện thoại màu cam nhạt y chang ảnh mẫu 1 & 3: 📱
             const phoneIconHtml = `<i class="fa-solid fa-mobile-screen text-amber-500/80 mr-2 text-sm shrink-0"></i>`;
 
@@ -507,7 +680,7 @@
 
         function handleRowClick(rowElement) {
             if (event.target.closest('button') || event.target.closest('.qty-container') || event.target.closest('input[type="checkbox"]')) return;
-            
+
             if (activeRowElement && activeRowElement !== rowElement) {
                 activeRowElement.classList.remove('clicked-pink-row');
             }
@@ -598,7 +771,7 @@
 
         function syncFromCloud() {
             const statusEl = document.getElementById('cloud-status');
-            if(statusEl) {
+            if (statusEl) {
                 statusEl.setAttribute('title', 'Đang đồng bộ...');
                 statusEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-amber-400 text-xs"></i>`;
             }
@@ -628,7 +801,7 @@
                 } else {
                     saveAllToCloud();
                 }
-                if(statusEl) {
+                if (statusEl) {
                     statusEl.setAttribute('title', 'Online Realtime');
                     statusEl.innerHTML = `<i class="fa-solid fa-cloud text-amber-400 text-xs"></i>`;
                 }
@@ -636,7 +809,7 @@
                 renderTable();
             }, (err) => {
                 console.error("Lỗi Firestore:", err);
-                if(statusEl) {
+                if (statusEl) {
                     statusEl.setAttribute('title', 'Offline / LocalStorage');
                     statusEl.innerHTML = `<i class="fa-solid fa-hard-drive text-emerald-400 text-xs"></i>`;
                 }
@@ -648,7 +821,7 @@
         async function saveAllToCloud() {
             const statusEl = document.getElementById('cloud-status');
             if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin text-amber-400 text-xs"></i>`;
-            
+
             localStorage.setItem('local_import_orders', JSON.stringify(importOrders));
             localStorage.setItem('local_suppliers', JSON.stringify(suppliers));
 
@@ -703,7 +876,7 @@
             const isImportTab = currentBrand === 'NHẬP HÀNG';
             // ẢNH MẪU 1 & 3: Tabs hãng gồm TẤT CẢ, IPHONE, SAMSUNG, OPPO - REALME, REDMI - POCO, VIVO, và nút [+]
             const defaultBrandList = ['IPHONE', 'SAMSUNG', 'OPPO - REALME', 'REDMI - POCO', 'VIVO'];
-            
+
             // Đồng bộ brands array nếu có
             brands.forEach(b => {
                 if (!defaultBrandList.includes(b) && b !== 'HẾT HÀNG' && b !== 'NHẬP HÀNG' && b !== 'TẤT CẢ') {
@@ -721,8 +894,8 @@
 
             brandTabsHtml += defaultBrandList.map(b => {
                 const isSelected = b === currentBrand;
-                const btnClass = isSelected 
-                    ? 'bg-[#2563eb] text-white font-black shadow-lg shadow-blue-600/30 border border-blue-500' 
+                const btnClass = isSelected
+                    ? 'bg-[#2563eb] text-white font-black shadow-lg shadow-blue-600/30 border border-blue-500'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
                 return `<button onclick="switchBrand('${b}')" class="px-3.5 py-2 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}">${b}</button>`;
             }).join('');
@@ -755,9 +928,9 @@
             `;
 
             catTabsHtml += displayCategories.map(c => {
-                const isSelected = (c.toUpperCase() === currentCategory.toUpperCase()) || 
-                                   (c.toUpperCase() === 'MÀN' && currentCategory.toUpperCase() === 'MÀN HÌNH') ||
-                                   (c.toUpperCase() === 'MÀN HÌNH' && currentCategory.toUpperCase() === 'MÀN');
+                const isSelected = (c.toUpperCase() === currentCategory.toUpperCase()) ||
+                    (c.toUpperCase() === 'MÀN' && currentCategory.toUpperCase() === 'MÀN HÌNH') ||
+                    (c.toUpperCase() === 'MÀN HÌNH' && currentCategory.toUpperCase() === 'MÀN');
                 const btnClass = isSelected
                     ? 'bg-[#10b981] text-white font-black shadow-lg shadow-emerald-600/30 border border-emerald-400'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
@@ -854,7 +1027,7 @@
             let cleanStr = amount.toString().replace(/\./g, '').replace(/,/g, '.').trim();
             let num = parseFloat(cleanStr);
             if (isNaN(num)) return amount.toString();
-            
+
             if (num < 10 && cleanStr.includes('.')) {
                 num = num * 1000;
             }
@@ -892,7 +1065,7 @@
 
         function getIphoneSortWeight(name) {
             const clean = name.replace(/\s+/g, '').toUpperCase();
-            
+
             if (clean.includes('5G')) return 50;
             if (clean.includes('5S')) return 51;
             if (clean.includes('5SE') || (clean.includes('SE') && clean.includes('5'))) return 52;
@@ -1005,11 +1178,11 @@
                 const btnDelDesktop = document.getElementById('btn-delete-selected');
                 const btnDelMobile = document.getElementById('btn-delete-selected-mobile');
                 if (expandedImportRows.length > 0 && document.querySelectorAll('.import-checkbox:checked').length > 0) {
-                    if(btnDelDesktop) btnDelDesktop.style.display = 'flex';
-                    if(btnDelMobile) btnDelMobile.style.display = 'flex';
+                    if (btnDelDesktop) btnDelDesktop.style.display = 'flex';
+                    if (btnDelMobile) btnDelMobile.style.display = 'flex';
                 } else {
-                    if(btnDelDesktop) btnDelDesktop.style.display = 'none';
-                    if(btnDelMobile) btnDelMobile.style.display = 'none';
+                    if (btnDelDesktop) btnDelDesktop.style.display = 'none';
+                    if (btnDelMobile) btnDelMobile.style.display = 'none';
                 }
             } else {
                 filtered = devices.filter(d => {
@@ -1029,7 +1202,7 @@
                     let dPart = (d.part || '').trim().toUpperCase();
                     if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
                     if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
-                    
+
                     let filterCat = currentCategory.trim().toUpperCase();
                     if (filterCat === 'MÀN') filterCat = 'MÀN HÌNH';
 
@@ -1287,11 +1460,11 @@
             const btnDelDesktop = document.getElementById('btn-delete-selected');
             const btnDelMobile = document.getElementById('btn-delete-selected-mobile');
             if (checkedBoxes.length > 0) {
-                if(btnDelDesktop) btnDelDesktop.style.display = 'flex';
-                if(btnDelMobile) btnDelMobile.style.display = 'flex';
+                if (btnDelDesktop) btnDelDesktop.style.display = 'flex';
+                if (btnDelMobile) btnDelMobile.style.display = 'flex';
             } else {
-                if(btnDelDesktop) btnDelDesktop.style.display = 'none';
-                if(btnDelMobile) btnDelMobile.style.display = 'none';
+                if (btnDelDesktop) btnDelDesktop.style.display = 'none';
+                if (btnDelMobile) btnDelMobile.style.display = 'none';
             }
         }
 
@@ -1300,7 +1473,7 @@
             if (checkedBoxes.length === 0) return;
 
             if (confirm(`BẠN CÓ CHẮC MUỐN XÓA ${checkedBoxes.length} MỤC ĐÃ CHỌN KHÔNG?`)) {
-                const ordersToUpdateMap = {}; 
+                const ordersToUpdateMap = {};
                 const ordersToDeleteCompletely = new Set();
 
                 checkedBoxes.forEach(cb => {
@@ -1321,7 +1494,7 @@
                 const newImportOrders = [];
                 importOrders.forEach((order, idx) => {
                     if (ordersToDeleteCompletely.has(idx)) {
-                        return; 
+                        return;
                     }
                     if (ordersToUpdateMap[idx]) {
                         order.items = Array.from(ordersToUpdateMap[idx]);
@@ -1373,7 +1546,7 @@
             if (dropdown) dropdown.classList.add('hidden');
         }
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const dropdown = document.getElementById('search-suggestions-dropdown');
             const searchInput = document.getElementById('search-input-desktop');
             if (dropdown && !dropdown.contains(e.target) && e.target !== searchInput) {
@@ -1476,7 +1649,7 @@
             if (!brandSelect || !nameSelect) return;
 
             const selectedBrand = brandSelect.value.trim().toUpperCase();
-            
+
             // Lấy danh sách tên máy thuộc hãng này
             const nameSet = new Set();
             devices.forEach(d => {
@@ -1493,7 +1666,7 @@
                 sortedNames.sort((a, b) => a.localeCompare(b, 'vi', { numeric: true }));
             }
 
-            nameSelect.innerHTML = `<option value="" class="bg-[#0b0f19] text-gray-400">-- CHỌN HOẶC THÊM TÊN MÁY --</option>` + 
+            nameSelect.innerHTML = `<option value="" class="bg-[#0b0f19] text-gray-400">-- CHỌN HOẶC THÊM TÊN MÁY --</option>` +
                 sortedNames.map(n => `<option value="${n}" class="bg-[#0b0f19] text-white" ${n === selectedName ? 'selected' : ''}>${n}</option>`).join('');
 
             if (selectedName) {
@@ -1531,7 +1704,7 @@
             if (!isEdit) {
                 document.getElementById('device-index').value = '-1';
                 document.getElementById('device-form').reset();
-                
+
                 const activeB = (currentBrand && currentBrand !== 'TẤT CẢ' && currentBrand !== 'HẾT HÀNG' && currentBrand !== 'NHẬP HÀNG') ? currentBrand : 'IPHONE';
                 const activeC = currentCategory ? (currentCategory === 'MÀN' ? 'MÀN HÌNH' : currentCategory) : 'MÀN HÌNH';
                 const activeT = currentType || 'ZIN';
@@ -1557,7 +1730,7 @@
 
         function openImportModal(isEdit = false) {
             document.getElementById('import-modal').classList.remove('hidden');
-            
+
             document.getElementById('supplier-suggestions').innerHTML = suppliers.map(s => `<option value="${s}">`).join('');
             document.getElementById('import-category-suggestions').innerHTML = categories.map(c => `<option value="${c}">`).join('');
 
@@ -1671,7 +1844,7 @@
             const supplier = document.getElementById('import-supplier').value.trim().toUpperCase();
             let category = document.getElementById('import-category').value.trim().toUpperCase();
             if (category === 'BO SẠC') category = 'CÁP SẠC';
-            
+
             const itemInputs = document.querySelectorAll('.item-name-input');
             const items = [];
             itemInputs.forEach(input => {
@@ -1700,7 +1873,7 @@
             }
 
             await saveAllToCloud();
-            
+
             if (btnSubmit) {
                 btnSubmit.disabled = false;
                 btnSubmit.classList.remove('opacity-50');
@@ -1718,7 +1891,7 @@
             let oCat = (o.category || '').toUpperCase();
             if (oCat === 'BO SẠC') oCat = 'CÁP SẠC';
             document.getElementById('import-category').value = oCat;
-            
+
             const container = document.getElementById('import-items-container');
             container.innerHTML = '';
             if (o.items && o.items.length > 0) {
@@ -1747,7 +1920,7 @@
             let oCat = (o.category || '').toUpperCase();
             if (oCat === 'BO SẠC') oCat = 'CÁP SẠC';
             document.getElementById('import-category').value = oCat;
-            
+
             const container = document.getElementById('import-items-container');
             container.innerHTML = '';
             if (o.items && o.items.length > 0) {
@@ -1986,9 +2159,10 @@
             window.print();
         }
 
-        window.onload = function() {
+        window.onload = function () {
             syncFromCloud();
         };
     </script>
 </body>
+
 </html>
