@@ -2416,48 +2416,103 @@
 
                     let addedCount = 0;
                     rows.forEach(r => {
-                        const brand = (r['HÃNG'] || r['Hãng'] || r['brand'] || r['BRAND'] || 'IPHONE').toString().trim().toUpperCase();
-                        const name = (r['TÊN MÁY'] || r['Tên máy'] || r['TEN MAY'] || r['name'] || r['NAME'] || r['Model'] || r['MODEL'] || '').toString().trim().toUpperCase();
-                        let part = (r['LINH KIỆN'] || r['Linh kiện'] || r['LINH KIEN'] || r['part'] || r['PART'] || 'MÀN HÌNH').toString().trim().toUpperCase();
+                        // 1. Tên máy
+                        const name = (r['TÊN MÁY'] || r['Tên máy'] || r['TEN MAY'] || r['THUỘC LOẠI MÁY'] || r['Thuộc loại máy'] || r['THUOC LOAI MAY'] || r['name'] || r['NAME'] || r['Model'] || r['MODEL'] || r['device'] || r['Device'] || '').toString().trim().toUpperCase();
+                        if (!name) return;
+
+                        // 2. Hãng
+                        let brand = (r['HÃNG'] || r['Hãng'] || r['brand'] || r['BRAND'] || '').toString().trim().toUpperCase();
+                        if (!brand) {
+                            if (/^(IPHONE|IP|X|XR|XS|11|12|13|14|15|16|6|7|8|5)/i.test(name)) brand = 'IPHONE';
+                            else if (/^(SAMSUNG|GALAXY|NOTE|A\d|S\d)/i.test(name)) brand = 'SAMSUNG';
+                            else if (/^(OPPO|REALME)/i.test(name)) brand = 'OPPO - REALME';
+                            else if (/^(REDMI|POCO|XIAOMI)/i.test(name)) brand = 'REDMI - POCO';
+                            else if (/^(VIVO)/i.test(name)) brand = 'VIVO';
+                            else brand = currentBrand && currentBrand !== 'TẤT CẢ' && currentBrand !== 'HẾT HÀNG' && currentBrand !== 'NHẬP HÀNG' ? currentBrand : 'IPHONE';
+                        }
+
+                        // 3. Linh kiện & Kiểu
+                        let part = (r['LINH KIỆN'] || r['Linh kiện'] || r['LINH KIEN'] || r['part'] || r['PART'] || '').toString().trim().toUpperCase();
+                        let type = (r['KIỂU'] || r['Kiểu'] || r['KIEU'] || r['type'] || r['TYPE'] || '').toString().trim().toUpperCase();
+
+                        // Nếu file dùng cột 'Loại linh kiện' gộp chung cả loại linh kiện và kiểu (như: 'Pin DL Cao (Jufuxing)', 'Màn GX', 'Pin Rẻ')
+                        const rawLoaiLK = (r['LOẠI LINH KIỆN'] || r['Loại linh kiện'] || r['LOAI LINH KIEN'] || '').toString().trim();
+                        if (rawLoaiLK) {
+                            const upperLK = rawLoaiLK.toUpperCase();
+                            if (upperLK.includes('PIN')) {
+                                part = 'PIN';
+                                if (!type) type = rawLoaiLK.replace(/PIN/i, '').trim().toUpperCase();
+                            } else if (upperLK.includes('MÀN') || upperLK.includes('MAN')) {
+                                part = 'MÀN HÌNH';
+                                if (!type) type = rawLoaiLK.replace(/MÀN HÌNH|MAN HINH|MÀN|MAN/i, '').trim().toUpperCase();
+                            } else if (upperLK.includes('CÁP SẠC') || upperLK.includes('BO SẠC') || upperLK.includes('CHÂN SẠC') || upperLK.includes('CAP SAC') || upperLK.includes('BO SAC')) {
+                                part = 'CÁP SẠC';
+                                if (!type) type = rawLoaiLK.replace(/CÁP SẠC|BO SẠC|CHÂN SẠC|CAP SAC|BO SAC/i, '').trim().toUpperCase();
+                            } else if (upperLK.includes('KÍNH') || upperLK.includes('KINH')) {
+                                part = 'KÍNH ÉP';
+                                if (!type) type = rawLoaiLK.replace(/KÍNH ÉP|KINH EP|KÍNH|KINH/i, '').trim().toUpperCase();
+                            } else if (upperLK.includes('LƯNG') || upperLK.includes('LUNG')) {
+                                part = 'LƯNG';
+                                if (!type) type = rawLoaiLK.replace(/LƯNG|LUNG/i, '').trim().toUpperCase();
+                            } else if (upperLK.includes('CÁP NỐI') || upperLK.includes('CAP NOI')) {
+                                part = 'CÁP NỐI';
+                                if (!type) type = rawLoaiLK.replace(/CÁP NỐI|CAP NOI/i, '').trim().toUpperCase();
+                            } else if (!part) {
+                                part = rawLoaiLK.toUpperCase();
+                            }
+                        }
+
+                        if (!part) part = 'MÀN HÌNH';
                         if (part === 'BO SẠC') part = 'CÁP SẠC';
                         if (part === 'MÀN') part = 'MÀN HÌNH';
 
-                        const type = (r['KIỂU'] || r['Kiểu'] || r['KIEU'] || r['type'] || r['TYPE'] || 'ZIN').toString().trim().toUpperCase();
-                        const priceRaw = (r['GIÁ BÁN'] || r['Giá bán'] || r['GIA BAN'] || r['GIÁ THAY'] || r['Giá thay'] || r['price'] || r['PRICE'] || '0').toString().trim();
-                        const costRaw = (r['GIÁ NHẬP'] || r['Giá nhập'] || r['GIA NHAP'] || r['GIÁ VỐN'] || r['Giá vốn'] || r['cost'] || r['COST'] || '0').toString().trim();
+                        type = type.replace(/^[-_\s:()]+|[-_\s:()]+$/g, '').trim().toUpperCase();
+                        if (!type) type = 'ZIN';
+
+                        // 4. Giá bán & Giá nhập
+                        let priceRaw = (r['GIÁ BÁN (VNĐ)'] || r['GIÁ BÁN'] || r['Giá bán'] || r['GIA BAN'] || r['GIÁ THAY KHÁCH'] || r['Giá thay khách'] || r['GIA THAY KHACH'] || r['GIÁ THAY'] || r['Giá thay'] || r['price'] || r['PRICE'] || r['priceSell'] || '0').toString().trim();
+                        let costRaw = (r['GIÁ NHẬP (VNĐ)'] || r['GIÁ NHẬP'] || r['Giá nhập'] || r['GIA NHAP'] || r['GIÁ VỐN'] || r['Giá vốn'] || r['cost'] || r['COST'] || r['priceCost'] || '0').toString().trim();
+
+                        // Nếu giá ở file là số hàng trăm nghìn được viết tắt (vd 400 = 400.000, 190 = 190.000)
+                        let priceNum = parseMoney(priceRaw);
+                        if (priceNum > 0 && priceNum < 1000) priceNum = priceNum * 1000;
+
+                        let costNum = parseMoney(costRaw);
+                        if (costNum > 0 && costNum < 1000) costNum = costNum * 1000;
+
+                        // 5. Số lượng & Màu sắc
                         const qtyVal = parseInt(r['SỐ LƯỢNG'] || r['Số lượng'] || r['SO LUONG'] || r['SL'] || r['qty'] || r['QTY'] || 1, 10);
                         const qty = isNaN(qtyVal) ? 1 : qtyVal;
                         const color = (r['MÀU SẮC'] || r['Màu sắc'] || r['MAU SAC'] || r['MÀU'] || r['color'] || r['COLOR'] || '').toString().trim().toUpperCase();
 
-                        if (name) {
-                            if (!brands.includes(brand)) brands.push(brand);
-                            if (!categories.includes(part)) categories.push(part);
-                            if (type) {
-                                if (!types.includes(type)) types.push(type);
-                                if (!brandTypes[brand]) brandTypes[brand] = getTypesForBrand(brand);
-                                if (!brandTypes[brand].includes(type)) brandTypes[brand].push(type);
-                            }
-                            if (!names.includes(name)) names.push(name);
-
-                            devices.push({
-                                brand,
-                                name,
-                                part,
-                                type,
-                                price: formatMoney(priceRaw),
-                                cost: formatMoney(costRaw),
-                                qty,
-                                color
-                            });
-                            addedCount++;
+                        // Thêm vào danh sách bộ lọc cấu hình nếu chưa có
+                        if (!brands.includes(brand)) brands.push(brand);
+                        if (!categories.includes(part)) categories.push(part);
+                        if (type) {
+                            if (!types.includes(type)) types.push(type);
+                            if (!brandTypes[brand]) brandTypes[brand] = getTypesForBrand(brand);
+                            if (!brandTypes[brand].includes(type)) brandTypes[brand].push(type);
                         }
+                        if (!names.includes(name)) names.push(name);
+
+                        devices.push({
+                            brand,
+                            name,
+                            part,
+                            type,
+                            price: formatMoney(priceNum),
+                            cost: formatMoney(costNum),
+                            qty,
+                            color
+                        });
+                        addedCount++;
                     });
 
                     if (addedCount > 0) {
                         await saveAllToCloud();
                         initTabs();
                         renderTable();
-                        alert(`✓ NHẬP EXCEL THÀNH CÔNG: Đã thêm ${addedCount} linh kiện vào danh sách!`);
+                        alert(`✓ NHẬP EXCEL THÀNH CÔNG: Đã thêm ${addedCount} linh kiện vào hệ thống!`);
                     } else {
                         alert('Không tìm thấy dòng dữ liệu linh kiện hợp lệ trong file Excel!');
                     }
