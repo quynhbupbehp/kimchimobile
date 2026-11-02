@@ -917,8 +917,26 @@
             currentBrand = b;
             localStorage.setItem('active_brand_tab', b);
             if (b !== 'NHẬP HÀNG' && b !== 'HẾT HÀNG') {
-                currentCategory = 'MÀN HÌNH';
-                localStorage.setItem('active_cat_tab', 'MÀN HÌNH');
+                // Kiểm tra xem hãng này đã có linh kiện gì trong danh sách
+                const brandParts = new Set();
+                devices.forEach(d => {
+                    const matchB = (b === 'TẤT CẢ' || !b) ? true : ((d.brand || '').trim().toUpperCase() === b.trim().toUpperCase());
+                    if (matchB && d.part && d.part.trim()) {
+                        let p = d.part.trim().toUpperCase();
+                        if (p === 'BO SẠC') p = 'CÁP SẠC';
+                        if (p === 'MÀN') p = 'MÀN HÌNH';
+                        brandParts.add(p);
+                    }
+                });
+
+                if (brandParts.has('MÀN HÌNH')) {
+                    currentCategory = 'MÀN HÌNH';
+                } else if (brandParts.size > 0) {
+                    currentCategory = Array.from(brandParts)[0];
+                } else {
+                    currentCategory = 'TẤT CẢ';
+                }
+                localStorage.setItem('active_cat_tab', currentCategory);
             }
             currentType = '';
             initTabs();
@@ -985,13 +1003,44 @@
             if (brandTabsEl) brandTabsEl.innerHTML = brandTabsHtml;
 
             // Xử lý tabs Linh Kiện (Hàng 2)
-            // Nhãn "LINH KIỆN" là nút bấm chọn TẤT CẢ (bg-[#10b981]) nổi bật y chang ảnh mẫu
+            // CHỈ HIỂN THỊ LINH KIỆN ĐÃ ĐƯỢC THÊM TRONG DANH SÁCH (CÁI NÀO CHƯA CÓ KHÔNG HIỆN)
+            const brandCategorySet = new Set();
+            devices.forEach(d => {
+                const matchBrand = (!currentBrand || currentBrand === 'TẤT CẢ' || currentBrand === 'HẾT HÀNG' || currentBrand === 'NHẬP HÀNG')
+                    ? true
+                    : ((d.brand || '').trim().toUpperCase() === currentBrand.trim().toUpperCase());
+                if (matchBrand && d.part && d.part.trim()) {
+                    let p = d.part.trim().toUpperCase();
+                    if (p === 'BO SẠC') p = 'CÁP SẠC';
+                    if (p === 'MÀN') p = 'MÀN HÌNH';
+                    brandCategorySet.add(p);
+                }
+            });
+
+            // Lọc displayCategories theo thứ tự chuẩn trong categories, nhưng chỉ giữ những linh kiện thực sự có trong hãng đang chọn
             let displayCategories = [];
             categories.forEach(c => {
-                if (c && !displayCategories.includes(c)) {
+                if (c && brandCategorySet.has(c.trim().toUpperCase()) && !displayCategories.includes(c)) {
                     displayCategories.push(c);
                 }
             });
+            // Thêm các linh kiện phát sinh nếu có trong devices nhưng chưa có trong categories
+            brandCategorySet.forEach(c => {
+                if (!displayCategories.includes(c)) {
+                    displayCategories.push(c);
+                }
+            });
+
+            // Nếu currentCategory không còn tồn tại trong displayCategories (ngoại trừ 'TẤT CẢ'), tự động reset
+            if (currentCategory && currentCategory !== 'TẤT CẢ') {
+                const exists = displayCategories.some(c => (c.toUpperCase() === currentCategory.toUpperCase()) ||
+                    (c.toUpperCase() === 'MÀN' && currentCategory.toUpperCase() === 'MÀN HÌNH') ||
+                    (c.toUpperCase() === 'MÀN HÌNH' && currentCategory.toUpperCase() === 'MÀN'));
+                if (!exists) {
+                    currentCategory = 'TẤT CẢ';
+                    localStorage.setItem('active_cat_tab', 'TẤT CẢ');
+                }
+            }
 
             const isAllCat = !currentCategory || currentCategory === 'TẤT CẢ';
             let catTabsHtml = `
@@ -1014,16 +1063,42 @@
             if (catTabsWrapper) catTabsWrapper.innerHTML = catTabsHtml;
 
             // Xử lý tabs Kiểu (Hàng 3)
-            // Nhãn "KIỂU" là nút bấm chọn TẤT CẢ KIỂU (bg-[#6366f1]) nổi bật y chang ảnh mẫu
+            // CHỈ HIỂN THỊ KIỂU ĐÃ ĐƯỢC THÊM TRONG DANH SÁCH (CÁI NÀO CHƯA CÓ KHÔNG HIỆN)
+            const brandTypeSet = new Set();
+            devices.forEach(d => {
+                const matchBrand = (!currentBrand || currentBrand === 'TẤT CẢ' || currentBrand === 'HẾT HÀNG' || currentBrand === 'NHẬP HÀNG')
+                    ? true
+                    : ((d.brand || '').trim().toUpperCase() === currentBrand.trim().toUpperCase());
+                
+                // Nếu đang chọn 1 loại linh kiện cụ thể (không phải TẤT CẢ), chỉ lấy kiểu có trong linh kiện đó
+                let matchCat = true;
+                if (currentCategory && currentCategory !== 'TẤT CẢ') {
+                    let dPart = (d.part || '').trim().toUpperCase();
+                    if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                    if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
+                    let filterCat = currentCategory.trim().toUpperCase();
+                    if (filterCat === 'MÀN') filterCat = 'MÀN HÌNH';
+                    matchCat = (dPart === filterCat);
+                }
+
+                if (matchBrand && matchCat && d.type && d.type.trim()) {
+                    brandTypeSet.add(d.type.trim().toUpperCase());
+                }
+            });
+
+            const availableTypes = Array.from(brandTypeSet);
+
+            // Nếu currentType không còn trong danh sách kiểu hợp lệ thì reset về '' (Tất cả kiểu)
+            if (currentType && !brandTypeSet.has(currentType.trim().toUpperCase())) {
+                currentType = '';
+            }
+
             const isAllType = !currentType;
             let typeTabsHtml = `
                 <button onclick="switchType('')" class="px-3 py-1.5 rounded-xl ${isAllType ? 'bg-[#6366f1] text-white shadow-lg shadow-indigo-600/30 border border-indigo-400' : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]'} font-black text-xs md:text-sm uppercase tracking-wider shrink-0 flex items-center transition cursor-pointer" title="Xem tất cả kiểu">
                     KIỂU
                 </button>
             `;
-
-            // Lấy danh sách Kiểu hợp lệ riêng theo từng hãng đang chọn
-            const availableTypes = getTypesForBrand(currentBrand).filter(t => t && t.trim());
 
             typeTabsHtml += availableTypes.map(t => {
                 const isSelected = !isAllType && (currentType.toUpperCase() === t.toUpperCase());
