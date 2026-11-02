@@ -145,6 +145,26 @@
             color: #fff !important;
             font-weight: bold;
         }
+
+        .draggable-tab {
+            cursor: grab;
+            user-select: none;
+            touch-action: pan-y;
+        }
+
+        .draggable-tab:active {
+            cursor: grabbing;
+        }
+
+        .tab-dragging {
+            opacity: 0.4 !important;
+            transform: scale(0.95);
+        }
+
+        .tab-drag-over {
+            border: 2px dashed #f59e0b !important;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 
@@ -720,18 +740,14 @@
         function renderDeviceNames(nameStr, colorStr, isMobile = false) {
             if (!nameStr) return '';
 
-            // Icon điện thoại màu cam nhạt y chang ảnh mẫu 1 & 3: 📱
-            const phoneIconHtml = `<i class="fa-solid fa-mobile-screen text-amber-500/80 mr-2 text-sm shrink-0"></i>`;
-
             let colorDotHtml = '';
             if (colorStr && colorStr.trim()) {
                 colorDotHtml = getColorStyle(colorStr, isMobile);
             }
 
-            // Thẻ tên máy có viền bo tròn nhẹ, nền xám đen (#131b2e) y chang ảnh mẫu 1 & 3
+            // Thẻ tên máy có viền bo tròn nhẹ, nền xám đen (#131b2e) không có logo
             return `
                 <div class="inline-flex items-center gap-1.5 flex-wrap">
-                    ${phoneIconHtml}
                     <span class="px-2.5 py-1 rounded-lg bg-[#131b2e] border border-[#1e293b] text-white font-extrabold text-sm md:text-base tracking-wide whitespace-nowrap shadow-sm">
                         ${nameStr}
                     </span>
@@ -974,8 +990,68 @@
             renderTable();
         }
 
+        // ==================== TÍNH NĂNG GIỮ ĐỂ THAY ĐỔI VỊ TRÍ (DRAG & DROP REORDER TABS) ====================
+        let draggedTabInfo = null;
+
+        function handleTabDragStart(e, tabType, index) {
+            draggedTabInfo = { tabType, index };
+            e.dataTransfer.effectAllowed = 'move';
+            e.target.classList.add('tab-dragging');
+        }
+
+        function handleTabDragEnd(e) {
+            e.target.classList.remove('tab-dragging');
+            document.querySelectorAll('.tab-drag-over').forEach(el => el.classList.remove('tab-drag-over'));
+            draggedTabInfo = null;
+        }
+
+        function handleTabDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const btn = e.target.closest('.draggable-tab');
+            if (btn) btn.classList.add('tab-drag-over');
+        }
+
+        function handleTabDragLeave(e) {
+            const btn = e.target.closest('.draggable-tab');
+            if (btn) btn.classList.remove('tab-drag-over');
+        }
+
+        async function handleTabDrop(e, targetType, targetIndex) {
+            e.preventDefault();
+            const btn = e.target.closest('.draggable-tab');
+            if (btn) btn.classList.remove('tab-drag-over');
+
+            if (!draggedTabInfo || draggedTabInfo.tabType !== targetType || draggedTabInfo.index === targetIndex) {
+                return;
+            }
+
+            const fromIdx = draggedTabInfo.index;
+            const toIdx = targetIndex;
+
+            if (targetType === 'brands') {
+                const item = brands.splice(fromIdx, 1)[0];
+                brands.splice(toIdx, 0, item);
+            } else if (targetType === 'categories') {
+                const item = categories.splice(fromIdx, 1)[0];
+                categories.splice(toIdx, 0, item);
+            } else if (targetType === 'types') {
+                const b = currentBrand && currentBrand !== 'TẤT CẢ' && currentBrand !== 'HẾT HÀNG' && currentBrand !== 'NHẬP HÀNG' ? currentBrand : 'IPHONE';
+                let list = getTypesForBrand(b);
+                const item = list.splice(fromIdx, 1)[0];
+                list.splice(toIdx, 0, item);
+                brandTypes[b] = list;
+            }
+
+            await saveAllToCloud();
+            initTabs();
+            renderTable();
+        }
+
         function initTabs() {
             const isImportTab = currentBrand === 'NHẬP HÀNG';
+            const isIphoneTab = currentBrand.toUpperCase() === 'IPHONE';
+
             // Tabs hãng gồm TẤT CẢ, các hãng có trong brands (không gồm các tab đặc biệt), và nút [+]
             const activeBrandList = brands.filter(b => b && b !== 'HẾT HÀNG' && b !== 'NHẬP HÀNG' && b !== 'TẤT CẢ');
 
@@ -987,12 +1063,21 @@
                 </button>
             `;
 
-            brandTabsHtml += activeBrandList.map(b => {
+            brandTabsHtml += activeBrandList.map((b) => {
                 const isSelected = b === currentBrand;
+                const realBrandIdx = brands.indexOf(b);
                 const btnClass = isSelected
                     ? 'bg-[#2563eb] text-white font-black shadow-lg shadow-blue-600/30 border border-blue-500'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
-                return `<button onclick="switchBrand('${b}')" class="px-3.5 py-2 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}">${b}</button>`;
+                return `<button draggable="true"
+                    ondragstart="handleTabDragStart(event, 'brands', ${realBrandIdx})"
+                    ondragend="handleTabDragEnd(event)"
+                    ondragover="handleTabDragOver(event)"
+                    ondragleave="handleTabDragLeave(event)"
+                    ondrop="handleTabDrop(event, 'brands', ${realBrandIdx})"
+                    onclick="switchBrand('${b}')"
+                    class="draggable-tab px-3.5 py-2 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}"
+                    title="Bấm để chọn, giữ để kéo thay đổi vị trí">${b}</button>`;
             }).join('');
 
             // Nút [+] thêm hãng mới ở cuối thanh tabs hãng (y chang ảnh mẫu 1 & 3)
@@ -1056,63 +1141,93 @@
                 const isSelected = !isAllCat && ((c.toUpperCase() === currentCategory.toUpperCase()) ||
                     (c.toUpperCase() === 'MÀN' && currentCategory.toUpperCase() === 'MÀN HÌNH') ||
                     (c.toUpperCase() === 'MÀN HÌNH' && currentCategory.toUpperCase() === 'MÀN'));
+                const realCatIdx = categories.indexOf(c);
                 const btnClass = isSelected
                     ? 'bg-[#10b981] text-white font-black shadow-lg shadow-emerald-600/30 border border-emerald-400'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
-                return `<button onclick="switchCategory('${c}')" class="px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}">${c}</button>`;
+                return `<button draggable="true"
+                    ondragstart="handleTabDragStart(event, 'categories', ${realCatIdx})"
+                    ondragend="handleTabDragEnd(event)"
+                    ondragover="handleTabDragOver(event)"
+                    ondragleave="handleTabDragLeave(event)"
+                    ondrop="handleTabDrop(event, 'categories', ${realCatIdx})"
+                    onclick="switchCategory('${c}')"
+                    class="draggable-tab px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}"
+                    title="Bấm để chọn, giữ để kéo thay đổi vị trí">${c}</button>`;
             }).join('');
 
             const catTabsWrapper = document.getElementById('main-cat-tabs-desktop');
             if (catTabsWrapper) catTabsWrapper.innerHTML = catTabsHtml;
 
-            // Xử lý tabs Kiểu (Hàng 3)
-            // CHỈ HIỂN THỊ KIỂU ĐÃ ĐƯỢC THÊM TRONG DANH SÁCH (CÁI NÀO CHƯA CÓ KHÔNG HIỆN)
-            const brandTypeSet = new Set();
-            devices.forEach(d => {
-                const matchBrand = (!currentBrand || currentBrand === 'TẤT CẢ' || currentBrand === 'HẾT HÀNG' || currentBrand === 'NHẬP HÀNG')
-                    ? true
-                    : ((d.brand || '').trim().toUpperCase() === currentBrand.trim().toUpperCase());
-                
-                // Nếu đang chọn 1 loại linh kiện cụ thể (không phải TẤT CẢ), chỉ lấy kiểu có trong linh kiện đó
-                let matchCat = true;
-                if (currentCategory && currentCategory !== 'TẤT CẢ') {
-                    let dPart = (d.part || '').trim().toUpperCase();
-                    if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
-                    if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
-                    let filterCat = currentCategory.trim().toUpperCase();
-                    if (filterCat === 'MÀN') filterCat = 'MÀN HÌNH';
-                    matchCat = (dPart === filterCat);
-                }
-
-                if (matchBrand && matchCat && d.type && d.type.trim()) {
-                    brandTypeSet.add(d.type.trim().toUpperCase());
-                }
-            });
-
-            const availableTypes = Array.from(brandTypeSet);
-
-            // Nếu currentType không còn trong danh sách kiểu hợp lệ thì reset về '' (Tất cả kiểu)
-            if (currentType && !brandTypeSet.has(currentType.trim().toUpperCase())) {
-                currentType = '';
-            }
-
-            const isAllType = !currentType;
-            let typeTabsHtml = `
-                <button onclick="switchType('')" class="px-3 py-1.5 rounded-xl ${isAllType ? 'bg-[#6366f1] text-white shadow-lg shadow-indigo-600/30 border border-indigo-400' : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]'} font-black text-xs md:text-sm uppercase tracking-wider shrink-0 flex items-center transition cursor-pointer" title="Xem tất cả kiểu">
-                    KIỂU
-                </button>
-            `;
-
-            typeTabsHtml += availableTypes.map(t => {
-                const isSelected = !isAllType && (currentType.toUpperCase() === t.toUpperCase());
-                const btnClass = isSelected
-                    ? 'bg-[#6366f1] text-white font-black shadow-lg shadow-indigo-600/30 border border-indigo-400'
-                    : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
-                return `<button onclick="switchType('${t}')" class="px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}">${t}</button>`;
-            }).join('');
-
+            // Xử lý tabs Kiểu (Hàng 3):
+            // NGOẠI TRỪ HÃNG IPHONE, CÁC HÃNG KHÁC ẨN HOÀN TOÀN PHẦN KIỂU ĐI
             const typeTabsWrapper = document.getElementById('type-tabs-container-desktop');
-            if (typeTabsWrapper) typeTabsWrapper.innerHTML = typeTabsHtml;
+            if (typeTabsWrapper) {
+                if (!isIphoneTab) {
+                    typeTabsWrapper.style.display = 'none';
+                    typeTabsWrapper.innerHTML = '';
+                    currentType = '';
+                } else {
+                    typeTabsWrapper.style.display = 'flex';
+
+                    // CHỈ HIỂN THỊ KIỂU ĐÃ ĐƯỢC THÊM TRONG DANH SÁCH (CÁI NÀO CHƯA CÓ KHÔNG HIỆN)
+                    const brandTypeSet = new Set();
+                    devices.forEach(d => {
+                        const matchBrand = (!currentBrand || currentBrand === 'TẤT CẢ' || currentBrand === 'HẾT HÀNG' || currentBrand === 'NHẬP HÀNG')
+                            ? true
+                            : ((d.brand || '').trim().toUpperCase() === currentBrand.trim().toUpperCase());
+                        
+                        // Nếu đang chọn 1 loại linh kiện cụ thể (không phải TẤT CẢ), chỉ lấy kiểu có trong linh kiện đó
+                        let matchCat = true;
+                        if (currentCategory && currentCategory !== 'TẤT CẢ') {
+                            let dPart = (d.part || '').trim().toUpperCase();
+                            if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                            if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
+                            let filterCat = currentCategory.trim().toUpperCase();
+                            if (filterCat === 'MÀN') filterCat = 'MÀN HÌNH';
+                            matchCat = (dPart === filterCat);
+                        }
+
+                        if (matchBrand && matchCat && d.type && d.type.trim()) {
+                            brandTypeSet.add(d.type.trim().toUpperCase());
+                        }
+                    });
+
+                    const availableTypes = Array.from(brandTypeSet);
+
+                    // Nếu currentType không còn trong danh sách kiểu hợp lệ thì reset về '' (Tất cả kiểu)
+                    if (currentType && !brandTypeSet.has(currentType.trim().toUpperCase())) {
+                        currentType = '';
+                    }
+
+                    const isAllType = !currentType;
+                    let typeTabsHtml = `
+                        <button onclick="switchType('')" class="px-3 py-1.5 rounded-xl ${isAllType ? 'bg-[#6366f1] text-white shadow-lg shadow-indigo-600/30 border border-indigo-400' : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]'} font-black text-xs md:text-sm uppercase tracking-wider shrink-0 flex items-center transition cursor-pointer" title="Xem tất cả kiểu">
+                            KIỂU
+                        </button>
+                    `;
+
+                    const iphoneTypes = getTypesForBrand('IPHONE');
+                    typeTabsHtml += availableTypes.map(t => {
+                        const isSelected = !isAllType && (currentType.toUpperCase() === t.toUpperCase());
+                        const realTypeIdx = iphoneTypes.indexOf(t);
+                        const btnClass = isSelected
+                            ? 'bg-[#6366f1] text-white font-black shadow-lg shadow-indigo-600/30 border border-indigo-400'
+                            : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
+                        return `<button draggable="true"
+                            ondragstart="handleTabDragStart(event, 'types', ${realTypeIdx})"
+                            ondragend="handleTabDragEnd(event)"
+                            ondragover="handleTabDragOver(event)"
+                            ondragleave="handleTabDragLeave(event)"
+                            ondrop="handleTabDrop(event, 'types', ${realTypeIdx})"
+                            onclick="switchType('${t}')"
+                            class="draggable-tab px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}"
+                            title="Bấm để chọn, giữ để kéo thay đổi vị trí">${t}</button>`;
+                    }).join('');
+
+                    typeTabsWrapper.innerHTML = typeTabsHtml;
+                }
+            }
 
             // Cập nhật trạng thái select tình trạng hàng
             const statusSelect = document.getElementById('stock-status-select');
@@ -1177,11 +1292,13 @@
             let num = parseFloat(cleanStr);
             if (isNaN(num)) return amount.toString();
 
-            if (num < 10 && cleanStr.includes('.')) {
-                num = num * 1000;
+            num = Math.round(num);
+            // Giá hiển thị bỏ 3 số 0 ở sau: ví dụ 450.000 = 450, 1.234.000 = 1.234
+            if (num >= 1000 && num % 1000 === 0) {
+                num = num / 1000;
             }
 
-            return Math.round(num).toLocaleString('vi-VN');
+            return num.toLocaleString('vi-VN');
         }
 
         function parseMoney(str) {
@@ -1189,10 +1306,12 @@
             let cleanStr = str.toString().replace(/\./g, '').replace(/,/g, '.').trim();
             let num = parseFloat(cleanStr);
             if (isNaN(num)) return 0;
-            if (num < 10 && cleanStr.includes('.')) {
+            num = Math.round(num);
+            // Nếu người dùng nhập số hàng trăm (vd: 450, 1234) thì quy đổi chuẩn thành hàng nghìn
+            if (num > 0 && num < 10000) {
                 num = num * 1000;
             }
-            return Math.round(num);
+            return num;
         }
 
         function formatCurrencyInput(input) {
@@ -1422,25 +1541,49 @@
                         <th class="py-3 px-2 w-[12%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
                     `;
                 } else if (isPrivacyMode) {
-                    desktopHeader.innerHTML = `
-                        <th class="py-3.5 px-4 text-left w-[36%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
-                        <th class="py-3.5 px-3 w-[22%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
-                        <th class="py-3.5 px-3 w-[16%] whitespace-nowrap truncate font-black text-white text-center">KIỂU</th>
-                        <th class="py-3.5 px-3 w-[14%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
-                        <th class="py-3.5 px-3 w-[4%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
-                        <th class="py-3.5 px-3 w-[8%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
-                    `;
+                    if (isIphone) {
+                        desktopHeader.innerHTML = `
+                            <th class="py-3.5 px-4 text-left w-[36%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
+                            <th class="py-3.5 px-3 w-[22%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
+                            <th class="py-3.5 px-3 w-[16%] whitespace-nowrap truncate font-black text-white text-center">KIỂU</th>
+                            <th class="py-3.5 px-3 w-[14%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
+                            <th class="py-3.5 px-3 w-[4%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
+                            <th class="py-3.5 px-3 w-[8%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
+                        `;
+                    } else {
+                        // Ngoại trừ iPhone, ẩn cột Kiểu
+                        desktopHeader.innerHTML = `
+                            <th class="py-3.5 px-4 text-left w-[46%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
+                            <th class="py-3.5 px-3 w-[26%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
+                            <th class="py-3.5 px-3 w-[15%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
+                            <th class="py-3.5 px-3 w-[5%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
+                            <th class="py-3.5 px-3 w-[8%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
+                        `;
+                    }
                 } else {
-                    desktopHeader.innerHTML = `
-                        <th class="py-3.5 px-4 text-left w-[26%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
-                        <th class="py-3.5 px-3 w-[15%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
-                        <th class="py-3.5 px-3 w-[11%] whitespace-nowrap truncate font-black text-white text-center">KIỂU</th>
-                        <th class="py-3.5 px-3 w-[13%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
-                        <th class="py-3.5 px-3 w-[5%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
-                        <th class="py-3.5 px-3 w-[12%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
-                        <th class="py-3.5 px-3 w-[10%] whitespace-nowrap truncate font-black text-white text-center">GIÁ NHẬP</th>
-                        <th class="py-3.5 px-3 w-[8%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
-                    `;
+                    if (isIphone) {
+                        desktopHeader.innerHTML = `
+                            <th class="py-3.5 px-4 text-left w-[26%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
+                            <th class="py-3.5 px-3 w-[15%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
+                            <th class="py-3.5 px-3 w-[11%] whitespace-nowrap truncate font-black text-white text-center">KIỂU</th>
+                            <th class="py-3.5 px-3 w-[13%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
+                            <th class="py-3.5 px-3 w-[5%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
+                            <th class="py-3.5 px-3 w-[12%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
+                            <th class="py-3.5 px-3 w-[10%] whitespace-nowrap truncate font-black text-white text-center">GIÁ NHẬP</th>
+                            <th class="py-3.5 px-3 w-[8%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
+                        `;
+                    } else {
+                        // Ngoại trừ iPhone, ẩn cột Kiểu
+                        desktopHeader.innerHTML = `
+                            <th class="py-3.5 px-4 text-left w-[32%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
+                            <th class="py-3.5 px-3 w-[18%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
+                            <th class="py-3.5 px-3 w-[14%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
+                            <th class="py-3.5 px-3 w-[5%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
+                            <th class="py-3.5 px-3 w-[13%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
+                            <th class="py-3.5 px-3 w-[10%] whitespace-nowrap truncate font-black text-white text-center">GIÁ NHẬP</th>
+                            <th class="py-3.5 px-3 w-[8%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
+                        `;
+                    }
                 }
             }
 
@@ -1490,10 +1633,6 @@
                         const zeroQtyClass = (qtyVal === 0 ? 'yellow-pulse-row' : 'row-hover');
 
                         // 4 nút thao tác theo đúng ảnh mẫu 1 & 3:
-                        // 1. Thêm vào đơn/giỏ (Màu cam #f59e0b)
-                        // 2. Chỉnh sửa (Màu xanh dương #2563eb)
-                        // 3. Nhân bản (Màu xanh ngọc/teal #10b981)
-                        // 4. Xóa (Màu đỏ #ef4444)
                         const actionButtonsHtml = `
                             <div class="flex items-center justify-center gap-1.5">
                                 <button onclick="addToCartRepair(${realIndex})" class="w-8 h-8 bg-[#f59e0b] hover:bg-amber-600 text-white rounded-lg transition flex items-center justify-center shadow-md active:scale-95" title="Chọn / Đặt hàng">
@@ -1512,29 +1651,57 @@
                         `;
 
                         if (isPrivacyMode) {
-                            return `
-                                <tr class="${zeroQtyClass} transition border-b border-[#141c2e]" onclick="handleRowClick(this)">
-                                    <td class="py-3 px-4 text-left w-[36%] whitespace-nowrap truncate">${formattedNameHtml}</td>
-                                    <td class="py-3 px-3 font-extrabold text-[#10b981] w-[22%] whitespace-nowrap truncate text-center">${displayPart}</td>
-                                    <td class="py-3 px-3 text-[#38bdf8] font-extrabold w-[16%] whitespace-nowrap truncate text-center">${d.type || 'ZIN'}</td>
-                                    <td class="py-3 px-3 font-black text-lg md:text-xl text-[#f59e0b] w-[14%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
-                                    <td class="py-3 px-3 font-black text-base text-white w-[4%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
-                                    <td class="py-3 px-3 w-[8%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
-                                </tr>
-                            `;
+                            if (isIphone) {
+                                return `
+                                    <tr class="${zeroQtyClass} transition border-b border-[#141c2e]" onclick="handleRowClick(this)">
+                                        <td class="py-3 px-4 text-left w-[36%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                        <td class="py-3 px-3 font-extrabold text-[#10b981] w-[22%] whitespace-nowrap truncate text-center">${displayPart}</td>
+                                        <td class="py-3 px-3 text-[#38bdf8] font-extrabold w-[16%] whitespace-nowrap truncate text-center">${d.type || 'ZIN'}</td>
+                                        <td class="py-3 px-3 font-black text-lg md:text-xl text-[#f59e0b] w-[14%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
+                                        <td class="py-3 px-3 font-black text-base text-white w-[4%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
+                                        <td class="py-3 px-3 w-[8%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
+                                    </tr>
+                                `;
+                            } else {
+                                // Ẩn cột Kiểu
+                                return `
+                                    <tr class="${zeroQtyClass} transition border-b border-[#141c2e]" onclick="handleRowClick(this)">
+                                        <td class="py-3 px-4 text-left w-[46%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                        <td class="py-3 px-3 font-extrabold text-[#10b981] w-[26%] whitespace-nowrap truncate text-center">${displayPart}</td>
+                                        <td class="py-3 px-3 font-black text-lg md:text-xl text-[#f59e0b] w-[15%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
+                                        <td class="py-3 px-3 font-black text-base text-white w-[5%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
+                                        <td class="py-3 px-3 w-[8%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
+                                    </tr>
+                                `;
+                            }
                         } else {
-                            return `
-                                <tr class="${zeroQtyClass} transition border-b border-[#141c2e]" onclick="handleRowClick(this)">
-                                    <td class="py-3 px-4 text-left w-[26%] whitespace-nowrap truncate">${formattedNameHtml}</td>
-                                    <td class="py-3 px-3 font-extrabold text-[#10b981] w-[15%] whitespace-nowrap truncate text-center">${displayPart}</td>
-                                    <td class="py-3 px-3 text-[#38bdf8] font-extrabold w-[11%] whitespace-nowrap truncate text-center">${d.type || 'ZIN'}</td>
-                                    <td class="py-3 px-3 font-black text-lg md:text-xl text-[#f59e0b] w-[13%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
-                                    <td class="py-3 px-3 font-black text-base text-white w-[5%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
-                                    <td class="py-3 px-3 w-[12%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
-                                    <td class="py-3 px-3 font-extrabold text-sm text-[#cbd5e1] w-[10%] whitespace-nowrap truncate text-center">${costFormatted}</td>
-                                    <td class="py-3 px-3 font-extrabold text-sm text-[#10b981] w-[8%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
-                                </tr>
-                            `;
+                            if (isIphone) {
+                                return `
+                                    <tr class="${zeroQtyClass} transition border-b border-[#141c2e]" onclick="handleRowClick(this)">
+                                        <td class="py-3 px-4 text-left w-[26%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                        <td class="py-3 px-3 font-extrabold text-[#10b981] w-[15%] whitespace-nowrap truncate text-center">${displayPart}</td>
+                                        <td class="py-3 px-3 text-[#38bdf8] font-extrabold w-[11%] whitespace-nowrap truncate text-center">${d.type || 'ZIN'}</td>
+                                        <td class="py-3 px-3 font-black text-lg md:text-xl text-[#f59e0b] w-[13%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
+                                        <td class="py-3 px-3 font-black text-base text-white w-[5%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
+                                        <td class="py-3 px-3 w-[12%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
+                                        <td class="py-3 px-3 font-extrabold text-sm text-[#cbd5e1] w-[10%] whitespace-nowrap truncate text-center">${costFormatted}</td>
+                                        <td class="py-3 px-3 font-extrabold text-sm text-[#10b981] w-[8%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
+                                    </tr>
+                                `;
+                            } else {
+                                // Ẩn cột Kiểu
+                                return `
+                                    <tr class="${zeroQtyClass} transition border-b border-[#141c2e]" onclick="handleRowClick(this)">
+                                        <td class="py-3 px-4 text-left w-[32%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                        <td class="py-3 px-3 font-extrabold text-[#10b981] w-[18%] whitespace-nowrap truncate text-center">${displayPart}</td>
+                                        <td class="py-3 px-3 font-black text-lg md:text-xl text-[#f59e0b] w-[14%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
+                                        <td class="py-3 px-3 font-black text-base text-white w-[5%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
+                                        <td class="py-3 px-3 w-[13%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
+                                        <td class="py-3 px-3 font-extrabold text-sm text-[#cbd5e1] w-[10%] whitespace-nowrap truncate text-center">${costFormatted}</td>
+                                        <td class="py-3 px-3 font-extrabold text-sm text-[#10b981] w-[8%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
+                                    </tr>
+                                `;
+                            }
                         }
                     }).join('');
                 }
@@ -1590,10 +1757,14 @@
                                 </div>
                             `;
                         } else {
+                            // Ngoại trừ iPhone, ẩn phần Kiểu đi
                             return `
                                 <div class="py-2.5 flex items-center justify-between gap-2 ${mobileItemBorderClass} ${zeroQtyClassMobile}" onclick="handleRowClick(this)">
                                     <div class="flex items-center gap-2 min-w-0 flex-1">
                                         ${formattedNameHtml}
+                                        <div class="flex items-center gap-1 text-xs text-gray-400 shrink-0">
+                                            <span class="text-emerald-400 font-semibold">${displayPart}</span>
+                                        </div>
                                     </div>
                                     <div class="flex items-center gap-3 shrink-0 ml-auto">
                                         <div class="text-sm text-red-500 font-bold" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</div>
