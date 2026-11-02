@@ -9,8 +9,9 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Kim Chi Mobile</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261102_161901">
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css?v=20261102_162437">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -20,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261102_161901";
+    var CURRENT_PAGE_VERSION = "20261102_162437";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -325,8 +326,10 @@
         <li><button class="main-tab-btn-v" onclick="switchMainTab('banmay', this)">📱 <span>BÁN MÁY</span></button></li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('baohanh', this)">🛡️ <span>BẢO HÀNH</span></button>
         </li>
-        <li><button class="main-tab-btn-v" onclick="switchMainTab('banga', this)" title="Bán Gà">🐓 <span>BÁN GÀ</span></button></li>
-        <li><button class="main-tab-btn-v nav-btn-phanmem" onclick="switchMainTab('phanmem', this)">💻 <span>PHẦN MỀM</span></button>
+        <li><button class="main-tab-btn-v" onclick="switchMainTab('banga', this)" title="Bán Gà">🐓 <span>BÁN
+              GÀ</span></button></li>
+        <li><button class="main-tab-btn-v nav-btn-phanmem" onclick="switchMainTab('phanmem', this)">💻 <span>PHẦN
+              MỀM</span></button>
         </li>
         <li><button class="main-tab-btn-v" onclick="switchMainTab('baogia', this)">📋 <span>BÁO GIÁ SỬA</span></button>
         </li>
@@ -342,7 +345,8 @@
     </div>
 
     <!-- NÚT ĐĂNG XUẤT CHIA 2 PHẦN: BÊN TRÁI LÃI THÁNG (NỀN VÀNG), BÊN PHẢI LÃI NGÀY (NỀN HỒNG) -->
-    <div class="sidebar-profit-logout-box" onclick="handleLogout()" title="Bấm để Đăng Xuất (Bên trái: Lãi Tháng | Bên phải: Lãi Ngày)">
+    <div class="sidebar-profit-logout-box" onclick="handleLogout()"
+      title="Bấm để Đăng Xuất (Bên trái: Lãi Tháng | Bên phải: Lãi Ngày)">
       <div class="sidebar-profit-item profit-month-box">
         <span id="sidebarTotalMonthProfitVal">0</span>
       </div>
@@ -701,7 +705,8 @@
           <!-- Cột 2 (Giữa): CỤM NÚT SHORTCUTS (LINK TOOL, TESTPOINT, ROM, TÀI KHOẢN, GHI CHÚ, CÔNG NỢ) - CĂN CHÍNH GIỮA -->
           <div class="sw-shortcuts-container"
             style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
-            <div class="sw-pill-btn sw-btn-black sw-shortcut-tool" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
+            <div class="sw-pill-btn sw-btn-black sw-shortcut-tool"
+              title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
               <span class="sw-link-text" onclick="openSwUrl('tool')">LINK TOOL</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('tool', event)" title="Sao chép link Tool">
                 <svg viewBox="0 0 24 24" class="sw-copy-icon">
@@ -710,7 +715,8 @@
                 </svg>
               </button>
             </div>
-            <div class="sw-pill-btn sw-btn-black sw-shortcut-testpoint" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
+            <div class="sw-pill-btn sw-btn-black sw-shortcut-testpoint"
+              title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
               <span class="sw-link-text" onclick="openSwUrl('testpoint')">TESTPOINT</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('testpoint', event)"
                 title="Sao chép link Testpoint">
@@ -720,7 +726,8 @@
                 </svg>
               </button>
             </div>
-            <div class="sw-pill-btn sw-btn-black sw-shortcut-rom" title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
+            <div class="sw-pill-btn sw-btn-black sw-shortcut-rom"
+              title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
               <span class="sw-link-text" onclick="openSwUrl('rom')">LINK ROM</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('rom', event)" title="Sao chép link ROM">
                 <svg viewBox="0 0 24 24" class="sw-copy-icon">
@@ -733,8 +740,8 @@
               title="Quản lý tài khoản tool / server">TÀI KHOẢN</button>
             <button type="button" class="sw-pill-btn sw-btn-black sw-shortcut-notes" onclick="openSwNotesModal()"
               title="Sổ ghi chú phần mềm">GHI CHÚ</button>
-            <button type="button" class="sw-pill-btn sw-btn-congno sw-shortcut-congno" id="swBtnCongNo" onclick="toggleSoftwareDebtView()"
-              title="Xem sổ công nợ phần mềm">CÔNG NỢ</button>
+            <button type="button" class="sw-pill-btn sw-btn-congno sw-shortcut-congno" id="swBtnCongNo"
+              onclick="toggleSoftwareDebtView()" title="Xem sổ công nợ phần mềm">CÔNG NỢ</button>
           </div>
 
           <!-- Cột 3 (Phải): THẺ LÃI THÁNG & NGÀY -->
@@ -918,8 +925,8 @@
               <div class="sw-debt-search-box-row" style="display: flex; align-items: center; gap: 6px;">
                 <span class="sw-debt-search-label" style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">TÌM
                   KIẾM:</span>
-                <input type="text" id="swDebtSearchInput" class="search-sales-input" inputmode="text" placeholder="🔍 Tên người nợ..."
-                  style="width: 340px;" oninput="renderSoftwareDebtTable()">
+                <input type="text" id="swDebtSearchInput" class="search-sales-input" inputmode="text"
+                  placeholder="🔍 Tên người nợ..." style="width: 340px;" oninput="renderSoftwareDebtTable()">
               </div>
               <select id="swDebtAmountFilter" class="debt-range-select" onchange="renderSoftwareDebtTable()">
                 <option value="ALL">Tất cả mức nợ</option>
@@ -1186,8 +1193,7 @@
                   <th style="width: 10%; min-width: 95px; text-align: center;">BẢO HÀNH</th>
                   <th style="width: 10%; min-width: 105px; text-align: center; white-space: nowrap;">NGÀY</th>
                   <th class="repair-col-actions" style="width: 9%; min-width: 90px;">THAO TÁC</th>
-                  <th class="repair-col-payment"
-                    style="width: 13%; min-width: 135px; font-weight: 800;">THANH TOÁN</th>
+                  <th class="repair-col-payment" style="width: 13%; min-width: 135px; font-weight: 800;">THANH TOÁN</th>
                 </tr>
               </thead>
               <tbody id="repairTableBody">
@@ -1703,9 +1709,10 @@
           <div class="search-box-bm"
             style="flex: 1; height: 38px; box-sizing: border-box; padding: 6px 12px; position: relative;">
             <span class="search-label-single-line" style="color: #ffffff; font-weight: 800;">TÌM KIẾM</span>
-            <input type="text" id="soldPhoneSearchInput" class="search-input-field" inputmode="text" placeholder="🔍 Tìm tên máy, IMEI"
-              oninput="handleSoldPhoneSearchInput(this)" onfocus="handleSoldPhoneSearchInput(this)"
-              onkeydown="handleSoldPhoneSearchKeydown(event)" autocomplete="off">
+            <input type="text" id="soldPhoneSearchInput" class="search-input-field" inputmode="text"
+              placeholder="🔍 Tìm tên máy, IMEI" oninput="handleSoldPhoneSearchInput(this)"
+              onfocus="handleSoldPhoneSearchInput(this)" onkeydown="handleSoldPhoneSearchKeydown(event)"
+              autocomplete="off">
             <button type="button" id="btnClearSoldPhoneSearch" class="btn-clear-search" onclick="clearSoldPhoneSearch()"
               title="Xóa tìm kiếm">✕</button>
             <!-- DROPDOWN GỢI Ý TÊN MÁY BẢO HÀNH -->
@@ -1797,7 +1804,7 @@
       <!-- TAB 5: BÁO GIÁ SỬA CHỮA & NHẬP HÀNG (CƠ SỞ DỮ LIỆU KIM CHI MOBILE) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261102_161901" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261102_162437" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -1956,8 +1963,9 @@
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <span style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">TÌM KIẾM:</span>
-                <input type="text" id="debtSearchCustomer" class="search-sales-input" inputmode="text" placeholder="🔍 Tên người nợ..."
-                  style="width: 340px;" oninput="handleDebtSearch('customer', this.value)">
+                <input type="text" id="debtSearchCustomer" class="search-sales-input" inputmode="text"
+                  placeholder="🔍 Tên người nợ..." style="width: 340px;"
+                  oninput="handleDebtSearch('customer', this.value)">
               </div>
               <select id="debtRangeSelect_customer" class="debt-range-select"
                 onchange="setDebtRangeFilter('customer', this.value)">
@@ -2021,8 +2029,9 @@
               <div style="display: flex; align-items: center; gap: 6px;">
                 <span style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">TÌM
                   KIẾM:</span>
-                <input type="text" id="debtSearchOther" class="search-sales-input" inputmode="text" placeholder="🔍 Tên người nợ..."
-                  style="width: 320px;" oninput="handleDebtSearch('other', this.value)">
+                <input type="text" id="debtSearchOther" class="search-sales-input" inputmode="text"
+                  placeholder="🔍 Tên người nợ..." style="width: 320px;"
+                  oninput="handleDebtSearch('other', this.value)">
               </div>
               <select id="debtRangeSelect_other" class="debt-range-select"
                 onchange="setDebtRangeFilter('other', this.value)">
@@ -2075,8 +2084,8 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <span style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">TÌM KIẾM</span>
-              <input type="text" id="debtSearchInput" class="search-sales-input" inputmode="text" placeholder="Tên người nợ..."
-                style="width: 280px;" oninput="renderMyDebtTable()">
+              <input type="text" id="debtSearchInput" class="search-sales-input" inputmode="text"
+                placeholder="Tên người nợ..." style="width: 280px;" oninput="renderMyDebtTable()">
               <button type="button" class="sw-select-box"
                 style="font-weight: 800; font-size: 0.88rem; padding: 7px 16px; color: #fff; background: #111723; border: 1px solid #1f293d; border-radius: 8px; cursor: pointer;"
                 onclick="resetDebtFilters()">Xóa lọc</button>
@@ -2585,10 +2594,12 @@
         <!-- HÀNG 2 -->
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label" style="cursor: pointer;" title="Bấm để xóa giá đã chọn khỏi danh mục" onclick="deleteTicketPriceOption('tPriceOut', 'tPriceOutList', 'Giá bán')">Giá bán</label>
+            <label class="form-ticket-label" style="cursor: pointer;" title="Bấm để xóa giá đã chọn khỏi danh mục"
+              onclick="deleteTicketPriceOption('tPriceOut', 'tPriceOutList', 'Giá bán')">Giá bán</label>
             <div class="input-with-actions">
-              <input type="text" list="tPriceOutList" class="ticket-input" id="tPriceOut" placeholder="" inputmode="numeric"
-                autocomplete="off" oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)">
+              <input type="text" list="tPriceOutList" class="ticket-input" id="tPriceOut" placeholder=""
+                inputmode="numeric" autocomplete="off" oninput="formatCurrencyInput(this)"
+                onkeypress="validatePriceKeypress(event)">
               <datalist id="tPriceOutList">
                 <option value="20">
                 <option value="50">
@@ -2603,10 +2614,12 @@
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label" style="cursor: pointer;" title="Bấm để xóa giá đã chọn khỏi danh mục" onclick="deleteTicketPriceOption('tPriceIn', 'tPriceInList', 'Giá nhập')">Giá nhập</label>
+            <label class="form-ticket-label" style="cursor: pointer;" title="Bấm để xóa giá đã chọn khỏi danh mục"
+              onclick="deleteTicketPriceOption('tPriceIn', 'tPriceInList', 'Giá nhập')">Giá nhập</label>
             <div class="input-with-actions">
-              <input type="text" list="tPriceInList" class="ticket-input" id="tPriceIn" placeholder="" inputmode="numeric"
-                autocomplete="off" oninput="formatCurrencyInput(this)" onkeypress="validatePriceKeypress(event)">
+              <input type="text" list="tPriceInList" class="ticket-input" id="tPriceIn" placeholder=""
+                inputmode="numeric" autocomplete="off" oninput="formatCurrencyInput(this)"
+                onkeypress="validatePriceKeypress(event)">
               <datalist id="tPriceInList">
                 <option value="0">
                 <option value="5">
@@ -3288,7 +3301,8 @@
               style="font-size: 0.95rem; font-weight: 900; color: var(--amber-color); background: #141c2b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 8px; border-radius: 6px;"
               id="sellPhoneSummaryImei">4567</span>
           </div>
-          <div style="font-size: 0.84rem; color: #9ca3af; font-weight: 700;" id="sellPhoneSummaryDetails">Zin đẹp 99% - Pin : 99% - QG: VN/A - Giá Nhập : 0</div>
+          <div style="font-size: 0.84rem; color: #9ca3af; font-weight: 700;" id="sellPhoneSummaryDetails">Zin đẹp 99% -
+            Pin : 99% - QG: VN/A - Giá Nhập : 0</div>
         </div>
 
         <div class="form-ticket-row" style="margin-bottom: 0.9rem;">
@@ -4150,8 +4164,8 @@
           🔑 TÀI KHOẢN TOOL & SERVER
         </div>
         <div class="sw-acc-header-tools">
-          <input type="text" id="swAccSearchInput" class="sw-acc-search-input" inputmode="text" placeholder="🔍 Tìm kiếm tài khoản..."
-            oninput="renderSwAccountsList()">
+          <input type="text" id="swAccSearchInput" class="sw-acc-search-input" inputmode="text"
+            placeholder="🔍 Tìm kiếm tài khoản..." oninput="renderSwAccountsList()">
           <button type="button" class="sw-acc-btn-add" onclick="toggleSwAccountForm()">
             <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;">
               <line x1="12" y1="5" x2="12" y2="19" />
@@ -5285,7 +5299,7 @@
     const db = firebase.firestore();
 
     // Bật bộ nhớ đệm Offline nhiều tab đồng bộ để giảm tối đa lượt đọc Firestore
-    db.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
+    db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
       if (err.code === 'failed-precondition') {
         console.warn('Firestore persistence warning: Multiple tabs open concurrently without multi-tab support');
       } else if (err.code === 'unimplemented') {
@@ -5296,10 +5310,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261102_161901"></script>
+  <script src="js/seed_data.js?v=20261102_162437"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261102_161901"></script>
+  <script src="js/main.js?v=20261102_162437"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

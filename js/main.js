@@ -1018,6 +1018,279 @@
     }
 
     /* ============================================================
+       CUSTOM DROPDOWN LOGIC CHO MODAL TẠO PHIẾU BÁN HÀNG
+       (Sao chép nguyên bản từ logic dropdown modal Phần Mềm)
+       ============================================================ */
+    const ticketDropdownConfigs = {
+      itemName: {
+        storageKey: 'KIMCHI_DL_ITEMNAMELIST',
+        listId: 'itemNameList',
+        defaults: ["12 Pro Max", "Dây Sạc", "Củ Sạc", "Bộ Sạc", "Cường Lực", "Ốp Lưng", "Phần Mềm"]
+      },
+      priceOut: {
+        storageKey: 'KIMCHI_DL_TPRICEOUTLIST',
+        listId: 'tPriceOutList',
+        defaults: ["20", "50", "60", "70", "100", "150", "200", "250"]
+      },
+      priceIn: {
+        storageKey: 'KIMCHI_DL_TPRICEINLIST',
+        listId: 'tPriceInList',
+        defaults: ["0", "5", "10", "20", "30", "50", "100"]
+      }
+    };
+
+    const TICKET_DROPDOWN_META = {
+      itemName: { inputId: 'tItemName', menuId: 'ticketItemDropdownMenu' },
+      priceOut: { inputId: 'tPriceOut', menuId: 'ticketPriceOutDropdownMenu' },
+      priceIn:  { inputId: 'tPriceIn',  menuId: 'ticketPriceInDropdownMenu' }
+    };
+
+    function getTicketDropdownItems(type) {
+      let cfg = ticketDropdownConfigs[type];
+      if (!cfg) return [];
+      let list = [];
+      let stored = localStorage.getItem(cfg.storageKey);
+      if (stored) {
+        try { list = JSON.parse(stored); } catch(e){}
+      }
+      if (!Array.isArray(list) || list.length === 0) {
+        const datalist = document.getElementById(cfg.listId);
+        if (datalist) {
+          const opts = Array.from(datalist.querySelectorAll('option'));
+          list = opts.map(o => (o.value || o.textContent || '').trim()).filter(Boolean);
+        }
+      }
+      if (!Array.isArray(list) || list.length === 0) {
+        list = [...cfg.defaults];
+      }
+
+      let cleanMap = new Map();
+      list.forEach(item => {
+        if (item !== null && item !== undefined) {
+          let s = String(item).trim();
+          if (!s) return;
+          let normKey = s.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          if (!cleanMap.has(normKey)) {
+            cleanMap.set(normKey, s);
+          }
+        }
+      });
+      let result = Array.from(cleanMap.values());
+
+      if (type === 'priceOut' || type === 'priceIn') {
+        result.sort((a, b) => {
+          let numA = typeof parsePriceNum === 'function' ? parsePriceNum(a) : (parseFloat(String(a).replace(/\./g, '').replace(/,/g, '')) || 0);
+          let numB = typeof parsePriceNum === 'function' ? parsePriceNum(b) : (parseFloat(String(b).replace(/\./g, '').replace(/,/g, '')) || 0);
+          return numA - numB;
+        });
+      } else {
+        result.sort((a, b) => a.localeCompare(b, 'vi', { sensitivity: 'base', numeric: true }));
+      }
+      return result;
+    }
+
+    function saveTicketDropdownItems(type, items) {
+      let cfg = ticketDropdownConfigs[type];
+      if (!cfg) return;
+      let cleanMap = new Map();
+      (items || []).forEach(item => {
+        if (item !== null && item !== undefined) {
+          let s = String(item).trim();
+          if (!s) return;
+          let normKey = s.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          if (!cleanMap.has(normKey)) {
+            cleanMap.set(normKey, s);
+          }
+        }
+      });
+      let cleanList = Array.from(cleanMap.values());
+      try {
+        localStorage.setItem(cfg.storageKey, JSON.stringify(cleanList));
+      } catch(e){}
+
+      const datalist = document.getElementById(cfg.listId);
+      if (datalist) {
+        datalist.innerHTML = cleanList.map(v => `<option value="${escapeHtml(v)}"></option>`).join('');
+      }
+    }
+
+    function renderTicketDropdownMenu(type, keyword) {
+      const meta = TICKET_DROPDOWN_META[type];
+      if (!meta) return;
+      const menu = document.getElementById(meta.menuId);
+      if (!menu) return;
+      const input = document.getElementById(meta.inputId);
+      const currentVal = input ? input.value.trim() : '';
+      let items = getTicketDropdownItems(type);
+
+      let filtered = items;
+      if (keyword && typeof keyword === 'string' && keyword.trim()) {
+        const kw = keyword.trim().toLowerCase();
+        filtered = items.filter(v => v.toLowerCase().includes(kw));
+      }
+
+      if (filtered.length === 0) {
+        if (window.innerWidth <= 768) {
+          closeAllTicketDropdowns(null);
+          return;
+        }
+        const cleanKw = keyword ? keyword.trim() : '';
+        if (cleanKw) {
+          const escaped = cleanKw.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+          menu.innerHTML = `
+            <div style="padding: 10px 12px; text-align: center;">
+              <div style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 6px;">Chưa có trong danh sách gợi ý</div>
+              <button type="button" class="sw-btn-quick-add ticket-btn-quick-add" data-type="${type}" data-val="${escaped}"
+                style="background: #10b981; color: #000; border: none; border-radius: 6px; padding: 6px 12px; font-weight: 800; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
+                + Thêm "${cleanKw}" vào gợi ý
+              </button>
+            </div>`;
+        } else {
+          menu.innerHTML = `<div style="padding: 10px; color: #64748b; font-size: 0.85rem; text-align: center;">Không có mục nào</div>`;
+        }
+        return;
+      }
+
+      menu.innerHTML = filtered.map(v => {
+        const isActive = v.trim().toLowerCase() === currentVal.toLowerCase();
+        const escaped = v.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+        return `<div class="sw-dropdown-item ticket-dropdown-item${isActive ? ' active' : ''}" data-type="${type}" data-value="${escaped}">${v}${isActive ? '<span class="sw-check-mark">✓</span>' : ''}</div>`;
+      }).join('');
+    }
+
+    function openTicketDropdown(type) {
+      if (window.innerWidth <= 768 && (type === 'priceOut' || type === 'priceIn')) {
+        return; // Trên mobile: chỉ nhập giá, không mở dropdown
+      }
+      closeAllTicketDropdowns(type);
+      const meta = TICKET_DROPDOWN_META[type];
+      if (!meta) return;
+      const menu = document.getElementById(meta.menuId);
+      if (!menu) return;
+      const input = document.getElementById(meta.inputId);
+      renderTicketDropdownMenu(type, input ? input.value : '');
+      menu.classList.add('open');
+      setTimeout(() => {
+        const activeItem = menu.querySelector('.ticket-dropdown-item.active');
+        if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
+      }, 50);
+    }
+
+    function selectTicketDropdownItem(type, value) {
+      const meta = TICKET_DROPDOWN_META[type];
+      if (!meta) return;
+      const input = document.getElementById(meta.inputId);
+      if (input) {
+        input.value = value;
+        if (type === 'priceOut' || type === 'priceIn') {
+          if (typeof formatCurrencyInput === 'function') formatCurrencyInput(input);
+        }
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      const menu = document.getElementById(meta.menuId);
+      if (menu) menu.classList.remove('open');
+    }
+
+    function closeAllTicketDropdowns(exceptType) {
+      Object.keys(TICKET_DROPDOWN_META).forEach(type => {
+        if (type === exceptType) return;
+        const meta = TICKET_DROPDOWN_META[type];
+        const menu = document.getElementById(meta.menuId);
+        if (menu) menu.classList.remove('open');
+      });
+    }
+
+    function filterTicketDropdown(type, keyword) {
+      const meta = TICKET_DROPDOWN_META[type];
+      if (!meta) return;
+      const menu = document.getElementById(meta.menuId);
+      if (!menu) return;
+      if (menu.classList.contains('open')) {
+        renderTicketDropdownMenu(type, keyword);
+      } else {
+        openTicketDropdown(type);
+      }
+    }
+
+    function addNewTicketOption(type, inputId, promptText, event) {
+      if (event) { event.preventDefault(); event.stopPropagation(); }
+      const input = document.getElementById(inputId);
+      let currentVal = input ? input.value.trim() : '';
+      let clean = '';
+
+      if (currentVal !== "") {
+        clean = (type === 'itemName' && typeof toTitleCase === 'function' && isNaN(Number(currentVal))) ? toTitleCase(currentVal) : currentVal;
+      } else {
+        let val = prompt(promptText || 'Nhập tên mục mới:');
+        if (val && val.trim() !== "") {
+          clean = (type === 'itemName' && typeof toTitleCase === 'function' && isNaN(Number(val.trim()))) ? toTitleCase(val.trim()) : val.trim();
+        }
+      }
+
+      if (clean !== "") {
+        let items = getTicketDropdownItems(type);
+        let exists = items.some(x => x.toLowerCase() === clean.toLowerCase());
+        if (!exists) {
+          items.unshift(clean);
+          saveTicketDropdownItems(type, items);
+          if (input) {
+            input.value = clean;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          renderTicketDropdownMenu(type, '');
+          closeAllTicketDropdowns(null);
+          alert(`✓ Đã thêm "${clean}" vào danh mục gợi ý thành công!`);
+        } else {
+          if (input) {
+            input.value = clean;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          renderTicketDropdownMenu(type, '');
+          closeAllTicketDropdowns(null);
+          alert(`Mục "${clean}" đã có sẵn trong danh mục gợi ý!`);
+        }
+      }
+    }
+
+    window.openTicketDropdown = openTicketDropdown;
+    window.filterTicketDropdown = filterTicketDropdown;
+    window.selectTicketDropdownItem = selectTicketDropdownItem;
+    window.addNewTicketOption = addNewTicketOption;
+    window.closeAllTicketDropdowns = closeAllTicketDropdowns;
+
+    // Lắng nghe click chọn mục & click nút thêm nhanh cho ticket dropdown
+    document.addEventListener('mousedown', function(e) {
+      const quickBtn = e.target.closest('.ticket-btn-quick-add');
+      if (quickBtn && quickBtn.dataset.type && quickBtn.dataset.val) {
+        e.preventDefault();
+        const type = quickBtn.dataset.type;
+        const meta = TICKET_DROPDOWN_META[type];
+        if (meta) {
+          const input = document.getElementById(meta.inputId);
+          if (input) input.value = quickBtn.dataset.val;
+          addNewTicketOption(type, meta.inputId, '', null);
+        }
+        return;
+      }
+
+      const item = e.target.closest('.ticket-dropdown-item');
+      if (item && item.dataset.type && item.dataset.value !== undefined) {
+        e.preventDefault();
+        selectTicketDropdownItem(item.dataset.type, item.dataset.value);
+        return;
+      }
+
+      // Đóng dropdown nếu click ra ngoài ô và menu
+      const isInsideTicketGroup = e.target.closest('#ticketModal .form-ticket-group');
+      if (!isInsideTicketGroup) {
+        closeAllTicketDropdowns(null);
+      }
+    });
+
+    /* ============================================================
        UNIVERSAL SMART DROPDOWN CHO TOÀN BỘ POPUP TRÊN WEBSITE
        Cho phép bấm vào menu để chọn lại mọi tùy chọn bất kỳ lúc nào,
        kể cả khi ô nhập đã có chữ / chọn sai, không bắt buộc xóa chữ cũ.
@@ -1369,6 +1642,7 @@
     document.addEventListener('mousedown', function(e) {
       const input = e.target.closest('input');
       if (input) {
+        if (input.id === 'tItemName' || input.id === 'tPriceOut' || input.id === 'tPriceIn') return;
         const listId = input.dataset.originalList || input.getAttribute('list');
         const isDatalistInput = listId || 
           (input.id && (document.getElementById(input.id + 'List') || document.getElementById(input.id + 'Datalist')));
@@ -1389,6 +1663,7 @@
 
       const input = e.target.closest('input');
       if (input) {
+        if (input.id === 'tItemName' || input.id === 'tPriceOut' || input.id === 'tPriceIn') return;
         const listId = input.dataset.originalList || input.getAttribute('list');
         const isDatalistInput = listId || 
           (input.id && (document.getElementById(input.id + 'List') || document.getElementById(input.id + 'Datalist')));
@@ -1405,6 +1680,7 @@
     document.addEventListener('focusin', function(e) {
       const input = e.target.closest('input');
       if (input) {
+        if (input.id === 'tItemName' || input.id === 'tPriceOut' || input.id === 'tPriceIn') return;
         const listId = input.dataset.originalList || input.getAttribute('list');
         const isDatalistInput = listId || 
           (input.id && (document.getElementById(input.id + 'List') || document.getElementById(input.id + 'Datalist')));
@@ -1422,6 +1698,7 @@
     document.addEventListener('input', function(e) {
       const input = e.target.closest('input');
       if (input) {
+        if (input.id === 'tItemName' || input.id === 'tPriceOut' || input.id === 'tPriceIn') return;
         if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) return;
         const listId = input.dataset.originalList || input.getAttribute('list') || (input.id ? (input.id + 'List') : null);
         if (listId && (document.getElementById(listId) || input._universalOptions)) {
@@ -1433,6 +1710,7 @@
     document.addEventListener('keyup', function(e) {
       const input = e.target.closest('input');
       if (input && e.key !== 'Escape' && e.key !== 'Enter') {
+        if (input.id === 'tItemName' || input.id === 'tPriceOut' || input.id === 'tPriceIn') return;
         if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) return;
         const listId = input.dataset.originalList || input.getAttribute('list') || (input.id ? (input.id + 'List') : null);
         if (listId && (document.getElementById(listId) || input._universalOptions)) {
