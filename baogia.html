@@ -847,6 +847,11 @@
             renderTable();
         }
 
+        let isSyncingFromRemote = false;
+        let isSavingToCloud = false;
+        let saveDebounceTimer = null;
+        let hasInitializedRemote = false;
+
         function syncFromCloud() {
             const statusEl = document.getElementById('cloud-status');
             if (statusEl) {
@@ -855,51 +860,64 @@
             }
 
             db.collection("store_data").doc("main").onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    if (data.devices) devices = data.devices;
-                    if (data.brands) {
-                        brands = data.brands;
-                        localStorage.setItem('local_brands', JSON.stringify(brands));
+                // Đặt cờ đang nhận dữ liệu từ xa để chặn các hàm phụ gọi nhầm saveAllToCloud() gây bão đọc/ghi
+                isSyncingFromRemote = true;
+                try {
+                    if (doc.exists) {
+                        hasInitializedRemote = true;
+                        const data = doc.data();
+                        if (data.devices) devices = data.devices;
+                        if (data.brands) {
+                            brands = data.brands;
+                            localStorage.setItem('local_brands', JSON.stringify(brands));
+                        }
+                        if (data.categories) {
+                            categories = data.categories.map(c => c === 'BO SẠC' ? 'CÁP SẠC' : c);
+                            localStorage.setItem('local_categories', JSON.stringify(categories));
+                        }
+                        if (data.types) {
+                            types = data.types;
+                            localStorage.setItem('local_types', JSON.stringify(types));
+                        }
+                        if (data.brandTypes) {
+                            brandTypes = data.brandTypes;
+                            localStorage.setItem('local_brand_types', JSON.stringify(brandTypes));
+                        }
+                        if (data.names) {
+                            names = data.names;
+                            localStorage.setItem('local_names', JSON.stringify(names));
+                        }
+                        if (data.suppliers) {
+                            suppliers = data.suppliers;
+                            localStorage.setItem('local_suppliers', JSON.stringify(suppliers));
+                        }
+                        if (data.importOrders) {
+                            importOrders = data.importOrders;
+                            localStorage.setItem('local_import_orders', JSON.stringify(importOrders));
+                        }
+                        devices.forEach(d => {
+                            if (d.part === 'BO SẠC') d.part = 'CÁP SẠC';
+                        });
+                    } else if (!hasInitializedRemote) {
+                        // Chỉ khởi tạo 1 lần duy nhất nếu doc chưa tồn tại, tuyệt đối không lặp lại
+                        hasInitializedRemote = true;
+                        setTimeout(() => { saveAllToCloud(); }, 500);
                     }
-                    if (data.categories) {
-                        categories = data.categories.map(c => c === 'BO SẠC' ? 'CÁP SẠC' : c);
-                        localStorage.setItem('local_categories', JSON.stringify(categories));
+                    if (statusEl) {
+                        statusEl.setAttribute('title', 'Online Realtime');
+                        statusEl.innerHTML = `<i class="fa-solid fa-cloud text-amber-400 text-xs"></i>`;
                     }
-                    if (data.types) {
-                        types = data.types;
-                        localStorage.setItem('local_types', JSON.stringify(types));
-                    }
-                    if (data.brandTypes) {
-                        brandTypes = data.brandTypes;
-                        localStorage.setItem('local_brand_types', JSON.stringify(brandTypes));
-                    }
-                    if (data.names) {
-                        names = data.names;
-                        localStorage.setItem('local_names', JSON.stringify(names));
-                    }
-                    if (data.suppliers) {
-                        suppliers = data.suppliers;
-                        localStorage.setItem('local_suppliers', JSON.stringify(suppliers));
-                    }
-                    if (data.importOrders) {
-                        importOrders = data.importOrders;
-                        localStorage.setItem('local_import_orders', JSON.stringify(importOrders));
-                    }
-                    devices.forEach(d => {
-                        if (d.part === 'BO SẠC') d.part = 'CÁP SẠC';
-                    });
-                } else {
-                    saveAllToCloud();
+                    initTabs();
+                    renderTable();
+                } catch (e) {
+                    console.error("Lỗi xử lý dữ liệu realtime:", e);
+                } finally {
+                    // Mở lại cờ an toàn sau khi đã render xong DOM
+                    setTimeout(() => { isSyncingFromRemote = false; }, 100);
                 }
-                if (statusEl) {
-                    statusEl.setAttribute('title', 'Online Realtime');
-                    statusEl.innerHTML = `<i class="fa-solid fa-cloud text-amber-400 text-xs"></i>`;
-                }
-                initTabs();
-                renderTable();
             }, (err) => {
                 console.error("Lỗi Firestore:", err);
+                isSyncingFromRemote = false;
                 if (statusEl) {
                     statusEl.setAttribute('title', 'Offline / LocalStorage');
                     statusEl.innerHTML = `<i class="fa-solid fa-hard-drive text-emerald-400 text-xs"></i>`;
@@ -910,9 +928,13 @@
         }
 
         async function saveAllToCloud() {
+            // Chặn hoàn toàn nếu đang trong quá trình đồng bộ từ Firestore về để tránh vòng lặp phản hồi
+            if (isSyncingFromRemote) return;
+
             const statusEl = document.getElementById('cloud-status');
             if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin text-amber-400 text-xs"></i>`;
 
+            // Lưu LocalStorage đồng bộ tức thì
             localStorage.setItem('local_import_orders', JSON.stringify(importOrders));
             localStorage.setItem('local_suppliers', JSON.stringify(suppliers));
             localStorage.setItem('local_brands', JSON.stringify(brands));
@@ -921,15 +943,27 @@
             localStorage.setItem('local_brand_types', JSON.stringify(brandTypes));
             localStorage.setItem('local_names', JSON.stringify(names));
 
-            try {
-                await db.collection("store_data").doc("main").set({
-                    devices, importOrders, brands, categories, types, brandTypes, names, suppliers
-                });
-                if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-cloud text-amber-400 text-xs"></i>`;
-            } catch (e) {
-                console.error("Lỗi lưu Cloud:", e);
-                if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-400 text-xs"></i>`;
-            }
+            // Cơ chế Debounce: gom nhiều thao tác liên tiếp trong 250ms thành 1 lần ghi Firestore duy nhất
+            if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+
+            return new Promise((resolve) => {
+                saveDebounceTimer = setTimeout(async () => {
+                    if (isSavingToCloud) return resolve();
+                    isSavingToCloud = true;
+                    try {
+                        await db.collection("store_data").doc("main").set({
+                            devices, importOrders, brands, categories, types, brandTypes, names, suppliers
+                        });
+                        if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-cloud text-amber-400 text-xs"></i>`;
+                    } catch (e) {
+                        console.error("Lỗi lưu Cloud:", e);
+                        if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-400 text-xs"></i>`;
+                    } finally {
+                        isSavingToCloud = false;
+                        resolve();
+                    }
+                }, 250);
+            });
         }
 
         function switchBrand(b) {
