@@ -12544,12 +12544,6 @@
       XLSX.utils.book_append_sheet(wb, ws, 'Báo Giá Linh Kiện');
       XLSX.writeFile(wb, filename);
 
-      const noticeEl = document.getElementById('bgExportNotice');
-      if (noticeEl) {
-        document.getElementById('bgExportCount').innerText = partsDatabase.length;
-        document.getElementById('bgExportFilename').innerText = filename;
-        noticeEl.style.display = 'flex';
-      }
     }
 
     function renderPartsTable() {
@@ -12580,9 +12574,6 @@
       if (capEl) {
         capEl.innerText = formatNumberDisplay(totalCapital);
       }
-
-      const countExportEl = document.getElementById('bgExportCount');
-      if (countExportEl) countExportEl.innerText = partsDatabase.length;
 
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 2.5rem; color: #94a3b8; font-weight: 700;">Không có linh kiện nào phù hợp với bộ lọc</td></tr>`;
