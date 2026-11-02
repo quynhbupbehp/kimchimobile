@@ -1237,32 +1237,21 @@
         return;
       }
 
-      // TRÊN DESKTOP: Gắn vào document.body dạng FIXED
-      if (dropdownEl.parentNode !== document.body) {
-        document.body.appendChild(dropdownEl);
+      // TRÊN DESKTOP: Gắn trực tiếp vào container của ô nhập dạng ABSOLUTE
+      // Dropdown LUÔN LUÔN nằm ngay sát mép dưới của ô nhập, KHÔNG BAO GIỜ bị nhảy lên trên che mất nhãn hay tiêu đề
+      if (targetEl !== dropdownEl.parentNode) {
+        targetEl.style.position = 'relative';
+        targetEl.appendChild(dropdownEl);
       }
-      dropdownEl.style.position = 'fixed';
-      const rect = targetEl.getBoundingClientRect();
-      const viewportHeight = (window.visualViewport && window.visualViewport.height) 
-        ? window.visualViewport.height 
-        : window.innerHeight;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      const dropDownOffset = 8;
-
-      if (spaceBelow < 120 && spaceAbove > spaceBelow) {
-        dropdownEl.style.top = 'auto';
-        dropdownEl.style.bottom = `${Math.round(viewportHeight - rect.top + 6)}px`;
-        dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceAbove - 16))}px`;
-      } else {
-        dropdownEl.style.bottom = 'auto';
-        dropdownEl.style.top = `${Math.round(rect.bottom + dropDownOffset)}px`;
-        dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceBelow - dropDownOffset - 12))}px`;
-      }
-      dropdownEl.style.left = `${Math.max(6, Math.round(rect.left))}px`;
-      dropdownEl.style.width = `${Math.max(Math.round(rect.width), 160)}px`;
-      dropdownEl.style.minWidth = `${Math.max(Math.round(rect.width), 160)}px`;
-      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 12, Math.max(Math.round(rect.width), 340))}px`;
+      dropdownEl.style.position = 'absolute';
+      dropdownEl.style.top = 'calc(100% + 4px)';
+      dropdownEl.style.bottom = 'auto';
+      dropdownEl.style.left = '0';
+      dropdownEl.style.width = '100%';
+      dropdownEl.style.minWidth = '100%';
+      dropdownEl.style.maxWidth = '100%';
+      dropdownEl.style.maxHeight = '240px';
+      dropdownEl.style.boxSizing = 'border-box';
       dropdownEl.style.overflowY = 'auto';
       dropdownEl.style.zIndex = '999999999';
     }
