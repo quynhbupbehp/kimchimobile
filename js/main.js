@@ -13006,10 +13006,13 @@
             </td>
             <td style="text-align: center;">
               <div class="bg-actions-cell">
+                <button type="button" class="bg-action-btn sell" onclick="sellPartsItem(${item.id})" title="Bán linh kiện này">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </button>
                 <button type="button" class="bg-action-btn edit" onclick="openPartsModal(${item.id})" title="Sửa">
                   <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button type="button" class="bg-action-btn clone" onclick="clonePartsItem(${item.id})" title="Nhân bản">
+                <button type="button" class="bg-action-btn clone" onclick="clonePartsItem(${item.id})" title="Tạo bản sao (nhân bản)">
                   <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
                 <button type="button" class="bg-action-btn del" onclick="deletePartsItem(${item.id})" title="Xóa">
@@ -13028,7 +13031,7 @@
       }).join('');
     }
 
-    function openPartsModal(editId = null) {
+    function openPartsModal(editId = null, isClone = false) {
       const modal = document.getElementById('partsModal');
       if (!modal) return;
 
@@ -13039,10 +13042,15 @@
       }
 
       if (editId) {
-        const item = partsDatabase.find(x => x.id === editId);
+        const item = partsDatabase.find(x => String(x.id) === String(editId));
         if (item) {
-          document.getElementById('partsModalTitle').innerText = 'SỬA THÔNG TIN LINH KIỆN';
-          document.getElementById('partsEditId').value = item.id;
+          if (isClone) {
+            document.getElementById('partsModalTitle').innerText = 'TẠO BẢN SAO LINH KIỆN';
+            document.getElementById('partsEditId').value = '';
+          } else {
+            document.getElementById('partsModalTitle').innerText = 'SỬA THÔNG TIN LINH KIỆN';
+            document.getElementById('partsEditId').value = item.id;
+          }
           document.getElementById('partsFormBrand').value = item.brand || '';
           document.getElementById('partsFormDevice').value = item.device || '';
           document.getElementById('partsFormType').value = item.type || '';
@@ -13176,37 +13184,59 @@
     }
 
     function clonePartsItem(id) {
-      const item = partsDatabase.find(x => x.id === id);
+      openPartsModal(id, true);
+    }
+
+    function sellPartsItem(id) {
+      const item = partsDatabase.find(x => String(x.id) === String(id));
       if (!item) return;
 
-      const cloned = {
-        ...item,
-        id: Date.now(),
-        device: item.device + ' (Copy)'
-      };
-      partsDatabase.unshift(cloned);
-      savePartsStorage();
-      renderPartsTypeTabs();
-      renderPartsStyleTabs();
-      renderPartsDatalists();
-      renderPartsTable();
-      alert('Đã nhân bản linh kiện thành công!');
+      const qty = parseInt(item.qty, 10) || 0;
+      if (qty <= 0) {
+        if (!confirm('Linh kiện này hiện đang HẾT HÀNG (SL: 0). Bạn có muốn tiếp tục tạo đơn?')) {
+          return;
+        }
+      }
+
+      // Mở modal tạo đơn sửa chữa hoặc phiếu bán hàng
+      if (typeof openRepairModal === 'function') {
+        openRepairModal();
+        const rDev = document.getElementById('rFormDevice');
+        const rIssue = document.getElementById('rFormIssue');
+        const rPrice = document.getElementById('rFormPrice');
+        const rCost = document.getElementById('rFormCost');
+        if (rDev) rDev.value = `${item.brand || ''} ${item.device || ''}`.trim();
+        if (rIssue) rIssue.value = `Thay ${item.type || 'Linh kiện'} (${item.style || 'Zin'})`;
+        if (rPrice) rPrice.value = formatPriceStr(item.priceSell);
+        if (rCost) rCost.value = formatPriceStr(item.priceCost);
+        if (typeof updateRepairFormProfit === 'function') updateRepairFormProfit();
+      } else if (typeof openTicketModal === 'function') {
+        openTicketModal();
+        const tName = document.getElementById('tItemName');
+        const tPriceOut = document.getElementById('tPriceOut');
+        const tPriceIn = document.getElementById('tPriceIn');
+        if (tName) tName.value = `${item.device} - ${item.type} (${item.style || 'ZIN'})`;
+        if (tPriceOut) tPriceOut.value = formatPriceStr(item.priceSell);
+        if (tPriceIn) tPriceIn.value = formatPriceStr(item.priceCost);
+      }
     }
 
     function deletePartsItem(id) {
-      const item = partsDatabase.find(x => x.id === id);
+      const item = partsDatabase.find(x => String(x.id) === String(id));
       if (!item) return;
 
       if (confirm(`Bạn có chắc chắn muốn xóa linh kiện "${item.device} - ${item.type}" khỏi danh sách?`)) {
-        partsDatabase = partsDatabase.filter(x => x.id !== id);
+        partsDatabase = partsDatabase.filter(x => String(x.id) !== String(id));
         savePartsStorage();
         if (typeof logActivity === 'function') {
-          logActivity('DELETE', 'linhkien', 'Linh kiện', `Xóa linh kiện: ${item.brand || ''} ${item.device} (${item.type})`, item, null, id);
+          try {
+            logActivity('DELETE', 'linhkien', 'Linh kiện', `Xóa linh kiện: ${item.brand || ''} ${item.device} (${item.type})`, item, null, id);
+          } catch(e) {}
         }
-        renderPartsTypeTabs();
-        renderPartsStyleTabs();
-        renderPartsDatalists();
-        renderPartsTable();
+        if (typeof renderPartsTypeTabs === 'function') renderPartsTypeTabs();
+        if (typeof renderPartsStyleTabs === 'function') renderPartsStyleTabs();
+        if (typeof renderPartsDatalists === 'function') renderPartsDatalists();
+        if (typeof renderPartsTable === 'function') renderPartsTable();
       }
     }
 
@@ -13282,6 +13312,7 @@
     window.calcPartsModalProfit = calcPartsModalProfit;
     window.savePartsItem = savePartsItem;
     window.clonePartsItem = clonePartsItem;
+    window.sellPartsItem = sellPartsItem;
     window.deletePartsItem = deletePartsItem;
     window.selectPartsBrandTab = selectPartsBrandTab;
     window.selectPartsTypeTab = selectPartsTypeTab;

@@ -9754,6 +9754,15 @@
       color: #ffffff;
     }
 
+    .bg-action-btn.sell {
+      background: #f59e0b;
+    }
+
+    .bg-action-btn.sell:hover {
+      background: #d97706;
+      transform: scale(1.08);
+    }
+
     .bg-action-btn.edit {
       background: #2563eb;
     }
