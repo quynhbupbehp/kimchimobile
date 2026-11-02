@@ -10624,6 +10624,9 @@
         updateSoftwareProfits();
       }
       renderSoftwareTable(softwareDatabase);
+      if (typeof renderSoftwareDebtGrid === 'function' && document.getElementById('swDebtView')?.style.display !== 'none') {
+        renderSoftwareDebtGrid();
+      }
     }
 
     function markSoftwareAsPaidOnDblClick(id) {
@@ -11552,14 +11555,14 @@
             <div class="sw-debt-card-left">
               <div class="sw-debt-card-name-row">
                 <input type="checkbox" class="sw-debt-card-chk" data-customer="${escapeHtml(grp.customer)}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleSelectCustomerCard(this, this.getAttribute('data-customer'))" title="Tích chọn để thanh toán nợ của ${escapeHtml(grp.customer)}">
-                <span class="sw-debt-card-name" title="${escapeHtml(grp.customer)}">${escapeHtml(grp.customer)}</span>
+                <span class="sw-debt-card-name" title="${escapeHtml(grp.customer)}">${swHideProfits ? '**********' : escapeHtml(grp.customer)}</span>
               </div>
               <div class="sw-debt-card-count">${grp.items.length} đơn nợ</div>
             </div>
 
             <!-- BÊN PHẢI: SỐ TIỀN CẦN THANH TOÁN TO, MÀU TRẮNG -->
             <div class="sw-debt-card-amount">
-              ${formatPriceStr(grp.totalAmount)}
+              ${swHideProfits ? '***' : formatPriceStr(grp.totalAmount)}
             </div>
           </div>
         `;
@@ -12294,7 +12297,7 @@
               `}
             </td>
             <td class="sw-col-customer">
-              <span style="color: #f59e0b; font-weight: 900; font-size: 1.25rem;">${escapeHtml(item.customer)}</span>
+              <span style="color: #f59e0b; font-weight: 900; font-size: 1.25rem;">${swHideProfits ? '**********' : escapeHtml(item.customer)}</span>
             </td>
             <td class="sw-col-device">
               <span style="color: #ffffff; font-weight: 900; font-size: 1.30rem;">${escapeHtml(formatBrandDeviceName(item.device))}</span>
