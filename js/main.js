@@ -202,6 +202,8 @@
       }
 
       if (tabName === 'baogia') {
+        if (typeof renderPartsTypeTabs === 'function') renderPartsTypeTabs();
+        if (typeof renderPartsStyleTabs === 'function') renderPartsStyleTabs();
         if (typeof renderPartsTable === 'function') renderPartsTable();
       }
       if (tabName === 'phanmem') {
@@ -1264,32 +1266,21 @@
         return;
       }
 
-      // TRÊN DESKTOP: Gắn vào document.body dạng FIXED
-      if (dropdownEl.parentNode !== document.body) {
-        document.body.appendChild(dropdownEl);
+      // TRÊN DESKTOP: Gắn trực tiếp vào container của ô nhập dạng ABSOLUTE
+      // Dropdown LUÔN LUÔN nằm ngay sát mép dưới của ô nhập, KHÔNG BAO GIỜ bị nhảy lên trên che mất nhãn hay tiêu đề
+      if (targetEl !== dropdownEl.parentNode) {
+        targetEl.style.position = 'relative';
+        targetEl.appendChild(dropdownEl);
       }
-      dropdownEl.style.position = 'fixed';
-      const rect = targetEl.getBoundingClientRect();
-      const viewportHeight = (window.visualViewport && window.visualViewport.height) 
-        ? window.visualViewport.height 
-        : window.innerHeight;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      const dropDownOffset = 8;
-
-      if (spaceBelow < 120 && spaceAbove > spaceBelow) {
-        dropdownEl.style.top = 'auto';
-        dropdownEl.style.bottom = `${Math.round(viewportHeight - rect.top + 6)}px`;
-        dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceAbove - 16))}px`;
-      } else {
-        dropdownEl.style.bottom = 'auto';
-        dropdownEl.style.top = `${Math.round(rect.bottom + dropDownOffset)}px`;
-        dropdownEl.style.maxHeight = `${Math.min(240, Math.max(90, spaceBelow - dropDownOffset - 12))}px`;
-      }
-      dropdownEl.style.left = `${Math.max(6, Math.round(rect.left))}px`;
-      dropdownEl.style.width = `${Math.max(Math.round(rect.width), 160)}px`;
-      dropdownEl.style.minWidth = `${Math.max(Math.round(rect.width), 160)}px`;
-      dropdownEl.style.maxWidth = `${Math.min(window.innerWidth - 12, Math.max(Math.round(rect.width), 340))}px`;
+      dropdownEl.style.position = 'absolute';
+      dropdownEl.style.top = 'calc(100% + 4px)';
+      dropdownEl.style.bottom = 'auto';
+      dropdownEl.style.left = '0';
+      dropdownEl.style.width = '100%';
+      dropdownEl.style.minWidth = '100%';
+      dropdownEl.style.maxWidth = '100%';
+      dropdownEl.style.maxHeight = '240px';
+      dropdownEl.style.boxSizing = 'border-box';
       dropdownEl.style.overflowY = 'auto';
       dropdownEl.style.zIndex = '999999999';
     }
@@ -12334,229 +12325,602 @@
 
 
     const DEFAULT_PARTS_DATA = [
-      { id: 1, brand: 'SAMSUNG', device: 'A02 M02 A12 M12 M32 5G', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '175', profit: '275', qty: 2, color: '' },
-      { id: 2, brand: 'SAMSUNG', device: 'A02S A03 A03S', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '180', profit: '220', qty: 2, color: '' },
-      { id: 3, brand: 'SAMSUNG', device: 'A03 CORE', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '180', profit: '220', qty: 1, color: '' },
-      { id: 4, brand: 'SAMSUNG', device: 'A04', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '190', profit: '210', qty: 1, color: '' },
-      { id: 5, brand: 'SAMSUNG', device: 'A04E', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '185', profit: '215', qty: 1, color: '' },
-      { id: 6, brand: 'SAMSUNG', device: 'A04S A13 (5G)', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '185', profit: '215', qty: 2, color: '' },
-      { id: 7, brand: 'SAMSUNG', device: 'A05', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '185', profit: '265', qty: 2, color: '' },
-      { id: 8, brand: 'SAMSUNG', device: 'A05 ZIN', type: 'MÀN HÌNH', style: '', priceSell: '500', priceCost: '220', profit: '280', qty: 2, color: '' },
-      { id: 9, brand: 'SAMSUNG', device: 'A05S', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '200', profit: '250', qty: 2, color: '' },
-      { id: 10, brand: 'SAMSUNG', device: 'A06 4G ZIN', type: 'MÀN HÌNH', style: '', priceSell: '500', priceCost: '240', profit: '260', qty: 2, color: '' },
-      { id: 11, brand: 'SAMSUNG', device: 'A06 4G', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '200', profit: '250', qty: 1, color: '' },
-      { id: 12, brand: 'SAMSUNG', device: 'A06 5G', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '200', profit: '250', qty: 1, color: '' },
-      { id: 13, brand: 'SAMSUNG', device: 'A20S', type: 'CÁP SẠC', style: '---', priceSell: '150', priceCost: '35', profit: '115', qty: 0, color: '' },
-      { id: 14, brand: 'SAMSUNG', device: 'A23 4G', type: 'CÁP SẠC', style: '---', priceSell: '200', priceCost: '1', profit: '199', qty: 0, color: '' },
-      { id: 15, brand: 'SAMSUNG', device: 'A23 5G', type: 'CÁP SẠC', style: '---', priceSell: '200', priceCost: '1', profit: '199', qty: 0, color: '' },
-      { id: 16, brand: 'IPHONE', device: '6G', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '300', priceCost: '150', profit: '150', qty: 1, color: '#000000' },
-      { id: 17, brand: 'IPHONE', device: '6G', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '300', priceCost: '150', profit: '150', qty: 1, color: '#ffffff' },
-      { id: 18, brand: 'IPHONE', device: '6 PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '170', profit: '180', qty: 0, color: '#ffffff' },
-      { id: 19, brand: 'IPHONE', device: '6 PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '170', profit: '180', qty: 1, color: '#000000' },
-      { id: 20, brand: 'IPHONE', device: '6S', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '300', priceCost: '150', profit: '150', qty: 1, color: '#ffffff' },
-      { id: 21, brand: 'IPHONE', device: '6S', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '300', priceCost: '150', profit: '150', qty: 0, color: '#000000' },
-      { id: 22, brand: 'IPHONE', device: '6S PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '165', profit: '185', qty: 2, color: '#ffffff' },
-      { id: 23, brand: 'IPHONE', device: '6S PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '165', profit: '185', qty: 2, color: '#000000' },
-      { id: 24, brand: 'IPHONE', device: '7G', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '160', profit: '190', qty: 3, color: '#ffffff' },
-      { id: 25, brand: 'IPHONE', device: '7G', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '160', profit: '190', qty: 3, color: '#000000' },
-      { id: 26, brand: 'IPHONE', device: '7 PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '400', priceCost: '165', profit: '235', qty: 1, color: '#ffffff' },
-      { id: 27, brand: 'IPHONE', device: '7 PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '400', priceCost: '165', profit: '235', qty: 5, color: '#000000' },
-      { id: 28, brand: 'IPHONE', device: '8 PLUS', type: 'LƯNG', style: 'LỖ TO', priceSell: '300', priceCost: '50', profit: '250', qty: 0, color: '#000000' },
-      { id: 29, brand: 'IPHONE', device: '11 PRO MAX', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '650', priceCost: '1', profit: '649', qty: 0, color: '' },
-      { id: 30, brand: 'IPHONE', device: '12 12 PRO', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '600', priceCost: '1', profit: '599', qty: 0, color: '' },
-      { id: 31, brand: 'IPHONE', device: '12 PRO MAX', type: 'MÀN HÌNH', style: 'GX', priceSell: '1.400', priceCost: '1.020', profit: '380', qty: 0, color: '' },
-      { id: 32, brand: 'IPHONE', device: '12 PRO MAX', type: 'LƯNG', style: 'LỖ TO', priceSell: '300', priceCost: '50', profit: '250', qty: 0, color: '#3b82f6' },
-      { id: 33, brand: 'IPHONE', device: '13 PRO MAX', type: 'LƯNG', style: 'LỖ TO', priceSell: '350', priceCost: '60', profit: '290', qty: 0, color: '#3b82f6' },
-      { id: 34, brand: 'IPHONE', device: 'XS', type: 'LƯNG', style: 'LỖ TO', priceSell: '300', priceCost: '50', profit: '250', qty: 0, color: '#f59e0b' }
+      { id: 1, brand: 'IPHONE', device: '11', type: 'Pin DL Cao (Jufuxing)', style: 'Pin DL Cao (Jufuxing)', priceSell: '400', priceCost: '190', profit: '210', qty: 3, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 2, brand: 'IPHONE', device: '11', type: 'Pin Rẻ (iPhone)', style: 'Pin Rẻ (iPhone)', priceSell: '300', priceCost: '130', profit: '170', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 3, brand: 'IPHONE', device: '11', type: 'Màn GX', style: 'Màn GX', priceSell: '550', priceCost: '260', profit: '290', qty: 4, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 4, brand: 'IPHONE', device: '11', type: 'Màn Zin iPhone', style: 'Màn Zin iPhone', priceSell: '900', priceCost: '510', profit: '390', qty: 1, status: 'Còn hàng', color: '—', date: '9/9/2026' },
+      { id: 5, brand: 'IPHONE', device: '11 PRO', type: 'Màn Lô (Rẻ)', style: 'Màn Lô (Rẻ)', priceSell: '600', priceCost: '250', profit: '350', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 6, brand: 'IPHONE', device: '11 PRO', type: 'Màn Lô ( JK )', style: 'Màn Lô ( JK )', priceSell: '600', priceCost: '350', profit: '250', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 7, brand: 'IPHONE', device: '11 PRO', type: 'Pin DL Cao (Jufuxing)', style: 'Pin DL Cao (Jufuxing)', priceSell: '450', priceCost: '240', profit: '210', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 8, brand: 'IPHONE', device: '11 PRO', type: 'Màn GX', style: 'Màn GX', priceSell: '900', priceCost: '600', profit: '300', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 9, brand: 'IPHONE', device: '11 PRO', type: 'Pin Rẻ (iPhone)', style: 'Pin Rẻ (iPhone)', priceSell: '350', priceCost: '160', profit: '190', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 10, brand: 'IPHONE', device: '11 PRO MAX', type: 'Màn JK OLED (Dẻo)', style: 'Màn JK OLED (Dẻo)', priceSell: '1.000', priceCost: '740', profit: '260', qty: 3, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 11, brand: 'IPHONE', device: '11 PRO MAX', type: 'Màn GX', style: 'Màn GX', priceSell: '1.050', priceCost: '760', profit: '290', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 12, brand: 'IPHONE', device: '12 12 PRO', type: 'Màn Lô (Rẻ)', style: 'Màn Lô (Rẻ)', priceSell: '600', priceCost: '350', profit: '250', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 13, brand: 'IPHONE', device: '12 PRO MAX', type: 'Màn GX', style: 'Màn GX', priceSell: '1.400', priceCost: '1.020', profit: '380', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 14, brand: 'SAMSUNG', device: 'A05', type: 'Màn Zin', style: 'Màn Zin', priceSell: '450', priceCost: '185', profit: '265', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 15, brand: 'SAMSUNG', device: 'A06 4G', type: 'Màn Oled', style: 'Màn Oled', priceSell: '450', priceCost: '200', profit: '250', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' }
     ];
 
     let partsDatabase = [];
     try {
-      const storedParts = localStorage.getItem('kimchi_parts_database');
+      const storedParts = localStorage.getItem('kimchi_parts_database_v2');
       partsDatabase = storedParts ? JSON.parse(storedParts) : DEFAULT_PARTS_DATA;
     } catch(e) {
       partsDatabase = DEFAULT_PARTS_DATA;
     }
 
-    let partsCurrentBrand = 'SAMSUNG';
-    let partsCurrentType = 'MÀN HÌNH';
-    let partsCurrentStyle = 'TẤT CẢ';
-    let partsIsOutOfStockFilter = false;
-    let partsIsRestockFilter = false;
-    let partsSearchKeyword = '';
-    let partsHideCost = false;
+    let partsFilterKeyword = '';
+    let partsFilterBrand = '';
+    let partsFilterDevice = '';
+    let partsFilterType = '';
+    let partsFilterStatus = '';
 
     function savePartsStorage() {
       try {
-        localStorage.setItem('kimchi_parts_database', JSON.stringify(partsDatabase));
+        localStorage.setItem('kimchi_parts_database_v2', JSON.stringify(partsDatabase));
       } catch (e) {
         console.error('Lỗi lưu trữ partsDatabase:', e);
       }
     }
 
-    function filterPartsBrand(brand, btn) {
-      partsIsOutOfStockFilter = false;
-      partsIsRestockFilter = false;
-      document.getElementById('partsBtnOutOfStock')?.classList.remove('active');
-      document.querySelectorAll('#partsBrandFilterGroup .parts-btn-pill').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      partsCurrentBrand = brand;
-      renderPartsTable();
-    }
+    let partsCurrentBrand = '';
+    let partsCurrentType = '';
+    let partsCurrentStyle = '';
+    let partsHideCost = false;
 
-    function filterPartsType(type, btn) {
-      document.querySelectorAll('#partsTypeFilterGroup .parts-btn-pill').forEach(b => b.classList.remove('active'));
+    function selectPartsBrandTab(brand, btn) {
+      partsCurrentBrand = brand || '';
+      document.querySelectorAll('#bgBrandTabsContainer .bg-brand-tab').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
-      partsCurrentType = type;
-      renderPartsTable();
-    }
 
-    function filterPartsStyle(style, btn) {
-      document.querySelectorAll('#partsStyleFilterGroup .parts-btn-pill').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      partsCurrentStyle = style;
-      renderPartsTable();
-    }
-
-    function togglePartsOutOfStock(btn) {
-      partsIsOutOfStockFilter = !partsIsOutOfStockFilter;
-      partsIsRestockFilter = false;
-      if (partsIsOutOfStockFilter) {
-        btn.classList.add('active');
-        document.querySelectorAll('#partsBrandFilterGroup .parts-btn-pill:not(.parts-btn-out-stock)').forEach(b => b.classList.remove('active'));
-      } else {
-        btn.classList.remove('active');
-        // Chọn lại hãng đang active
-        const curBtn = document.querySelector(`#partsBrandFilterGroup button[onclick*="'${partsCurrentBrand}'"]`);
-        if (curBtn) curBtn.classList.add('active');
+      // Khi hãng ở mục TẤT CẢ (brand rỗng) thì nút THÊM MỚI tự ẩn đi, sang các hãng mới hiển thị
+      const addBtnWrap = document.getElementById('partsAddBtnWrap');
+      if (addBtnWrap) {
+        addBtnWrap.style.display = (!partsCurrentBrand || partsCurrentBrand === 'ALL') ? 'none' : 'block';
       }
+
+      renderPartsTypeTabs();
+      renderPartsStyleTabs();
       renderPartsTable();
     }
 
-    function filterPartsRestock(btn) {
-      partsIsRestockFilter = !partsIsRestockFilter;
-      partsIsOutOfStockFilter = false;
-      document.getElementById('partsBtnOutOfStock')?.classList.remove('active');
-      if (partsIsRestockFilter) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
+    function selectPartsTypeTab(type, btn) {
+      partsCurrentType = type || '';
+      document.querySelectorAll('#bgTypeTabsContainer .bg-subfilter-tab').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderPartsStyleTabs();
+      renderPartsTable();
+    }
+
+    function selectPartsStyleTab(style, btn) {
+      partsCurrentStyle = style || '';
+      document.querySelectorAll('#bgStyleTabsContainer .bg-subfilter-tab').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderPartsTable();
+    }
+
+    // Render thanh tab LINH KIỆN (Bao gồm MÀN, PIN, và bất cứ gì thêm vào database)
+    function renderPartsTypeTabs() {
+      const container = document.getElementById('bgTypeTabsContainer');
+      if (!container) return;
+
+      // Danh sách mặc định ưu tiên: MÀN, PIN
+      const defaultTypes = ['MÀN', 'PIN'];
+      const dbTypes = Array.from(new Set(
+        partsDatabase
+          .filter(x => !partsCurrentBrand || x.brand === partsCurrentBrand)
+          .map(x => (x.type || '').trim())
+          .filter(Boolean)
+      ));
+
+      // Hợp nhất danh sách không trùng lặp
+      const allTypes = [...defaultTypes];
+      dbTypes.forEach(t => {
+        const upper = t.toUpperCase();
+        if (!allTypes.some(d => d.toUpperCase() === upper)) {
+          allTypes.push(t);
+        }
+      });
+
+      let html = `<button type="button" class="bg-subfilter-tab ${!partsCurrentType ? 'active' : ''}" onclick="selectPartsTypeTab('', this)">LINH KIỆN</button>`;
+      allTypes.forEach(t => {
+        const isActive = (partsCurrentType && partsCurrentType.toUpperCase() === t.toUpperCase());
+        html += `<button type="button" class="bg-subfilter-tab ${isActive ? 'active' : ''}" onclick="selectPartsTypeTab('${escapeHtml(t)}', this)">${escapeHtml(t.toUpperCase())}</button>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Render thanh tab KIỂU (ZIN, GX, JK, DẺO... tự động lấy theo dữ liệu)
+    function renderPartsStyleTabs() {
+      const container = document.getElementById('bgStyleTabsContainer');
+      if (!container) return;
+
+      const dbStyles = Array.from(new Set(
+        partsDatabase
+          .filter(x => {
+            if (partsCurrentBrand && x.brand !== partsCurrentBrand) return false;
+            if (partsCurrentType) {
+              const itemTypeUpper = (x.type || '').toUpperCase();
+              const curUpper = partsCurrentType.toUpperCase();
+              if (!itemTypeUpper.includes(curUpper) && !curUpper.includes(itemTypeUpper)) return false;
+            }
+            return true;
+          })
+          .map(x => (x.style || '').trim())
+          .filter(Boolean)
+      ));
+
+      const defaultStyles = ['ZIN'];
+      const allStyles = [...defaultStyles];
+      dbStyles.forEach(s => {
+        const upper = s.toUpperCase();
+        if (!allStyles.some(d => d.toUpperCase() === upper)) {
+          allStyles.push(s);
+        }
+      });
+
+      let html = `<button type="button" class="bg-subfilter-tab style-tab ${!partsCurrentStyle ? 'active' : ''}" onclick="selectPartsStyleTab('', this)">KIỂU</button>`;
+      allStyles.forEach(s => {
+        const isActive = (partsCurrentStyle && partsCurrentStyle.toUpperCase() === s.toUpperCase());
+        html += `<button type="button" class="bg-subfilter-tab style-tab ${isActive ? 'active' : ''}" onclick="selectPartsStyleTab('${escapeHtml(s)}', this)">${escapeHtml(s.toUpperCase())}</button>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function addNewBrandTab() {
+      const name = prompt('Nhập tên Hãng mới (VD: XIAOMI, REALME...):');
+      if (!name || !name.trim()) return;
+      const clean = name.trim().toUpperCase();
+
+      const container = document.getElementById('bgBrandTabsContainer');
+      const addBtn = container.querySelector('.bg-brand-tab-btn-add');
+      if (container && addBtn) {
+        const newTab = document.createElement('button');
+        newTab.type = 'button';
+        newTab.className = 'bg-brand-tab';
+        newTab.dataset.brand = clean;
+        newTab.innerText = clean;
+        newTab.onclick = function() { selectPartsBrandTab(clean, this); };
+        container.insertBefore(newTab, addBtn);
+        selectPartsBrandTab(clean, newTab);
       }
-      renderPartsTable();
-    }
-
-    function handlePartsSearch(keyword) {
-      partsSearchKeyword = (keyword || '').trim().toLowerCase();
-      renderPartsTable();
     }
 
     function togglePartsCostVisibility() {
       partsHideCost = !partsHideCost;
-      const thCosts = document.querySelectorAll('.parts-col-cost, .parts-col-profit');
-      const tdCosts = document.querySelectorAll('.parts-td-cost, .parts-td-profit');
-      thCosts.forEach(el => el.style.display = partsHideCost ? 'none' : '');
-      tdCosts.forEach(el => el.style.display = partsHideCost ? 'none' : '');
-      const btn = document.getElementById('btnTogglePartsCost');
-      if (btn) {
-        btn.style.borderColor = partsHideCost ? '#f87171' : '#1f293d';
-        btn.style.color = partsHideCost ? '#f87171' : '#94a3b8';
+      const thCols = document.querySelectorAll('.bg-th-cost, .bg-th-profit');
+      const tdCols = document.querySelectorAll('.bg-td-cost, .bg-td-profit');
+      thCols.forEach(el => el.style.display = partsHideCost ? 'none' : '');
+      tdCols.forEach(el => el.style.display = partsHideCost ? 'none' : '');
+
+      const eyeBtn = document.getElementById('btnTogglePartsCostEye');
+      if (eyeBtn) {
+        eyeBtn.classList.toggle('active', partsHideCost);
+        eyeBtn.style.color = partsHideCost ? '#f87171' : '#94a3b8';
       }
     }
 
-    function syncPartsDataCloud() {
-      savePartsStorage();
-      alert('Đã đồng bộ và lưu trữ bảng linh kiện thành công!');
+    function togglePartsExcelMenu(e) {
+      if (e) e.stopPropagation();
+      const dd = document.getElementById('bgPartsExcelDropdown');
+      if (dd) {
+        dd.style.display = (dd.style.display === 'none' || dd.style.display === '') ? 'flex' : 'none';
+      }
     }
 
-    function formatDeviceDisplayHtml(deviceStr, brand, color) {
-      let html = '';
-      if (brand === 'IPHONE') {
-        html += `<span class="parts-apple-logo"></span>`;
+    document.addEventListener('click', function(e) {
+      const dd = document.getElementById('bgPartsExcelDropdown');
+      if (dd && !e.target.closest('.bg-excel-menu-wrap')) {
+        dd.style.display = 'none';
       }
+    });
 
-      // Tách tên máy và các tag phụ
-      const parts = (deviceStr || '').trim().split(/\s+/);
-      let isiPhone = (brand === 'IPHONE');
-
-      if (isiPhone) {
-        html += `<span class="parts-model-chip">${escapeHtml(deviceStr)}</span>`;
-      } else {
-        // Đối với Samsung và các hãng khác
-        parts.forEach(part => {
-          if (part === 'ZIN' || part === '5G' || part === '4G' || part === '(5G)') {
-            html += `<span class="parts-sub-badge">${escapeHtml(part)}</span>`;
-          } else {
-            html += `<span class="parts-model-chip">${escapeHtml(part)}</span>`;
-          }
-        });
+    function triggerImportPartsExcel() {
+      const fileInput = document.getElementById('bgPartsExcelFileInput');
+      if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
       }
-
-      // Chấm màu sắc nếu có
-      if (color) {
-        let dotBg = color;
-        let cLower = color.toLowerCase();
-        if (cLower === 'trắng' || cLower === 'white') dotBg = '#ffffff';
-        else if (cLower === 'đen' || cLower === 'black') dotBg = '#000000';
-        else if (cLower === 'xanh' || cLower === 'blue') dotBg = '#3b82f6';
-        else if (cLower === 'vàng' || cLower === 'gold') dotBg = '#f59e0b';
-        else if (cLower === 'tím' || cLower === 'purple') dotBg = '#a855f7';
-        else if (cLower === 'hồng' || cLower === 'pink') dotBg = '#ec4899';
-        html += `<span class="parts-color-dot" style="background-color: ${dotBg};" title="Màu: ${escapeHtml(color)}"></span>`;
-      }
-
-      return html;
+      togglePartsExcelMenu();
     }
 
-    function renderPartsTable() {
-      const tbody = document.getElementById('partsTableBody');
-      if (!tbody) return;
+    function handlePartsExcelFileImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-      let filtered = partsDatabase.filter(item => {
-        // Lọc khi bấm HẾT HÀNG (SL = 0)
-        if (partsIsOutOfStockFilter) {
-          if (parseInt(item.qty, 10) > 0) return false;
-        } else {
-          // Lọc theo HÃNG
-          if (partsCurrentBrand && partsCurrentBrand !== 'ALL' && item.brand !== partsCurrentBrand) {
-            return false;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.SheetNames[0];
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+          if (!rows || rows.length === 0) {
+            alert('File Excel trống hoặc không đúng định dạng!');
+            return;
           }
 
-          // Lọc theo LOẠI LINH KIỆN
-          if (partsCurrentType && partsCurrentType !== 'ALL' && item.type !== partsCurrentType) {
-            return false;
-          }
+          let added = 0;
+          rows.forEach((r, idx) => {
+            const brand = (r['HÃNG'] || r['Hãng'] || r['brand'] || 'IPHONE').toString().trim().toUpperCase();
+            const device = (r['THUỘC LOẠI MÁY'] || r['Thuộc loại máy'] || r['Tên máy'] || r['device'] || '').toString().trim();
+            const type = (r['LOẠI LINH KIỆN'] || r['Loại linh kiện'] || r['Linh kiện'] || r['type'] || 'Màn hình').toString().trim();
+            const priceSell = (r['GIÁ THAY KHÁCH'] || r['Giá thay khách'] || r['Giá bán'] || r['priceSell'] || '0').toString().trim();
+            const priceCost = (r['GIÁ NHẬP'] || r['Giá nhập'] || r['Giá vốn'] || r['priceCost'] || '0').toString().trim();
+            const qty = parseInt(r['SL'] || r['Số lượng'] || r['qty'] || 1, 10) || 0;
+            const profit = (parseFloat(priceSell.replace(/\./g, '')) - parseFloat(priceCost.replace(/\./g, ''))).toString();
+            const status = (r['TRẠNG THÁI'] || r['Trạng thái'] || (qty > 0 ? 'Còn hàng' : 'Hết hàng')).toString().trim();
+            const color = (r['MÀU SẮC'] || r['Màu sắc'] || '—').toString().trim();
+            const date = (r['NGÀY'] || r['Ngày'] || '10/8/2026').toString().trim();
 
-          // Lọc theo KIỂU
-          if (partsCurrentStyle && partsCurrentStyle !== 'TẤT CẢ') {
-            if ((item.style || '').toUpperCase() !== partsCurrentStyle.toUpperCase()) {
-              return false;
+            if (device) {
+              partsDatabase.push({
+                id: Date.now() + idx,
+                brand, device, type, style: type, priceSell, priceCost, profit, qty, status, color, date
+              });
+              added++;
             }
+          });
+
+          savePartsStorage();
+          renderPartsTable();
+          alert(`✓ Đã nhập thành công ${added} dòng từ file Excel!`);
+        } catch (err) {
+          console.error('Lỗi đọc Excel:', err);
+          alert('Có lỗi khi đọc file Excel: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function clearAllPartsData() {
+      togglePartsExcelMenu();
+      if (confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA TOÀN BỘ danh sách báo giá linh kiện?')) {
+        partsDatabase = [];
+        savePartsStorage();
+        renderPartsTable();
+        alert('Đã xóa toàn bộ dữ liệu báo giá!');
+      }
+    }
+
+    let partsCurrentPriceFilter = 'ALL';
+    let partsCurrentStatusFilter = 'CON_HANG';
+    let currentPartsSuggestionIndex = -1;
+
+    function handlePartsStatusFilterChange(select) {
+      partsCurrentStatusFilter = select.value || 'CON_HANG';
+      renderPartsTable();
+    }
+    window.handlePartsStatusFilterChange = handlePartsStatusFilterChange;
+
+    function handlePartsPriceFilterChange(select) {
+      partsCurrentPriceFilter = select.value || 'ALL';
+      renderPartsTable();
+    }
+    window.handlePartsPriceFilterChange = handlePartsPriceFilterChange;
+
+    function getPartsNameSuggestions(query) {
+      if (!query || !query.trim()) return [];
+      const qNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(query.trim()).toLowerCase() : query.trim().toLowerCase();
+
+      let pool = partsDatabase;
+      if (partsCurrentBrand && partsCurrentBrand !== 'ALL') {
+        const cbf = partsCurrentBrand.toUpperCase().trim();
+        pool = pool.filter(p => (p.brand || '').toUpperCase().trim() === cbf);
+      }
+
+      const nameMap = new Map();
+      pool.forEach(p => {
+        let dev = (p.device || '').trim();
+        let type = (p.type || '').trim();
+        let style = (p.style || '').trim();
+
+        let normDev = (typeof normalizeQuery === 'function') ? normalizeQuery(dev).toLowerCase() : dev.toLowerCase();
+        let normType = (typeof normalizeQuery === 'function') ? normalizeQuery(type).toLowerCase() : type.toLowerCase();
+        let normStyle = (typeof normalizeQuery === 'function') ? normalizeQuery(style).toLowerCase() : style.toLowerCase();
+
+        // Gợi ý theo Tên Máy
+        if (dev && (normDev.includes(qNorm) || dev.toLowerCase().includes(qNorm))) {
+          let key = 'dev_' + dev.toLowerCase();
+          if (!nameMap.has(key)) {
+            nameMap.set(key, { name: dev, count: 1, type: '📱' });
+          } else {
+            nameMap.get(key).count++;
           }
         }
 
-        // Lọc theo TÌM KIẾM
-        if (partsSearchKeyword) {
-          const matchDevice = (item.device || '').toLowerCase().includes(partsSearchKeyword);
-          const matchType = (item.type || '').toLowerCase().includes(partsSearchKeyword);
-          const matchStyle = (item.style || '').toLowerCase().includes(partsSearchKeyword);
-          const matchBrand = (item.brand || '').toLowerCase().includes(partsSearchKeyword);
+        // Gợi ý theo Loại Linh Kiện
+        if (type && (normType.includes(qNorm) || type.toLowerCase().includes(qNorm))) {
+          let key = 'type_' + type.toLowerCase();
+          if (!nameMap.has(key)) {
+            nameMap.set(key, { name: type, count: 1, type: '🔧' });
+          } else {
+            nameMap.get(key).count++;
+          }
+        }
+
+        // Gợi ý theo Kiểu
+        if (style && (normStyle.includes(qNorm) || style.toLowerCase().includes(qNorm))) {
+          let key = 'style_' + style.toLowerCase();
+          if (!nameMap.has(key)) {
+            nameMap.set(key, { name: style, count: 1, type: '🏷️' });
+          } else {
+            nameMap.get(key).count++;
+          }
+        }
+      });
+
+      const list = Array.from(nameMap.values());
+      list.sort((a, b) => {
+        let aLower = a.name.toLowerCase();
+        let bLower = b.name.toLowerCase();
+        let aExact = aLower === qNorm;
+        let bExact = bLower === qNorm;
+        if (aExact && !bExact) return -1;
+        if (!aExact && bExact) return 1;
+
+        let aStarts = aLower.startsWith(qNorm);
+        let bStarts = bLower.startsWith(qNorm);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+
+        return a.name.length - b.name.length;
+      });
+
+      return list.slice(0, 10);
+    }
+
+    function renderPartsSearchSuggestions(query) {
+      const dropdown = document.getElementById('partsSearchSuggestions');
+      if (!dropdown) return;
+
+      const suggestions = getPartsNameSuggestions(query);
+      currentPartsSuggestionIndex = -1;
+
+      if (!suggestions || suggestions.length === 0) {
+        dropdown.style.display = 'none';
+        dropdown.innerHTML = '';
+        return;
+      }
+
+      dropdown.innerHTML = suggestions.map((item, index) => {
+        return `
+          <div class="phone-suggestion-item" data-index="${index}" data-name="${escapeHtml(item.name)}" onclick="selectPartsSearchSuggestion(this.getAttribute('data-name'))">
+            <span class="suggestion-model-name">
+              <span style="font-size: 1.05rem;">${item.type || '📱'}</span>
+              <span>${highlightSuggestionMatch(item.name, query)}</span>
+            </span>
+            <span class="suggestion-count">${item.count} dòng</span>
+          </div>
+        `;
+      }).join('');
+
+      dropdown.style.display = 'block';
+    }
+
+    function selectPartsSearchSuggestion(name) {
+      const input = document.getElementById('bgSearchDeviceInput');
+      if (!input) return;
+      input.value = name;
+      const clearBtn = document.getElementById('btnClearPartsSearch');
+      if (clearBtn) clearBtn.style.display = 'block';
+      hidePartsSearchSuggestions();
+      partsFilterKeyword = name.trim().toLowerCase();
+      renderPartsTable();
+    }
+    window.selectPartsSearchSuggestion = selectPartsSearchSuggestion;
+
+    function hidePartsSearchSuggestions() {
+      const dropdown = document.getElementById('partsSearchSuggestions');
+      if (dropdown) {
+        dropdown.style.display = 'none';
+      }
+      currentPartsSuggestionIndex = -1;
+    }
+    window.hidePartsSearchSuggestions = hidePartsSearchSuggestions;
+
+    function handlePartsSearchKeydown(e) {
+      const dropdown = document.getElementById('partsSearchSuggestions');
+      if (!dropdown || dropdown.style.display === 'none') return;
+      const items = dropdown.querySelectorAll('.phone-suggestion-item');
+      if (items.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        currentPartsSuggestionIndex = (currentPartsSuggestionIndex + 1) % items.length;
+        updateSuggestionHighlight(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        currentPartsSuggestionIndex = (currentPartsSuggestionIndex - 1 + items.length) % items.length;
+        updateSuggestionHighlight(items);
+      } else if (e.key === 'Enter') {
+        if (currentPartsSuggestionIndex >= 0 && currentPartsSuggestionIndex < items.length) {
+          e.preventDefault();
+          items[currentPartsSuggestionIndex].click();
+        } else {
+          hidePartsSearchSuggestions();
+        }
+      } else if (e.key === 'Escape') {
+        hidePartsSearchSuggestions();
+      }
+    }
+    window.handlePartsSearchKeydown = handlePartsSearchKeydown;
+
+    function clearPartsSearch() {
+      const input = document.getElementById('bgSearchDeviceInput');
+      if (input) input.value = '';
+      const clearBtn = document.getElementById('btnClearPartsSearch');
+      if (clearBtn) clearBtn.style.display = 'none';
+      hidePartsSearchSuggestions();
+      partsFilterKeyword = '';
+      if (input) input.focus();
+      renderPartsTable();
+    }
+    window.clearPartsSearch = clearPartsSearch;
+
+    function handlePartsSearchFilter(val) {
+      const clearBtn = document.getElementById('btnClearPartsSearch');
+      if (val && val.trim() !== '') {
+        if (clearBtn) clearBtn.style.display = 'block';
+        renderPartsSearchSuggestions(val);
+      } else {
+        if (clearBtn) clearBtn.style.display = 'none';
+        hidePartsSearchSuggestions();
+      }
+      partsFilterKeyword = (val || '').trim().toLowerCase();
+      renderPartsTable();
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#tab-baogia .search-box-bm')) {
+        hidePartsSearchSuggestions();
+      }
+    });
+
+    function exportPartsToExcel() {
+      const dd = document.getElementById('bgPartsExcelDropdown');
+      if (dd) dd.style.display = 'none';
+
+      if (typeof XLSX === 'undefined') {
+        alert('Thư viện XLSX chưa tải xong!');
+        return;
+      }
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const filename = `bao-gia-linh-kien_${dateStr}.xlsx`;
+
+      const exportData = partsDatabase.map((item, idx) => ({
+        'STT': idx + 1,
+        'HÃNG': item.brand || '',
+        'THUỘC LOẠI MÁY': item.device || '',
+        'LOẠI LINH KIỆN': item.type || '',
+        'GIÁ THAY KHÁCH': item.priceSell || '',
+        'SL': item.qty !== undefined ? item.qty : '',
+        'TRẠNG THÁI': (parseInt(item.qty, 10) === 0 ? 'Hết hàng' : (item.status || 'Còn hàng')),
+        'GIÁ NHẬP': item.priceCost || '',
+        'LÃI': item.profit || '',
+        'MÀU SẮC': item.color || '—',
+        'NGÀY': item.date || '10/8/2026'
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Báo Giá Linh Kiện');
+      XLSX.writeFile(wb, filename);
+
+    }
+
+    function renderPartsTable() {
+      const tbody = document.getElementById('bgPartsTableBody');
+      if (!tbody) return;
+
+      let filtered = partsDatabase.filter(item => {
+        if (partsFilterKeyword) {
+          const kw = partsFilterKeyword;
+          const kwNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(kw).toLowerCase() : kw;
+
+          const devStr = (item.device || '').toLowerCase();
+          const devNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(devStr).toLowerCase() : devStr;
+
+          const typeStr = (item.type || '').toLowerCase();
+          const typeNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(typeStr).toLowerCase() : typeStr;
+
+          const styleStr = (item.style || '').toLowerCase();
+          const styleNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(styleStr).toLowerCase() : styleStr;
+
+          const brandStr = (item.brand || '').toLowerCase();
+          const brandNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(brandStr).toLowerCase() : brandStr;
+
+          const matchDevice = devStr.includes(kw) || devNorm.includes(kwNorm);
+          const matchType = typeStr.includes(kw) || typeNorm.includes(kwNorm);
+          const matchStyle = styleStr.includes(kw) || styleNorm.includes(kwNorm);
+          const matchBrand = brandStr.includes(kw) || brandNorm.includes(kwNorm);
+
           if (!matchDevice && !matchType && !matchStyle && !matchBrand) return false;
+        }
+
+        if (partsCurrentBrand && item.brand !== partsCurrentBrand) return false;
+
+        if (partsCurrentType) {
+          const itemTypeUpper = (item.type || '').toUpperCase();
+          const curTypeUpper = partsCurrentType.toUpperCase();
+          if (!itemTypeUpper.includes(curTypeUpper) && !curTypeUpper.includes(itemTypeUpper)) return false;
+        }
+
+        if (partsCurrentStyle) {
+          const itemStyleUpper = (item.style || '').toUpperCase();
+          const curStyleUpper = partsCurrentStyle.toUpperCase();
+          if (!itemStyleUpper.includes(curStyleUpper) && !curStyleUpper.includes(itemStyleUpper)) return false;
+        }
+
+        // LỌC THEO TÌNH TRẠNG (MẶC ĐỊNH: CÒN HÀNG, HẾT HÀNG KHI SL = 0)
+        const itemQty = parseInt(item.qty, 10) || 0;
+        if (partsCurrentStatusFilter === 'CON_HANG') {
+          if (itemQty <= 0) return false;
+        } else if (partsCurrentStatusFilter === 'HET_HANG') {
+          if (itemQty > 0) return false;
+        }
+
+        // LỌC THEO KHOẢNG GIÁ BÁN (Y CHANG TAB BÁN MÁY)
+        if (partsCurrentPriceFilter && partsCurrentPriceFilter !== 'ALL') {
+          let pVal = 0;
+          if (typeof parsePriceNum === 'function') {
+            pVal = parsePriceNum(item.priceSell);
+          } else {
+            pVal = parseFloat((item.priceSell || '0').replace(/\./g, '')) || 0;
+          }
+          if (pVal >= 100000) pVal = Math.round(pVal / 1000);
+
+          if (partsCurrentPriceFilter === 'UNDER_1') {
+            return pVal > 0 && pVal < 1000;
+          } else if (partsCurrentPriceFilter === '1_2') {
+            return pVal >= 1000 && pVal <= 2000;
+          } else if (partsCurrentPriceFilter === '2_4') {
+            return pVal > 2000 && pVal <= 4000;
+          } else if (partsCurrentPriceFilter === '4_6') {
+            return pVal > 4000 && pVal <= 6000;
+          } else if (partsCurrentPriceFilter === '6_10') {
+            return pVal > 6000 && pVal <= 10000;
+          } else if (partsCurrentPriceFilter === 'OVER_10') {
+            return pVal > 10000;
+          }
         }
 
         return true;
       });
 
-      // Tính tổng vốn tồn kho: sum(Giá Nhập * SL)
-      let totalCapital = 0;
-      filtered.forEach(i => {
-        let costNum = parseFloat((i.priceCost || '0').replace(/\./g, '')) || 0;
-        let q = parseInt(i.qty, 10) || 0;
-        totalCapital += costNum * q;
+      // SẮP XẾP THEO LINH KIỆN (A-Z)
+      filtered.sort((a, b) => {
+        const typeA = (a.type || '').trim().toLowerCase();
+        const typeB = (b.type || '').trim().toLowerCase();
+        if (typeA !== typeB) {
+          return typeA.localeCompare(typeB, 'vi');
+        }
+        // Nếu cùng linh kiện, sắp xếp tiếp theo Tên Máy
+        const devA = (a.device || '').trim().toLowerCase();
+        const devB = (b.device || '').trim().toLowerCase();
+        return devA.localeCompare(devB, 'vi');
       });
 
-      const capEl = document.getElementById('partsCapitalVal');
+      // Tính tổng vốn: sum(Giá Nhập * SL)
+      let totalCapital = 0;
+      partsDatabase.forEach(i => {
+        const costNum = parseFloat((i.priceCost || '0').replace(/\./g, '')) || 0;
+        const q = parseInt(i.qty, 10) || 0;
+        totalCapital += costNum * q;
+      });
+      const capEl = document.getElementById('partsCapitalTotalVal');
       if (capEl) {
         capEl.innerText = formatNumberDisplay(totalCapital);
+      }
+
+      // Cập nhật tổng số dòng
+      const totalRowsEl = document.getElementById('bgTotalRowsCount');
+      if (totalRowsEl) {
+        totalRowsEl.innerText = filtered.length;
       }
 
       if (filtered.length === 0) {
@@ -12565,55 +12929,89 @@
       }
 
       tbody.innerHTML = filtered.map(item => {
-        let isZero = (parseInt(item.qty, 10) === 0);
-        let rowClass = isZero ? 'parts-out-stock' : '';
-        let deviceHtml = formatDeviceDisplayHtml(item.device, item.brand, item.color);
-        let styleDisplay = item.style ? escapeHtml(item.style) : '---';
+        const qtyNum = parseInt(item.qty, 10) || 0;
+        const isOut = (qtyNum === 0);
+        
+        // Icon thương hiệu cho TÊN MÁY
+        const brandUpper = (item.brand || '').toUpperCase();
+        let brandLogo = '';
+        if (brandUpper.includes('APPLE') || brandUpper.includes('IPHONE') || brandUpper === 'IP') {
+          brandLogo = `<span class="bg-brand-logo-icon" style="color: #f59e0b;" title="Apple"></span>`;
+        } else if (brandUpper.includes('SAMSUNG')) {
+          brandLogo = `<span class="bg-brand-logo-icon" style="color: #3b82f6; font-size: 0.9rem; font-weight: 900;" title="Samsung">S</span>`;
+        } else {
+          brandLogo = `<span class="bg-brand-logo-icon" style="color: #94a3b8; font-size: 0.9rem; font-weight: 900;">•</span>`;
+        }
+
+        // Chấm màu sắc (nếu có color)
+        let colorDotHtml = '';
+        if (item.color && item.color.trim() !== '') {
+          const col = item.color.trim().toLowerCase();
+          let bgCol = item.color.trim();
+          if (col === 'trắng' || col === 'white') bgCol = '#ffffff';
+          else if (col === 'đen' || col === 'black') bgCol = '#000000';
+          else if (col === 'vàng' || col === 'gold') bgCol = '#fbbf24';
+          else if (col === 'xanh' || col === 'blue') bgCol = '#3b82f6';
+          else if (col === 'đỏ' || col === 'red') bgCol = '#ef4444';
+          else if (col === 'tím' || col === 'purple') bgCol = '#a855f7';
+          else if (col === 'hồng' || col === 'pink') bgCol = '#ec4899';
+          else if (col === 'xám' || col === 'gray' || col === 'grey') bgCol = '#64748b';
+          
+          colorDotHtml = `<span class="bg-color-dot" style="background-color: ${escapeHtml(bgCol)};" title="Màu: ${escapeHtml(item.color)}"></span>`;
+        }
+
+        const lkText = escapeHtml((item.type || '').toUpperCase());
+        const kieuText = escapeHtml((item.style || item.status || 'ZIN').toUpperCase());
 
         return `
-          <tr class="${rowClass}">
-            <td>
-              <div class="parts-device-cell">
-                ${deviceHtml}
+          <tr class="${isOut ? 'out-of-stock' : ''}">
+            <td style="text-align: left; padding-left: 18px;">
+              <div class="bg-cell-devicename">
+                ${brandLogo}
+                <span class="bg-model-chip">${escapeHtml(item.device || '')}</span>
+                ${colorDotHtml}
               </div>
             </td>
-            <td>
-              <span class="parts-text-linhkien">${escapeHtml(item.type)}</span>
+            <td style="text-align: center;">
+              <span class="bg-cell-linhkien">${lkText}</span>
             </td>
             <td style="text-align: center;">
-              <span class="parts-text-kieu">${styleDisplay}</span>
+              <span class="bg-cell-kieu">${kieuText}</span>
             </td>
             <td style="text-align: center;">
-              <span class="parts-price-sell">${formatPriceStr(item.priceSell)}</span>
+              <span class="bg-cell-giaban">${formatPriceStr(item.priceSell)}</span>
             </td>
             <td style="text-align: center;">
-              <span class="parts-qty-badge ${isZero ? 'zero' : ''}">${item.qty}</span>
+              <span class="bg-cell-sl">${qtyNum}</span>
             </td>
             <td style="text-align: center;">
-              <div class="parts-actions-set">
-                <button type="button" class="parts-btn-act edit" onclick="openPartsModal(${item.id})" title="Sửa linh kiện">
+              <div class="bg-actions-cell">
+                <button type="button" class="bg-action-btn sell" onclick="sellPartsItem(${item.id})" title="Bán linh kiện này">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </button>
+                <button type="button" class="bg-action-btn edit" onclick="openPartsModal(${item.id})" title="Sửa">
                   <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button type="button" class="parts-btn-act clone" onclick="clonePartsItem(${item.id})" title="Nhân bản linh kiện">
+                <button type="button" class="bg-action-btn clone" onclick="clonePartsItem(${item.id})" title="Tạo bản sao (nhân bản)">
                   <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
-                <button type="button" class="parts-btn-act del" onclick="deletePartsItem(${item.id})" title="Xóa linh kiện">
+                <button type="button" class="bg-action-btn del" onclick="deletePartsItem(${item.id})" title="Xóa">
                   <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               </div>
             </td>
-            <td class="parts-td-cost" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
-              <span class="parts-cost-text">${formatPriceStr(item.priceCost)}</span>
+            <td class="bg-td-cost" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
+              <span class="bg-cell-gianhap">${formatPriceStr(item.priceCost)}</span>
             </td>
-            <td class="parts-td-profit" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
-              <span class="parts-profit-text">${formatPriceStr(item.profit)}</span>
+            <td class="bg-td-profit" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
+              <span class="bg-cell-lai">${formatPriceStr(item.profit)}</span>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function openPartsModal(editId = null) {
+    function openPartsModal(editId = null, isClone = false) {
       const modal = document.getElementById('partsModal');
       if (!modal) return;
 
@@ -12624,10 +13022,15 @@
       }
 
       if (editId) {
-        const item = partsDatabase.find(x => x.id === editId);
+        const item = partsDatabase.find(x => String(x.id) === String(editId));
         if (item) {
-          document.getElementById('partsModalTitle').innerText = 'SỬA THÔNG TIN LINH KIỆN';
-          document.getElementById('partsEditId').value = item.id;
+          if (isClone) {
+            document.getElementById('partsModalTitle').innerText = 'TẠO BẢN SAO LINH KIỆN';
+            document.getElementById('partsEditId').value = '';
+          } else {
+            document.getElementById('partsModalTitle').innerText = 'SỬA THÔNG TIN LINH KIỆN';
+            document.getElementById('partsEditId').value = item.id;
+          }
           document.getElementById('partsFormBrand').value = item.brand || '';
           document.getElementById('partsFormDevice').value = item.device || '';
           document.getElementById('partsFormType').value = item.type || '';
@@ -12641,10 +13044,20 @@
       } else {
         document.getElementById('partsModalTitle').innerText = 'THÊM LINH KIỆN MỚI';
         document.getElementById('partsEditId').value = '';
-        document.getElementById('partsFormBrand').value = (partsCurrentBrand && partsCurrentBrand !== 'ALL') ? partsCurrentBrand : 'SAMSUNG';
+
+        // Tự động điền Hãng đang chọn (nếu ở tab hãng cụ thể), mặc định IPHONE nếu ở Tất Cả
+        let currentBrandVal = (typeof partsCurrentBrand !== 'undefined' && partsCurrentBrand && partsCurrentBrand !== 'ALL') ? partsCurrentBrand : 'IPHONE';
+
+        // Tự động điền Linh Kiện đang chọn, mặc định MÀN HÌNH nếu chọn Tất Cả
+        let currentTypeVal = (typeof partsCurrentType !== 'undefined' && partsCurrentType && partsCurrentType !== 'ALL' && partsCurrentType !== 'LINH KIỆN') ? partsCurrentType : 'MÀN HÌNH';
+
+        // Tự động điền Kiểu đang chọn, mặc định ZIN nếu chọn Tất Cả
+        let currentStyleVal = (typeof partsCurrentStyle !== 'undefined' && partsCurrentStyle && partsCurrentStyle !== 'ALL' && partsCurrentStyle !== 'KIỂU') ? partsCurrentStyle : 'ZIN';
+
+        document.getElementById('partsFormBrand').value = currentBrandVal;
         document.getElementById('partsFormDevice').value = '';
-        document.getElementById('partsFormType').value = (partsCurrentType && partsCurrentType !== 'ALL') ? partsCurrentType : 'MÀN HÌNH';
-        document.getElementById('partsFormStyle').value = (partsCurrentStyle && partsCurrentStyle !== 'TẤT CẢ') ? partsCurrentStyle : '';
+        document.getElementById('partsFormType').value = currentTypeVal;
+        document.getElementById('partsFormStyle').value = currentStyleVal;
         document.getElementById('partsFormPriceSell').value = '';
         document.getElementById('partsFormPriceCost').value = '';
         document.getElementById('partsFormQty').value = '1';
@@ -12653,11 +13066,15 @@
       }
 
       modal.classList.add('active');
+      modal.style.display = 'flex';
     }
 
     function closePartsModal() {
       const modal = document.getElementById('partsModal');
-      if (modal) modal.classList.remove('active');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+      }
     }
 
     function adjustPartsModalQty(delta) {
@@ -12682,81 +13099,124 @@
     }
 
     function savePartsItem(e) {
-      e.preventDefault();
-      const editIdStr = document.getElementById('partsEditId').value;
-      const brand = document.getElementById('partsFormBrand').value.trim().toUpperCase();
-      const device = document.getElementById('partsFormDevice').value.trim();
-      const type = document.getElementById('partsFormType').value.trim().toUpperCase();
-      const style = document.getElementById('partsFormStyle').value.trim();
-      const priceSell = document.getElementById('partsFormPriceSell').value.trim();
-      const priceCost = document.getElementById('partsFormPriceCost').value.trim();
-      const qty = parseInt(document.getElementById('partsFormQty').value, 10) || 0;
-      const color = document.getElementById('partsFormColor').value.trim();
-
-      let sellVal = parseFloat(priceSell.replace(/\./g, '')) || 0;
-      let costVal = parseFloat(priceCost.replace(/\./g, '')) || 0;
-      let profit = formatNumberDisplay(sellVal - costVal);
-
-      if (!brand || !device || !type || !priceSell || !priceCost) {
-        alert('Vui lòng điền đầy đủ các thông tin bắt buộc!');
-        return;
+      if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
       }
 
-      if (editIdStr) {
-        const editId = parseInt(editIdStr, 10);
-        const idx = partsDatabase.findIndex(x => x.id === editId);
-        if (idx !== -1) {
-          const oldData = JSON.parse(JSON.stringify(partsDatabase[idx]));
-          partsDatabase[idx] = {
-            ...partsDatabase[idx],
+      try {
+        const editIdStr = document.getElementById('partsEditId') ? document.getElementById('partsEditId').value : '';
+        const brand = (document.getElementById('partsFormBrand') ? document.getElementById('partsFormBrand').value : '').trim().toUpperCase();
+        const device = (document.getElementById('partsFormDevice') ? document.getElementById('partsFormDevice').value : '').trim();
+        const type = (document.getElementById('partsFormType') ? document.getElementById('partsFormType').value : '').trim().toUpperCase();
+        const style = (document.getElementById('partsFormStyle') ? document.getElementById('partsFormStyle').value : '').trim();
+        const priceSell = (document.getElementById('partsFormPriceSell') ? document.getElementById('partsFormPriceSell').value : '').trim();
+        const priceCost = (document.getElementById('partsFormPriceCost') ? document.getElementById('partsFormPriceCost').value : '').trim();
+        const qty = parseInt(document.getElementById('partsFormQty') ? document.getElementById('partsFormQty').value : '1', 10) || 0;
+        const color = (document.getElementById('partsFormColor') ? document.getElementById('partsFormColor').value : '').trim();
+
+        let sellVal = parseFloat(priceSell.replace(/\./g, '')) || 0;
+        let costVal = parseFloat(priceCost.replace(/\./g, '')) || 0;
+        let profit = (typeof formatNumberDisplay === 'function') ? formatNumberDisplay(sellVal - costVal) : (sellVal - costVal);
+
+        if (!brand || !device || !type || !priceSell || !priceCost) {
+          alert('Vui lòng điền đầy đủ các thông tin: Hãng, Tên máy, Linh kiện, Giá bán, Giá nhập!');
+          return;
+        }
+
+        if (editIdStr) {
+          const editId = parseInt(editIdStr, 10);
+          const idx = partsDatabase.findIndex(x => x.id === editId);
+          if (idx !== -1) {
+            const oldData = JSON.parse(JSON.stringify(partsDatabase[idx]));
+            partsDatabase[idx] = {
+              ...partsDatabase[idx],
+              brand, device, type, style, priceSell, priceCost, profit, qty, color
+            };
+            if (typeof logActivity === 'function') {
+              try {
+                logActivity('EDIT', 'linhkien', 'Linh kiện', `Sửa linh kiện: ${brand} ${device} (${type}) - Bán: ${priceSell}`, oldData, partsDatabase[idx], editId);
+              } catch(err) {}
+            }
+          }
+        } else {
+          const newItem = {
+            id: Date.now(),
             brand, device, type, style, priceSell, priceCost, profit, qty, color
           };
+          partsDatabase.unshift(newItem);
           if (typeof logActivity === 'function') {
-            logActivity('EDIT', 'linhkien', 'Linh kiện', `Sửa linh kiện: ${brand} ${device} (${type}) - Bán: ${priceSell}`, oldData, partsDatabase[idx], editId);
+            try {
+              logActivity('ADD', 'linhkien', 'Linh kiện', `Thêm linh kiện: ${brand} ${device} (${type}) - Bán: ${priceSell}`, null, newItem, newItem.id);
+            } catch(err) {}
           }
         }
-      } else {
-        const newItem = {
-          id: Date.now(),
-          brand, device, type, style, priceSell, priceCost, profit, qty, color
-        };
-        partsDatabase.unshift(newItem);
-        if (typeof logActivity === 'function') {
-          logActivity('ADD', 'linhkien', 'Linh kiện', `Thêm linh kiện: ${brand} ${device} (${type}) - Bán: ${priceSell}`, null, newItem, newItem.id);
-        }
-      }
 
-      savePartsStorage();
-      renderPartsTable();
-      closePartsModal();
+        savePartsStorage();
+        if (typeof renderPartsTypeTabs === 'function') renderPartsTypeTabs();
+        if (typeof renderPartsStyleTabs === 'function') renderPartsStyleTabs();
+        if (typeof renderPartsDatalists === 'function') renderPartsDatalists();
+        if (typeof renderPartsTable === 'function') renderPartsTable();
+        closePartsModal();
+      } catch (err) {
+        console.error('Lỗi khi lưu linh kiện:', err);
+        alert('Có lỗi xảy ra khi lưu: ' + err.message);
+      }
     }
 
     function clonePartsItem(id) {
-      const item = partsDatabase.find(x => x.id === id);
+      openPartsModal(id, true);
+    }
+
+    function sellPartsItem(id) {
+      const item = partsDatabase.find(x => String(x.id) === String(id));
       if (!item) return;
 
-      const cloned = {
-        ...item,
-        id: Date.now(),
-        device: item.device + ' (Copy)'
-      };
-      partsDatabase.unshift(cloned);
-      savePartsStorage();
-      renderPartsTable();
-      alert('Đã nhân bản linh kiện thành công!');
+      const qty = parseInt(item.qty, 10) || 0;
+      if (qty <= 0) {
+        if (!confirm('Linh kiện này hiện đang HẾT HÀNG (SL: 0). Bạn có muốn tiếp tục tạo đơn?')) {
+          return;
+        }
+      }
+
+      // Mở modal tạo đơn sửa chữa hoặc phiếu bán hàng
+      if (typeof openRepairModal === 'function') {
+        openRepairModal();
+        const rDev = document.getElementById('rFormDevice');
+        const rIssue = document.getElementById('rFormIssue');
+        const rPrice = document.getElementById('rFormPrice');
+        const rCost = document.getElementById('rFormCost');
+        if (rDev) rDev.value = `${item.brand || ''} ${item.device || ''}`.trim();
+        if (rIssue) rIssue.value = `Thay ${item.type || 'Linh kiện'} (${item.style || 'Zin'})`;
+        if (rPrice) rPrice.value = formatPriceStr(item.priceSell);
+        if (rCost) rCost.value = formatPriceStr(item.priceCost);
+        if (typeof updateRepairFormProfit === 'function') updateRepairFormProfit();
+      } else if (typeof openTicketModal === 'function') {
+        openTicketModal();
+        const tName = document.getElementById('tItemName');
+        const tPriceOut = document.getElementById('tPriceOut');
+        const tPriceIn = document.getElementById('tPriceIn');
+        if (tName) tName.value = `${item.device} - ${item.type} (${item.style || 'ZIN'})`;
+        if (tPriceOut) tPriceOut.value = formatPriceStr(item.priceSell);
+        if (tPriceIn) tPriceIn.value = formatPriceStr(item.priceCost);
+      }
     }
 
     function deletePartsItem(id) {
-      const item = partsDatabase.find(x => x.id === id);
+      const item = partsDatabase.find(x => String(x.id) === String(id));
       if (!item) return;
 
       if (confirm(`Bạn có chắc chắn muốn xóa linh kiện "${item.device} - ${item.type}" khỏi danh sách?`)) {
-        partsDatabase = partsDatabase.filter(x => x.id !== id);
+        partsDatabase = partsDatabase.filter(x => String(x.id) !== String(id));
         savePartsStorage();
         if (typeof logActivity === 'function') {
-          logActivity('DELETE', 'linhkien', 'Linh kiện', `Xóa linh kiện: ${item.brand || ''} ${item.device} (${item.type})`, item, null, id);
+          try {
+            logActivity('DELETE', 'linhkien', 'Linh kiện', `Xóa linh kiện: ${item.brand || ''} ${item.device} (${item.type})`, item, null, id);
+          } catch(e) {}
         }
-        renderPartsTable();
+        if (typeof renderPartsTypeTabs === 'function') renderPartsTypeTabs();
+        if (typeof renderPartsStyleTabs === 'function') renderPartsStyleTabs();
+        if (typeof renderPartsDatalists === 'function') renderPartsDatalists();
+        if (typeof renderPartsTable === 'function') renderPartsTable();
       }
     }
 
@@ -12824,6 +13284,39 @@
         dlStyle.innerHTML = styles.map(s => `<option value="${escapeHtml(s)}"></option>`).join('');
       }
     }
+
+    // Gắn vào window để gọi từ onclick trong HTML
+    window.openPartsModal = openPartsModal;
+    window.closePartsModal = closePartsModal;
+    window.adjustPartsModalQty = adjustPartsModalQty;
+    window.calcPartsModalProfit = calcPartsModalProfit;
+    window.savePartsItem = savePartsItem;
+    window.clonePartsItem = clonePartsItem;
+    window.sellPartsItem = sellPartsItem;
+    window.deletePartsItem = deletePartsItem;
+    window.selectPartsBrandTab = selectPartsBrandTab;
+    window.selectPartsTypeTab = selectPartsTypeTab;
+    window.selectPartsStyleTab = selectPartsStyleTab;
+    window.renderPartsTypeTabs = renderPartsTypeTabs;
+    window.renderPartsStyleTabs = renderPartsStyleTabs;
+    window.addNewBrandTab = addNewBrandTab;
+    window.togglePartsCostVisibility = togglePartsCostVisibility;
+    window.handlePartsSearchFilter = handlePartsSearchFilter;
+    window.clearPartsSearch = clearPartsSearch;
+    window.handlePartsSearchKeydown = handlePartsSearchKeydown;
+    window.selectPartsSearchSuggestion = selectPartsSearchSuggestion;
+    window.hidePartsSearchSuggestions = hidePartsSearchSuggestions;
+    window.handlePartsPriceFilterChange = handlePartsPriceFilterChange;
+    window.handlePartsStatusFilterChange = handlePartsStatusFilterChange;
+    window.toggleQuoteExcelExportMenu = toggleQuoteExcelExportMenu;
+    window.triggerQuoteExcelImport = triggerQuoteExcelImport;
+    window.handleQuoteExcelImport = handleQuoteExcelImport;
+    window.exportPartsExcel = exportPartsExcel;
+    window.clearAllPartsQuotes = clearAllPartsQuotes;
+    window.addNewPartsOption = addNewPartsOption;
+    window.editPartsOption = editPartsOption;
+    window.deletePartsOption = deletePartsOption;
+    window.renderPartsTable = renderPartsTable;
 
     /* ========================================================== */
     /* LOGIC SUB-TABS SỬA CHỮA & MÌNH NỢ (CHUẨN 100% 4 ẢNH)      */
@@ -13496,15 +13989,14 @@
       const currentVal = input ? input.value.trim() : '';
       let clean = '';
 
-      if (currentVal !== "") {
-        // TỰ ĐỘNG LẤY GIÁ TRỊ ĐÃ GÕ TRONG Ô, KHÔNG BẮT GÕ LẠI
+      if (currentVal !== '') {
         clean = currentVal;
       } else {
         const val = prompt(promptText || 'Thêm mục mới:', '');
         if (val && val.trim()) clean = val.trim();
       }
 
-      if (clean !== "") {
+      if (clean !== '') {
         if (input) input.value = clean;
         if (repairDropdownConfigs[type]) {
           let items = getRepairDropdownItems(type);
@@ -13512,9 +14004,9 @@
           if (!exists) {
             items.unshift(clean);
             saveRepairDropdownItems(type, items);
-            alert(`✓ Đã thêm "${clean}" vào danh mục thành công!`);
+            alert(`✓ Đã thêm "${clean}" vào danh sách gợi ý thành công!`);
           } else {
-            alert(`Mục "${clean}" đã có sẵn trong danh mục!`);
+            alert(`Mục "${clean}" đã có sẵn trong danh sách!`);
           }
         }
       }
@@ -13531,13 +14023,14 @@
 
         if (repairDropdownConfigs[type]) {
           let items = getRepairDropdownItems(type);
-          const idx = items.indexOf(currentVal);
+          const idx = items.findIndex(x => x.toLowerCase().trim() === currentVal.toLowerCase());
           if (idx !== -1) {
             items[idx] = newVal;
-          } else if (!items.includes(newVal)) {
+          } else if (!items.some(x => x.toLowerCase().trim() === newVal.toLowerCase())) {
             items.unshift(newVal);
           }
           saveRepairDropdownItems(type, items);
+          alert(`✓ Đã cập nhật thành "${newVal}"!`);
         }
       }
     }
@@ -13586,8 +14079,27 @@
     function clearRepairInput(inputId) {
       const input = document.getElementById(inputId);
       if (input) input.value = '';
-      updateRepairFormProfit();
+      if (typeof updateRepairFormProfit === 'function') updateRepairFormProfit();
     }
+
+    // Tự động kiểm tra và gợi ý thêm vào danh mục nếu người dùng gõ từ mới
+    function suggestAddRepairOptionIfNew(type, input) {
+      if (!input || !repairDropdownConfigs[type]) return;
+      const val = input.value.trim();
+      if (!val) return;
+      const items = getRepairDropdownItems(type);
+      const exists = items.some(x => x.toLowerCase().trim() === val.toLowerCase());
+      if (!exists) {
+        items.unshift(val);
+        saveRepairDropdownItems(type, items);
+      }
+    }
+
+    window.addNewRepairOption = addNewRepairOption;
+    window.editRepairOption = editRepairOption;
+    window.deleteRepairOption = deleteRepairOption;
+    window.clearRepairInput = clearRepairInput;
+    window.suggestAddRepairOptionIfNew = suggestAddRepairOptionIfNew;
 
     function updateRepairFormProfit() {
       const pInp = document.getElementById('rFormPrice');
@@ -13622,34 +14134,45 @@
     }
 
     function openRepairModal(editId = null) {
-      initRepairTimeSelectors();
-      renderAllRepairDropdowns();
+      try {
+        if (typeof initRepairTimeSelectors === 'function') initRepairTimeSelectors();
+        if (typeof renderAllRepairDropdowns === 'function') renderAllRepairDropdowns();
+      } catch (e) {
+        console.warn('Lỗi tiền xử lý modal sửa chữa:', e);
+      }
+
       const modal = document.getElementById('repairModal');
       const form = document.getElementById('repairForm');
       const title = document.getElementById('repairModalTitle');
       const btnSubmit = document.getElementById('rBtnSubmit');
 
-      if (!modal || !form) return;
-      form.reset();
-      document.getElementById('repairEditId').value = '';
+      if (!modal) {
+        console.error('Không tìm thấy element repairModal!');
+        return;
+      }
+      if (form) form.reset();
+      const editIdEl = document.getElementById('repairEditId');
+      if (editIdEl) editIdEl.value = '';
 
-      const now = getVietnamDate();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const curHour = String(now.getHours()).padStart(2, '0');
-      const curMin = String(now.getMinutes()).padStart(2, '0');
+      try {
+        const now = (typeof getVietnamDate === 'function') ? getVietnamDate() : new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const curHour = String(now.getHours()).padStart(2, '0');
+        const curMin = String(now.getMinutes()).padStart(2, '0');
 
-      if (document.getElementById('rFormDate')) document.getElementById('rFormDate').value = `${yyyy}-${mm}-${dd}`;
-      if (document.getElementById('rFormHour')) document.getElementById('rFormHour').value = curHour;
-      if (document.getElementById('rFormMinute')) document.getElementById('rFormMinute').value = curMin;
+        if (document.getElementById('rFormDate')) document.getElementById('rFormDate').value = `${yyyy}-${mm}-${dd}`;
+        if (document.getElementById('rFormHour')) document.getElementById('rFormHour').value = curHour;
+        if (document.getElementById('rFormMinute')) document.getElementById('rFormMinute').value = curMin;
+      } catch (e) {}
 
       if (editId !== null && editId !== undefined && editId !== '') {
-        const item = repairDatabase.find(x => String(x.id) === String(editId));
+        const item = (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) ? repairDatabase.find(x => String(x.id) === String(editId)) : null;
         if (item) {
-          title.innerText = 'CẬP NHẬT ĐƠN SỬA CHỮA';
-          btnSubmit.innerHTML = 'LƯU ĐƠN';
-          document.getElementById('repairEditId').value = item.id;
+          if (title) title.innerText = 'CẬP NHẬT ĐƠN SỬA CHỮA';
+          if (btnSubmit) btnSubmit.innerHTML = 'LƯU ĐƠN';
+          if (editIdEl) editIdEl.value = item.id;
           if (document.getElementById('rFormCustomer')) document.getElementById('rFormCustomer').value = item.customer || '';
           if (document.getElementById('rFormDevice')) document.getElementById('rFormDevice').value = item.device || '';
           if (document.getElementById('rFormIssue')) document.getElementById('rFormIssue').value = item.issue || '';
@@ -13672,11 +14195,11 @@
               if (document.getElementById('rFormMinute')) document.getElementById('rFormMinute').value = tp[1];
             }
           }
-          updateRepairFormProfit();
+          if (typeof updateRepairFormProfit === 'function') updateRepairFormProfit();
         }
       } else {
-        title.innerText = 'TẠO ĐƠN SỬA CHỮA';
-        btnSubmit.innerHTML = 'TẠO ĐƠN';
+        if (title) title.innerText = 'TẠO ĐƠN SỬA CHỮA';
+        if (btnSubmit) btnSubmit.innerHTML = 'TẠO ĐƠN';
         if (document.getElementById('rFormCustomer')) document.getElementById('rFormCustomer').value = 'Khách lẻ';
         if (document.getElementById('rFormWarranty')) document.getElementById('rFormWarranty').value = '';
         if (document.getElementById('rFormPaymentStatus')) document.getElementById('rFormPaymentStatus').value = 'Đã thanh toán';
@@ -13685,6 +14208,7 @@
         if (disp) disp.innerText = '';
       }
 
+      modal.style.zIndex = '99999';
       modal.classList.add('active');
       modal.style.display = 'flex';
     }
@@ -13700,6 +14224,11 @@
         modal.style.display = 'none';
       }
     }
+
+    // Gắn vào window để gọi từ các sự kiện onclick trên HTML
+    window.openRepairModal = openRepairModal;
+    window.editRepairItem = editRepairItem;
+    window.closeRepairModal = closeRepairModal;
 
     function saveRepairItem(e) {
       if (e) e.preventDefault();
@@ -14253,6 +14782,8 @@
 
       // Khởi chạy tab Báo Giá
       renderPartsDatalists();
+      renderPartsTypeTabs();
+      renderPartsStyleTabs();
       renderPartsTable();
 
       // Khởi chạy tab Sửa Chữa & Mình Nợ
