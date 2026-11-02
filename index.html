@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261102_100303">
+  <link rel="stylesheet" href="css/style.css?v=20261102_101331">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -20,7 +20,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261102_100303";
+    var CURRENT_PAGE_VERSION = "20261102_101331";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1804,6 +1804,14 @@
             <h1 class="bg-title-main">BÁO GIÁ SỬA CHỮA</h1>
           </div>
           <div class="bg-header-right">
+            <!-- Nút con mắt ẩn/hiện Vốn & Lãi -->
+            <button type="button" class="bg-btn-icon-head" id="btnTogglePartsCostEye" onclick="togglePartsCostVisibility()" title="Ẩn/Hiện cột Vốn & Lãi">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+
             <!-- Nút menu popup: Nhập, Xuất, Xóa -->
             <div class="bg-excel-menu-wrap" style="position: relative;">
               <button type="button" class="bg-btn-icon-head" onclick="togglePartsExcelMenu(event)" title="Nhập, Xuất và Xóa dữ liệu">
@@ -1838,15 +1846,10 @@
               <span class="cap-lbl">VỐN :</span>
               <span class="cap-val" id="partsCapitalTotalVal">0</span>
             </div>
-
-            <button type="button" class="bg-btn-create-quote" onclick="openPartsModal()">
-              <span class="plus-icon">+</span>
-              <span>THÊM MỚI</span>
-            </button>
           </div>
         </div>
 
-        <!-- HÀNG 1 THEO ẢNH: CÁC TAB HÃNG NỀN VIỀN BO TRÒN + NÚT + VÀ CON MẮT -->
+        <!-- HÀNG 1 THEO ẢNH: CÁC TAB HÃNG NỀN VIỀN BO TRÒN + NÚT + -->
         <div class="bg-brand-tabs-bar" id="bgBrandTabsContainer">
           <button type="button" class="bg-brand-tab active" data-brand="" onclick="selectPartsBrandTab('', this)">TẤT CẢ</button>
           <button type="button" class="bg-brand-tab" data-brand="IPHONE" onclick="selectPartsBrandTab('IPHONE', this)">IPHONE</button>
@@ -1855,12 +1858,6 @@
           <button type="button" class="bg-brand-tab" data-brand="REDMI - POCO" onclick="selectPartsBrandTab('REDMI - POCO', this)">REDMI - POCO</button>
           <button type="button" class="bg-brand-tab" data-brand="VIVO" onclick="selectPartsBrandTab('VIVO', this)">VIVO</button>
           <button type="button" class="bg-brand-tab-btn-add" onclick="addNewBrandTab()" title="Thêm hãng mới">+</button>
-          <button type="button" class="bg-brand-tab-btn-eye" id="btnTogglePartsCostEye" onclick="togglePartsCostVisibility()" title="Ẩn/Hiện cột Vốn & Lãi">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-          </button>
         </div>
 
         <!-- HÀNG 2: CÁC TAB LINH KIỆN (MÀN, PIN... TỰ ĐỘNG CẬP NHẬT TỪ DỮ LIỆU/POPUP) -->
@@ -1873,28 +1870,38 @@
           <!-- Render tự động bởi renderPartsStyleTabs() -->
         </div>
 
-        <!-- HÀNG 4: TOÀN BỘ CỤM TÌM KIẾM & BỘ LỌC TÌNH TRẠNG -->
-        <div class="banmay-top-bar" style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.1rem; flex-wrap: nowrap;">
-          <!-- 1. Ô TÌM KIẾM CÓ DROPDOWN GỢI Ý & NÚT X ĐỎ -->
-          <div class="search-box-bm" style="height: 38px; box-sizing: border-box; position: relative;">
-            <span class="search-label-single-line">TÌM KIẾM</span>
-            <input type="text" id="bgSearchDeviceInput" class="search-input-field" inputmode="text"
-              placeholder="🔍 tìm theo tên máy hoặc imei" oninput="handlePartsSearchFilter(this.value)"
-              onfocus="handlePartsSearchFilter(this.value)" onkeydown="handlePartsSearchKeydown(event)" autocomplete="off">
-            <button type="button" id="btnClearPartsSearch" class="btn-clear-search" onclick="clearPartsSearch()"
-              title="Xóa tìm kiếm">✕</button>
-            <!-- DROPDOWN GỢI Ý TÊN MÁY TỰ ĐỘNG -->
-            <div id="partsSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;"></div>
+        <!-- HÀNG 4: TOÀN BỘ CỤM TÌM KIẾM, BỘ LỌC TÌNH TRẠNG & NÚT THÊM MỚI -->
+        <div class="banmay-top-bar" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1.1rem; flex-wrap: nowrap;">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;">
+            <!-- 1. Ô TÌM KIẾM CÓ DROPDOWN GỢI Ý & NÚT X ĐỎ -->
+            <div class="search-box-bm" style="height: 38px; box-sizing: border-box; position: relative;">
+              <span class="search-label-single-line">TÌM KIẾM</span>
+              <input type="text" id="bgSearchDeviceInput" class="search-input-field" inputmode="text"
+                placeholder="🔍 tìm theo tên máy hoặc imei" oninput="handlePartsSearchFilter(this.value)"
+                onfocus="handlePartsSearchFilter(this.value)" onkeydown="handlePartsSearchKeydown(event)" autocomplete="off">
+              <button type="button" id="btnClearPartsSearch" class="btn-clear-search" onclick="clearPartsSearch()"
+                title="Xóa tìm kiếm">✕</button>
+              <!-- DROPDOWN GỢI Ý TÊN MÁY TỰ ĐỘNG -->
+              <div id="partsSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;"></div>
+            </div>
+
+            <!-- 2. BỘ LỌC THEO TÌNH TRẠNG (MẶC ĐỊNH: CÒN HÀNG, HẾT HÀNG KHI SL = 0) -->
+            <div class="price-filter-box-bm" style="height: 38px; box-sizing: border-box;">
+              <span class="price-filter-label" style="color: #38bdf8;">TÌNH TRẠNG</span>
+              <select id="partsStatusFilter" class="price-filter-select" onchange="handlePartsStatusFilterChange(this)" style="color: #f59e0b; font-weight: 900;">
+                <option value="CON_HANG" selected>Còn Hàng</option>
+                <option value="HET_HANG">Hết Hàng</option>
+                <option value="ALL">Tất Cả</option>
+              </select>
+            </div>
           </div>
 
-          <!-- 2. BỘ LỌC THEO TÌNH TRẠNG (MẶC ĐỊNH: CÒN HÀNG, HẾT HÀNG KHI SL = 0) -->
-          <div class="price-filter-box-bm" style="height: 38px; box-sizing: border-box;">
-            <span class="price-filter-label" style="color: #38bdf8;">TÌNH TRẠNG</span>
-            <select id="partsStatusFilter" class="price-filter-select" onchange="handlePartsStatusFilterChange(this)" style="color: #f59e0b; font-weight: 900;">
-              <option value="CON_HANG" selected>Còn Hàng</option>
-              <option value="HET_HANG">Hết Hàng</option>
-              <option value="ALL">Tất Cả</option>
-            </select>
+          <!-- NÚT THÊM MỚI Ở BÊN PHẢI (ẨN KHI Ở TAB TẤT CẢ, HIỆN KHI Ở CÁC HÃNG KHÁC) -->
+          <div id="partsAddBtnWrap" style="display: none; margin-left: auto;">
+            <button type="button" class="bg-btn-create-quote" onclick="openPartsModal()" style="height: 38px; box-sizing: border-box; padding: 0 16px; border-radius: 8px;">
+              <span class="plus-icon">+</span>
+              <span>THÊM MỚI</span>
+            </button>
           </div>
         </div>
 
@@ -5358,10 +5365,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261102_100303"></script>
+  <script src="js/seed_data.js?v=20261102_101331"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261102_100303"></script>
+  <script src="js/main.js?v=20261102_101331"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

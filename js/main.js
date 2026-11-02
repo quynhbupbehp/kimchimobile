@@ -12393,6 +12393,13 @@
       partsCurrentBrand = brand || '';
       document.querySelectorAll('#bgBrandTabsContainer .bg-brand-tab').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
+
+      // Khi hãng ở mục TẤT CẢ (brand rỗng) thì nút THÊM MỚI tự ẩn đi, sang các hãng mới hiển thị
+      const addBtnWrap = document.getElementById('partsAddBtnWrap');
+      if (addBtnWrap) {
+        addBtnWrap.style.display = (!partsCurrentBrand || partsCurrentBrand === 'ALL') ? 'none' : 'block';
+      }
+
       renderPartsTypeTabs();
       renderPartsStyleTabs();
       renderPartsTable();
@@ -12628,16 +12635,39 @@
 
       const nameMap = new Map();
       pool.forEach(p => {
-        let rawName = (p.device || '').trim();
-        if (!rawName) return;
-        let key = rawName.toLowerCase();
+        let dev = (p.device || '').trim();
+        let type = (p.type || '').trim();
+        let style = (p.style || '').trim();
 
-        let normModel = (typeof normalizeQuery === 'function') ? normalizeQuery(rawName).toLowerCase() : rawName.toLowerCase();
-        let isMatch = normModel.includes(qNorm) || rawName.toLowerCase().includes(qNorm);
+        let normDev = (typeof normalizeQuery === 'function') ? normalizeQuery(dev).toLowerCase() : dev.toLowerCase();
+        let normType = (typeof normalizeQuery === 'function') ? normalizeQuery(type).toLowerCase() : type.toLowerCase();
+        let normStyle = (typeof normalizeQuery === 'function') ? normalizeQuery(style).toLowerCase() : style.toLowerCase();
 
-        if (isMatch) {
+        // Gợi ý theo Tên Máy
+        if (dev && (normDev.includes(qNorm) || dev.toLowerCase().includes(qNorm))) {
+          let key = 'dev_' + dev.toLowerCase();
           if (!nameMap.has(key)) {
-            nameMap.set(key, { name: rawName, count: 1, brand: p.brand || '' });
+            nameMap.set(key, { name: dev, count: 1, type: '📱' });
+          } else {
+            nameMap.get(key).count++;
+          }
+        }
+
+        // Gợi ý theo Loại Linh Kiện
+        if (type && (normType.includes(qNorm) || type.toLowerCase().includes(qNorm))) {
+          let key = 'type_' + type.toLowerCase();
+          if (!nameMap.has(key)) {
+            nameMap.set(key, { name: type, count: 1, type: '🔧' });
+          } else {
+            nameMap.get(key).count++;
+          }
+        }
+
+        // Gợi ý theo Kiểu
+        if (style && (normStyle.includes(qNorm) || style.toLowerCase().includes(qNorm))) {
+          let key = 'style_' + style.toLowerCase();
+          if (!nameMap.has(key)) {
+            nameMap.set(key, { name: style, count: 1, type: '🏷️' });
           } else {
             nameMap.get(key).count++;
           }
@@ -12681,7 +12711,7 @@
         return `
           <div class="phone-suggestion-item" data-index="${index}" data-name="${escapeHtml(item.name)}" onclick="selectPartsSearchSuggestion(this.getAttribute('data-name'))">
             <span class="suggestion-model-name">
-              <span style="font-size: 1.05rem;">📱</span>
+              <span style="font-size: 1.05rem;">${item.type || '📱'}</span>
               <span>${highlightSuggestionMatch(item.name, query)}</span>
             </span>
             <span class="suggestion-count">${item.count} dòng</span>
@@ -12809,10 +12839,27 @@
 
       let filtered = partsDatabase.filter(item => {
         if (partsFilterKeyword) {
-          const matchDevice = (item.device || '').toLowerCase().includes(partsFilterKeyword);
-          const matchType = (item.type || '').toLowerCase().includes(partsFilterKeyword);
-          const matchBrand = (item.brand || '').toLowerCase().includes(partsFilterKeyword);
-          if (!matchDevice && !matchType && !matchBrand) return false;
+          const kw = partsFilterKeyword;
+          const kwNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(kw).toLowerCase() : kw;
+
+          const devStr = (item.device || '').toLowerCase();
+          const devNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(devStr).toLowerCase() : devStr;
+
+          const typeStr = (item.type || '').toLowerCase();
+          const typeNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(typeStr).toLowerCase() : typeStr;
+
+          const styleStr = (item.style || '').toLowerCase();
+          const styleNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(styleStr).toLowerCase() : styleStr;
+
+          const brandStr = (item.brand || '').toLowerCase();
+          const brandNorm = (typeof normalizeQuery === 'function') ? normalizeQuery(brandStr).toLowerCase() : brandStr;
+
+          const matchDevice = devStr.includes(kw) || devNorm.includes(kwNorm);
+          const matchType = typeStr.includes(kw) || typeNorm.includes(kwNorm);
+          const matchStyle = styleStr.includes(kw) || styleNorm.includes(kwNorm);
+          const matchBrand = brandStr.includes(kw) || brandNorm.includes(kwNorm);
+
+          if (!matchDevice && !matchType && !matchStyle && !matchBrand) return false;
         }
 
         if (partsCurrentBrand && item.brand !== partsCurrentBrand) return false;
@@ -13009,9 +13056,16 @@
       } else {
         document.getElementById('partsModalTitle').innerText = 'THÊM LINH KIỆN MỚI';
         document.getElementById('partsEditId').value = '';
-        const currentBrandVal = (typeof partsCurrentBrand !== 'undefined' && partsCurrentBrand && partsCurrentBrand !== 'ALL') ? partsCurrentBrand : 'IPHONE';
-        const currentTypeVal = (typeof partsCurrentType !== 'undefined' && partsCurrentType && partsCurrentType !== 'ALL') ? partsCurrentType : 'MÀN HÌNH';
-        const currentStyleVal = (typeof partsCurrentStyle !== 'undefined' && partsCurrentStyle && partsCurrentStyle !== 'TẤT CẢ') ? partsCurrentStyle : 'ZIN';
+
+        // Tự động điền Hãng đang chọn (nếu ở tab hãng cụ thể), mặc định IPHONE nếu ở Tất Cả
+        let currentBrandVal = (typeof partsCurrentBrand !== 'undefined' && partsCurrentBrand && partsCurrentBrand !== 'ALL') ? partsCurrentBrand : 'IPHONE';
+
+        // Tự động điền Linh Kiện đang chọn, mặc định MÀN HÌNH nếu chọn Tất Cả
+        let currentTypeVal = (typeof partsCurrentType !== 'undefined' && partsCurrentType && partsCurrentType !== 'ALL' && partsCurrentType !== 'LINH KIỆN') ? partsCurrentType : 'MÀN HÌNH';
+
+        // Tự động điền Kiểu đang chọn, mặc định ZIN nếu chọn Tất Cả
+        let currentStyleVal = (typeof partsCurrentStyle !== 'undefined' && partsCurrentStyle && partsCurrentStyle !== 'ALL' && partsCurrentStyle !== 'KIỂU') ? partsCurrentStyle : 'ZIN';
+
         document.getElementById('partsFormBrand').value = currentBrandVal;
         document.getElementById('partsFormDevice').value = '';
         document.getElementById('partsFormType').value = currentTypeVal;
