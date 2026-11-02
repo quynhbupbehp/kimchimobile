@@ -177,12 +177,12 @@
                         <div id="excel-dropdown-menu"
                             class="hidden absolute right-0 mt-2 w-48 bg-[#0b0f19] border border-[#1e293b] rounded-xl shadow-2xl z-50 py-1.5 flex flex-col gap-1 text-xs font-black backdrop-blur-md">
                             <button type="button" onclick="triggerImportExcel()"
-                                class="flex items-center gap-2.5 px-3 py-2 text-gray-200 hover:text-emerald-400 hover:bg-[#131b2e] transition text-left w-full cursor-pointer">
+                                class="flex items-center gap-2.5 px-3 py-2 text-white hover:text-emerald-400 hover:bg-[#131b2e] transition text-left w-full cursor-pointer">
                                 <i class="fa-solid fa-file-import text-emerald-400 text-sm w-4 text-center"></i>
                                 <span>NHẬP DỮ LIỆU</span>
                             </button>
                             <button type="button" onclick="exportToExcel()"
-                                class="flex items-center gap-2.5 px-3 py-2 text-gray-200 hover:text-sky-400 hover:bg-[#131b2e] transition text-left w-full cursor-pointer">
+                                class="flex items-center gap-2.5 px-3 py-2 text-white hover:text-sky-400 hover:bg-[#131b2e] transition text-left w-full cursor-pointer">
                                 <i class="fa-solid fa-file-arrow-down text-sky-400 text-sm w-4 text-center"></i>
                                 <span>XUẤT FILE .XLSX</span>
                             </button>
@@ -265,14 +265,17 @@
 
                         <!-- DROPDOWN TÌNH TRẠNG (CÒN HÀNG / HẾT HÀNG / TẤT CẢ) -->
                         <div
-                            class="flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-xs md:text-sm font-bold shadow-inner shrink-0">
-                            <span class="text-sky-400 font-black mr-2 whitespace-nowrap">TÌNH TRẠNG</span>
-                            <select id="stock-status-select" onchange="changeStockStatus(this.value)"
-                                class="bg-transparent text-amber-400 font-bold focus:outline-none cursor-pointer border-none p-0 pr-1 text-xs md:text-sm">
-                                <option value="IN_STOCK" class="bg-[#0b0f19] text-amber-400">Còn Hàng</option>
-                                <option value="OUT_OF_STOCK" class="bg-[#0b0f19] text-red-400">Hết Hàng</option>
-                                <option value="ALL" class="bg-[#0b0f19] text-white">Tất Cả</option>
-                            </select>
+                            class="inline-flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-xs md:text-sm font-black shadow-inner shrink-0">
+                            <span class="text-sky-400 font-black mr-2 whitespace-nowrap leading-none select-none flex items-center">TÌNH TRẠNG</span>
+                            <div class="relative inline-flex items-center">
+                                <select id="stock-status-select" onchange="changeStockStatus(this.value)"
+                                    class="bg-transparent text-white font-black focus:outline-none cursor-pointer border-none p-0 pr-4 text-xs md:text-sm leading-none appearance-none m-0">
+                                    <option value="IN_STOCK" class="bg-[#0b0f19] text-white">Còn Hàng</option>
+                                    <option value="OUT_OF_STOCK" class="bg-[#0b0f19] text-red-400">Hết Hàng</option>
+                                    <option value="ALL" class="bg-[#0b0f19] text-sky-400">Tất Cả</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-white pointer-events-none absolute right-0 top-1/2 -translate-y-1/2"></i>
+                            </div>
                         </div>
                     </div>
 
