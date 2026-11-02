@@ -14401,6 +14401,59 @@
       modal.style.display = 'flex';
     }
 
+    function openRepairModalWithPrefill(data) {
+      openRepairModal();
+      if (!data) return;
+      if (data.sourceDeviceIndex !== undefined) {
+        window._pendingSourceDeviceIndex = data.sourceDeviceIndex;
+      }
+      if (document.getElementById('rFormDevice') && data.device) {
+        document.getElementById('rFormDevice').value = data.device;
+      }
+      if (document.getElementById('rFormIssue') && data.issue) {
+        document.getElementById('rFormIssue').value = data.issue;
+      }
+      if (document.getElementById('rFormWarranty') && !document.getElementById('rFormWarranty').value) {
+        document.getElementById('rFormWarranty').value = data.warranty || '0 Bảo Hành';
+      }
+
+      // Thiết lập giá nhập và giá bán hiện mờ (ghost placeholder / default value)
+      // Khi bấm vào ô nhập, giá sẽ biến mất để điền giá mới. Nếu ko ghi gì thì mặc định là giá đó.
+      const setupGhostPriceInput = (inputId, defaultVal) => {
+        const inp = document.getElementById(inputId);
+        if (!inp) return;
+        const formattedDefault = (defaultVal !== undefined && defaultVal !== null && defaultVal !== '') ? (typeof formatNumberDisplay === 'function' ? formatNumberDisplay(defaultVal) : defaultVal) : '';
+        inp.dataset.defaultGhostVal = formattedDefault;
+        inp.value = formattedDefault;
+        inp.style.color = '#94a3b8'; // Hiện mờ (màu xám / mờ)
+        inp.style.opacity = '0.75';
+
+        inp.onfocus = function() {
+          if (this.value === this.dataset.defaultGhostVal) {
+            this.value = '';
+          }
+          this.style.color = '#fff';
+          this.style.opacity = '1';
+        };
+
+        inp.onblur = function() {
+          if (!this.value.trim() && this.dataset.defaultGhostVal) {
+            this.value = this.dataset.defaultGhostVal;
+            this.style.color = '#94a3b8';
+            this.style.opacity = '0.75';
+          } else {
+            this.style.color = '#fff';
+            this.style.opacity = '1';
+          }
+          if (typeof updateRepairFormProfit === 'function') updateRepairFormProfit();
+        };
+      };
+
+      if (data.price !== undefined) setupGhostPriceInput('rFormPrice', data.price);
+      if (data.cost !== undefined) setupGhostPriceInput('rFormCost', data.cost);
+      if (typeof updateRepairFormProfit === 'function') updateRepairFormProfit();
+    }
+
     function editRepairItem(id) {
       openRepairModal(id);
     }
@@ -14411,10 +14464,12 @@
         modal.classList.remove('active');
         modal.style.display = 'none';
       }
+      window._pendingSourceDeviceIndex = undefined;
     }
 
     // Gắn vào window để gọi từ các sự kiện onclick trên HTML
     window.openRepairModal = openRepairModal;
+    window.openRepairModalWithPrefill = openRepairModalWithPrefill;
     window.editRepairItem = editRepairItem;
     window.closeRepairModal = closeRepairModal;
 
@@ -14568,6 +14623,28 @@
           repairFilterDate = new Date(parseInt(dp[0]), parseInt(dp[1]) - 1, parseInt(dp[2]));
           updateRepairDateDisplay();
         }
+      }
+
+      // Giảm số lượng linh kiện đi 1 nếu tạo đơn từ báo giá
+      if (window._pendingSourceDeviceIndex !== undefined && window._pendingSourceDeviceIndex !== null) {
+        try {
+          const idx = window._pendingSourceDeviceIndex;
+          const bgFrame = document.getElementById('baogiaFrame');
+          if (bgFrame && bgFrame.contentWindow && typeof bgFrame.contentWindow.decrementDeviceQty === 'function') {
+            bgFrame.contentWindow.decrementDeviceQty(idx);
+          } else if (bgFrame && bgFrame.contentWindow && Array.isArray(bgFrame.contentWindow.devices)) {
+            const dev = bgFrame.contentWindow.devices[idx];
+            if (dev) {
+              const curQ = parseInt(dev.qty) || 0;
+              dev.qty = Math.max(0, curQ - 1);
+              if (typeof bgFrame.contentWindow.saveAllToCloud === 'function') bgFrame.contentWindow.saveAllToCloud();
+              if (typeof bgFrame.contentWindow.renderTable === 'function') bgFrame.contentWindow.renderTable();
+            }
+          }
+        } catch (err) {
+          console.warn('Lỗi khi giảm số lượng linh kiện báo giá:', err);
+        }
+        window._pendingSourceDeviceIndex = undefined;
       }
 
       closeRepairModal();
