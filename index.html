@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261102_103850">
+  <link rel="stylesheet" href="css/style.css?v=20261102_104524">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -20,7 +20,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261102_103850";
+    var CURRENT_PAGE_VERSION = "20261102_104524";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -4569,7 +4569,7 @@
             <label class="repair-field-label">Khách Hàng <span class="req">*</span></label>
             <div class="repair-input-trio-box">
               <input type="text" id="rFormCustomer" list="rCustomerDatalist" required placeholder="Khách lẻ"
-                value="Khách lẻ">
+                value="Khách lẻ" onblur="suggestAddRepairOptionIfNew('customer', this)">
               <datalist id="rCustomerDatalist">
                 <option value="Khách lẻ">
                 <option value="Anh Tuấn">
@@ -4577,11 +4577,17 @@
               </datalist>
               <div class="repair-trio-btn-set">
                 <button type="button" class="repair-mini-btn add"
-                  onclick="addNewRepairOption('customer', 'rFormCustomer', 'Thêm Khách hàng:')" title="Thêm">+</button>
+                  onclick="addNewRepairOption('customer', 'rFormCustomer', 'Thêm Khách hàng:')" title="Thêm">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
                 <button type="button" class="repair-mini-btn edit"
-                  onclick="editRepairOption('customer', 'rFormCustomer', 'Sửa tên Khách hàng:')" title="Sửa">✏️</button>
+                  onclick="editRepairOption('customer', 'rFormCustomer', 'Sửa tên Khách hàng:')" title="Sửa">
+                  <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
                 <button type="button" class="repair-mini-btn del"
-                  onclick="deleteRepairOption('customer', 'rFormCustomer')" title="Xóa khỏi danh sách">🗑️</button>
+                  onclick="deleteRepairOption('customer', 'rFormCustomer')" title="Xóa khỏi danh sách">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -4589,7 +4595,8 @@
           <div class="repair-field-group">
             <label class="repair-field-label">Tên Máy <span class="req">*</span></label>
             <div class="repair-input-trio-box">
-              <input type="text" id="rFormDevice" list="rDeviceDatalist" required placeholder="Chọn hoặc nhập">
+              <input type="text" id="rFormDevice" list="rDeviceDatalist" required placeholder="Chọn hoặc nhập"
+                onblur="suggestAddRepairOptionIfNew('device', this)">
               <datalist id="rDeviceDatalist">
                 <option value="iPhone 12 PRO MAX">
                 <option value="iPhone 11">
@@ -4598,11 +4605,17 @@
               </datalist>
               <div class="repair-trio-btn-set">
                 <button type="button" class="repair-mini-btn add"
-                  onclick="addNewRepairOption('device', 'rFormDevice', 'Thêm Tên máy:')" title="Thêm">+</button>
+                  onclick="addNewRepairOption('device', 'rFormDevice', 'Thêm Tên máy:')" title="Thêm">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
                 <button type="button" class="repair-mini-btn edit"
-                  onclick="editRepairOption('device', 'rFormDevice', 'Sửa Tên máy:')" title="Sửa">✏️</button>
+                  onclick="editRepairOption('device', 'rFormDevice', 'Sửa Tên máy:')" title="Sửa">
+                  <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
                 <button type="button" class="repair-mini-btn del" onclick="deleteRepairOption('device', 'rFormDevice')"
-                  title="Xóa khỏi danh sách">🗑️</button>
+                  title="Xóa khỏi danh sách">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -4613,7 +4626,8 @@
           <div class="repair-field-group">
             <label class="repair-field-label">Đã Sửa <span class="req">*</span></label>
             <div class="repair-input-trio-box">
-              <input type="text" id="rFormIssue" list="rIssueDatalist" required placeholder="Chọn hoặc nhập">
+              <input type="text" id="rFormIssue" list="rIssueDatalist" required placeholder="Chọn hoặc nhập"
+                onblur="suggestAddRepairOptionIfNew('issue', this)">
               <datalist id="rIssueDatalist">
                 <option value="Thay Màn Hình">
                 <option value="Thay Pin">
@@ -4623,11 +4637,17 @@
               </datalist>
               <div class="repair-trio-btn-set">
                 <button type="button" class="repair-mini-btn add"
-                  onclick="addNewRepairOption('issue', 'rFormIssue', 'Thêm Tình trạng:')" title="Thêm">+</button>
+                  onclick="addNewRepairOption('issue', 'rFormIssue', 'Thêm Tình trạng:')" title="Thêm">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
                 <button type="button" class="repair-mini-btn edit"
-                  onclick="editRepairOption('issue', 'rFormIssue', 'Sửa Tình trạng:')" title="Sửa">✏️</button>
+                  onclick="editRepairOption('issue', 'rFormIssue', 'Sửa Tình trạng:')" title="Sửa">
+                  <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
                 <button type="button" class="repair-mini-btn del" onclick="deleteRepairOption('issue', 'rFormIssue')"
-                  title="Xóa khỏi danh sách">🗑️</button>
+                  title="Xóa khỏi danh sách">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -4636,21 +4656,28 @@
             <label class="repair-field-label">Bảo Hành <span class="req">*</span></label>
             <div class="repair-input-trio-box">
               <input type="text" id="rFormWarranty" list="rWarrantyDatalist" required placeholder="Chọn hoặc nhập"
-                value="">
+                value="" onblur="suggestAddRepairOptionIfNew('warranty', this)">
               <datalist id="rWarrantyDatalist">
                 <option value="0 Bảo Hành">
                 <option value="1 Tháng">
                 <option value="3 Tháng">
                 <option value="6 Tháng">
                 <option value="12 Tháng">
+                <option value="24 Tháng">
               </datalist>
               <div class="repair-trio-btn-set">
                 <button type="button" class="repair-mini-btn add"
-                  onclick="addNewRepairOption('warranty', 'rFormWarranty', 'Thêm Bảo hành:')" title="Thêm">+</button>
+                  onclick="addNewRepairOption('warranty', 'rFormWarranty', 'Thêm Bảo hành:')" title="Thêm">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
                 <button type="button" class="repair-mini-btn edit"
-                  onclick="editRepairOption('warranty', 'rFormWarranty', 'Sửa Bảo hành:')" title="Sửa">✏️</button>
+                  onclick="editRepairOption('warranty', 'rFormWarranty', 'Sửa Bảo hành:')" title="Sửa">
+                  <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
                 <button type="button" class="repair-mini-btn del"
-                  onclick="deleteRepairOption('warranty', 'rFormWarranty')" title="Xóa khỏi danh sách">🗑️</button>
+                  onclick="deleteRepairOption('warranty', 'rFormWarranty')" title="Xóa khỏi danh sách">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -4665,11 +4692,17 @@
                 oninput="formatCurrencyInput(this); updateRepairFormProfit()">
               <div class="repair-trio-btn-set">
                 <button type="button" class="repair-mini-btn add"
-                  onclick="addNewRepairOption('price', 'rFormPrice', 'Nhập báo giá:')" title="Thêm">+</button>
+                  onclick="addNewRepairOption('price', 'rFormPrice', 'Nhập báo giá:')" title="Thêm">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
                 <button type="button" class="repair-mini-btn edit"
-                  onclick="editRepairOption('price', 'rFormPrice', 'Sửa báo giá:')" title="Sửa">✏️</button>
+                  onclick="editRepairOption('price', 'rFormPrice', 'Sửa báo giá:')" title="Sửa">
+                  <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
                 <button type="button" class="repair-mini-btn del" onclick="clearRepairInput('rFormPrice')"
-                  title="Xóa">🗑️</button>
+                  title="Xóa">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -4681,11 +4714,17 @@
                 oninput="formatCurrencyInput(this); updateRepairFormProfit()">
               <div class="repair-trio-btn-set">
                 <button type="button" class="repair-mini-btn add"
-                  onclick="addNewRepairOption('cost', 'rFormCost', 'Nhập vốn:')" title="Thêm">+</button>
+                  onclick="addNewRepairOption('cost', 'rFormCost', 'Nhập vốn:')" title="Thêm">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
                 <button type="button" class="repair-mini-btn edit"
-                  onclick="editRepairOption('cost', 'rFormCost', 'Sửa vốn:')" title="Sửa">✏️</button>
+                  onclick="editRepairOption('cost', 'rFormCost', 'Sửa vốn:')" title="Sửa">
+                  <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
                 <button type="button" class="repair-mini-btn del" onclick="clearRepairInput('rFormCost')"
-                  title="Xóa">🗑️</button>
+                  title="Xóa">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -5365,10 +5404,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261102_103850"></script>
+  <script src="js/seed_data.js?v=20261102_104524"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261102_103850"></script>
+  <script src="js/main.js?v=20261102_104524"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

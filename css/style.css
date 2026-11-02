@@ -5011,31 +5011,53 @@
     .repair-trio-btn-set {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
+      flex-shrink: 0;
     }
 
     .repair-mini-btn {
-      width: 24px;
-      height: 24px;
-      border-radius: 5px;
-      border: none;
-      background: transparent;
-      color: #94a3b8;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.85rem;
-      transition: all 0.15s;
+      transition: all 0.15s ease;
+      padding: 0;
     }
 
     .repair-mini-btn:hover {
-      transform: scale(1.1);
+      transform: scale(1.08);
+      filter: brightness(1.2);
     }
 
-    .repair-mini-btn.add { color: #10b981; }
-    .repair-mini-btn.edit { color: #f59e0b; }
-    .repair-mini-btn.del { color: #f87171; }
+    .repair-mini-btn.add {
+      background: #064e3b;
+      color: #10b981;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .repair-mini-btn.edit {
+      background: #451a03;
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .repair-mini-btn.del {
+      background: #450a0a;
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .repair-mini-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+    }
 
     .repair-time-row {
       display: flex;

@@ -14009,15 +14009,14 @@
       const currentVal = input ? input.value.trim() : '';
       let clean = '';
 
-      if (currentVal !== "") {
-        // TỰ ĐỘNG LẤY GIÁ TRỊ ĐÃ GÕ TRONG Ô, KHÔNG BẮT GÕ LẠI
+      if (currentVal !== '') {
         clean = currentVal;
       } else {
         const val = prompt(promptText || 'Thêm mục mới:', '');
         if (val && val.trim()) clean = val.trim();
       }
 
-      if (clean !== "") {
+      if (clean !== '') {
         if (input) input.value = clean;
         if (repairDropdownConfigs[type]) {
           let items = getRepairDropdownItems(type);
@@ -14025,9 +14024,9 @@
           if (!exists) {
             items.unshift(clean);
             saveRepairDropdownItems(type, items);
-            alert(`✓ Đã thêm "${clean}" vào danh mục thành công!`);
+            alert(`✓ Đã thêm "${clean}" vào danh sách gợi ý thành công!`);
           } else {
-            alert(`Mục "${clean}" đã có sẵn trong danh mục!`);
+            alert(`Mục "${clean}" đã có sẵn trong danh sách!`);
           }
         }
       }
@@ -14044,13 +14043,14 @@
 
         if (repairDropdownConfigs[type]) {
           let items = getRepairDropdownItems(type);
-          const idx = items.indexOf(currentVal);
+          const idx = items.findIndex(x => x.toLowerCase().trim() === currentVal.toLowerCase());
           if (idx !== -1) {
             items[idx] = newVal;
-          } else if (!items.includes(newVal)) {
+          } else if (!items.some(x => x.toLowerCase().trim() === newVal.toLowerCase())) {
             items.unshift(newVal);
           }
           saveRepairDropdownItems(type, items);
+          alert(`✓ Đã cập nhật thành "${newVal}"!`);
         }
       }
     }
@@ -14099,8 +14099,27 @@
     function clearRepairInput(inputId) {
       const input = document.getElementById(inputId);
       if (input) input.value = '';
-      updateRepairFormProfit();
+      if (typeof updateRepairFormProfit === 'function') updateRepairFormProfit();
     }
+
+    // Tự động kiểm tra và gợi ý thêm vào danh mục nếu người dùng gõ từ mới
+    function suggestAddRepairOptionIfNew(type, input) {
+      if (!input || !repairDropdownConfigs[type]) return;
+      const val = input.value.trim();
+      if (!val) return;
+      const items = getRepairDropdownItems(type);
+      const exists = items.some(x => x.toLowerCase().trim() === val.toLowerCase());
+      if (!exists) {
+        items.unshift(val);
+        saveRepairDropdownItems(type, items);
+      }
+    }
+
+    window.addNewRepairOption = addNewRepairOption;
+    window.editRepairOption = editRepairOption;
+    window.deleteRepairOption = deleteRepairOption;
+    window.clearRepairInput = clearRepairInput;
+    window.suggestAddRepairOptionIfNew = suggestAddRepairOptionIfNew;
 
     function updateRepairFormProfit() {
       const pInp = document.getElementById('rFormPrice');
