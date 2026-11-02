@@ -4084,6 +4084,25 @@
     }
 
     /* MODAL THÊM LINH KIỆN MỚI (CHUẨN 100% THEO ẢNH MẪU) */
+    #partsModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 99999 !important;
+      padding: 1rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #partsModal.active {
+      display: flex !important;
+    }
+
     .modal-parts-box {
       background: #090e18;
       border: 1px solid #1e293b;

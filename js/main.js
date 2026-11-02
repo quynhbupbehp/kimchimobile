@@ -12694,10 +12694,13 @@
       } else {
         document.getElementById('partsModalTitle').innerText = 'THÊM LINH KIỆN MỚI';
         document.getElementById('partsEditId').value = '';
-        document.getElementById('partsFormBrand').value = (partsCurrentBrand && partsCurrentBrand !== 'ALL') ? partsCurrentBrand : 'SAMSUNG';
+        const currentBrandVal = (typeof partsCurrentBrand !== 'undefined' && partsCurrentBrand && partsCurrentBrand !== 'ALL') ? partsCurrentBrand : 'IPHONE';
+        const currentTypeVal = (typeof partsCurrentType !== 'undefined' && partsCurrentType && partsCurrentType !== 'ALL') ? partsCurrentType : 'MÀN HÌNH';
+        const currentStyleVal = (typeof partsCurrentStyle !== 'undefined' && partsCurrentStyle && partsCurrentStyle !== 'TẤT CẢ') ? partsCurrentStyle : 'ZIN';
+        document.getElementById('partsFormBrand').value = currentBrandVal;
         document.getElementById('partsFormDevice').value = '';
-        document.getElementById('partsFormType').value = (partsCurrentType && partsCurrentType !== 'ALL') ? partsCurrentType : 'MÀN HÌNH';
-        document.getElementById('partsFormStyle').value = (partsCurrentStyle && partsCurrentStyle !== 'TẤT CẢ') ? partsCurrentStyle : '';
+        document.getElementById('partsFormType').value = currentTypeVal;
+        document.getElementById('partsFormStyle').value = currentStyleVal;
         document.getElementById('partsFormPriceSell').value = '';
         document.getElementById('partsFormPriceCost').value = '';
         document.getElementById('partsFormQty').value = '1';
@@ -12706,11 +12709,15 @@
       }
 
       modal.classList.add('active');
+      modal.style.display = 'flex';
     }
 
     function closePartsModal() {
       const modal = document.getElementById('partsModal');
-      if (modal) modal.classList.remove('active');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+      }
     }
 
     function adjustPartsModalQty(delta) {
@@ -12877,6 +12884,28 @@
         dlStyle.innerHTML = styles.map(s => `<option value="${escapeHtml(s)}"></option>`).join('');
       }
     }
+
+    // Gắn vào window để gọi từ onclick trong HTML
+    window.openPartsModal = openPartsModal;
+    window.closePartsModal = closePartsModal;
+    window.adjustPartsModalQty = adjustPartsModalQty;
+    window.calcPartsModalProfit = calcPartsModalProfit;
+    window.savePartsItem = savePartsItem;
+    window.clonePartsItem = clonePartsItem;
+    window.deletePartsItem = deletePartsItem;
+    window.selectPartsBrandTab = selectPartsBrandTab;
+    window.addNewBrandTab = addNewBrandTab;
+    window.togglePartsCostVisibility = togglePartsCostVisibility;
+    window.handlePartsSearchFilter = handlePartsSearchFilter;
+    window.toggleQuoteExcelExportMenu = toggleQuoteExcelExportMenu;
+    window.triggerQuoteExcelImport = triggerQuoteExcelImport;
+    window.handleQuoteExcelImport = handleQuoteExcelImport;
+    window.exportPartsExcel = exportPartsExcel;
+    window.clearAllPartsQuotes = clearAllPartsQuotes;
+    window.addNewPartsOption = addNewPartsOption;
+    window.editPartsOption = editPartsOption;
+    window.deletePartsOption = deletePartsOption;
+    window.renderPartsTable = renderPartsTable;
 
     /* ========================================================== */
     /* LOGIC SUB-TABS SỬA CHỮA & MÌNH NỢ (CHUẨN 100% 4 ẢNH)      */
