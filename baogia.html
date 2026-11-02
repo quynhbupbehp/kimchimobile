@@ -16,6 +16,14 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+    <!-- SHEETJS (XLSX) -->
+    <script src="js/xlsx.full.min.js"></script>
+    <script>
+        if (typeof XLSX === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');
+        }
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&display=swap');
 
@@ -158,11 +166,35 @@
                         title="Ẩn / Hiện Giá Nhập & Lãi">
                         <i class="fa-solid fa-eye text-sm" id="privacy-icon"></i>
                     </button>
-                    <button onclick="exportToExcel()"
-                        class="w-9 h-9 rounded-xl bg-[#0b0f19] hover:bg-[#131b2e] border border-[#1e293b] text-emerald-400 hover:text-emerald-300 transition flex items-center justify-center shadow-sm"
-                        title="Xuất Danh Sách">
-                        <i class="fa-solid fa-file-lines text-sm"></i>
-                    </button>
+                    <div class="relative bg-excel-menu-wrap">
+                        <button id="btn-excel-menu" onclick="toggleExcelMenu(event)"
+                            class="w-9 h-9 rounded-xl bg-[#0b0f19] hover:bg-[#131b2e] border border-[#1e293b] text-emerald-400 hover:text-emerald-300 transition flex items-center justify-center shadow-sm cursor-pointer"
+                            title="Quản Lý Excel (Nhập, Xuất, Xóa)">
+                            <i class="fa-solid fa-file-excel text-sm"></i>
+                        </button>
+
+                        <!-- DROPDOWN MENU NHẬP, XUẤT, XÓA -->
+                        <div id="excel-dropdown-menu"
+                            class="hidden absolute right-0 mt-2 w-48 bg-[#0b0f19] border border-[#1e293b] rounded-xl shadow-2xl z-50 py-1.5 flex flex-col gap-1 text-xs font-black backdrop-blur-md">
+                            <button type="button" onclick="triggerImportExcel()"
+                                class="flex items-center gap-2.5 px-3 py-2 text-gray-200 hover:text-emerald-400 hover:bg-[#131b2e] transition text-left w-full cursor-pointer">
+                                <i class="fa-solid fa-file-import text-emerald-400 text-sm w-4 text-center"></i>
+                                <span>NHẬP DỮ LIỆU</span>
+                            </button>
+                            <button type="button" onclick="exportToExcel()"
+                                class="flex items-center gap-2.5 px-3 py-2 text-gray-200 hover:text-sky-400 hover:bg-[#131b2e] transition text-left w-full cursor-pointer">
+                                <i class="fa-solid fa-file-arrow-down text-sky-400 text-sm w-4 text-center"></i>
+                                <span>XUẤT FILE .XLSX</span>
+                            </button>
+                            <div class="h-px bg-[#1e293b] my-0.5"></div>
+                            <button type="button" onclick="clearAllDevicesData()"
+                                class="flex items-center gap-2.5 px-3 py-2 text-red-500 hover:text-red-400 hover:bg-red-950/40 transition text-left w-full cursor-pointer">
+                                <i class="fa-solid fa-trash-can text-red-500 text-sm w-4 text-center"></i>
+                                <span>XÓA TẤT CẢ DỮ LIỆU</span>
+                            </button>
+                        </div>
+                        <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="handleExcelFileImport(event)">
+                    </div>
                     <div id="cloud-status" class="hidden"></div>
                     <div
                         class="flex items-center bg-[#0b0f19] border border-[#1e293b] px-3.5 py-1.5 rounded-xl text-sm font-black shadow-sm">
@@ -2252,9 +2284,190 @@
             }
         }
 
+        // ==================== QUẢN LÝ EXCEL (NHẬP, XUẤT .XLSX, XÓA DỮ LIỆU) ====================
+        function toggleExcelMenu(e) {
+            if (e) e.stopPropagation();
+            const dd = document.getElementById('excel-dropdown-menu');
+            if (dd) {
+                dd.classList.toggle('hidden');
+            }
+        }
+
+        document.addEventListener('click', function (e) {
+            const dd = document.getElementById('excel-dropdown-menu');
+            if (dd && !e.target.closest('.bg-excel-menu-wrap')) {
+                dd.classList.add('hidden');
+            }
+        });
+
+        function triggerImportExcel() {
+            const dd = document.getElementById('excel-dropdown-menu');
+            if (dd) dd.classList.add('hidden');
+            const fileInput = document.getElementById('excel-file-input');
+            if (fileInput) {
+                fileInput.value = '';
+                fileInput.click();
+            }
+        }
+
+        function handleExcelFileImport(e) {
+            const file = e.target.files ? e.target.files[0] : null;
+            if (!file) return;
+
+            if (typeof XLSX === 'undefined') {
+                alert('Thư viện Excel đang tải, vui lòng thử lại sau vài giây!');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function (evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    if (!firstSheetName) {
+                        alert('File Excel không có trang tính hợp lệ!');
+                        return;
+                    }
+
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
+                    if (!rows || rows.length === 0) {
+                        alert('File Excel trống hoặc không có dòng dữ liệu nào!');
+                        return;
+                    }
+
+                    let addedCount = 0;
+                    rows.forEach(r => {
+                        const brand = (r['HÃNG'] || r['Hãng'] || r['brand'] || r['BRAND'] || 'IPHONE').toString().trim().toUpperCase();
+                        const name = (r['TÊN MÁY'] || r['Tên máy'] || r['TEN MAY'] || r['name'] || r['NAME'] || r['Model'] || r['MODEL'] || '').toString().trim().toUpperCase();
+                        let part = (r['LINH KIỆN'] || r['Linh kiện'] || r['LINH KIEN'] || r['part'] || r['PART'] || 'MÀN HÌNH').toString().trim().toUpperCase();
+                        if (part === 'BO SẠC') part = 'CÁP SẠC';
+                        if (part === 'MÀN') part = 'MÀN HÌNH';
+
+                        const type = (r['KIỂU'] || r['Kiểu'] || r['KIEU'] || r['type'] || r['TYPE'] || 'ZIN').toString().trim().toUpperCase();
+                        const priceRaw = (r['GIÁ BÁN'] || r['Giá bán'] || r['GIA BAN'] || r['GIÁ THAY'] || r['Giá thay'] || r['price'] || r['PRICE'] || '0').toString().trim();
+                        const costRaw = (r['GIÁ NHẬP'] || r['Giá nhập'] || r['GIA NHAP'] || r['GIÁ VỐN'] || r['Giá vốn'] || r['cost'] || r['COST'] || '0').toString().trim();
+                        const qtyVal = parseInt(r['SỐ LƯỢNG'] || r['Số lượng'] || r['SO LUONG'] || r['SL'] || r['qty'] || r['QTY'] || 1, 10);
+                        const qty = isNaN(qtyVal) ? 1 : qtyVal;
+                        const color = (r['MÀU SẮC'] || r['Màu sắc'] || r['MAU SAC'] || r['MÀU'] || r['color'] || r['COLOR'] || '').toString().trim().toUpperCase();
+
+                        if (name) {
+                            if (!brands.includes(brand)) brands.push(brand);
+                            if (!categories.includes(part)) categories.push(part);
+                            if (type) {
+                                if (!types.includes(type)) types.push(type);
+                                if (!brandTypes[brand]) brandTypes[brand] = getTypesForBrand(brand);
+                                if (!brandTypes[brand].includes(type)) brandTypes[brand].push(type);
+                            }
+                            if (!names.includes(name)) names.push(name);
+
+                            devices.push({
+                                brand,
+                                name,
+                                part,
+                                type,
+                                price: formatMoney(priceRaw),
+                                cost: formatMoney(costRaw),
+                                qty,
+                                color
+                            });
+                            addedCount++;
+                        }
+                    });
+
+                    if (addedCount > 0) {
+                        await saveAllToCloud();
+                        initTabs();
+                        renderTable();
+                        alert(`✓ NHẬP EXCEL THÀNH CÔNG: Đã thêm ${addedCount} linh kiện vào danh sách!`);
+                    } else {
+                        alert('Không tìm thấy dòng dữ liệu linh kiện hợp lệ trong file Excel!');
+                    }
+                } catch (err) {
+                    console.error('Lỗi khi đọc file Excel:', err);
+                    alert('LỖI ĐỌC FILE EXCEL: ' + (err.message || 'Vui lòng kiểm tra định dạng file!'));
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
         function exportToExcel() {
-            // Chức năng xuất danh sách hoặc in
-            window.print();
+            const dd = document.getElementById('excel-dropdown-menu');
+            if (dd) dd.classList.add('hidden');
+
+            if (typeof XLSX === 'undefined') {
+                alert('Thư viện Excel đang tải, vui lòng thử lại sau vài giây!');
+                return;
+            }
+
+            if (!devices || devices.length === 0) {
+                alert('Danh sách báo giá linh kiện hiện đang trống!');
+                return;
+            }
+
+            try {
+                // Chuẩn bị dữ liệu xuất Excel đẹp, chuyên nghiệp
+                const exportData = devices.map((d, index) => {
+                    const priceNum = parseMoney(d.price);
+                    const costNum = parseMoney(d.cost);
+                    const profitNum = priceNum - costNum;
+
+                    return {
+                        'STT': index + 1,
+                        'HÃNG': d.brand || '',
+                        'TÊN MÁY': d.name || '',
+                        'LINH KIỆN': d.part || '',
+                        'KIỂU': d.type || '',
+                        'MÀU SẮC': d.color || '',
+                        'SỐ LƯỢNG': d.qty !== undefined ? d.qty : 1,
+                        'GIÁ BÁN (VNĐ)': formatMoney(d.price),
+                        'GIÁ NHẬP (VNĐ)': formatMoney(d.cost),
+                        'LÃI (VNĐ)': formatMoney(profitNum)
+                    };
+                });
+
+                const ws = XLSX.utils.json_to_sheet(exportData);
+
+                // Căn chỉnh độ rộng các cột
+                ws['!cols'] = [
+                    { wch: 6 },  // STT
+                    { wch: 16 }, // HÃNG
+                    { wch: 25 }, // TÊN MÁY
+                    { wch: 18 }, // LINH KIỆN
+                    { wch: 15 }, // KIỂU
+                    { wch: 14 }, // MÀU SẮC
+                    { wch: 10 }, // SỐ LƯỢNG
+                    { wch: 16 }, // GIÁ BÁN
+                    { wch: 16 }, // GIÁ NHẬP
+                    { wch: 16 }  // LÃI
+                ];
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Bao_Gia_Linh_Kien");
+
+                // Tạo tên file kèm ngày giờ hiện tại
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const fileName = `Bao_Gia_Linh_Kien_${dateStr}.xlsx`;
+
+                XLSX.writeFile(wb, fileName);
+            } catch (err) {
+                console.error('Lỗi khi xuất file Excel:', err);
+                alert('Lỗi khi xuất file Excel: ' + err.message);
+            }
+        }
+
+        async function clearAllDevicesData() {
+            const dd = document.getElementById('excel-dropdown-menu');
+            if (dd) dd.classList.add('hidden');
+
+            const isConfirmed = confirm('⚠️ CẢNH BÁO QUAN TRỌNG:\n\nBạn có chắc chắn muốn XÓA TOÀN BỘ danh sách báo giá linh kiện không?\n\n(Bấm OK hoặc Yes để xác nhận xóa, bấm Cancel để hủy)');
+            if (isConfirmed) {
+                devices = [];
+                await saveAllToCloud();
+                renderTable();
+                alert('✓ ĐÃ XÓA TOÀN BỘ DANH SÁCH BÁO GIÁ LINH KIỆN THÀNH CÔNG!');
+            }
         }
 
         window.onload = function () {
