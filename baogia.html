@@ -1597,7 +1597,7 @@
                             <th class="py-3.5 px-2 w-[10%] whitespace-nowrap truncate font-black text-white text-center">KIỂU</th>
                             <th class="py-3.5 px-2 w-[10%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
                             <th class="py-3.5 px-1 w-[2%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
-                            <th class="py-3.5 px-2 w-[19%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
+                            <th class="py-3.5 px-2 w-[16%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
                         `;
                     } else {
                         // Ngoại trừ iPhone và Tất cả, ẩn cột Kiểu
@@ -1606,7 +1606,7 @@
                             <th class="py-3.5 px-2 w-[15%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
                             <th class="py-3.5 px-2 w-[10%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
                             <th class="py-3.5 px-1 w-[2%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
-                            <th class="py-3.5 px-2 w-[19%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
+                            <th class="py-3.5 px-2 w-[16%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
                         `;
                     }
                 } else {
@@ -1617,9 +1617,9 @@
                             <th class="py-3.5 px-1.5 w-[8%] whitespace-nowrap truncate font-black text-white text-center">KIỂU</th>
                             <th class="py-3.5 px-2 w-[9%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
                             <th class="py-3.5 px-1 w-[2%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
-                            <th class="py-3.5 px-2 w-[19%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
+                            <th class="py-3.5 px-2 w-[16%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
                             <th class="py-3.5 px-1.5 w-[7%] whitespace-nowrap truncate font-black text-white text-center">NHẬP</th>
-                            <th class="py-3.5 px-1.5 w-[4%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
+                            <th class="py-3.5 px-1.5 w-[7%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
                         `;
                     } else {
                         // Ngoại trừ iPhone và Tất cả, ẩn cột Kiểu
@@ -1628,9 +1628,9 @@
                             <th class="py-3.5 px-2 w-[13%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
                             <th class="py-3.5 px-2 w-[9%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
                             <th class="py-3.5 px-1 w-[2%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
-                            <th class="py-3.5 px-2 w-[19%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
+                            <th class="py-3.5 px-2 w-[16%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
                             <th class="py-3.5 px-1.5 w-[6%] whitespace-nowrap truncate font-black text-white text-center">NHẬP</th>
-                            <th class="py-3.5 px-1.5 w-[3%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
+                            <th class="py-3.5 px-1.5 w-[6%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
                         `;
                     }
                 }
@@ -1681,20 +1681,20 @@
 
                         const zeroQtyClass = (qtyVal === 0 ? 'yellow-pulse-row' : 'row-hover');
 
-                        // 4 nút thao tác theo đúng ảnh mẫu 1 & 3:
+                        // 4 nút thao tác (giảm kích cỡ ~3%):
                         const actionButtonsHtml = `
                             <div class="flex items-center justify-center gap-1.5">
-                                <button onclick="addToCartRepair(${realIndex})" class="w-8 h-8 bg-[#f59e0b] hover:bg-amber-600 text-white rounded-lg transition flex items-center justify-center shadow-md active:scale-95 shrink-0" title="Chọn / Đặt hàng">
-                                    <i class="fa-solid fa-cart-shopping text-xs"></i>
+                                <button onclick="addToCartRepair(${realIndex})" class="w-[30px] h-[30px] bg-[#f59e0b] hover:bg-amber-600 text-white rounded-lg transition flex items-center justify-center shadow-md active:scale-95 shrink-0" title="Chọn / Đặt hàng">
+                                    <i class="fa-solid fa-cart-shopping text-[11px]"></i>
                                 </button>
-                                <button onclick="editDevice(${realIndex})" class="w-8 h-8 bg-[#2563eb] hover:bg-blue-600 text-white rounded-lg transition flex items-center justify-center shadow-md active:scale-95 shrink-0" title="Sửa linh kiện">
-                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                <button onclick="editDevice(${realIndex})" class="w-[30px] h-[30px] bg-[#2563eb] hover:bg-blue-600 text-white rounded-lg transition flex items-center justify-center shadow-md active:scale-95 shrink-0" title="Sửa linh kiện">
+                                    <i class="fa-solid fa-pen-to-square text-[11px]"></i>
                                 </button>
-                                <button onclick="duplicateDevice(${realIndex})" class="w-8 h-8 bg-[#10b981] hover:bg-emerald-600 text-white rounded-lg transition flex items-center justify-center shadow-md active:scale-95 shrink-0" title="Nhân bản (Tạo bản sao)">
-                                    <i class="fa-regular fa-copy text-xs"></i>
+                                <button onclick="duplicateDevice(${realIndex})" class="w-[30px] h-[30px] bg-[#10b981] hover:bg-emerald-600 text-white rounded-lg transition flex items-center justify-center shadow-md active:scale-95 shrink-0" title="Nhân bản (Tạo bản sao)">
+                                    <i class="fa-regular fa-copy text-[11px]"></i>
                                 </button>
-                                <button onclick="deleteDevice(${realIndex})" class="w-8 h-8 bg-[#ef4444] hover:bg-red-600 text-white rounded-lg transition flex items-center justify-center shadow-md active:scale-95 shrink-0" title="Xóa linh kiện">
-                                    <i class="fa-regular fa-trash-can text-xs"></i>
+                                <button onclick="deleteDevice(${realIndex})" class="w-[30px] h-[30px] bg-[#ef4444] hover:bg-red-600 text-white rounded-lg transition flex items-center justify-center shadow-md active:scale-95 shrink-0" title="Xóa linh kiện">
+                                    <i class="fa-regular fa-trash-can text-[11px]"></i>
                                 </button>
                             </div>
                         `;
@@ -1708,7 +1708,7 @@
                                         <td class="py-3 px-2 text-[#38bdf8] font-extrabold text-[13px] md:text-[14px] w-[10%] whitespace-nowrap truncate text-center">${d.type || 'ZIN'}</td>
                                         <td class="py-3 px-2 font-black text-lg md:text-xl text-[#f59e0b] w-[10%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
                                         <td class="py-3 px-1 font-black text-base text-white w-[2%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
-                                        <td class="py-3 px-2 w-[19%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
+                                        <td class="py-3 px-2 w-[16%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
                                     </tr>
                                 `;
                             } else {
@@ -1719,7 +1719,7 @@
                                         <td class="py-3 px-2 font-extrabold text-[#10b981] text-[13px] md:text-[14px] w-[15%] whitespace-nowrap truncate text-center">${displayPart}</td>
                                         <td class="py-3 px-2 font-black text-lg md:text-xl text-[#f59e0b] w-[10%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
                                         <td class="py-3 px-1 font-black text-base text-white w-[2%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
-                                        <td class="py-3 px-2 w-[19%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
+                                        <td class="py-3 px-2 w-[16%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
                                     </tr>
                                 `;
                             }
@@ -1732,9 +1732,9 @@
                                         <td class="py-3 px-1.5 text-[#38bdf8] font-extrabold text-[13px] md:text-[14px] w-[8%] whitespace-nowrap truncate text-center">${d.type || 'ZIN'}</td>
                                         <td class="py-3 px-2 font-black text-lg md:text-xl text-[#f59e0b] w-[9%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
                                         <td class="py-3 px-1 font-black text-base text-white w-[2%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
-                                        <td class="py-3 px-2 w-[19%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
+                                        <td class="py-3 px-2 w-[16%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
                                         <td class="py-3 px-1.5 font-extrabold text-sm text-[#cbd5e1] w-[7%] whitespace-nowrap truncate text-center">${costFormatted}</td>
-                                        <td class="py-3 px-1.5 font-extrabold text-sm text-[#10b981] w-[4%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
+                                        <td class="py-3 px-1.5 font-extrabold text-sm text-[#10b981] w-[7%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
                                     </tr>
                                 `;
                             } else {
@@ -1745,9 +1745,9 @@
                                         <td class="py-3 px-2 font-extrabold text-[#10b981] text-[13px] md:text-[14px] w-[13%] whitespace-nowrap truncate text-center">${displayPart}</td>
                                         <td class="py-3 px-2 font-black text-lg md:text-xl text-[#f59e0b] w-[9%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
                                         <td class="py-3 px-1 font-black text-base text-white w-[2%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
-                                        <td class="py-3 px-2 w-[19%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
+                                        <td class="py-3 px-2 w-[16%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
                                         <td class="py-3 px-1.5 font-extrabold text-sm text-[#cbd5e1] w-[6%] whitespace-nowrap truncate text-center">${costFormatted}</td>
-                                        <td class="py-3 px-1.5 font-extrabold text-sm text-[#10b981] w-[3%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
+                                        <td class="py-3 px-1.5 font-extrabold text-sm text-[#10b981] w-[6%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
                                     </tr>
                                 `;
                             }
