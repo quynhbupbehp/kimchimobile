@@ -12436,7 +12436,7 @@
         }
       });
 
-      let html = `<button type="button" class="bg-subfilter-tab ${!partsCurrentType ? 'active' : ''}" onclick="selectPartsTypeTab('', this)">TẤT CẢ LK</button>`;
+      let html = `<button type="button" class="bg-subfilter-tab ${!partsCurrentType ? 'active' : ''}" onclick="selectPartsTypeTab('', this)">LINH KIỆN</button>`;
       allTypes.forEach(t => {
         const isActive = (partsCurrentType && partsCurrentType.toUpperCase() === t.toUpperCase());
         html += `<button type="button" class="bg-subfilter-tab ${isActive ? 'active' : ''}" onclick="selectPartsTypeTab('${escapeHtml(t)}', this)">${escapeHtml(t.toUpperCase())}</button>`;
@@ -12474,7 +12474,7 @@
         }
       });
 
-      let html = `<button type="button" class="bg-subfilter-tab style-tab ${!partsCurrentStyle ? 'active' : ''}" onclick="selectPartsStyleTab('', this)">TẤT CẢ KIỂU</button>`;
+      let html = `<button type="button" class="bg-subfilter-tab style-tab ${!partsCurrentStyle ? 'active' : ''}" onclick="selectPartsStyleTab('', this)">KIỂU</button>`;
       allStyles.forEach(s => {
         const isActive = (partsCurrentStyle && partsCurrentStyle.toUpperCase() === s.toUpperCase());
         html += `<button type="button" class="bg-subfilter-tab style-tab ${isActive ? 'active' : ''}" onclick="selectPartsStyleTab('${escapeHtml(s)}', this)">${escapeHtml(s.toUpperCase())}</button>`;
@@ -12601,7 +12601,14 @@
     }
 
     let partsCurrentPriceFilter = 'ALL';
+    let partsCurrentStatusFilter = 'CON_HANG';
     let currentPartsSuggestionIndex = -1;
+
+    function handlePartsStatusFilterChange(select) {
+      partsCurrentStatusFilter = select.value || 'CON_HANG';
+      renderPartsTable();
+    }
+    window.handlePartsStatusFilterChange = handlePartsStatusFilterChange;
 
     function handlePartsPriceFilterChange(select) {
       partsCurrentPriceFilter = select.value || 'ALL';
@@ -12822,6 +12829,14 @@
           if (!itemStyleUpper.includes(curStyleUpper) && !curStyleUpper.includes(itemStyleUpper)) return false;
         }
 
+        // LỌC THEO TÌNH TRẠNG (MẶC ĐỊNH: CÒN HÀNG, HẾT HÀNG KHI SL = 0)
+        const itemQty = parseInt(item.qty, 10) || 0;
+        if (partsCurrentStatusFilter === 'CON_HANG') {
+          if (itemQty <= 0) return false;
+        } else if (partsCurrentStatusFilter === 'HET_HANG') {
+          if (itemQty > 0) return false;
+        }
+
         // LỌC THEO KHOẢNG GIÁ BÁN (Y CHANG TAB BÁN MÁY)
         if (partsCurrentPriceFilter && partsCurrentPriceFilter !== 'ALL') {
           let pVal = 0;
@@ -12848,6 +12863,19 @@
         }
 
         return true;
+      });
+
+      // SẮP XẾP THEO LINH KIỆN (A-Z)
+      filtered.sort((a, b) => {
+        const typeA = (a.type || '').trim().toLowerCase();
+        const typeB = (b.type || '').trim().toLowerCase();
+        if (typeA !== typeB) {
+          return typeA.localeCompare(typeB, 'vi');
+        }
+        // Nếu cùng linh kiện, sắp xếp tiếp theo Tên Máy
+        const devA = (a.device || '').trim().toLowerCase();
+        const devB = (b.device || '').trim().toLowerCase();
+        return devA.localeCompare(devB, 'vi');
       });
 
       // Tính tổng vốn: sum(Giá Nhập * SL)
@@ -13202,6 +13230,7 @@
     window.selectPartsSearchSuggestion = selectPartsSearchSuggestion;
     window.hidePartsSearchSuggestions = hidePartsSearchSuggestions;
     window.handlePartsPriceFilterChange = handlePartsPriceFilterChange;
+    window.handlePartsStatusFilterChange = handlePartsStatusFilterChange;
     window.toggleQuoteExcelExportMenu = toggleQuoteExcelExportMenu;
     window.triggerQuoteExcelImport = triggerQuoteExcelImport;
     window.handleQuoteExcelImport = handleQuoteExcelImport;
