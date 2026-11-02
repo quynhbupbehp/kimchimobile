@@ -14407,9 +14407,6 @@
       if (data.sourceDeviceIndex !== undefined) {
         window._pendingSourceDeviceIndex = data.sourceDeviceIndex;
       }
-      if (document.getElementById('rFormDevice') && data.device) {
-        document.getElementById('rFormDevice').value = data.device;
-      }
       if (document.getElementById('rFormIssue') && data.issue) {
         document.getElementById('rFormIssue').value = data.issue;
       }
@@ -14417,12 +14414,12 @@
         document.getElementById('rFormWarranty').value = data.warranty || '0 Bảo Hành';
       }
 
-      // Thiết lập giá nhập và giá bán hiện mờ (ghost placeholder / default value)
-      // Khi bấm vào ô nhập, giá sẽ biến mất để điền giá mới. Nếu ko ghi gì thì mặc định là giá đó.
-      const setupGhostPriceInput = (inputId, defaultVal) => {
+      // Thiết lập giá trị hiện mờ (ghost placeholder / default value)
+      // Khi bấm vào ô nhập, giá trị sẽ biến mất để điền mới. Nếu ko ghi gì thì mặc định là giá đó.
+      const setupGhostInput = (inputId, defaultVal) => {
         const inp = document.getElementById(inputId);
         if (!inp) return;
-        const formattedDefault = (defaultVal !== undefined && defaultVal !== null && defaultVal !== '') ? (typeof formatNumberDisplay === 'function' ? formatNumberDisplay(defaultVal) : defaultVal) : '';
+        const formattedDefault = (defaultVal !== undefined && defaultVal !== null && defaultVal !== '') ? (typeof defaultVal === 'number' && typeof formatNumberDisplay === 'function' ? formatNumberDisplay(defaultVal) : String(defaultVal)) : '';
         inp.dataset.defaultGhostVal = formattedDefault;
         inp.value = formattedDefault;
         inp.style.color = '#94a3b8'; // Hiện mờ (màu xám / mờ)
@@ -14449,8 +14446,9 @@
         };
       };
 
-      if (data.price !== undefined) setupGhostPriceInput('rFormPrice', data.price);
-      if (data.cost !== undefined) setupGhostPriceInput('rFormCost', data.cost);
+      if (data.device) setupGhostInput('rFormDevice', data.device);
+      if (data.price !== undefined) setupGhostInput('rFormPrice', data.price);
+      if (data.cost !== undefined) setupGhostInput('rFormCost', data.cost);
       if (typeof updateRepairFormProfit === 'function') updateRepairFormProfit();
     }
 
