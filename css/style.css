@@ -737,13 +737,14 @@
       transition: all 0.2s ease;
     }
 
-    /* Nút Tạo phiếu mới: Nền xanh dương cho tab Bán Gà và các tab khác */
+    /* Nút Tạo bán gà: Nền tím đồng bộ tab Bán Gà */
     .btn-create-ticket.btn-create-blue,
     #tab-banga .btn-create-ticket {
-      background-color: #2563eb !important;
+      background: linear-gradient(180deg, #9333ea 0%, #7e22ce 100%) !important;
+      background-color: #8b5cf6 !important;
       color: #ffffff !important;
-      border: 1px solid #3b82f6 !important;
-      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35) !important;
+      border: 1px solid #a855f7 !important;
+      box-shadow: 0 2px 10px rgba(147, 51, 234, 0.45) !important;
       text-transform: uppercase !important;
       font-weight: 900 !important;
       letter-spacing: 0.5px !important;
@@ -751,8 +752,9 @@
 
     .btn-create-ticket.btn-create-blue:hover,
     #tab-banga .btn-create-ticket:hover {
-      background-color: #1d4ed8 !important;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.55) !important;
+      background: linear-gradient(180deg, #a855f7 0%, #9333ea 100%) !important;
+      background-color: #7e22ce !important;
+      box-shadow: 0 4px 14px rgba(147, 51, 234, 0.65) !important;
     }
 
     /* NÚT TẠO PHIẾU MỚI TAB BÁN HÀNG: NỀN HỒNG NEON ĐỒNG BỘ */
@@ -7192,10 +7194,10 @@
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important;
-          border: 1px solid #f472b6 !important;
+          background: linear-gradient(180deg, #9333ea 0%, #7e22ce 100%) !important;
+          border: 1px solid #a855f7 !important;
           color: #ffffff !important;
-          box-shadow: 0 0 14px rgba(236, 72, 153, 0.5) !important;
+          box-shadow: 0 0 14px rgba(147, 51, 234, 0.55) !important;
           text-transform: uppercase !important;
         }
         #tab-banga .sales-table-container {

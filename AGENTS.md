@@ -24,5 +24,11 @@ Quy tắc này áp dụng vĩnh viễn cho mọi tương tác trong dự án. Ng
 
 ---
 
-## 3. THỰC THI & BÁO CÁO KẾT QUẢ
+## 3. NGUYÊN TẮC TỰ ĐỘNG ĐẨY LÊN GITHUB (AUTO GIT PUSH)
+- **TỰ ĐỘNG COMMIT & PUSH 100%**: Sau mỗi lần chỉnh sửa / hoàn thành yêu cầu, AI luôn **tự động chạy lệnh commit và đẩy trực tiếp lên GitHub (`git add .`, `git commit -m "...", `git push origin main`)**.
+- Tuyệt đối không cần hỏi lại người dùng, làm xong là tự động đẩy lên GitHub ngay lập tức.
+
+---
+
+## 4. THỰC THI & BÁO CÁO KẾT QUẢ
 - Làm xong toàn bộ mới thông báo kết quả ngắn gọn, súc tích kèm liên kết file clickable `[filename](file:///...)`.
