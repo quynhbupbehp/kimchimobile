@@ -601,12 +601,43 @@
         let brands = JSON.parse(localStorage.getItem('local_brands') || '["IPHONE", "SAMSUNG", "OPPO - REALME", "REDMI - POCO", "VIVO"]');
         let categories = JSON.parse(localStorage.getItem('local_categories') || '["MÀN HÌNH", "PIN", "CÁP SẠC", "KÍNH ÉP", "LƯNG", "CÁP NỐI"]');
         let types = JSON.parse(localStorage.getItem('local_types') || '["ZIN", "GX", "ZIN BÓC MÁY", "ZIN HÃNG", "OLED", "LINH KIỆN"]');
+        let brandTypes = JSON.parse(localStorage.getItem('local_brand_types') || '{}');
         let names = JSON.parse(localStorage.getItem('local_names') || '[]');
         let suppliers = JSON.parse(localStorage.getItem('local_suppliers') || '[]');
+
+        function getTypesForBrand(brand) {
+            const b = (brand || '').trim().toUpperCase();
+            if (!b || b === 'TẤT CẢ' || b === 'HẾT HÀNG' || b === 'NHẬP HÀNG') {
+                // Thu thập tất cả các kiểu có trong devices của tất cả các hãng hoặc types chung
+                const allTypesSet = new Set();
+                Object.values(brandTypes).forEach(arr => {
+                    if (Array.isArray(arr)) arr.forEach(t => allTypesSet.add(t));
+                });
+                devices.forEach(d => {
+                    if (d.type && d.type.trim()) allTypesSet.add(d.type.trim().toUpperCase());
+                });
+                types.forEach(t => {
+                    if (t && t.trim()) allTypesSet.add(t.trim().toUpperCase());
+                });
+                return Array.from(allTypesSet);
+            }
+
+            if (!brandTypes[b] || !Array.isArray(brandTypes[b])) {
+                // Khởi tạo mặc định nếu chưa có
+                if (b === 'IPHONE') {
+                    brandTypes[b] = ['ZIN', 'GX', 'OLED', 'ZIN BÓC MÁY', 'ZIN HÃNG', 'LINH KIỆN'];
+                } else {
+                    // Đối với các hãng khác (SAMSUNG, OPPO, REDMI, VIVO...)
+                    brandTypes[b] = ['ZIN', 'OLED', 'ZIN BÓC MÁY', 'ZIN HÃNG', 'LINH KIỆN'];
+                }
+            }
+            return brandTypes[b];
+        }
 
         let currentBrand = localStorage.getItem('active_brand_tab') || brands[0] || '';
         let currentCategory = localStorage.getItem('active_cat_tab') || 'MÀN HÌNH';
         let currentType = '';
+        let selectedDeviceNameFilter = ''; // Khi chọn chính xác 1 tên máy từ gợi ý tìm kiếm
         let currentStockStatus = 'IN_STOCK'; // 'ALL', 'IN_STOCK', 'OUT_OF_STOCK'
         let isPrivacyMode = false;
 
@@ -788,6 +819,10 @@
                         types = data.types;
                         localStorage.setItem('local_types', JSON.stringify(types));
                     }
+                    if (data.brandTypes) {
+                        brandTypes = data.brandTypes;
+                        localStorage.setItem('local_brand_types', JSON.stringify(brandTypes));
+                    }
                     if (data.names) {
                         names = data.names;
                         localStorage.setItem('local_names', JSON.stringify(names));
@@ -832,11 +867,12 @@
             localStorage.setItem('local_brands', JSON.stringify(brands));
             localStorage.setItem('local_categories', JSON.stringify(categories));
             localStorage.setItem('local_types', JSON.stringify(types));
+            localStorage.setItem('local_brand_types', JSON.stringify(brandTypes));
             localStorage.setItem('local_names', JSON.stringify(names));
 
             try {
                 await db.collection("store_data").doc("main").set({
-                    devices, importOrders, brands, categories, types, names, suppliers
+                    devices, importOrders, brands, categories, types, brandTypes, names, suppliers
                 });
                 if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-cloud text-amber-400 text-xs"></i>`;
             } catch (e) {
@@ -858,8 +894,12 @@
         }
 
         function switchCategory(c) {
-            currentCategory = c;
-            localStorage.setItem('active_cat_tab', c);
+            if (!c || c === 'TẤT CẢ' || currentCategory === c) {
+                currentCategory = (currentCategory === c && c !== 'TẤT CẢ') ? 'TẤT CẢ' : (c || 'TẤT CẢ');
+            } else {
+                currentCategory = c;
+            }
+            localStorage.setItem('active_cat_tab', currentCategory);
             currentType = '';
             initTabs();
             renderTable();
@@ -913,7 +953,7 @@
             if (brandTabsEl) brandTabsEl.innerHTML = brandTabsHtml;
 
             // Xử lý tabs Linh Kiện (Hàng 2)
-            // Nhãn "LINH KIỆN" màu xanh lá (bg-[#10b981]) nổi bật y chang ảnh mẫu 1 & 3
+            // Nhãn "LINH KIỆN" là nút bấm chọn TẤT CẢ (bg-[#10b981]) nổi bật y chang ảnh mẫu
             let displayCategories = [];
             categories.forEach(c => {
                 if (c && !displayCategories.includes(c)) {
@@ -921,16 +961,17 @@
                 }
             });
 
+            const isAllCat = !currentCategory || currentCategory === 'TẤT CẢ';
             let catTabsHtml = `
-                <span class="px-3 py-1.5 rounded-xl bg-[#10b981] text-white font-black text-xs md:text-sm uppercase tracking-wider shrink-0 flex items-center shadow-md">
+                <button onclick="switchCategory('TẤT CẢ')" class="px-3 py-1.5 rounded-xl ${isAllCat ? 'bg-[#10b981] text-white shadow-lg shadow-emerald-600/30 border border-emerald-400' : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]'} font-black text-xs md:text-sm uppercase tracking-wider shrink-0 flex items-center transition cursor-pointer" title="Xem tất cả linh kiện">
                     LINH KIỆN
-                </span>
+                </button>
             `;
 
             catTabsHtml += displayCategories.map(c => {
-                const isSelected = (c.toUpperCase() === currentCategory.toUpperCase()) ||
+                const isSelected = !isAllCat && ((c.toUpperCase() === currentCategory.toUpperCase()) ||
                     (c.toUpperCase() === 'MÀN' && currentCategory.toUpperCase() === 'MÀN HÌNH') ||
-                    (c.toUpperCase() === 'MÀN HÌNH' && currentCategory.toUpperCase() === 'MÀN');
+                    (c.toUpperCase() === 'MÀN HÌNH' && currentCategory.toUpperCase() === 'MÀN'));
                 const btnClass = isSelected
                     ? 'bg-[#10b981] text-white font-black shadow-lg shadow-emerald-600/30 border border-emerald-400'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
@@ -941,18 +982,19 @@
             if (catTabsWrapper) catTabsWrapper.innerHTML = catTabsHtml;
 
             // Xử lý tabs Kiểu (Hàng 3)
-            // Nhãn "KIỂU" màu tím xanh (bg-[#6366f1]) nổi bật y chang ảnh mẫu 1 & 3
+            // Nhãn "KIỂU" là nút bấm chọn TẤT CẢ KIỂU (bg-[#6366f1]) nổi bật y chang ảnh mẫu
+            const isAllType = !currentType;
             let typeTabsHtml = `
-                <span class="px-3 py-1.5 rounded-xl bg-[#6366f1] text-white font-black text-xs md:text-sm uppercase tracking-wider shrink-0 flex items-center shadow-md">
+                <button onclick="switchType('')" class="px-3 py-1.5 rounded-xl ${isAllType ? 'bg-[#6366f1] text-white shadow-lg shadow-indigo-600/30 border border-indigo-400' : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]'} font-black text-xs md:text-sm uppercase tracking-wider shrink-0 flex items-center transition cursor-pointer" title="Xem tất cả kiểu">
                     KIỂU
-                </span>
+                </button>
             `;
 
-            // Lấy danh sách Kiểu hợp lệ từ mảng types
-            const availableTypes = types.filter(t => t && t.trim());
+            // Lấy danh sách Kiểu hợp lệ riêng theo từng hãng đang chọn
+            const availableTypes = getTypesForBrand(currentBrand).filter(t => t && t.trim());
 
             typeTabsHtml += availableTypes.map(t => {
-                const isSelected = (currentType.toUpperCase() === t.toUpperCase());
+                const isSelected = !isAllType && (currentType.toUpperCase() === t.toUpperCase());
                 const btnClass = isSelected
                     ? 'bg-[#6366f1] text-white font-black shadow-lg shadow-indigo-600/30 border border-indigo-400'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
@@ -968,8 +1010,8 @@
         }
 
         function switchType(t) {
-            if (currentType === t) {
-                currentType = ''; // Bấm lại để bỏ lọc
+            if (!t || currentType === t) {
+                currentType = ''; // Bấm lại hoặc bấm nút KIỂU để chọn tất cả kiểu
             } else {
                 currentType = t;
             }
@@ -1195,15 +1237,15 @@
                         if (!matchBrand) return false;
                     }
 
-                    // 3. Lọc theo linh kiện
+                    // 3. Lọc theo linh kiện (nếu không phải TẤT CẢ)
                     let dPart = (d.part || '').trim().toUpperCase();
                     if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
                     if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
 
-                    let filterCat = currentCategory.trim().toUpperCase();
+                    let filterCat = (currentCategory || '').trim().toUpperCase();
                     if (filterCat === 'MÀN') filterCat = 'MÀN HÌNH';
 
-                    if (filterCat && dPart !== filterCat) return false;
+                    if (filterCat && filterCat !== 'TẤT CẢ' && dPart !== filterCat) return false;
 
                     // 4. Lọc theo kiểu (nếu có chọn)
                     if (currentType && currentType.trim() !== '') {
@@ -1211,10 +1253,21 @@
                     }
 
                     // 5. Lọc theo ô tìm kiếm
-                    const fullSearchStr = `${d.brand} ${d.name} ${d.part} ${d.type} ${d.color}`.toUpperCase();
-                    const matchKeyword = !keyword || keyword.split(' ').every(k => fullSearchStr.includes(k));
+                    if (selectedDeviceNameFilter) {
+                        if ((d.name || '').trim().toUpperCase() !== selectedDeviceNameFilter.trim().toUpperCase()) return false;
+                    } else if (keyword) {
+                        // Nếu từ khóa tìm kiếm khớp chính xác với 1 tên máy trong hệ thống (ví dụ: '11', '11 PRO') thì ưu tiên lọc chính xác tên máy đó
+                        const allExactDeviceNames = new Set(devices.map(dev => (dev.name || '').trim().toUpperCase()).filter(Boolean));
+                        if (allExactDeviceNames.has(keyword)) {
+                            if ((d.name || '').trim().toUpperCase() !== keyword) return false;
+                        } else {
+                            const fullSearchStr = `${d.brand} ${d.name} ${d.part} ${d.type} ${d.color}`.toUpperCase();
+                            const matchKeyword = keyword.split(' ').every(k => fullSearchStr.includes(k));
+                            if (!matchKeyword) return false;
+                        }
+                    }
 
-                    return matchKeyword;
+                    return true;
                 });
 
                 filtered.sort((a, b) => {
@@ -1512,6 +1565,9 @@
 
             if (desktopInput && desktopInput.value !== val) desktopInput.value = val;
 
+            // Khi người dùng tự tay gõ, reset bộ lọc tên máy chính xác đã chọn trước đó
+            selectedDeviceNameFilter = '';
+
             if (val) {
                 if (clearDesktop) clearDesktop.classList.remove('hidden');
                 updateSearchDropdown(val);
@@ -1527,6 +1583,7 @@
             if (desktopInput) desktopInput.value = '';
             const clearDesktop = document.getElementById('btn-clear-search-desktop');
             if (clearDesktop) clearDesktop.classList.add('hidden');
+            selectedDeviceNameFilter = '';
             hideSearchDropdown();
             renderTable();
         }
@@ -1595,6 +1652,7 @@
         }
 
         function selectSearchSuggestion(name) {
+            selectedDeviceNameFilter = name.trim().toUpperCase();
             const searchInput = document.getElementById('search-input-desktop');
             if (searchInput) searchInput.value = name;
             const clearDesktop = document.getElementById('btn-clear-search-desktop');
@@ -1604,12 +1662,13 @@
         }
 
         // Cập nhật các select box trong Modal thêm / sửa linh kiện
-        function populateModalSelects() {
+        function populateModalSelects(brandContext = '') {
             // Hãng
             const brandSelect = document.getElementById('device-brand-select');
             if (brandSelect) {
                 const brandList = brands.filter(b => b && b !== 'HẾT HÀNG' && b !== 'NHẬP HÀNG' && b !== 'TẤT CẢ');
                 brandSelect.innerHTML = brandList.map(b => `<option value="${b}" class="bg-[#0b0f19] text-white">${b}</option>`).join('');
+                if (brandContext) brandSelect.value = brandContext;
             }
 
             // Linh kiện
@@ -1619,14 +1678,30 @@
                 partSelect.innerHTML = partList.map(c => `<option value="${c}" class="bg-[#0b0f19] text-white">${c}</option>`).join('');
             }
 
-            // Kiểu
-            const typeSelect = document.getElementById('device-type-select');
-            if (typeSelect) {
-                const typeList = types.filter(t => t && t.trim());
-                typeSelect.innerHTML = typeList.map(t => `<option value="${t}" class="bg-[#0b0f19] text-white">${t}</option>`).join('');
-            }
-
+            const activeBrand = brandContext || (brandSelect ? brandSelect.value : '') || currentBrand || 'IPHONE';
+            updateModalTypeOptions(activeBrand);
             updateModalNameOptions();
+        }
+
+        function updateModalTypeOptions(selectedBrand = '', currentTypeValue = '') {
+            const brandSelect = document.getElementById('device-brand-select');
+            const typeSelect = document.getElementById('device-type-select');
+            const typeHidden = document.getElementById('device-type');
+            if (!typeSelect) return;
+
+            const b = selectedBrand || (brandSelect ? brandSelect.value : '') || currentBrand || 'IPHONE';
+            const brandTypeList = getTypesForBrand(b).filter(t => t && t.trim());
+            typeSelect.innerHTML = brandTypeList.map(t => `<option value="${t}" class="bg-[#0b0f19] text-white">${t}</option>`).join('');
+
+            const desiredType = currentTypeValue || (typeHidden ? typeHidden.value : '') || (brandTypeList.length > 0 ? brandTypeList[0] : '');
+            if (brandTypeList.includes(desiredType)) {
+                typeSelect.value = desiredType;
+            } else if (brandTypeList.length > 0) {
+                typeSelect.value = brandTypeList[0];
+            } else {
+                typeSelect.value = '';
+            }
+            if (typeHidden) typeHidden.value = typeSelect.value;
         }
 
         function updateModalNameOptions(selectedName = '') {
@@ -1667,6 +1742,7 @@
         function onModalBrandChange(brand) {
             document.getElementById('device-brand').value = brand;
             updateModalNameOptions();
+            updateModalTypeOptions(brand);
         }
 
         function onModalNameInputChange(val) {
@@ -1686,7 +1762,8 @@
         }
 
         function openModal(isEdit = false) {
-            populateModalSelects();
+            const activeB = (currentBrand && currentBrand !== 'TẤT CẢ' && currentBrand !== 'HẾT HÀNG' && currentBrand !== 'NHẬP HÀNG') ? currentBrand : 'IPHONE';
+            populateModalSelects(activeB);
             document.getElementById('device-modal').classList.remove('hidden');
             document.getElementById('modal-title').innerText = isEdit ? 'SỬA LINH KIỆN' : 'THÊM LINH KIỆN MỚI';
 
@@ -1694,19 +1771,15 @@
                 document.getElementById('device-index').value = '-1';
                 document.getElementById('device-form').reset();
 
-                const activeB = (currentBrand && currentBrand !== 'TẤT CẢ' && currentBrand !== 'HẾT HÀNG' && currentBrand !== 'NHẬP HÀNG') ? currentBrand : 'IPHONE';
                 const activeC = currentCategory ? (currentCategory === 'MÀN' ? 'MÀN HÌNH' : currentCategory) : 'MÀN HÌNH';
-                const activeT = currentType || 'ZIN';
 
                 document.getElementById('device-brand-select').value = activeB;
                 document.getElementById('device-brand').value = activeB;
                 updateModalNameOptions();
+                updateModalTypeOptions(activeB, currentType);
 
                 document.getElementById('device-part-select').value = activeC;
                 document.getElementById('device-part').value = activeC;
-
-                document.getElementById('device-type-select').value = activeT;
-                document.getElementById('device-type').value = activeT;
 
                 document.getElementById('device-qty').value = '1';
                 document.getElementById('modal-profit-preview').innerText = '0';
@@ -1975,7 +2048,11 @@
 
             if (!brands.includes(brand)) brands.push(brand);
             if (!categories.includes(part)) categories.push(part);
-            if (type && !types.includes(type)) types.push(type);
+            if (type) {
+                if (!types.includes(type)) types.push(type);
+                if (!brandTypes[brand]) brandTypes[brand] = getTypesForBrand(brand);
+                if (!brandTypes[brand].includes(type)) brandTypes[brand].push(type);
+            }
             if (name && !names.includes(name)) names.push(name);
 
             const deviceObj = { brand, name, part, type, price, cost, qty, color };
@@ -1998,14 +2075,17 @@
         function editDevice(index) {
             const d = devices[index];
             document.getElementById('device-index').value = index;
-            openModal(true);
-
             const brandVal = d.brand || 'IPHONE';
+            populateModalSelects(brandVal);
+            document.getElementById('device-modal').classList.remove('hidden');
+            document.getElementById('modal-title').innerText = 'SỬA LINH KIỆN';
+
             const brandSelect = document.getElementById('device-brand-select');
             if (brandSelect) brandSelect.value = brandVal;
             document.getElementById('device-brand').value = brandVal;
 
             updateModalNameOptions(d.name || '');
+            updateModalTypeOptions(brandVal, d.type || 'ZIN');
 
             let dPart = (d.part || '').toUpperCase();
             if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
@@ -2013,10 +2093,6 @@
             const partSelect = document.getElementById('device-part-select');
             if (partSelect) partSelect.value = dPart;
             document.getElementById('device-part').value = dPart;
-
-            const typeSelect = document.getElementById('device-type-select');
-            if (typeSelect) typeSelect.value = d.type || 'ZIN';
-            document.getElementById('device-type').value = d.type || 'ZIN';
 
             document.getElementById('device-price').value = formatMoney(d.price);
             document.getElementById('device-cost').value = formatMoney(d.cost);
@@ -2028,17 +2104,18 @@
         function duplicateDevice(index) {
             const d = devices[index];
             document.getElementById('device-index').value = '-1';
-            openModal(false);
-
+            const brandVal = d.brand || 'IPHONE';
+            populateModalSelects(brandVal);
+            document.getElementById('device-modal').classList.remove('hidden');
             document.getElementById('modal-title').innerText = 'THÊM BẢN SAO LINH KIỆN';
 
-            const brandVal = d.brand || 'IPHONE';
             const brandSelect = document.getElementById('device-brand-select');
             if (brandSelect) brandSelect.value = brandVal;
             document.getElementById('device-brand').value = brandVal;
 
             const copyName = (d.name || '') + ' (COPY)';
             updateModalNameOptions(copyName);
+            updateModalTypeOptions(brandVal, d.type || 'ZIN');
 
             let dPart = (d.part || '').toUpperCase();
             if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
@@ -2046,10 +2123,6 @@
             const partSelect = document.getElementById('device-part-select');
             if (partSelect) partSelect.value = dPart;
             document.getElementById('device-part').value = dPart;
-
-            const typeSelect = document.getElementById('device-type-select');
-            if (typeSelect) typeSelect.value = d.type || 'ZIN';
-            document.getElementById('device-type').value = d.type || 'ZIN';
 
             document.getElementById('device-price').value = formatMoney(d.price);
             document.getElementById('device-cost').value = formatMoney(d.cost);
@@ -2074,12 +2147,14 @@
 
         function handleEntity(entityType, action) {
             let listRef, inputId, selectId, labelName;
+            const currentSelectedBrand = (document.getElementById('device-brand')?.value || document.getElementById('device-brand-select')?.value || currentBrand || 'IPHONE').trim().toUpperCase();
+
             if (entityType === 'brands') {
                 listRef = brands; inputId = 'device-brand'; selectId = 'device-brand-select'; labelName = 'HÃNG';
             } else if (entityType === 'categories') {
                 listRef = categories; inputId = 'device-part'; selectId = 'device-part-select'; labelName = 'LINH KIỆN';
             } else if (entityType === 'types') {
-                listRef = types; inputId = 'device-type'; selectId = 'device-type-select'; labelName = 'KIỂU';
+                listRef = getTypesForBrand(currentSelectedBrand); inputId = 'device-type'; selectId = 'device-type-select'; labelName = `KIỂU (${currentSelectedBrand})`;
             } else if (entityType === 'names') {
                 listRef = names; inputId = 'device-name'; selectId = null; labelName = 'TÊN MÁY';
             }
@@ -2095,9 +2170,12 @@
                     if (!cleanVal) return;
                     if (!listRef.includes(cleanVal)) {
                         listRef.push(cleanVal);
+                        if (entityType === 'types' && !types.includes(cleanVal)) {
+                            types.push(cleanVal);
+                        }
                         saveAllToCloud();
                     }
-                    populateModalSelects();
+                    populateModalSelects(currentSelectedBrand);
                     if (selectEl) selectEl.value = cleanVal;
                     if (inputEl) inputEl.value = cleanVal;
                     if (entityType === 'brands' || entityType === 'names') updateModalNameOptions(entityType === 'names' ? cleanVal : '');
@@ -2113,15 +2191,19 @@
                     if (idx !== -1) listRef[idx] = newVal;
                     else listRef.push(newVal);
 
+                    if (entityType === 'types' && !types.includes(newVal)) {
+                        types.push(newVal);
+                    }
+
                     devices.forEach(d => {
                         if (entityType === 'brands' && d.brand === val) d.brand = newVal;
                         if (entityType === 'categories' && d.part === val) d.part = newVal;
-                        if (entityType === 'types' && d.type === val) d.type = newVal;
+                        if (entityType === 'types' && (d.brand || '').trim().toUpperCase() === currentSelectedBrand && d.type === val) d.type = newVal;
                         if (entityType === 'names' && d.name === val) d.name = newVal;
                     });
 
                     saveAllToCloud();
-                    populateModalSelects();
+                    populateModalSelects(currentSelectedBrand);
                     if (selectEl) selectEl.value = newVal;
                     if (inputEl) inputEl.value = newVal;
                     if (entityType === 'brands' || entityType === 'names') updateModalNameOptions(entityType === 'names' ? newVal : '');
@@ -2142,7 +2224,7 @@
                     devices.forEach(d => {
                         if (entityType === 'brands' && (d.brand || '').trim().toUpperCase() === val) d.brand = '';
                         if (entityType === 'categories' && (d.part || '').trim().toUpperCase() === val) d.part = '';
-                        if (entityType === 'types' && (d.type || '').trim().toUpperCase() === val) d.type = '';
+                        if (entityType === 'types' && (d.brand || '').trim().toUpperCase() === currentSelectedBrand && (d.type || '').trim().toUpperCase() === val) d.type = '';
                         if (entityType === 'names' && (d.name || '').trim().toUpperCase() === val) d.name = '';
                     });
 
@@ -2152,7 +2234,7 @@
                     if (entityType === 'brands' && currentBrand.toUpperCase() === val) currentBrand = 'TẤT CẢ';
 
                     saveAllToCloud();
-                    populateModalSelects();
+                    populateModalSelects(currentSelectedBrand);
 
                     // Cập nhật lại giá trị trên input/select của modal
                     if (selectEl) {
