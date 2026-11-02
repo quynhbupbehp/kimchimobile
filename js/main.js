@@ -1145,12 +1145,12 @@
         }
         const escaped = cleanFilter.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const noResultBox = document.createElement('div');
-        noResultBox.style.cssText = 'padding: 10px 12px; text-align: center; width: 100%; box-sizing: border-box;';
+        noResultBox.style.cssText = 'padding: 14px 18px; text-align: center; width: 100%; box-sizing: border-box;';
         noResultBox.innerHTML = `
-          <div style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">Chưa có trong danh sách gợi ý</div>
+          <div style="color: #94a3b8; font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; letter-spacing: 0.2px;">Chưa có trong danh sách gợi ý</div>
           <button type="button" class="universal-btn-quick-add"
-            style="background: #10b981; color: #ffffff; border: none; border-radius: 6px; padding: 7px 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 8px rgba(16,185,129,0.3); width: 100%; max-width: 240px; margin: 0 auto; transition: all 0.15s ease;">
-            + Thêm "${escaped}" vào gợi ý
+            style="background: #10b981; color: #ffffff; border: none; border-radius: 8px; padding: 9px 18px; font-weight: 800; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 14px rgba(16,185,129,0.35); width: auto; max-width: 100%; margin: 0 auto; transition: all 0.15s ease;">
+            + Thêm &ldquo;${escaped}&rdquo; vào gợi ý
           </button>
         `;
 
@@ -1406,8 +1406,12 @@
 
     document.addEventListener('input', function(e) {
       const input = e.target.closest('input');
-      if (input && currentUniversalInput === input && activeUniversalDropdown) {
-        openUniversalSmartDropdown(input, input.value);
+      if (input) {
+        if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) return;
+        const listId = input.dataset.originalList || input.getAttribute('list') || (input.id ? (input.id + 'List') : null);
+        if (listId && (document.getElementById(listId) || input._universalOptions)) {
+          openUniversalSmartDropdown(input, input.value);
+        }
       }
     });
 
@@ -1923,12 +1927,6 @@
             if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
             if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-          } else if (snapshot.empty && typeof salesDatabase !== 'undefined' && salesDatabase.length > 0) {
-            salesDatabase.forEach(item => {
-              if (item && item.id) {
-                db.collection('sales').doc(String(item.id)).set(item).catch(console.error);
-              }
-            });
           }
         }, err => console.error("Lỗi sync sales realtime:", err));
       } catch (err) {
@@ -1958,12 +1956,6 @@
             try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
             if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-          } else if (snapshot.empty && typeof bangaDatabase !== 'undefined' && bangaDatabase.length > 0) {
-            bangaDatabase.forEach(item => {
-              if (item && item.id) {
-                db.collection('banga').doc(String(item.id)).set(item).catch(console.error);
-              }
-            });
           }
         }, err => console.error("Lỗi sync banga realtime:", err));
       } catch (err) {
@@ -1985,13 +1977,6 @@
             phoneDatabase = list;
             try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
             if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
-          } else if (snapshot.empty && typeof phoneDatabase !== 'undefined' && phoneDatabase.length > 0) {
-            console.log("Đang khởi tạo đồng bộ dữ liệu Bán Máy lên Cloud Firestore...");
-            phoneDatabase.forEach(item => {
-              if (item && item.id) {
-                db.collection('phones').doc(String(item.id)).set(item).catch(console.error);
-              }
-            });
           }
         }, err => console.error("Lỗi sync phones:", err));
       } catch (err) {
@@ -2012,13 +1997,6 @@
             soldPhoneDatabase = list;
             try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
             if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-          } else if (snapshot.empty && typeof soldPhoneDatabase !== 'undefined' && soldPhoneDatabase.length > 0) {
-            console.log("Đang khởi tạo đồng bộ dữ liệu Bảo Hành lên Cloud Firestore...");
-            soldPhoneDatabase.forEach(item => {
-              if (item && item.id) {
-                db.collection('sold_phones').doc(String(item.id)).set(item).catch(console.error);
-              }
-            });
           }
         }, err => console.error("Lỗi sync sold_phones:", err));
       } catch (err) {
@@ -2039,13 +2017,6 @@
             mainXacDatabase = list;
             try { localStorage.setItem('KIMCHI_MAIN_XAC_DB', JSON.stringify(mainXacDatabase)); } catch(e){}
             if (typeof renderMainXacGrid === 'function') renderMainXacGrid();
-          } else if (snapshot.empty && typeof mainXacDatabase !== 'undefined' && mainXacDatabase.length > 0) {
-            console.log("Đang khởi tạo đồng bộ dữ liệu Main Xác lên Cloud Firestore...");
-            mainXacDatabase.forEach(item => {
-              if (item && item.id) {
-                db.collection('mainxac').doc(String(item.id)).set(item).catch(console.error);
-              }
-            });
           }
         }, err => console.error("Lỗi sync mainxac:", err));
       } catch (err) {
@@ -2067,13 +2038,6 @@
             try { localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase)); } catch(e){}
             if (typeof renderRepairTable === 'function') renderRepairTable();
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-          } else if (snapshot.empty && typeof repairDatabase !== 'undefined' && repairDatabase.length > 0) {
-            console.log("Đang khởi tạo đồng bộ dữ liệu Sửa Chữa lên Cloud Firestore...");
-            repairDatabase.forEach(item => {
-              if (item && item.id) {
-                db.collection('repairs').doc(String(item.id)).set(item).catch(console.error);
-              }
-            });
           }
         }, err => console.error("Lỗi sync repairs:", err));
       } catch (err) {
@@ -2100,14 +2064,6 @@
               renderSoftwareDebtTable();
             }
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-          } else if (snapshot.empty && typeof softwareDatabase !== 'undefined' && softwareDatabase.length > 0) {
-            // Nếu trên Firestore chưa có đơn phần mềm nào, tự động đẩy toàn bộ dữ liệu đang có lên Firestore
-            console.log("Đang khởi tạo đồng bộ dữ liệu phần mềm lên Cloud Firestore...");
-            softwareDatabase.forEach(item => {
-              if (item && item.id) {
-                db.collection('software').doc(String(item.id)).set(item).catch(console.error);
-              }
-            });
           }
         }, err => console.error("Lỗi sync software realtime:", err));
       } catch (err) {

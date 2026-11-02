@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -1797,7 +1797,7 @@
       <!-- TAB 5: BÁO GIÁ SỬA CHỮA & NHẬP HÀNG (CƠ SỞ DỮ LIỆU KIM CHI MOBILE) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261101_220902" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261102_013700" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5283,6 +5283,15 @@
     // Khởi tạo Firebase và Firestore Database
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+
+    // Bật bộ nhớ đệm Offline nhiều tab đồng bộ để giảm tối đa lượt đọc Firestore
+    db.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
+      if (err.code === 'failed-precondition') {
+        console.warn('Firestore persistence warning: Multiple tabs open concurrently without multi-tab support');
+      } else if (err.code === 'unimplemented') {
+        console.warn('Firestore persistence warning: Current browser does not support persistence');
+      }
+    });
   </script>
   <!-- ================================================ -->
 
@@ -5290,7 +5299,7 @@
   <script src="js/seed_data.js?v=20261101_220902"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261101_220902"></script>
+  <script src="js/main.js?v=20261102_001800"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
