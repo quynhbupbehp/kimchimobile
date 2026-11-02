@@ -7029,11 +7029,66 @@
     } catch(e) {}
     let currentBrandFilter = "ALL";
     let currentPriceFilter = "ALL";
-    let soldPhoneViewMode = 'all';
+    let soldPhoneViewMode = 'year'; // Lọc theo : Ngày , Tháng , Năm , Tất Cả , mặc định chọn theo Năm
     let currentSoldPhoneDateFilter = getVietnamDate();
     let currentSoldPhoneMonthFilter = { month: currentSoldPhoneDateFilter.getMonth(), year: currentSoldPhoneDateFilter.getFullYear() };
     let currentSoldPhoneYearFilter = currentSoldPhoneDateFilter.getFullYear();
-    let currentSoldPhoneWarrantyFilter = "ALL";
+    let currentSoldPhoneWarrantyFilter = "CON"; // lọc theo Bảo Hành : Mặc định là Còn BH , Hết BH , Tất Cả
+    let currentSoldPhoneBrandFilter = "ALL"; // lọc theo hãng : các hãng đã bán , mặc định chọn Tất Cả
+    let isSoldPhonePricesHidden = false; // nút ẩn là ẩn toàn bộ giá và doanh thu
+
+    function toggleSoldPhoneHidePrices() {
+      isSoldPhonePricesHidden = !isSoldPhonePricesHidden;
+      updateSoldPhoneHidePricesButton();
+      renderSoldPhoneTable();
+    }
+    window.toggleSoldPhoneHidePrices = toggleSoldPhoneHidePrices;
+
+    function updateSoldPhoneHidePricesButton() {
+      const btn = document.getElementById('btnToggleSoldPhoneHidePrices');
+      const icon = document.getElementById('soldPhoneHidePriceEyeIcon');
+      if (!btn || !icon) return;
+      if (isSoldPhonePricesHidden) {
+        btn.classList.add('active');
+        btn.style.color = '#f87171';
+        btn.style.borderColor = '#ef4444';
+        btn.title = "Đang ẩn giá và doanh thu (Bấm để hiện lại)";
+        icon.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+      } else {
+        btn.classList.remove('active');
+        btn.style.color = '#94a3b8';
+        btn.style.borderColor = '#334155';
+        btn.title = "Bấm để ẩn toàn bộ giá và doanh thu";
+        icon.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      }
+    }
+    window.updateSoldPhoneHidePricesButton = updateSoldPhoneHidePricesButton;
+
+    function handleSoldPhoneBrandFilterChange(select) {
+      currentSoldPhoneBrandFilter = select ? select.value : 'ALL';
+      renderSoldPhoneTable();
+    }
+    window.handleSoldPhoneBrandFilterChange = handleSoldPhoneBrandFilterChange;
+
+    function populateSoldPhoneBrandDropdown() {
+      const select = document.getElementById('soldPhoneBrandFilter');
+      if (!select) return;
+      const currentVal = select.value || currentSoldPhoneBrandFilter || 'ALL';
+      const brandsSet = new Set();
+      soldPhoneDatabase.forEach(p => {
+        if (p.brand && p.brand.trim() && p.brand.trim() !== '❤️❤️❤️' && p.brand.trim() !== 'MÁY NGOÀI') {
+          brandsSet.add(p.brand.trim().toUpperCase());
+        }
+      });
+      const sortedBrands = Array.from(brandsSet).sort();
+      let html = `<option value="ALL">Tất Cả</option>`;
+      sortedBrands.forEach(b => {
+        html += `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`;
+      });
+      select.innerHTML = html;
+      select.value = brandsSet.has(currentVal.toUpperCase()) || currentVal === 'ALL' ? currentVal : 'ALL';
+    }
+    window.populateSoldPhoneBrandDropdown = populateSoldPhoneBrandDropdown;
 
     function setSoldPhoneMode(mode) {
       soldPhoneViewMode = mode;
@@ -9672,6 +9727,8 @@
       const searchInput = document.getElementById('soldPhoneSearchInput');
       const keyword = (searchInput ? searchInput.value.trim().toLowerCase() : '');
 
+      populateSoldPhoneBrandDropdown();
+
       let filtered = soldPhoneDatabase.filter(p => {
         // 1. Lọc theo Từ khóa tìm kiếm
         if (keyword) {
@@ -9688,14 +9745,20 @@
           if (!fullStr.includes(keyword)) return false;
         }
 
-        // 2. Lọc theo Trạng thái Bảo Hành: Còn Bảo Hành / Hết Bảo Hành
+        // 2. Lọc theo Hãng: Các hãng đã bán, mặc định là Tất Cả
+        if (currentSoldPhoneBrandFilter && currentSoldPhoneBrandFilter !== 'ALL') {
+          let pBrand = (p.brand || '').trim().toUpperCase();
+          if (pBrand !== currentSoldPhoneBrandFilter.toUpperCase()) return false;
+        }
+
+        // 3. Lọc theo Trạng thái Bảo Hành: Còn Bảo Hành / Hết Bảo Hành / Tất Cả
         if (currentSoldPhoneWarrantyFilter && currentSoldPhoneWarrantyFilter !== 'ALL') {
           let isUnderWarranty = isPhoneUnderWarranty(p);
           if (currentSoldPhoneWarrantyFilter === 'CON' && !isUnderWarranty) return false;
           if (currentSoldPhoneWarrantyFilter === 'HET' && isUnderWarranty) return false;
         }
 
-        // 3. Lọc theo Chế độ xem: Nếu đang tìm kiếm thì tìm trên TOÀN BỘ danh sách bảo hành; Nếu không tìm kiếm thì lọc theo Ngày / Tháng / Năm
+        // 4. Lọc theo Chế độ xem: Nếu đang tìm kiếm thì tìm trên TOÀN BỘ danh sách bảo hành; Nếu không tìm kiếm thì lọc theo Ngày / Tháng / Năm / Tất Cả
         if (keyword) return true;
         if (soldPhoneViewMode === 'all') return true;
 
@@ -9750,14 +9813,14 @@
       });
 
       const mRevEl = document.getElementById('soldPhoneMonthRevenueVal');
-      if (mRevEl) mRevEl.innerText = formatPriceStr(monthRev);
+      if (mRevEl) mRevEl.innerText = isSoldPhonePricesHidden ? '*****' : formatPriceStr(monthRev);
       const dRevEl = document.getElementById('soldPhoneDayRevenueVal');
-      if (dRevEl) dRevEl.innerText = formatPriceStr(dayRev);
+      if (dRevEl) dRevEl.innerText = isSoldPhonePricesHidden ? '*****' : formatPriceStr(dayRev);
 
       const mPfEl = document.getElementById('soldPhoneMonthProfitVal');
-      if (mPfEl) mPfEl.innerText = formatPriceStr(monthPf);
+      if (mPfEl) mPfEl.innerText = isSoldPhonePricesHidden ? '*****' : formatPriceStr(monthPf);
       const dPfEl = document.getElementById('soldPhoneDayProfitVal');
-      if (dPfEl) dPfEl.innerText = formatPriceStr(dayPf);
+      if (dPfEl) dPfEl.innerText = isSoldPhonePricesHidden ? '*****' : formatPriceStr(dayPf);
 
       // CẬP NHẬT ICON LÃI NGÀY MÁY ĐÃ BÁN: 0 - 999 MẶT KHÓC, >= 1000 MẶT CƯỜI
       const soldPhoneProfitEmojiEl = document.getElementById('soldPhoneProfitEmojiIcon');
@@ -9778,10 +9841,10 @@
       }
 
       const dtEl = document.getElementById('soldPhoneDoanhThuVal');
-      if (dtEl) dtEl.innerText = formatPriceStr(totalRevenue);
+      if (dtEl) dtEl.innerText = isSoldPhonePricesHidden ? '*****' : formatPriceStr(totalRevenue);
 
       const pfEl = document.getElementById('soldPhoneProfitVal');
-      if (pfEl) pfEl.innerText = formatPriceStr(totalProfit);
+      if (pfEl) pfEl.innerText = isSoldPhonePricesHidden ? '*****' : formatPriceStr(totalProfit);
 
       const pfLabel = document.getElementById('soldPhoneProfitLabel');
       if (pfLabel) {
@@ -9817,7 +9880,7 @@
           let displayPinPct = formatPinByBrand(p.pin, p.brand, p.name);
           let displayOrigin = p.origin || 'VN/A';
           let displayCondition = p.condition || 'Zin Đẹp 99%';
-          let formattedPrice = formatPriceStr(p.price || p.total) || '0';
+          let formattedPrice = isSoldPhonePricesHidden ? '*****' : (formatPriceStr(p.price || p.total) || '0');
 
           return `
             <div class="phone-card sold-phone-card" ondblclick="viewPhone('${p.id}', true)" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}', true); } this._lastTap=now;" title="Nháy 2 lần để xem chi tiết máy">
@@ -9829,7 +9892,7 @@
                   ${storageDisplay ? `<span class="phone-card-storage">${escapeHtml(storageDisplay)}</span>` : ''}
                 </div>
                 <div class="phone-header-center">
-                  <span class="phone-card-price">${isPhonePricesHidden ? '*****' : formattedPrice}</span>
+                  <span class="phone-card-price">${formattedPrice}</span>
                 </div>
                 <div class="phone-header-right">
                   <span class="phone-card-imei" style="border: 1px solid #ef4444; color: #ffffff;">${escapeHtml(p.imei)}</span>
@@ -9888,6 +9951,10 @@
           profitVal = (diff < 0 ? '-' : '') + formatPriceStr(Math.abs(diff));
         }
 
+        let displayPriceOut = isSoldPhonePricesHidden ? '*****' : (formatPriceStr(p.price || p.total) || '0');
+        let displayPriceIn = isSoldPhonePricesHidden ? '*****' : formatPriceStr(p.priceIn || '0');
+        let displayProfit = isSoldPhonePricesHidden ? '*****' : formatPriceStr(profitVal);
+
         let method = p.method || p.paymentMethod || 'Tiền Mặt';
         let methodColor = (method === 'Chuyển Khoản' || method === 'CK') ? '#38bdf8' : '#10b981';
 
@@ -9900,11 +9967,11 @@
             </td>
             <td style="text-align: center; vertical-align: middle;">
               <span style="display: inline-block; background: #ec4899; color: #ffffff; font-weight: 900; font-size: 1.425rem; padding: 4px 12px; border-radius: 8px; border: 1.5px solid #f472b6; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4); line-height: 1.2;">
-                ${formatPriceStr(p.price || p.total) || '0'}
+                ${displayPriceOut}
               </span>
             </td>
-            <td style="color: #ffffff; font-weight: 900; font-size: 1.155rem; text-align: center; vertical-align: middle;">${formatPriceStr(p.priceIn || '0')}</td>
-            <td style="font-weight: 900; color: #eab308; font-size: 1.155rem; text-align: center; vertical-align: middle;">${formatPriceStr(profitVal)}</td>
+            <td style="color: #ffffff; font-weight: 900; font-size: 1.155rem; text-align: center; vertical-align: middle;">${displayPriceIn}</td>
+            <td style="font-weight: 900; color: #eab308; font-size: 1.155rem; text-align: center; vertical-align: middle;">${displayProfit}</td>
             <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; font-size: 1.05rem; color: ${methodColor};">${method}</span></td>
             <td style="color: #ffffff; font-weight: 800; font-size: 1.05rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
             <td style="text-align: center; vertical-align: middle;">

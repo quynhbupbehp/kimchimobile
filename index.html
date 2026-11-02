@@ -1590,106 +1590,69 @@
 
       <!-- TAB 4: BẢO HÀNH -->
       <div id="tab-baohanh" class="tab-content">
-        <!-- HÀNG 1: DOANH THU THÁNG/NGÀY (TRÁI) + XEM THEO NGÀY/THÁNG/NĂM (GIỮA) + LÃI THÁNG/NGÀY (PHẢI) -->
+        <!-- HÀNG 1: DOANH THU + MŨI TÊN EXCEL (TRÁI) | TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH (GIỮA) | LÃI (PHẢI) -->
         <div class="sales-header-bar"
-          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.9rem; flex-wrap: wrap; gap: 12px;">
-          <!-- 1. DOANH THU THÁNG (XANH) & DOANH THU NGÀY (TRẮNG) NỀN ĐEN -->
-          <div id="soldPhoneRevenueBadge"
-            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 7px 18px; display: flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
-            title="Bên trái: Doanh thu Tháng | Bên phải: Doanh thu Ngày">
-            <span id="soldPhoneMonthRevenueVal"
-              style="color: #4ade80 !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
-              title="Doanh thu Tháng">0</span>
-            <svg viewBox="0 0 24 24"
-              style="width: 20px; height: 20px; flex-shrink: 0; display: inline-block; vertical-align: middle;">
-              <circle cx="12" cy="12" r="10" fill="#facc15" stroke="#eab308" stroke-width="1.5" />
-              <circle cx="12" cy="12" r="7.5" fill="none" stroke="#ca8a04" stroke-width="1" stroke-dasharray="2 1.5" />
-              <path
-                d="M12 6.5v11M9.5 9c0-1.4 1.1-2.2 2.5-2.2s2.5.8 2.5 2.2-1.5 2-2.5 2.5-2.5 1.1-2.5 2.5 1.1 2.2 2.5 2.2 2.5-.8 2.5-2.2"
-                fill="none" stroke="#78350f" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-            <span id="soldPhoneDayRevenueVal"
-              style="color: #ffffff !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
-              title="Doanh thu Ngày">0</span>
-          </div>
-
-          <!-- 2. BỘ LỌC XEM THEO (NGÀY / THÁNG / NĂM) - ẨN ĐI THEO YÊU CẦU, MẶC ĐỊNH TẤT CẢ -->
-          <div class="unified-date-filter-box" style="display: none;">
-            <select class="unified-mode-select" id="soldPhoneModeSelect" onchange="setSoldPhoneMode(this.value)"
-              title="Xem theo Tháng / Ngày / Năm / Tất cả">
-              <option value="month">Tháng</option>
-              <option value="day">Ngày</option>
-              <option value="year">Năm</option>
-              <option value="all" selected>Tất cả</option>
-            </select>
-
-            <div class="unified-date-ctrls" id="soldPhoneDateFilterBox" style="display: none;">
-              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterDate(-1)"
-                title="Lùi 1 ngày">
-                <svg viewBox="0 0 24 24">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-              <span class="unified-date-text" id="filterSoldPhoneDateDisplay"
-                onclick="makeDateDisplayEditable(this, 'soldPhone', 'day')"
-                title="Bấm để chỉnh sửa thủ công">24/10/2026</span>
-              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterDate(1)"
-                title="Tiến 1 ngày">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-              <button type="button" class="unified-arrow-btn" onclick="openDatePicker('soldPhone')"
-                title="Mở lịch chọn ngày">
-                <svg viewBox="0 0 24 24">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-              </button>
-              <input type="date" id="nativeDatePicker_soldPhone" class="hidden-native-datepicker"
-                onchange="handleNativeDateChange('soldPhone', this.value)">
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: nowrap; gap: 12px; width: 100%;">
+          <!-- CỤM TRÁI: BADGE DOANH THU (THÁNG/NGÀY) + NÚT MŨI TÊN EXCEL -->
+          <div style="display: inline-flex; align-items: center; gap: 8px;">
+            <div id="soldPhoneRevenueBadge"
+              style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 6px 16px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
+              title="Bên trái: Doanh thu Tháng | Bên phải: Doanh thu Ngày">
+              <span id="soldPhoneMonthRevenueVal"
+                style="color: #4ade80 !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
+                title="Doanh thu Tháng">0</span>
+              <svg viewBox="0 0 24 24"
+                style="width: 20px; height: 20px; flex-shrink: 0; display: inline-block; vertical-align: middle;">
+                <circle cx="12" cy="12" r="10" fill="#facc15" stroke="#eab308" stroke-width="1.5" />
+                <circle cx="12" cy="12" r="7.5" fill="none" stroke="#ca8a04" stroke-width="1" stroke-dasharray="2 1.5" />
+                <path
+                  d="M12 6.5v11M9.5 9c0-1.4 1.1-2.2 2.5-2.2s2.5.8 2.5 2.2-1.5 2-2.5 2.5-2.5 1.1-2.5 2.5 1.1 2.2 2.5 2.2 2.5-.8 2.5-2.2"
+                  fill="none" stroke="#78350f" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+              <span id="soldPhoneDayRevenueVal"
+                style="color: #ffffff !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
+                title="Doanh thu Ngày">0</span>
             </div>
 
-            <div class="unified-date-ctrls" id="soldPhoneMonthFilterBox" style="display: none;">
-              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterMonth(-1)"
-                title="Lùi 1 tháng">
-                <svg viewBox="0 0 24 24">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-              <span class="unified-date-text" id="filterSoldPhoneMonthDisplay"
-                onclick="makeDateDisplayEditable(this, 'soldPhone', 'month')"
-                title="Bấm để chỉnh sửa thủ công">10/2026</span>
-              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterMonth(1)"
-                title="Tiến 1 tháng">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-            </div>
+            <!-- Nút mũi tên mở Nhập/Xuất Excel -->
+            <button type="button" id="btnSoldPhoneExcelToggle" class="btn-excel-toggle-custom"
+              onclick="toggleSoldPhoneExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
+              <span id="soldPhoneExcelArrowIcon"
+                style="display: inline-block; transition: transform 0.25s ease;">❯</span>
+            </button>
 
-            <div class="unified-date-ctrls" id="soldPhoneYearFilterBox" style="display: none;">
-              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterYear(-1)" title="Lùi 1 năm">
-                <svg viewBox="0 0 24 24">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
+            <!-- Khối nút Nhập / Xuất Excel ẩn/hiện -->
+            <div id="soldPhoneActionsBox" style="display: none; align-items: center; gap: 6px;">
+              <button type="button" class="btn-action-sales" onclick="triggerImportSoldPhoneExcel()"
+                title="Nhập dữ liệu Bảo Hành từ file Excel (.csv, .xlsx)"
+                style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.82rem; padding: 5px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
+                📥 Nhập
               </button>
-              <span class="unified-date-text" id="filterSoldPhoneYearDisplay"
-                onclick="makeDateDisplayEditable(this, 'soldPhone', 'year')"
-                title="Bấm để chỉnh sửa thủ công">2026</span>
-              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterYear(1)" title="Tiến 1 năm">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
+              <button type="button" class="btn-action-sales" onclick="exportSoldPhoneToExcel()"
+                title="Xuất danh sách Bảo Hành ra file Excel"
+                style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.82rem; padding: 5px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
+                📤 Xuất
               </button>
+              <button type="button" class="btn-action-sales" onclick="clearAllSoldPhoneData()"
+                title="Xóa toàn bộ danh sách Bảo Hành để nhập lại từ đầu"
+                style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.82rem; padding: 5px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
+                🗑️ Xóa Hết
+              </button>
+              <input type="file" id="soldPhoneExcelFileInput" accept=".csv, .xlsx, .xls, text/csv"
+                style="display: none;" onchange="handleImportSoldPhoneExcelFile(event)">
             </div>
           </div>
 
-          <!-- 3. LÃI THÁNG (XANH) & LÃI NGÀY (TRẮNG) NỀN ĐEN PHÍA BÊN PHẢI -->
+          <!-- CỤM GIỮA: BADGE TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH -->
+          <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+            <span
+              style="background: #059669; color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 6px 24px; border-radius: 8px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">MÁY
+              ĐÃ BÁN & BẢO HÀNH</span>
+          </div>
+
+          <!-- CỤM PHẢI: LÃI THÁNG/NGÀY -->
           <div id="soldPhoneProfitBadge"
-            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 7px 18px; display: flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
+            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 6px 16px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
             title="Bên trái: Lãi Tháng | Bên phải: Lãi Ngày">
             <span id="soldPhoneMonthProfitVal"
               style="color: #4ade80 !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
@@ -1702,12 +1665,12 @@
           </div>
         </div>
 
-        <!-- HÀNG 2: TÌM KIẾM VÀ ĐÃ BÁN TRÊN CÙNG 1 HÀNG NHƯ MẪU -->
+        <!-- HÀNG 2: THANH CÔNG CỤ TOOLBAR Y CHANG 100% ẢNH MẪU -->
         <div class="baohanh-search-row"
-          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; gap: 8px; width: 100%;">
-          <!-- Ô TÌM KIẾM CÓ CHỮ TÌM KIẾM Ở TRƯỚC (CÓ DROPDOWN GỢI Ý NHƯ BÁN MÁY) -->
+          style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.65rem; width: 100%; flex-wrap: nowrap; overflow-x: auto;">
+          <!-- 1. Ô TÌM KIẾM -->
           <div class="search-box-bm"
-            style="flex: 1; height: 38px; box-sizing: border-box; padding: 6px 12px; position: relative;">
+            style="flex: 1.2; min-width: 200px; height: 38px; box-sizing: border-box; padding: 6px 12px; position: relative;">
             <span class="search-label-single-line" style="color: #ffffff; font-weight: 800;">TÌM KIẾM</span>
             <input type="text" id="soldPhoneSearchInput" class="search-input-field" inputmode="text"
               placeholder="🔍 Tìm tên máy, IMEI" oninput="handleSoldPhoneSearchInput(this)"
@@ -1715,64 +1678,109 @@
               autocomplete="off">
             <button type="button" id="btnClearSoldPhoneSearch" class="btn-clear-search" onclick="clearSoldPhoneSearch()"
               title="Xóa tìm kiếm">✕</button>
-            <!-- DROPDOWN GỢI Ý TÊN MÁY BẢO HÀNH -->
             <div id="soldPhoneSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;"></div>
           </div>
 
-          <!-- BỘ LỌC BẢO HÀNH (ẨN ĐI THEO YÊU CẦU, MẶC ĐỊNH TẤT CẢ) -->
-          <div class="price-filter-box-bm" style="display: none;">
-            <span class="price-filter-label" style="color: #38bdf8;">BẢO HÀNH</span>
-            <select id="soldPhoneWarrantyFilter" class="price-filter-select"
-              onchange="handleSoldPhoneWarrantyFilterChange(this)">
+          <!-- 2. BỘ LỌC HÃNG: HÃNG TẤT CẢ (VÀNG) -->
+          <div class="price-filter-box-bm"
+            style="height: 38px; box-sizing: border-box; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 0 10px; display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <span style="color: #ffffff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;">Hãng</span>
+            <select id="soldPhoneBrandFilter" class="price-filter-select"
+              onchange="handleSoldPhoneBrandFilterChange(this)"
+              style="background: transparent; border: none; color: #facc15; font-weight: 900; font-size: 0.95rem; cursor: pointer; outline: none; padding-right: 18px;">
               <option value="ALL" selected>Tất Cả</option>
-              <option value="CON">Còn Bảo Hành</option>
-              <option value="HET">Hết Bảo Hành</option>
             </select>
           </div>
 
-          <!-- KHỐI ĐÃ BÁN -->
+          <!-- 3. BỘ LỌC THỜI GIAN: NGÀY / THÁNG / NĂM / TẤT CẢ + CÁC NÚT ĐIỀU HƯỚNG -->
+          <div class="unified-date-filter-box"
+            style="height: 38px; box-sizing: border-box; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 0 6px; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            <select class="unified-mode-select" id="soldPhoneModeSelect" onchange="setSoldPhoneMode(this.value)"
+              title="Lọc theo : Ngày , Tháng , Năm , Tất Cả"
+              style="height: 28px; line-height: 28px; background-color: #000000; border: 1px solid #334155; color: #ffffff; font-weight: 800; font-size: 0.9rem; border-radius: 6px; padding: 0 24px 0 8px;">
+              <option value="day">Ngày</option>
+              <option value="month">Tháng</option>
+              <option value="year" selected>Năm</option>
+              <option value="all">Tất Cả</option>
+            </select>
+
+            <!-- Bộ điều khiển ngày -->
+            <div class="unified-date-ctrls" id="soldPhoneDateFilterBox" style="display: none;">
+              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterDate(-1)" title="Lùi 1 ngày">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+              </button>
+              <span class="unified-date-text" id="filterSoldPhoneDateDisplay"
+                onclick="makeDateDisplayEditable(this, 'soldPhone', 'day')"
+                title="Bấm để chỉnh sửa thủ công">02/11/2026</span>
+              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterDate(1)" title="Tiến 1 ngày">
+                <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+              </button>
+              <button type="button" class="unified-arrow-btn" onclick="openDatePicker('soldPhone')" title="Mở lịch chọn ngày">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+              </button>
+              <input type="date" id="nativeDatePicker_soldPhone" class="hidden-native-datepicker"
+                onchange="handleNativeDateChange('soldPhone', this.value)">
+            </div>
+
+            <!-- Bộ điều khiển tháng -->
+            <div class="unified-date-ctrls" id="soldPhoneMonthFilterBox" style="display: none;">
+              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterMonth(-1)" title="Lùi 1 tháng">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+              </button>
+              <span class="unified-date-text" id="filterSoldPhoneMonthDisplay"
+                onclick="makeDateDisplayEditable(this, 'soldPhone', 'month')"
+                title="Bấm để chỉnh sửa thủ công">11/2026</span>
+              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterMonth(1)" title="Tiến 1 tháng">
+                <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+              </button>
+            </div>
+
+            <!-- Bộ điều khiển năm (Mặc định hiển thị) -->
+            <div class="unified-date-ctrls" id="soldPhoneYearFilterBox" style="display: inline-flex;">
+              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterYear(-1)" title="Lùi 1 năm">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+              </button>
+              <span class="unified-date-text" id="filterSoldPhoneYearDisplay"
+                onclick="makeDateDisplayEditable(this, 'soldPhone', 'year')"
+                title="Bấm để chỉnh sửa thủ công">2026</span>
+              <button type="button" class="unified-arrow-btn" onclick="changeSoldPhoneFilterYear(1)" title="Tiến 1 năm">
+                <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. NÚT ẨN GIÁ VÀ DOANH THU (CON MẮT) -->
+          <button type="button" id="btnToggleSoldPhoneHidePrices" class="brand-btn-h btn-hide-prices"
+            onclick="toggleSoldPhoneHidePrices()" title="Bấm để ẩn toàn bộ giá và doanh thu"
+            style="width: 38px; height: 38px; min-width: 38px; background: #000000; border: 1.5px solid #334155; border-radius: 9px; color: #94a3b8; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0;">
+            <span id="soldPhoneHidePriceEyeIcon" style="display: inline-flex; align-items: center; justify-content: center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </span>
+          </button>
+
+          <!-- 5. BỘ LỌC BẢO HÀNH: Bảo Hành : Còn BH (VÀNG) / Hết BH / Tất Cả -->
+          <div class="price-filter-box-bm"
+            style="height: 38px; box-sizing: border-box; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            <span style="color: #ffffff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;">Bảo Hành :</span>
+            <select id="soldPhoneWarrantyFilter" class="price-filter-select"
+              onchange="handleSoldPhoneWarrantyFilterChange(this)"
+              style="background: transparent; border: none; color: #facc15; font-weight: 900; font-size: 0.95rem; cursor: pointer; outline: none; padding-right: 18px;">
+              <option value="CON" selected>Còn BH</option>
+              <option value="HET">Hết BH</option>
+              <option value="ALL">Tất Cả</option>
+            </select>
+          </div>
+
+          <!-- 6. KHỐI ĐÃ BÁN -->
           <div class="baohanh-count-box"
-            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; height: 38px; padding: 0 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);">
+            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; height: 38px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);">
             <span style="font-size: 0.97rem; color: #ffffff; font-weight: 800; white-space: nowrap;"
               id="soldPhoneCountText">Đã Bán : 0</span>
           </div>
-
-          <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL BẢO HÀNH (HIỆN TRÊN DESKTOP) -->
-          <div class="baohanh-excel-controls" style="display: inline-flex; align-items: center; gap: 8px;">
-            <button type="button" id="btnSoldPhoneExcelToggle" class="btn-excel-toggle-custom"
-              onclick="toggleSoldPhoneExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
-              <span id="soldPhoneExcelArrowIcon"
-                style="display: inline-block; transition: transform 0.25s ease;">❯</span>
-            </button>
-
-            <div id="soldPhoneActionsBox" style="display: none; align-items: center; gap: 8px;">
-              <button type="button" class="btn-action-sales" onclick="triggerImportSoldPhoneExcel()"
-                title="Nhập dữ liệu Bảo Hành từ file Excel (.csv, .xlsx)"
-                style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
-                📥 Nhập
-              </button>
-              <button type="button" class="btn-action-sales" onclick="exportSoldPhoneToExcel()"
-                title="Xuất danh sách Bảo Hành ra file Excel"
-                style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
-                📤 Xuất
-              </button>
-              <button type="button" class="btn-action-sales" onclick="clearAllSoldPhoneData()"
-                title="Xóa toàn bộ danh sách Bảo Hành để nhập lại từ đầu"
-                style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
-                🗑️ Xóa Hết
-              </button>
-              <input type="file" id="soldPhoneExcelFileInput" accept=".csv, .xlsx, .xls, text/csv"
-                style="display: none;" onchange="handleImportSoldPhoneExcelFile(event)">
-            </div>
-          </div>
-        </div>
-
-        <!-- HÀNG 3: BADGE TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH NHƯ MẪU -->
-        <div class="baohanh-title-row"
-          style="display: flex; justify-content: center; align-items: center; margin-bottom: 0.5rem; width: 100%;">
-          <span
-            style="background: linear-gradient(180deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 6px 20px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">MÁY
-            ĐÃ BÁN & BẢO HÀNH</span>
         </div>
 
 
