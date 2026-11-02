@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261102_082800">
+  <link rel="stylesheet" href="css/style.css?v=20261102_090311">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -20,7 +20,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261102_082800";
+    var CURRENT_PAGE_VERSION = "20261102_090311";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1795,11 +1795,134 @@
       </div>
 
       <!-- TAB 5: BÁO GIÁ SỬA CHỮA & NHẬP HÀNG (CƠ SỞ DỮ LIỆU KIM CHI MOBILE) -->
-      <div id="tab-baogia" class="tab-content"
-        style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261102_082800" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
-          style="width: 100%; height: 100%; border: none; background: #0b0f19;"
-          allow="clipboard-read; clipboard-write"></iframe>
+      <!-- TAB 5: BÁO GIÁ SỬA (CHUẨN 100% THEO ẢNH MẪU) -->
+      <div id="tab-baogia" class="tab-content">
+        <!-- HEADER TRANG BÁO GIÁ -->
+        <div class="bg-header-row">
+          <div class="bg-header-left">
+            <h1 class="bg-title-main">BÁO GIÁ</h1>
+            <div class="bg-subtitle-greet">Xin chào, Quỳnh Búp Bê. Chúc bạn một ngày làm việc hiệu quả!</div>
+          </div>
+          <div class="bg-header-right">
+            <button type="button" class="bg-btn-icon-head" onclick="exportPartsToExcel()" title="Xuất Excel danh sách báo giá linh kiện">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </button>
+            <div class="bg-btn-shop-pill">Kim Chi Mobile</div>
+            <button type="button" class="bg-btn-logout-pill" onclick="handleLogout()" title="Đăng xuất">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Đăng xuất</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- HÀNG TIÊU ĐỀ SECTION & NÚT TẠO BÁO GIÁ -->
+        <div class="bg-subbar-row">
+          <div class="bg-subbar-left">
+            <div class="bg-section-heading">Linh kiện</div>
+            <div class="bg-section-stats" id="bgSectionStatsText">Kho linh kiện độc lập · 274 dòng · 420 sản phẩm</div>
+          </div>
+          <div class="bg-subbar-right">
+            <button type="button" class="bg-btn-create-quote" onclick="openPartsModal()">
+              <span class="plus-icon">+</span>
+              <span>Tạo báo giá</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- THANH BỘ LỌC TÌM KIẾM (BORDER BO GÓC) -->
+        <div class="bg-filter-bar">
+          <div class="bg-search-box">
+            <svg viewBox="0 0 24 24" class="bg-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="bgSearchDeviceInput" placeholder="Tìm chính xác thuộc loại máy..." oninput="handlePartsSearchFilter(this.value)">
+          </div>
+
+          <div class="bg-filter-select-wrap">
+            <select id="bgFilterBrand" onchange="handlePartsBrandSelect(this.value)">
+              <option value="">Tất cả hãng</option>
+            </select>
+            <span class="bg-select-arrow">▼</span>
+          </div>
+
+          <div class="bg-filter-select-wrap">
+            <select id="bgFilterDevice" onchange="handlePartsDeviceSelect(this.value)">
+              <option value="">Tất cả loại máy</option>
+            </select>
+            <span class="bg-select-arrow">▼</span>
+          </div>
+
+          <div class="bg-filter-select-wrap">
+            <select id="bgFilterType" onchange="handlePartsTypeSelect(this.value)">
+              <option value="">Tất cả loại LK</option>
+            </select>
+            <span class="bg-select-arrow">▼</span>
+          </div>
+
+          <div class="bg-filter-select-wrap">
+            <select id="bgFilterStatus" onchange="handlePartsStatusSelect(this.value)">
+              <option value="">Tất cả trạng thái</option>
+              <option value="in_stock">Còn hàng</option>
+              <option value="out_stock">Hết hàng</option>
+            </select>
+            <span class="bg-select-arrow">▼</span>
+          </div>
+
+          <button type="button" class="bg-btn-reset-filters" onclick="resetPartsFilters()" title="Xóa bộ lọc về mặc định">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 21v-7"></path>
+              <path d="M4 10V3"></path>
+              <path d="M12 21v-9"></path>
+              <path d="M12 8V3"></path>
+              <path d="M20 21v-5"></path>
+              <path d="M20 12V3"></path>
+              <circle cx="4" cy="14" r="2"></circle>
+              <circle cx="12" cy="8" r="2"></circle>
+              <circle cx="20" cy="16" r="2"></circle>
+            </svg>
+            <span>Xóa lọc</span>
+          </button>
+        </div>
+
+        <!-- THÔNG BÁO XUẤT EXCEL (NỀN XANH LÁ MỜ NHƯ MẪU) -->
+        <div class="bg-export-notice" id="bgExportNotice">
+          Đã xuất <span id="bgExportCount">274</span> dòng → <span id="bgExportFilename">bao-gia-linh-kien_2026-11-02.xlsx</span>
+        </div>
+
+        <!-- BẢNG DỮ LIỆU BÁO GIÁ LINH KIỆN -->
+        <div class="bg-table-wrap">
+          <table class="bg-quote-table">
+            <thead>
+              <tr>
+                <th style="width: 10%; text-align: left;">HÃNG</th>
+                <th style="width: 14%; text-align: center;">THUỘC LOẠI MÁY</th>
+                <th style="width: 16%; text-align: center;">LOẠI LINH KIỆN</th>
+                <th style="width: 10%; text-align: center;">GIÁ THAY KHÁCH</th>
+                <th style="width: 6%; text-align: center;">SL</th>
+                <th style="width: 10%; text-align: center;">TRẠNG THÁI</th>
+                <th style="width: 10%; text-align: center;">THAO TÁC</th>
+                <th style="width: 8%; text-align: center;">GIÁ NHẬP</th>
+                <th style="width: 6%; text-align: center;">LÃI</th>
+                <th style="width: 6%; text-align: center;">MÀU SẮC</th>
+                <th style="width: 10%; text-align: center;">NGÀY</th>
+              </tr>
+            </thead>
+            <tbody id="bgPartsTableBody">
+              <!-- Render tự động bởi renderPartsTable() -->
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- TAB 8: CÔNG NỢ -->
@@ -5287,10 +5410,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261102_082800"></script>
+  <script src="js/seed_data.js?v=20261102_090311"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261102_082800"></script>
+  <script src="js/main.js?v=20261102_090311"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

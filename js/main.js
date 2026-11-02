@@ -12343,279 +12343,249 @@
 
 
     const DEFAULT_PARTS_DATA = [
-      { id: 1, brand: 'SAMSUNG', device: 'A02 M02 A12 M12 M32 5G', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '175', profit: '275', qty: 2, color: '' },
-      { id: 2, brand: 'SAMSUNG', device: 'A02S A03 A03S', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '180', profit: '220', qty: 2, color: '' },
-      { id: 3, brand: 'SAMSUNG', device: 'A03 CORE', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '180', profit: '220', qty: 1, color: '' },
-      { id: 4, brand: 'SAMSUNG', device: 'A04', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '190', profit: '210', qty: 1, color: '' },
-      { id: 5, brand: 'SAMSUNG', device: 'A04E', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '185', profit: '215', qty: 1, color: '' },
-      { id: 6, brand: 'SAMSUNG', device: 'A04S A13 (5G)', type: 'MÀN HÌNH', style: '', priceSell: '400', priceCost: '185', profit: '215', qty: 2, color: '' },
-      { id: 7, brand: 'SAMSUNG', device: 'A05', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '185', profit: '265', qty: 2, color: '' },
-      { id: 8, brand: 'SAMSUNG', device: 'A05 ZIN', type: 'MÀN HÌNH', style: '', priceSell: '500', priceCost: '220', profit: '280', qty: 2, color: '' },
-      { id: 9, brand: 'SAMSUNG', device: 'A05S', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '200', profit: '250', qty: 2, color: '' },
-      { id: 10, brand: 'SAMSUNG', device: 'A06 4G ZIN', type: 'MÀN HÌNH', style: '', priceSell: '500', priceCost: '240', profit: '260', qty: 2, color: '' },
-      { id: 11, brand: 'SAMSUNG', device: 'A06 4G', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '200', profit: '250', qty: 1, color: '' },
-      { id: 12, brand: 'SAMSUNG', device: 'A06 5G', type: 'MÀN HÌNH', style: '', priceSell: '450', priceCost: '200', profit: '250', qty: 1, color: '' },
-      { id: 13, brand: 'SAMSUNG', device: 'A20S', type: 'CÁP SẠC', style: '---', priceSell: '150', priceCost: '35', profit: '115', qty: 0, color: '' },
-      { id: 14, brand: 'SAMSUNG', device: 'A23 4G', type: 'CÁP SẠC', style: '---', priceSell: '200', priceCost: '1', profit: '199', qty: 0, color: '' },
-      { id: 15, brand: 'SAMSUNG', device: 'A23 5G', type: 'CÁP SẠC', style: '---', priceSell: '200', priceCost: '1', profit: '199', qty: 0, color: '' },
-      { id: 16, brand: 'IPHONE', device: '6G', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '300', priceCost: '150', profit: '150', qty: 1, color: '#000000' },
-      { id: 17, brand: 'IPHONE', device: '6G', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '300', priceCost: '150', profit: '150', qty: 1, color: '#ffffff' },
-      { id: 18, brand: 'IPHONE', device: '6 PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '170', profit: '180', qty: 0, color: '#ffffff' },
-      { id: 19, brand: 'IPHONE', device: '6 PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '170', profit: '180', qty: 1, color: '#000000' },
-      { id: 20, brand: 'IPHONE', device: '6S', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '300', priceCost: '150', profit: '150', qty: 1, color: '#ffffff' },
-      { id: 21, brand: 'IPHONE', device: '6S', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '300', priceCost: '150', profit: '150', qty: 0, color: '#000000' },
-      { id: 22, brand: 'IPHONE', device: '6S PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '165', profit: '185', qty: 2, color: '#ffffff' },
-      { id: 23, brand: 'IPHONE', device: '6S PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '165', profit: '185', qty: 2, color: '#000000' },
-      { id: 24, brand: 'IPHONE', device: '7G', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '160', profit: '190', qty: 3, color: '#ffffff' },
-      { id: 25, brand: 'IPHONE', device: '7G', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '350', priceCost: '160', profit: '190', qty: 3, color: '#000000' },
-      { id: 26, brand: 'IPHONE', device: '7 PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '400', priceCost: '165', profit: '235', qty: 1, color: '#ffffff' },
-      { id: 27, brand: 'IPHONE', device: '7 PLUS', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '400', priceCost: '165', profit: '235', qty: 5, color: '#000000' },
-      { id: 28, brand: 'IPHONE', device: '8 PLUS', type: 'LƯNG', style: 'LỖ TO', priceSell: '300', priceCost: '50', profit: '250', qty: 0, color: '#000000' },
-      { id: 29, brand: 'IPHONE', device: '11 PRO MAX', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '650', priceCost: '1', profit: '649', qty: 0, color: '' },
-      { id: 30, brand: 'IPHONE', device: '12 12 PRO', type: 'MÀN HÌNH', style: 'LÔ - RẺ', priceSell: '600', priceCost: '1', profit: '599', qty: 0, color: '' },
-      { id: 31, brand: 'IPHONE', device: '12 PRO MAX', type: 'MÀN HÌNH', style: 'GX', priceSell: '1.400', priceCost: '1.020', profit: '380', qty: 0, color: '' },
-      { id: 32, brand: 'IPHONE', device: '12 PRO MAX', type: 'LƯNG', style: 'LỖ TO', priceSell: '300', priceCost: '50', profit: '250', qty: 0, color: '#3b82f6' },
-      { id: 33, brand: 'IPHONE', device: '13 PRO MAX', type: 'LƯNG', style: 'LỖ TO', priceSell: '350', priceCost: '60', profit: '290', qty: 0, color: '#3b82f6' },
-      { id: 34, brand: 'IPHONE', device: 'XS', type: 'LƯNG', style: 'LỖ TO', priceSell: '300', priceCost: '50', profit: '250', qty: 0, color: '#f59e0b' }
+      { id: 1, brand: 'IPHONE', device: '11', type: 'Pin DL Cao (Jufuxing)', style: 'Pin DL Cao (Jufuxing)', priceSell: '400', priceCost: '190', profit: '210', qty: 3, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 2, brand: 'IPHONE', device: '11', type: 'Pin Rẻ (iPhone)', style: 'Pin Rẻ (iPhone)', priceSell: '300', priceCost: '130', profit: '170', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 3, brand: 'IPHONE', device: '11', type: 'Màn GX', style: 'Màn GX', priceSell: '550', priceCost: '260', profit: '290', qty: 4, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 4, brand: 'IPHONE', device: '11', type: 'Màn Zin iPhone', style: 'Màn Zin iPhone', priceSell: '900', priceCost: '510', profit: '390', qty: 1, status: 'Còn hàng', color: '—', date: '9/9/2026' },
+      { id: 5, brand: 'IPHONE', device: '11 PRO', type: 'Màn Lô (Rẻ)', style: 'Màn Lô (Rẻ)', priceSell: '600', priceCost: '250', profit: '350', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 6, brand: 'IPHONE', device: '11 PRO', type: 'Màn Lô ( JK )', style: 'Màn Lô ( JK )', priceSell: '600', priceCost: '350', profit: '250', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 7, brand: 'IPHONE', device: '11 PRO', type: 'Pin DL Cao (Jufuxing)', style: 'Pin DL Cao (Jufuxing)', priceSell: '450', priceCost: '240', profit: '210', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 8, brand: 'IPHONE', device: '11 PRO', type: 'Màn GX', style: 'Màn GX', priceSell: '900', priceCost: '600', profit: '300', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 9, brand: 'IPHONE', device: '11 PRO', type: 'Pin Rẻ (iPhone)', style: 'Pin Rẻ (iPhone)', priceSell: '350', priceCost: '160', profit: '190', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 10, brand: 'IPHONE', device: '11 PRO MAX', type: 'Màn JK OLED (Dẻo)', style: 'Màn JK OLED (Dẻo)', priceSell: '1.000', priceCost: '740', profit: '260', qty: 3, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 11, brand: 'IPHONE', device: '11 PRO MAX', type: 'Màn GX', style: 'Màn GX', priceSell: '1.050', priceCost: '760', profit: '290', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 12, brand: 'IPHONE', device: '12 12 PRO', type: 'Màn Lô (Rẻ)', style: 'Màn Lô (Rẻ)', priceSell: '600', priceCost: '350', profit: '250', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 13, brand: 'IPHONE', device: '12 PRO MAX', type: 'Màn GX', style: 'Màn GX', priceSell: '1.400', priceCost: '1.020', profit: '380', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 14, brand: 'SAMSUNG', device: 'A05', type: 'Màn Zin', style: 'Màn Zin', priceSell: '450', priceCost: '185', profit: '265', qty: 2, status: 'Còn hàng', color: '—', date: '10/8/2026' },
+      { id: 15, brand: 'SAMSUNG', device: 'A06 4G', type: 'Màn Oled', style: 'Màn Oled', priceSell: '450', priceCost: '200', profit: '250', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' }
     ];
 
     let partsDatabase = [];
     try {
-      const storedParts = localStorage.getItem('kimchi_parts_database');
+      const storedParts = localStorage.getItem('kimchi_parts_database_v2');
       partsDatabase = storedParts ? JSON.parse(storedParts) : DEFAULT_PARTS_DATA;
     } catch(e) {
       partsDatabase = DEFAULT_PARTS_DATA;
     }
 
-    let partsCurrentBrand = 'SAMSUNG';
-    let partsCurrentType = 'MÀN HÌNH';
-    let partsCurrentStyle = 'TẤT CẢ';
-    let partsIsOutOfStockFilter = false;
-    let partsIsRestockFilter = false;
-    let partsSearchKeyword = '';
-    let partsHideCost = false;
+    let partsFilterKeyword = '';
+    let partsFilterBrand = '';
+    let partsFilterDevice = '';
+    let partsFilterType = '';
+    let partsFilterStatus = '';
 
     function savePartsStorage() {
       try {
-        localStorage.setItem('kimchi_parts_database', JSON.stringify(partsDatabase));
+        localStorage.setItem('kimchi_parts_database_v2', JSON.stringify(partsDatabase));
       } catch (e) {
         console.error('Lỗi lưu trữ partsDatabase:', e);
       }
     }
 
-    function filterPartsBrand(brand, btn) {
-      partsIsOutOfStockFilter = false;
-      partsIsRestockFilter = false;
-      document.getElementById('partsBtnOutOfStock')?.classList.remove('active');
-      document.querySelectorAll('#partsBrandFilterGroup .parts-btn-pill').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      partsCurrentBrand = brand;
+    function handlePartsSearchFilter(val) {
+      partsFilterKeyword = (val || '').trim().toLowerCase();
       renderPartsTable();
     }
 
-    function filterPartsType(type, btn) {
-      document.querySelectorAll('#partsTypeFilterGroup .parts-btn-pill').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      partsCurrentType = type;
+    function handlePartsBrandSelect(val) {
+      partsFilterBrand = val || '';
       renderPartsTable();
     }
 
-    function filterPartsStyle(style, btn) {
-      document.querySelectorAll('#partsStyleFilterGroup .parts-btn-pill').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      partsCurrentStyle = style;
+    function handlePartsDeviceSelect(val) {
+      partsFilterDevice = val || '';
       renderPartsTable();
     }
 
-    function togglePartsOutOfStock(btn) {
-      partsIsOutOfStockFilter = !partsIsOutOfStockFilter;
-      partsIsRestockFilter = false;
-      if (partsIsOutOfStockFilter) {
-        btn.classList.add('active');
-        document.querySelectorAll('#partsBrandFilterGroup .parts-btn-pill:not(.parts-btn-out-stock)').forEach(b => b.classList.remove('active'));
-      } else {
-        btn.classList.remove('active');
-        // Chọn lại hãng đang active
-        const curBtn = document.querySelector(`#partsBrandFilterGroup button[onclick*="'${partsCurrentBrand}'"]`);
-        if (curBtn) curBtn.classList.add('active');
-      }
+    function handlePartsTypeSelect(val) {
+      partsFilterType = val || '';
       renderPartsTable();
     }
 
-    function filterPartsRestock(btn) {
-      partsIsRestockFilter = !partsIsRestockFilter;
-      partsIsOutOfStockFilter = false;
-      document.getElementById('partsBtnOutOfStock')?.classList.remove('active');
-      if (partsIsRestockFilter) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
+    function handlePartsStatusSelect(val) {
+      partsFilterStatus = val || '';
       renderPartsTable();
     }
 
-    function handlePartsSearch(keyword) {
-      partsSearchKeyword = (keyword || '').trim().toLowerCase();
+    function resetPartsFilters() {
+      partsFilterKeyword = '';
+      partsFilterBrand = '';
+      partsFilterDevice = '';
+      partsFilterType = '';
+      partsFilterStatus = '';
+
+      const sInput = document.getElementById('bgSearchDeviceInput');
+      if (sInput) sInput.value = '';
+      const bSel = document.getElementById('bgFilterBrand');
+      if (bSel) bSel.value = '';
+      const dSel = document.getElementById('bgFilterDevice');
+      if (dSel) dSel.value = '';
+      const tSel = document.getElementById('bgFilterType');
+      if (tSel) tSel.value = '';
+      const stSel = document.getElementById('bgFilterStatus');
+      if (stSel) stSel.value = '';
+
       renderPartsTable();
     }
 
-    function togglePartsCostVisibility() {
-      partsHideCost = !partsHideCost;
-      const thCosts = document.querySelectorAll('.parts-col-cost, .parts-col-profit');
-      const tdCosts = document.querySelectorAll('.parts-td-cost, .parts-td-profit');
-      thCosts.forEach(el => el.style.display = partsHideCost ? 'none' : '');
-      tdCosts.forEach(el => el.style.display = partsHideCost ? 'none' : '');
-      const btn = document.getElementById('btnTogglePartsCost');
-      if (btn) {
-        btn.style.borderColor = partsHideCost ? '#f87171' : '#1f293d';
-        btn.style.color = partsHideCost ? '#f87171' : '#94a3b8';
+    function exportPartsToExcel() {
+      if (typeof XLSX === 'undefined') {
+        alert('Thư viện XLSX chưa tải xong!');
+        return;
+      }
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const filename = `bao-gia-linh-kien_${dateStr}.xlsx`;
+
+      const exportData = partsDatabase.map((item, idx) => ({
+        'STT': idx + 1,
+        'HÃNG': item.brand || '',
+        'THUỘC LOẠI MÁY': item.device || '',
+        'LOẠI LINH KIỆN': item.type || '',
+        'GIÁ THAY KHÁCH': item.priceSell || '',
+        'SL': item.qty !== undefined ? item.qty : '',
+        'TRẠNG THÁI': (parseInt(item.qty, 10) === 0 ? 'Hết hàng' : (item.status || 'Còn hàng')),
+        'GIÁ NHẬP': item.priceCost || '',
+        'LÃI': item.profit || '',
+        'MÀU SẮC': item.color || '—',
+        'NGÀY': item.date || '10/8/2026'
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Báo Giá Linh Kiện');
+      XLSX.writeFile(wb, filename);
+
+      const noticeEl = document.getElementById('bgExportNotice');
+      if (noticeEl) {
+        document.getElementById('bgExportCount').innerText = partsDatabase.length;
+        document.getElementById('bgExportFilename').innerText = filename;
+        noticeEl.style.display = 'flex';
       }
     }
 
-    function syncPartsDataCloud() {
-      savePartsStorage();
-      alert('Đã đồng bộ và lưu trữ bảng linh kiện thành công!');
-    }
+    function populatePartsFilterDropdowns() {
+      const brands = Array.from(new Set(partsDatabase.map(x => x.brand).filter(Boolean)));
+      const devices = Array.from(new Set(partsDatabase.map(x => x.device).filter(Boolean)));
+      const types = Array.from(new Set(partsDatabase.map(x => x.type).filter(Boolean)));
 
-    function formatDeviceDisplayHtml(deviceStr, brand, color) {
-      let html = '';
-      if (brand === 'IPHONE') {
-        html += `<span class="parts-apple-logo"></span>`;
+      const bSel = document.getElementById('bgFilterBrand');
+      if (bSel) {
+        const cur = bSel.value;
+        bSel.innerHTML = '<option value="">Tất cả hãng</option>' + brands.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
+        bSel.value = cur;
       }
 
-      // Tách tên máy và các tag phụ
-      const parts = (deviceStr || '').trim().split(/\s+/);
-      let isiPhone = (brand === 'IPHONE');
-
-      if (isiPhone) {
-        html += `<span class="parts-model-chip">${escapeHtml(deviceStr)}</span>`;
-      } else {
-        // Đối với Samsung và các hãng khác
-        parts.forEach(part => {
-          if (part === 'ZIN' || part === '5G' || part === '4G' || part === '(5G)') {
-            html += `<span class="parts-sub-badge">${escapeHtml(part)}</span>`;
-          } else {
-            html += `<span class="parts-model-chip">${escapeHtml(part)}</span>`;
-          }
-        });
+      const dSel = document.getElementById('bgFilterDevice');
+      if (dSel) {
+        const cur = dSel.value;
+        dSel.innerHTML = '<option value="">Tất cả loại máy</option>' + devices.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+        dSel.value = cur;
       }
 
-      // Chấm màu sắc nếu có
-      if (color) {
-        let dotBg = color;
-        let cLower = color.toLowerCase();
-        if (cLower === 'trắng' || cLower === 'white') dotBg = '#ffffff';
-        else if (cLower === 'đen' || cLower === 'black') dotBg = '#000000';
-        else if (cLower === 'xanh' || cLower === 'blue') dotBg = '#3b82f6';
-        else if (cLower === 'vàng' || cLower === 'gold') dotBg = '#f59e0b';
-        else if (cLower === 'tím' || cLower === 'purple') dotBg = '#a855f7';
-        else if (cLower === 'hồng' || cLower === 'pink') dotBg = '#ec4899';
-        html += `<span class="parts-color-dot" style="background-color: ${dotBg};" title="Màu: ${escapeHtml(color)}"></span>`;
+      const tSel = document.getElementById('bgFilterType');
+      if (tSel) {
+        const cur = tSel.value;
+        tSel.innerHTML = '<option value="">Tất cả loại LK</option>' + types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+        tSel.value = cur;
       }
-
-      return html;
     }
 
     function renderPartsTable() {
-      const tbody = document.getElementById('partsTableBody');
+      const tbody = document.getElementById('bgPartsTableBody');
       if (!tbody) return;
 
+      populatePartsFilterDropdowns();
+
       let filtered = partsDatabase.filter(item => {
-        // Lọc khi bấm HẾT HÀNG (SL = 0)
-        if (partsIsOutOfStockFilter) {
-          if (parseInt(item.qty, 10) > 0) return false;
-        } else {
-          // Lọc theo HÃNG
-          if (partsCurrentBrand && partsCurrentBrand !== 'ALL' && item.brand !== partsCurrentBrand) {
-            return false;
-          }
-
-          // Lọc theo LOẠI LINH KIỆN
-          if (partsCurrentType && partsCurrentType !== 'ALL' && item.type !== partsCurrentType) {
-            return false;
-          }
-
-          // Lọc theo KIỂU
-          if (partsCurrentStyle && partsCurrentStyle !== 'TẤT CẢ') {
-            if ((item.style || '').toUpperCase() !== partsCurrentStyle.toUpperCase()) {
-              return false;
-            }
-          }
+        if (partsFilterKeyword) {
+          const matchDevice = (item.device || '').toLowerCase().includes(partsFilterKeyword);
+          const matchType = (item.type || '').toLowerCase().includes(partsFilterKeyword);
+          const matchBrand = (item.brand || '').toLowerCase().includes(partsFilterKeyword);
+          if (!matchDevice && !matchType && !matchBrand) return false;
         }
 
-        // Lọc theo TÌM KIẾM
-        if (partsSearchKeyword) {
-          const matchDevice = (item.device || '').toLowerCase().includes(partsSearchKeyword);
-          const matchType = (item.type || '').toLowerCase().includes(partsSearchKeyword);
-          const matchStyle = (item.style || '').toLowerCase().includes(partsSearchKeyword);
-          const matchBrand = (item.brand || '').toLowerCase().includes(partsSearchKeyword);
-          if (!matchDevice && !matchType && !matchStyle && !matchBrand) return false;
+        if (partsFilterBrand && item.brand !== partsFilterBrand) return false;
+        if (partsFilterDevice && item.device !== partsFilterDevice) return false;
+        if (partsFilterType && item.type !== partsFilterType) return false;
+
+        if (partsFilterStatus) {
+          const isOut = (parseInt(item.qty, 10) === 0);
+          if (partsFilterStatus === 'out_stock' && !isOut) return false;
+          if (partsFilterStatus === 'in_stock' && isOut) return false;
         }
 
         return true;
       });
 
-      // Tính tổng vốn tồn kho: sum(Giá Nhập * SL)
-      let totalCapital = 0;
-      filtered.forEach(i => {
-        let costNum = parseFloat((i.priceCost || '0').replace(/\./g, '')) || 0;
-        let q = parseInt(i.qty, 10) || 0;
-        totalCapital += costNum * q;
+      // Cập nhật thống kê header: Kho linh kiện độc lập · 274 dòng · 420 sản phẩm
+      let totalQty = 0;
+      partsDatabase.forEach(i => {
+        totalQty += (parseInt(i.qty, 10) || 0);
       });
-
-      const capEl = document.getElementById('partsCapitalVal');
-      if (capEl) {
-        capEl.innerText = formatNumberDisplay(totalCapital);
+      const statsEl = document.getElementById('bgSectionStatsText');
+      if (statsEl) {
+        statsEl.innerText = `Kho linh kiện độc lập · ${partsDatabase.length} dòng · ${totalQty} sản phẩm`;
       }
 
+      const countExportEl = document.getElementById('bgExportCount');
+      if (countExportEl) countExportEl.innerText = partsDatabase.length;
+
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2.5rem; color: #94a3b8; font-weight: 700;">Không có linh kiện nào phù hợp với bộ lọc</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 2.5rem; color: #94a3b8; font-weight: 700;">Không có linh kiện nào phù hợp với bộ lọc</td></tr>`;
         return;
       }
 
       tbody.innerHTML = filtered.map(item => {
-        let isZero = (parseInt(item.qty, 10) === 0);
-        let rowClass = isZero ? 'parts-out-stock' : '';
-        let deviceHtml = formatDeviceDisplayHtml(item.device, item.brand, item.color);
-        let styleDisplay = item.style ? escapeHtml(item.style) : '---';
+        const qtyNum = parseInt(item.qty, 10) || 0;
+        const isOut = (qtyNum === 0);
+        const statusLabel = isOut ? 'Hết hàng' : (item.status || 'Còn hàng');
+        const colorDisplay = item.color && item.color !== '' ? escapeHtml(item.color) : '—';
+        const dateDisplay = item.date || '10/8/2026';
 
         return `
-          <tr class="${rowClass}">
-            <td>
-              <div class="parts-device-cell">
-                ${deviceHtml}
-              </div>
-            </td>
-            <td>
-              <span class="parts-text-linhkien">${escapeHtml(item.type)}</span>
+          <tr class="${isOut ? 'out-of-stock' : ''}">
+            <td style="text-align: left;">
+              <span class="bg-cell-brand">${escapeHtml(item.brand || 'IPHONE')}</span>
             </td>
             <td style="text-align: center;">
-              <span class="parts-text-kieu">${styleDisplay}</span>
+              <span class="bg-cell-device">${escapeHtml(item.device || '')}</span>
             </td>
             <td style="text-align: center;">
-              <span class="parts-price-sell">${formatPriceStr(item.priceSell)}</span>
+              <span class="bg-pill-lk">${escapeHtml(item.type || '')}</span>
             </td>
             <td style="text-align: center;">
-              <span class="parts-qty-badge ${isZero ? 'zero' : ''}">${item.qty}</span>
+              <span class="bg-price-customer">${formatPriceStr(item.priceSell)}</span>
             </td>
             <td style="text-align: center;">
-              <div class="parts-actions-set">
-                <button type="button" class="parts-btn-act edit" onclick="openPartsModal(${item.id})" title="Sửa linh kiện">
+              <span class="bg-qty-text">${qtyNum}</span>
+            </td>
+            <td style="text-align: center;">
+              <span class="bg-status-badge ${isOut ? 'out' : ''}">${statusLabel}</span>
+            </td>
+            <td style="text-align: center;">
+              <div class="bg-actions-cell">
+                <button type="button" class="bg-action-btn edit" onclick="openPartsModal(${item.id})" title="Sửa linh kiện">
                   <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button type="button" class="parts-btn-act clone" onclick="clonePartsItem(${item.id})" title="Nhân bản linh kiện">
+                <button type="button" class="bg-action-btn clone" onclick="clonePartsItem(${item.id})" title="Nhân bản linh kiện">
                   <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
-                <button type="button" class="parts-btn-act del" onclick="deletePartsItem(${item.id})" title="Xóa linh kiện">
+                <button type="button" class="bg-action-btn del" onclick="deletePartsItem(${item.id})" title="Xóa linh kiện">
                   <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               </div>
             </td>
-            <td class="parts-td-cost" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
-              <span class="parts-cost-text">${formatPriceStr(item.priceCost)}</span>
+            <td style="text-align: center;">
+              <span class="bg-cost-num">${formatPriceStr(item.priceCost)}</span>
             </td>
-            <td class="parts-td-profit" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
-              <span class="parts-profit-text">${formatPriceStr(item.profit)}</span>
+            <td style="text-align: center;">
+              <span class="bg-profit-num">${formatPriceStr(item.profit)}</span>
+            </td>
+            <td style="text-align: center;">
+              <span class="bg-color-dash">${colorDisplay}</span>
+            </td>
+            <td style="text-align: center;">
+              <span class="bg-date-str">${dateDisplay}</span>
             </td>
           </tr>
         `;
