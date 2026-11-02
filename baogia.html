@@ -1562,6 +1562,12 @@
             const totalDisplayCount = isImportTab ? expandedImportRows.length : filtered.length;
             if (rowCountEl) rowCountEl.innerText = totalDisplayCount;
 
+            // Kiểm tra xem trong danh sách hiển thị có máy nào là iPhone hoặc có thuộc tính 'type' không (áp dụng ngay cả khi đang chọn tab TẤT CẢ)
+            const hasIphoneOrTypeInFiltered = isIphone || isOutStockTab || filtered.some(d => {
+                const b = (d.brand || '').trim().toUpperCase();
+                return b === 'IPHONE' || (d.type && d.type.trim() !== '');
+            });
+
             let totalCostSum = 0;
             if (!isImportTab) {
                 filtered.forEach(d => {
@@ -1586,7 +1592,7 @@
                         <th class="py-3 px-2 w-[12%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
                     `;
                 } else if (isPrivacyMode) {
-                    if (isIphone) {
+                    if (hasIphoneOrTypeInFiltered) {
                         desktopHeader.innerHTML = `
                             <th class="py-3.5 px-3 text-left w-[43%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
                             <th class="py-3.5 px-2 w-[14%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
@@ -1606,27 +1612,27 @@
                         `;
                     }
                 } else {
-                    if (isIphone) {
+                    if (hasIphoneOrTypeInFiltered) {
                         desktopHeader.innerHTML = `
-                            <th class="py-3.5 px-3 text-left w-[34%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
+                            <th class="py-3.5 px-3 text-left w-[40%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
                             <th class="py-3.5 px-2 w-[11%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
                             <th class="py-3.5 px-1.5 w-[8%] whitespace-nowrap truncate font-black text-white text-center">KIỂU</th>
                             <th class="py-3.5 px-2 w-[9%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
                             <th class="py-3.5 px-1 w-[4%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
                             <th class="py-3.5 px-2 w-[19%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
-                            <th class="py-3.5 px-2 w-[8%] whitespace-nowrap truncate font-black text-white text-center">$ NHẬP</th>
-                            <th class="py-3.5 px-2 w-[7%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
+                            <th class="py-3.5 px-1.5 w-[5%] whitespace-nowrap truncate font-black text-white text-center">$ NHẬP</th>
+                            <th class="py-3.5 px-1.5 w-[4%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
                         `;
                     } else {
                         // Ngoại trừ iPhone, ẩn cột Kiểu
                         desktopHeader.innerHTML = `
-                            <th class="py-3.5 px-3 text-left w-[42%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
+                            <th class="py-3.5 px-3 text-left w-[48%] whitespace-nowrap truncate font-black text-white">TÊN MÁY</th>
                             <th class="py-3.5 px-2 w-[13%] whitespace-nowrap truncate font-black text-white text-center">LINH KIỆN</th>
                             <th class="py-3.5 px-2 w-[9%] whitespace-nowrap truncate font-black text-white text-center">GIÁ BÁN</th>
                             <th class="py-3.5 px-1 w-[4%] whitespace-nowrap truncate font-black text-white text-center">SL</th>
                             <th class="py-3.5 px-2 w-[19%] whitespace-nowrap text-center truncate font-black text-white">THAO TÁC</th>
-                            <th class="py-3.5 px-2 w-[7%] whitespace-nowrap truncate font-black text-white text-center">$ NHẬP</th>
-                            <th class="py-3.5 px-2 w-[6%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
+                            <th class="py-3.5 px-1.5 w-[4%] whitespace-nowrap truncate font-black text-white text-center">$ NHẬP</th>
+                            <th class="py-3.5 px-1.5 w-[3%] whitespace-nowrap truncate font-black text-white text-center">LÃI</th>
                         `;
                     }
                 }
@@ -1696,7 +1702,7 @@
                         `;
 
                         if (isPrivacyMode) {
-                            if (isIphone) {
+                            if (hasIphoneOrTypeInFiltered) {
                                 return `
                                     <tr class="${zeroQtyClass} transition border-b border-[#141c2e]" onclick="handleRowClick(this)">
                                         <td class="py-3 px-3 text-left w-[43%] whitespace-nowrap truncate">${formattedNameHtml}</td>
@@ -1720,30 +1726,30 @@
                                 `;
                             }
                         } else {
-                            if (isIphone) {
+                            if (hasIphoneOrTypeInFiltered) {
                                 return `
                                     <tr class="${zeroQtyClass} transition border-b border-[#141c2e]" onclick="handleRowClick(this)">
-                                        <td class="py-3 px-3 text-left w-[34%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                        <td class="py-3 px-3 text-left w-[40%] whitespace-nowrap truncate">${formattedNameHtml}</td>
                                         <td class="py-3 px-2 font-extrabold text-[#10b981] w-[11%] whitespace-nowrap truncate text-center">${displayPart}</td>
                                         <td class="py-3 px-1.5 text-[#38bdf8] font-extrabold w-[8%] whitespace-nowrap truncate text-center">${d.type || 'ZIN'}</td>
                                         <td class="py-3 px-2 font-black text-lg md:text-xl text-[#f59e0b] w-[9%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
                                         <td class="py-3 px-1 font-black text-base text-white w-[4%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
                                         <td class="py-3 px-2 w-[19%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
-                                        <td class="py-3 px-2 font-extrabold text-sm text-[#cbd5e1] w-[8%] whitespace-nowrap truncate text-center">${costFormatted}</td>
-                                        <td class="py-3 px-2 font-extrabold text-sm text-[#10b981] w-[7%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
+                                        <td class="py-3 px-1.5 font-extrabold text-sm text-[#cbd5e1] w-[5%] whitespace-nowrap truncate text-center">${costFormatted}</td>
+                                        <td class="py-3 px-1.5 font-extrabold text-sm text-[#10b981] w-[4%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
                                     </tr>
                                 `;
                             } else {
                                 // Ẩn cột Kiểu
                                 return `
                                     <tr class="${zeroQtyClass} transition border-b border-[#141c2e]" onclick="handleRowClick(this)">
-                                        <td class="py-3 px-3 text-left w-[42%] whitespace-nowrap truncate">${formattedNameHtml}</td>
+                                        <td class="py-3 px-3 text-left w-[48%] whitespace-nowrap truncate">${formattedNameHtml}</td>
                                         <td class="py-3 px-2 font-extrabold text-[#10b981] w-[13%] whitespace-nowrap truncate text-center">${displayPart}</td>
                                         <td class="py-3 px-2 font-black text-lg md:text-xl text-[#f59e0b] w-[9%] whitespace-nowrap truncate text-center">${priceFormatted}</td>
                                         <td class="py-3 px-1 font-black text-base text-white w-[4%] whitespace-nowrap truncate text-center" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</td>
                                         <td class="py-3 px-2 w-[19%] whitespace-nowrap truncate text-center">${actionButtonsHtml}</td>
-                                        <td class="py-3 px-2 font-extrabold text-sm text-[#cbd5e1] w-[7%] whitespace-nowrap truncate text-center">${costFormatted}</td>
-                                        <td class="py-3 px-2 font-extrabold text-sm text-[#10b981] w-[6%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
+                                        <td class="py-3 px-1.5 font-extrabold text-sm text-[#cbd5e1] w-[4%] whitespace-nowrap truncate text-center">${costFormatted}</td>
+                                        <td class="py-3 px-1.5 font-extrabold text-sm text-[#10b981] w-[3%] whitespace-nowrap truncate text-center">${profitFormatted}</td>
                                     </tr>
                                 `;
                             }
@@ -1783,7 +1789,9 @@
 
                         const zeroQtyClassMobile = isOutStockTab ? 'row-hover px-2 rounded-xl' : (qtyVal === 0 ? 'yellow-pulse-row px-2 rounded-xl' : 'row-hover px-2 rounded-xl');
 
-                        if (isIphone || isOutStockTab) {
+                        const showTypeMobile = hasIphoneOrTypeInFiltered || (d.brand || '').trim().toUpperCase() === 'IPHONE' || (d.type && d.type.trim() !== '');
+
+                        if (showTypeMobile) {
                             return `
                                 <div class="py-2.5 flex items-center justify-between gap-2 ${mobileItemBorderClass} ${zeroQtyClassMobile}" onclick="handleRowClick(this)">
                                     <div class="flex items-center gap-2 min-w-0 flex-1">
