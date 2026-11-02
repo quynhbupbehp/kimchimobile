@@ -964,28 +964,8 @@
         function switchBrand(b) {
             currentBrand = b;
             localStorage.setItem('active_brand_tab', b);
-            if (b !== 'NHẬP HÀNG' && b !== 'HẾT HÀNG') {
-                // Kiểm tra xem hãng này đã có linh kiện gì trong danh sách
-                const brandParts = new Set();
-                devices.forEach(d => {
-                    const matchB = (b === 'TẤT CẢ' || !b) ? true : ((d.brand || '').trim().toUpperCase() === b.trim().toUpperCase());
-                    if (matchB && d.part && d.part.trim()) {
-                        let p = d.part.trim().toUpperCase();
-                        if (p === 'BO SẠC') p = 'CÁP SẠC';
-                        if (p === 'MÀN') p = 'MÀN HÌNH';
-                        brandParts.add(p);
-                    }
-                });
-
-                if (brandParts.has('MÀN HÌNH')) {
-                    currentCategory = 'MÀN HÌNH';
-                } else if (brandParts.size > 0) {
-                    currentCategory = Array.from(brandParts)[0];
-                } else {
-                    currentCategory = 'TẤT CẢ';
-                }
-                localStorage.setItem('active_cat_tab', currentCategory);
-            }
+            currentCategory = 'TẤT CẢ';
+            localStorage.setItem('active_cat_tab', 'TẤT CẢ');
             currentType = '';
             initTabs();
             renderTable();
@@ -1935,31 +1915,74 @@
                 return;
             }
 
-            // Tìm kiếm các dòng khớp tên máy và đếm số dòng (y chang ảnh mẫu 3)
-            const mapNameCount = {};
+            // Tìm kiếm các dòng khớp tên máy theo ngữ cảnh đang chọn (Hãng, Linh kiện)
+            const mapNameData = {};
             devices.forEach(d => {
+                const qtyVal = parseInt(d.qty) || 0;
+                if (currentStockStatus === 'IN_STOCK' && qtyVal <= 0) return;
+                if (currentStockStatus === 'OUT_OF_STOCK' && qtyVal > 0) return;
+
+                // Lọc theo hãng đang chọn
+                if (currentBrand && currentBrand !== 'TẤT CẢ' && currentBrand !== 'HẾT HÀNG' && currentBrand !== 'NHẬP HÀNG') {
+                    if ((d.brand || '').trim().toUpperCase() !== currentBrand.trim().toUpperCase()) return;
+                }
+
+                // Lọc theo linh kiện đang chọn
+                let dPart = (d.part || '').trim().toUpperCase();
+                if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
+
+                let filterCat = (currentCategory || '').trim().toUpperCase();
+                if (filterCat === 'MÀN') filterCat = 'MÀN HÌNH';
+                if (filterCat && filterCat !== 'TẤT CẢ' && dPart !== filterCat) return;
+
+                // Lọc theo kiểu đang chọn
+                if (currentType && currentType.trim() !== '') {
+                    if ((d.type || '').trim().toUpperCase() !== currentType.trim().toUpperCase()) return;
+                }
+
                 const nameStr = (d.name || '').trim().toUpperCase();
-                const fullStr = `${d.brand} ${d.name} ${d.part} ${d.type}`.toUpperCase();
-                if (fullStr.includes(q)) {
-                    mapNameCount[nameStr] = (mapNameCount[nameStr] || 0) + 1;
+                const fullStr = `${d.brand} ${d.name} ${d.part} ${d.type} ${d.color}`.toUpperCase();
+                if (q.split(' ').every(k => fullStr.includes(k))) {
+                    if (!mapNameData[nameStr]) {
+                        mapNameData[nameStr] = { count: 0, parts: new Set(), partNames: [] };
+                    }
+                    mapNameData[nameStr].count += 1;
+                    if (dPart) {
+                        mapNameData[nameStr].parts.add(dPart);
+                        mapNameData[nameStr].partNames.push(dPart);
+                    }
                 }
             });
 
-            const uniqueNames = Object.keys(mapNameCount).slice(0, 10);
+            const uniqueNames = Object.keys(mapNameData).slice(0, 15);
             if (uniqueNames.length === 0) {
                 dropdown.classList.add('hidden');
                 return;
             }
 
             listEl.innerHTML = uniqueNames.map(name => {
-                const count = mapNameCount[name];
+                const info = mapNameData[name];
+                const count = info.count;
+                const partsArr = Array.from(info.parts);
+                
+                // Hiển thị nhãn: nếu chỉ có 1 dòng (hoặc 1 loại linh kiện) thì đổi thành tên linh kiện đó (màn, pin, cáp sạc...)
+                let badgeText = `${count} DÒNG`;
+                let targetCategory = '';
+                if (partsArr.length === 1) {
+                    badgeText = partsArr[0];
+                    targetCategory = partsArr[0];
+                } else if (partsArr.length > 1) {
+                    badgeText = partsArr.join(' • ');
+                }
+
                 return `
-                    <div onclick="selectSearchSuggestion('${name.replace(/'/g, "\\'")}')" class="flex items-center justify-between px-3 py-2 rounded-lg bg-[#070b14] hover:bg-[#131b2e] cursor-pointer transition text-xs font-bold text-white border border-transparent hover:border-[#2563eb]">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-mobile-screen text-teal-400 text-xs"></i>
-                            <span class="text-white font-extrabold">${name}</span>
+                    <div onclick="selectSearchSuggestion('${name.replace(/'/g, "\\'")}', '${targetCategory.replace(/'/g, "\\'")}')" class="flex items-center justify-between px-3 py-2 rounded-lg bg-[#070b14] hover:bg-[#131b2e] cursor-pointer transition text-xs font-bold text-white border border-transparent hover:border-[#2563eb]">
+                        <div class="flex items-center gap-2 overflow-hidden mr-2">
+                            <i class="fa-solid fa-mobile-screen text-teal-400 text-xs shrink-0"></i>
+                            <span class="text-white font-extrabold truncate">${name}</span>
                         </div>
-                        <span class="px-2 py-0.5 rounded-full bg-[#0d2a1f] text-emerald-400 text-[11px] font-bold border border-emerald-900/60">${count} dòng</span>
+                        <span class="px-2 py-0.5 rounded-full bg-[#0d2a1f] text-emerald-400 text-[11px] font-bold border border-emerald-900/60 shrink-0 uppercase">${badgeText}</span>
                     </div>
                 `;
             }).join('');
@@ -1967,8 +1990,12 @@
             dropdown.classList.remove('hidden');
         }
 
-        function selectSearchSuggestion(name) {
+        function selectSearchSuggestion(name, cat = '') {
             selectedDeviceNameFilter = name.trim().toUpperCase();
+            if (cat) {
+                currentCategory = cat;
+                initTabs();
+            }
             const searchInput = document.getElementById('search-input-desktop');
             if (searchInput) searchInput.value = name;
             const clearDesktop = document.getElementById('btn-clear-search-desktop');
