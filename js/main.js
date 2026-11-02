@@ -1137,7 +1137,10 @@
 
       const currentValue = (input.value || '').trim().toLowerCase();
 
-      // NẾU LỌC KHÔNG CÓ KẾT QUẢ VÀ NGƯỜI DÙNG ĐÃ GÕ CHỮ (ÁP DỤNG TRÊN DESKTOP HOẶC TÊN PHỤ KIỆN MOBILE)
+      // KIỂM TRA XEM GIÁ TRỊ VỪA GÕ ĐÃ CÓ TRONG DANH SÁCH CHƯA
+      const hasExactMatch = cleanFilter !== '' && options.some(opt => opt.toLowerCase().trim() === cleanFilter.toLowerCase());
+
+      // NẾU LỌC KHÔNG CÓ KẾT QUẢ HOẶC CHƯA CÓ TRONG DANH SÁCH (ÁP DỤNG TRÊN DESKTOP)
       if (isFiltering && displayOptions.length === 0) {
         if (window.innerWidth <= 768) {
           closeUniversalSmartDropdown();
@@ -1189,6 +1192,27 @@
 
           dropdownEl.appendChild(itemEl);
         });
+
+        // Nếu đang gõ lọc trên Desktop và giá trị gõ chưa có trong danh sách -> hiển thị nút gợi ý thêm ở dưới
+        if (isFiltering && !hasExactMatch && window.innerWidth > 768 && cleanFilter.length > 0) {
+          const escaped = cleanFilter.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const extraAddBox = document.createElement('div');
+          extraAddBox.style.cssText = 'padding: 10px 14px; text-align: center; width: 100%; box-sizing: border-box; border-top: 1px dashed #334155; margin-top: 4px;';
+          extraAddBox.innerHTML = `
+            <button type="button" class="universal-btn-quick-add"
+              style="background: #10b981; color: #ffffff; border: none; border-radius: 8px; padding: 7px 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 14px rgba(16,185,129,0.35); width: auto; max-width: 100%; margin: 0 auto; transition: all 0.15s ease;">
+              + Thêm &ldquo;${escaped}&rdquo; vào gợi ý
+            </button>
+          `;
+          const quickBtn = extraAddBox.querySelector('.universal-btn-quick-add');
+          quickBtn.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            saveUniversalNewOption(input, listId, cleanFilter);
+            closeUniversalSmartDropdown();
+          });
+          dropdownEl.appendChild(extraAddBox);
+        }
       }
 
       document.body.appendChild(dropdownEl);
@@ -1413,7 +1437,18 @@
           openUniversalSmartDropdown(input, input.value);
         }
       }
-    });
+    }, true);
+
+    document.addEventListener('keyup', function(e) {
+      const input = e.target.closest('input');
+      if (input && e.key !== 'Escape' && e.key !== 'Enter') {
+        if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) return;
+        const listId = input.dataset.originalList || input.getAttribute('list') || (input.id ? (input.id + 'List') : null);
+        if (listId && (document.getElementById(listId) || input._universalOptions)) {
+          openUniversalSmartDropdown(input, input.value);
+        }
+      }
+    }, true);
 
     document.addEventListener('keydown', function(e) {
       if (!activeUniversalDropdown) return;
