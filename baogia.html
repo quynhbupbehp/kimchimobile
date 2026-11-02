@@ -674,7 +674,7 @@
         }
 
         let currentBrand = localStorage.getItem('active_brand_tab') || brands[0] || '';
-        let currentCategory = localStorage.getItem('active_cat_tab') || 'MÀN HÌNH';
+        let currentCategory = 'TẤT CẢ';
         let currentType = '';
         let selectedDeviceNameFilter = ''; // Khi chọn chính xác 1 tên máy từ gợi ý tìm kiếm
         let currentStockStatus = 'IN_STOCK'; // 'ALL', 'IN_STOCK', 'OUT_OF_STOCK'
@@ -2817,6 +2817,16 @@
         }
 
         window.onload = function () {
+            localStorage.removeItem('active_cat_tab');
+            currentCategory = 'TẤT CẢ';
+            currentType = '';
+            selectedDeviceNameFilter = '';
+            const searchInputDesktop = document.getElementById('search-input-desktop');
+            if (searchInputDesktop) searchInputDesktop.value = '';
+            const searchInputMobile = document.getElementById('search-input-mobile');
+            if (searchInputMobile) searchInputMobile.value = '';
+            const clearDesktop = document.getElementById('btn-clear-search-desktop');
+            if (clearDesktop) clearDesktop.classList.add('hidden');
             syncFromCloud();
         };
     </script>
