@@ -16394,12 +16394,18 @@
         selYyyy = yyyy;
       }
 
+      // Tải chỉ tiêu kinh doanh được lưu hoặc mặc định
+      let savedTargets = {};
+      try {
+        savedTargets = JSON.parse(localStorage.getItem('KIMCHI_FINANCIAL_TARGETS')) || {};
+      } catch(e) { savedTargets = {}; }
+
       let items = [
-        { name: '1. Bán Hàng & Phụ Kiện', rev: 0, cost: 0, profit: 0, target: 15000 },
-        { name: '2. Phần Mềm - QUYNH BUP BE', rev: 0, cost: 0, profit: 0, target: 30000 },
-        { name: '3. Sửa Chữa Phần Cứng', rev: 0, cost: 0, profit: 0, target: 10000 },
-        { name: '4. Bán Máy Điện Thoại', rev: 0, cost: 0, profit: 0, target: 5000 },
-        { name: '5. Bán Gà - Bán Mèo Giống....', rev: 0, cost: 0, profit: 0, target: 15000 }
+        { key: 'banhang', name: '1. Bán Hàng & Phụ Kiện', rev: 0, cost: 0, profit: 0, target: savedTargets['banhang'] !== undefined ? savedTargets['banhang'] : 15000 },
+        { key: 'phanmem', name: '2. Phần Mềm - QUYNH BUP BE', rev: 0, cost: 0, profit: 0, target: savedTargets['phanmem'] !== undefined ? savedTargets['phanmem'] : 30000 },
+        { key: 'suachua', name: '3. Sửa Chữa Phần Cứng', rev: 0, cost: 0, profit: 0, target: savedTargets['suachua'] !== undefined ? savedTargets['suachua'] : 10000 },
+        { key: 'banmay', name: '4. Bán Máy Điện Thoại', rev: 0, cost: 0, profit: 0, target: savedTargets['banmay'] !== undefined ? savedTargets['banmay'] : 5000 },
+        { key: 'banga', name: '5. Bán Gà - Bán Mèo Giống....', rev: 0, cost: 0, profit: 0, target: savedTargets['banga'] !== undefined ? savedTargets['banga'] : 15000 }
       ];
 
       function checkMatch(dateStr, searchContent) {
@@ -16505,25 +16511,79 @@
       const tbody = document.getElementById('reportSummaryTableBody');
       if (tbody) {
         tbody.innerHTML = items.map(it => {
-          const margin = it.rev > 0 ? Math.round((it.profit / it.rev) * 100) : 0;
           const diff = it.target - it.profit;
           const diffHtml = diff <= 0 
-            ? `<span style="color: #10b981; font-weight: 900;">0 (Đạt ✓)</span>`
-            : `<span style="color: #f87171; font-weight: 900;">${formatPriceStr(diff)}</span>`;
+            ? `<span style="color: #10b981; font-weight: 900; font-size: 1.15rem;">0 (Đạt ✓)</span>`
+            : `<span style="color: #f87171; font-weight: 900; font-size: 1.15rem;">${formatPriceStr(diff)}</span>`;
           return `
             <tr>
-              <td style="font-weight: 800; color: #fff;">${it.name}</td>
-              <td style="text-align: right; color: #38bdf8; font-weight: 900;">${formatPriceStr(it.rev)}</td>
-              <td style="text-align: right; color: #cbd5e1; font-weight: 700;">${formatPriceStr(it.cost)}</td>
-              <td style="text-align: right; color: #10b981; font-weight: 900; font-size: 1.05rem;">${formatPriceStr(it.profit)}</td>
-              <td style="text-align: right; color: #facc15; font-weight: 900;">${formatPriceStr(it.target)}</td>
-              <td style="text-align: right;">${diffHtml}</td>
-              <td style="text-align: center; color: #f59e0b; font-weight: 800;">${margin}%</td>
+              <td style="font-weight: 800; color: #fff; font-size: 1.15rem; padding: 15px 12px;">${it.name}</td>
+              <td style="text-align: right; color: #38bdf8; font-weight: 900; font-size: 1.15rem; padding: 15px 12px;">${formatPriceStr(it.rev)}</td>
+              <td style="text-align: right; color: #cbd5e1; font-weight: 700; font-size: 1.15rem; padding: 15px 12px;">${formatPriceStr(it.cost)}</td>
+              <td style="text-align: right; color: #10b981; font-weight: 900; font-size: 1.25rem; padding: 15px 12px;">${formatPriceStr(it.profit)}</td>
+              <td style="text-align: right; color: #facc15; font-weight: 900; font-size: 1.25rem; padding: 15px 12px; cursor: pointer; user-select: none;" 
+                  title="Nháy đúp để sửa chỉ tiêu" 
+                  ondblclick="editFinancialTarget('${it.key}', this, ${it.target})">
+                <span class="target-val-text">${formatPriceStr(it.target)}</span>
+              </td>
+              <td style="text-align: right; padding: 15px 12px;">${diffHtml}</td>
             </tr>
           `;
         }).join('');
       }
     }
+
+    // Hàm chỉnh sửa chỉ tiêu bằng cách nháy đúp (double-click)
+    window.editFinancialTarget = function(key, tdEl, currentVal) {
+      if (tdEl.querySelector('input')) return; // Đang mở ô sửa
+      const currentFormatted = formatPriceStr(currentVal);
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentFormatted;
+      input.style.width = '120px';
+      input.style.textAlign = 'right';
+      input.style.fontSize = '1.25rem';
+      input.style.fontWeight = '900';
+      input.style.color = '#facc15';
+      input.style.background = '#0f172a';
+      input.style.border = '2px solid #facc15';
+      input.style.borderRadius = '6px';
+      input.style.padding = '4px 8px';
+      input.style.outline = 'none';
+
+      tdEl.innerHTML = '';
+      tdEl.appendChild(input);
+      input.focus();
+      input.select();
+
+      let isSaved = false;
+      function saveEdit() {
+        if (isSaved) return;
+        isSaved = true;
+        let valRaw = input.value.replace(/[^0-9]/g, '');
+        let newTarget = parseInt(valRaw, 10);
+        if (isNaN(newTarget) || newTarget < 0) {
+          newTarget = currentVal;
+        }
+        let savedTargets = {};
+        try {
+          savedTargets = JSON.parse(localStorage.getItem('KIMCHI_FINANCIAL_TARGETS')) || {};
+        } catch(e) { savedTargets = {}; }
+        savedTargets[key] = newTarget;
+        localStorage.setItem('KIMCHI_FINANCIAL_TARGETS', JSON.stringify(savedTargets));
+        renderFinancialReport();
+      }
+
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          saveEdit();
+        } else if (e.key === 'Escape') {
+          isSaved = true;
+          renderFinancialReport();
+        }
+      });
+      input.addEventListener('blur', saveEdit);
+    };
 
     window.handleSearchFinancialReport = handleSearchFinancialReport;
     window.resetFinancialReportSearch = resetFinancialReportSearch;
