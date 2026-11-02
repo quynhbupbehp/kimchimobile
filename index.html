@@ -1592,11 +1592,11 @@
       <div id="tab-baohanh" class="tab-content">
         <!-- HÀNG 1: DOANH THU + MŨI TÊN EXCEL (TRÁI) | TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH (GIỮA) | LÃI (PHẢI) -->
         <div class="sales-header-bar"
-          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: nowrap; gap: 12px; width: 100%;">
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: nowrap; width: 100%;">
           <!-- CỤM TRÁI: BADGE DOANH THU (THÁNG/NGÀY) + NÚT MŨI TÊN EXCEL -->
           <div style="display: inline-flex; align-items: center; gap: 8px;">
             <div id="soldPhoneRevenueBadge"
-              style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 6px 16px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
+              style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; height: 38px; padding: 0 16px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
               title="Bên trái: Doanh thu Tháng | Bên phải: Doanh thu Ngày">
               <span id="soldPhoneMonthRevenueVal"
                 style="color: #4ade80 !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
@@ -1614,9 +1614,10 @@
                 title="Doanh thu Ngày">0</span>
             </div>
 
-            <!-- Nút mũi tên mở Nhập/Xuất Excel -->
-            <button type="button" id="btnSoldPhoneExcelToggle" class="btn-excel-toggle-custom"
-              onclick="toggleSoldPhoneExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
+            <!-- Nút mũi tên mở Nhập/Xuất Excel bo tròn 8px cao 38px như mẫu -->
+            <button type="button" id="btnSoldPhoneExcelToggle"
+              onclick="toggleSoldPhoneExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel"
+              style="background: #000000; border: 1.5px solid #0284c7; color: #38bdf8; width: 34px; height: 38px; min-width: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; font-size: 0.95rem; font-weight: 900; box-shadow: 0 0 10px rgba(56, 189, 248, 0.35); transition: all 0.2s ease;">
               <span id="soldPhoneExcelArrowIcon"
                 style="display: inline-block; transition: transform 0.25s ease;">❯</span>
             </button>
@@ -1643,16 +1644,16 @@
             </div>
           </div>
 
-          <!-- CỤM GIỮA: BADGE TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH -->
+          <!-- CỤM GIỮA: BADGE TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH (XANH NGỌC) -->
           <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
             <span
-              style="background: #059669; color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 6px 24px; border-radius: 8px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">MÁY
+              style="background: #059669; color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 7px 26px; border-radius: 9px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.45); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">MÁY
               ĐÃ BÁN & BẢO HÀNH</span>
           </div>
 
           <!-- CỤM PHẢI: LÃI THÁNG/NGÀY -->
           <div id="soldPhoneProfitBadge"
-            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 6px 16px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
+            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; height: 38px; padding: 0 16px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
             title="Bên trái: Lãi Tháng | Bên phải: Lãi Ngày">
             <span id="soldPhoneMonthProfitVal"
               style="color: #4ade80 !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
@@ -1683,7 +1684,7 @@
 
           <!-- 2. BỘ LỌC HÃNG: HÃNG TẤT CẢ (VÀNG) -->
           <div class="price-filter-box-bm"
-            style="height: 38px; box-sizing: border-box; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 0 10px; display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            style="height: 38px; box-sizing: border-box; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;">
             <span style="color: #ffffff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;">Hãng</span>
             <select id="soldPhoneBrandFilter" class="price-filter-select"
               onchange="handleSoldPhoneBrandFilterChange(this)"
@@ -1697,7 +1698,7 @@
             style="height: 38px; box-sizing: border-box; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 0 6px; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
             <select class="unified-mode-select" id="soldPhoneModeSelect" onchange="setSoldPhoneMode(this.value)"
               title="Lọc theo : Ngày , Tháng , Năm , Tất Cả"
-              style="height: 28px; line-height: 28px; background-color: #000000; border: 1px solid #334155; color: #ffffff; font-weight: 800; font-size: 0.9rem; border-radius: 6px; padding: 0 24px 0 8px;">
+              style="height: 28px; line-height: 28px; background-color: #000000; border: 1px solid #334155; color: #ffffff; font-weight: 800; font-size: 0.9rem; border-radius: 6px; padding: 0 22px 0 8px;">
               <option value="day">Ngày</option>
               <option value="month">Tháng</option>
               <option value="year" selected>Năm</option>
@@ -1764,7 +1765,7 @@
 
           <!-- 5. BỘ LỌC BẢO HÀNH: Bảo Hành : Còn BH (VÀNG) / Hết BH / Tất Cả -->
           <div class="price-filter-box-bm"
-            style="height: 38px; box-sizing: border-box; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            style="height: 38px; box-sizing: border-box; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
             <span style="color: #ffffff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;">Bảo Hành :</span>
             <select id="soldPhoneWarrantyFilter" class="price-filter-select"
               onchange="handleSoldPhoneWarrantyFilterChange(this)"
