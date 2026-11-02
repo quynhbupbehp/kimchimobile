@@ -12382,53 +12382,142 @@
       }
     }
 
+    let partsCurrentBrand = '';
+    let partsHideCost = false;
+
+    function selectPartsBrandTab(brand, btn) {
+      partsCurrentBrand = brand || '';
+      document.querySelectorAll('#bgBrandTabsContainer .bg-brand-tab').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderPartsTable();
+    }
+
+    function addNewBrandTab() {
+      const name = prompt('Nhập tên Hãng mới (VD: XIAOMI, REALME...):');
+      if (!name || !name.trim()) return;
+      const clean = name.trim().toUpperCase();
+
+      const container = document.getElementById('bgBrandTabsContainer');
+      const addBtn = container.querySelector('.bg-brand-tab-btn-add');
+      if (container && addBtn) {
+        const newTab = document.createElement('button');
+        newTab.type = 'button';
+        newTab.className = 'bg-brand-tab';
+        newTab.dataset.brand = clean;
+        newTab.innerText = clean;
+        newTab.onclick = function() { selectPartsBrandTab(clean, this); };
+        container.insertBefore(newTab, addBtn);
+        selectPartsBrandTab(clean, newTab);
+      }
+    }
+
+    function togglePartsCostVisibility() {
+      partsHideCost = !partsHideCost;
+      const thCols = document.querySelectorAll('.bg-th-cost, .bg-th-profit');
+      const tdCols = document.querySelectorAll('.bg-td-cost, .bg-td-profit');
+      thCols.forEach(el => el.style.display = partsHideCost ? 'none' : '');
+      tdCols.forEach(el => el.style.display = partsHideCost ? 'none' : '');
+
+      const eyeBtn = document.getElementById('btnTogglePartsCostEye');
+      if (eyeBtn) {
+        eyeBtn.classList.toggle('active', partsHideCost);
+        eyeBtn.style.color = partsHideCost ? '#f87171' : '#94a3b8';
+      }
+    }
+
+    function togglePartsExcelMenu(e) {
+      if (e) e.stopPropagation();
+      const dd = document.getElementById('bgPartsExcelDropdown');
+      if (dd) {
+        dd.style.display = (dd.style.display === 'none' || dd.style.display === '') ? 'flex' : 'none';
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      const dd = document.getElementById('bgPartsExcelDropdown');
+      if (dd && !e.target.closest('.bg-excel-menu-wrap')) {
+        dd.style.display = 'none';
+      }
+    });
+
+    function triggerImportPartsExcel() {
+      const fileInput = document.getElementById('bgPartsExcelFileInput');
+      if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
+      }
+      togglePartsExcelMenu();
+    }
+
+    function handlePartsExcelFileImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.SheetNames[0];
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+          if (!rows || rows.length === 0) {
+            alert('File Excel trống hoặc không đúng định dạng!');
+            return;
+          }
+
+          let added = 0;
+          rows.forEach((r, idx) => {
+            const brand = (r['HÃNG'] || r['Hãng'] || r['brand'] || 'IPHONE').toString().trim().toUpperCase();
+            const device = (r['THUỘC LOẠI MÁY'] || r['Thuộc loại máy'] || r['Tên máy'] || r['device'] || '').toString().trim();
+            const type = (r['LOẠI LINH KIỆN'] || r['Loại linh kiện'] || r['Linh kiện'] || r['type'] || 'Màn hình').toString().trim();
+            const priceSell = (r['GIÁ THAY KHÁCH'] || r['Giá thay khách'] || r['Giá bán'] || r['priceSell'] || '0').toString().trim();
+            const priceCost = (r['GIÁ NHẬP'] || r['Giá nhập'] || r['Giá vốn'] || r['priceCost'] || '0').toString().trim();
+            const qty = parseInt(r['SL'] || r['Số lượng'] || r['qty'] || 1, 10) || 0;
+            const profit = (parseFloat(priceSell.replace(/\./g, '')) - parseFloat(priceCost.replace(/\./g, ''))).toString();
+            const status = (r['TRẠNG THÁI'] || r['Trạng thái'] || (qty > 0 ? 'Còn hàng' : 'Hết hàng')).toString().trim();
+            const color = (r['MÀU SẮC'] || r['Màu sắc'] || '—').toString().trim();
+            const date = (r['NGÀY'] || r['Ngày'] || '10/8/2026').toString().trim();
+
+            if (device) {
+              partsDatabase.push({
+                id: Date.now() + idx,
+                brand, device, type, style: type, priceSell, priceCost, profit, qty, status, color, date
+              });
+              added++;
+            }
+          });
+
+          savePartsStorage();
+          renderPartsTable();
+          alert(`✓ Đã nhập thành công ${added} dòng từ file Excel!`);
+        } catch (err) {
+          console.error('Lỗi đọc Excel:', err);
+          alert('Có lỗi khi đọc file Excel: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function clearAllPartsData() {
+      togglePartsExcelMenu();
+      if (confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA TOÀN BỘ danh sách báo giá linh kiện?')) {
+        partsDatabase = [];
+        savePartsStorage();
+        renderPartsTable();
+        alert('Đã xóa toàn bộ dữ liệu báo giá!');
+      }
+    }
+
     function handlePartsSearchFilter(val) {
       partsFilterKeyword = (val || '').trim().toLowerCase();
       renderPartsTable();
     }
 
-    function handlePartsBrandSelect(val) {
-      partsFilterBrand = val || '';
-      renderPartsTable();
-    }
-
-    function handlePartsDeviceSelect(val) {
-      partsFilterDevice = val || '';
-      renderPartsTable();
-    }
-
-    function handlePartsTypeSelect(val) {
-      partsFilterType = val || '';
-      renderPartsTable();
-    }
-
-    function handlePartsStatusSelect(val) {
-      partsFilterStatus = val || '';
-      renderPartsTable();
-    }
-
-    function resetPartsFilters() {
-      partsFilterKeyword = '';
-      partsFilterBrand = '';
-      partsFilterDevice = '';
-      partsFilterType = '';
-      partsFilterStatus = '';
-
-      const sInput = document.getElementById('bgSearchDeviceInput');
-      if (sInput) sInput.value = '';
-      const bSel = document.getElementById('bgFilterBrand');
-      if (bSel) bSel.value = '';
-      const dSel = document.getElementById('bgFilterDevice');
-      if (dSel) dSel.value = '';
-      const tSel = document.getElementById('bgFilterType');
-      if (tSel) tSel.value = '';
-      const stSel = document.getElementById('bgFilterStatus');
-      if (stSel) stSel.value = '';
-
-      renderPartsTable();
-    }
-
     function exportPartsToExcel() {
+      const dd = document.getElementById('bgPartsExcelDropdown');
+      if (dd) dd.style.display = 'none';
+
       if (typeof XLSX === 'undefined') {
         alert('Thư viện XLSX chưa tải xong!');
         return;
@@ -12463,38 +12552,9 @@
       }
     }
 
-    function populatePartsFilterDropdowns() {
-      const brands = Array.from(new Set(partsDatabase.map(x => x.brand).filter(Boolean)));
-      const devices = Array.from(new Set(partsDatabase.map(x => x.device).filter(Boolean)));
-      const types = Array.from(new Set(partsDatabase.map(x => x.type).filter(Boolean)));
-
-      const bSel = document.getElementById('bgFilterBrand');
-      if (bSel) {
-        const cur = bSel.value;
-        bSel.innerHTML = '<option value="">Tất cả hãng</option>' + brands.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
-        bSel.value = cur;
-      }
-
-      const dSel = document.getElementById('bgFilterDevice');
-      if (dSel) {
-        const cur = dSel.value;
-        dSel.innerHTML = '<option value="">Tất cả loại máy</option>' + devices.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
-        dSel.value = cur;
-      }
-
-      const tSel = document.getElementById('bgFilterType');
-      if (tSel) {
-        const cur = tSel.value;
-        tSel.innerHTML = '<option value="">Tất cả loại LK</option>' + types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
-        tSel.value = cur;
-      }
-    }
-
     function renderPartsTable() {
       const tbody = document.getElementById('bgPartsTableBody');
       if (!tbody) return;
-
-      populatePartsFilterDropdowns();
 
       let filtered = partsDatabase.filter(item => {
         if (partsFilterKeyword) {
@@ -12504,27 +12564,21 @@
           if (!matchDevice && !matchType && !matchBrand) return false;
         }
 
-        if (partsFilterBrand && item.brand !== partsFilterBrand) return false;
-        if (partsFilterDevice && item.device !== partsFilterDevice) return false;
-        if (partsFilterType && item.type !== partsFilterType) return false;
-
-        if (partsFilterStatus) {
-          const isOut = (parseInt(item.qty, 10) === 0);
-          if (partsFilterStatus === 'out_stock' && !isOut) return false;
-          if (partsFilterStatus === 'in_stock' && isOut) return false;
-        }
+        if (partsCurrentBrand && item.brand !== partsCurrentBrand) return false;
 
         return true;
       });
 
-      // Cập nhật thống kê header: Kho linh kiện độc lập · 274 dòng · 420 sản phẩm
-      let totalQty = 0;
+      // Tính tổng vốn: sum(Giá Nhập * SL)
+      let totalCapital = 0;
       partsDatabase.forEach(i => {
-        totalQty += (parseInt(i.qty, 10) || 0);
+        const costNum = parseFloat((i.priceCost || '0').replace(/\./g, '')) || 0;
+        const q = parseInt(i.qty, 10) || 0;
+        totalCapital += costNum * q;
       });
-      const statsEl = document.getElementById('bgSectionStatsText');
-      if (statsEl) {
-        statsEl.innerText = `Kho linh kiện độc lập · ${partsDatabase.length} dòng · ${totalQty} sản phẩm`;
+      const capEl = document.getElementById('partsCapitalTotalVal');
+      if (capEl) {
+        capEl.innerText = formatNumberDisplay(totalCapital);
       }
 
       const countExportEl = document.getElementById('bgExportCount');
@@ -12575,10 +12629,10 @@
                 </button>
               </div>
             </td>
-            <td style="text-align: center;">
+            <td class="bg-td-cost" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
               <span class="bg-cost-num">${formatPriceStr(item.priceCost)}</span>
             </td>
-            <td style="text-align: center;">
+            <td class="bg-td-profit" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
               <span class="bg-profit-num">${formatPriceStr(item.profit)}</span>
             </td>
             <td style="text-align: center;">

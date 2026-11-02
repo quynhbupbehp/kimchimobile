@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261102_090311">
+  <link rel="stylesheet" href="css/style.css?v=20261102_091246">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -20,7 +20,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261102_090311";
+    var CURRENT_PAGE_VERSION = "20261102_091246";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1796,42 +1796,51 @@
 
       <!-- TAB 5: BÁO GIÁ SỬA CHỮA & NHẬP HÀNG (CƠ SỞ DỮ LIỆU KIM CHI MOBILE) -->
       <!-- TAB 5: BÁO GIÁ SỬA (CHUẨN 100% THEO ẢNH MẪU) -->
+      <!-- TAB 5: BÁO GIÁ SỬA (CHUẨN 100% THEO ẢNH MẪU) -->
       <div id="tab-baogia" class="tab-content">
-        <!-- HEADER TRANG BÁO GIÁ -->
+        <!-- HEADER TRANG BÁO GIÁ SỬA CHỮA -->
         <div class="bg-header-row">
           <div class="bg-header-left">
-            <h1 class="bg-title-main">BÁO GIÁ</h1>
-            <div class="bg-subtitle-greet">Xin chào, Quỳnh Búp Bê. Chúc bạn một ngày làm việc hiệu quả!</div>
+            <h1 class="bg-title-main">BÁO GIÁ SỬA CHỮA</h1>
           </div>
           <div class="bg-header-right">
-            <button type="button" class="bg-btn-icon-head" onclick="exportPartsToExcel()" title="Xuất Excel danh sách báo giá linh kiện">
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-            </button>
-            <div class="bg-btn-shop-pill">Kim Chi Mobile</div>
-            <button type="button" class="bg-btn-logout-pill" onclick="handleLogout()" title="Đăng xuất">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-              <span>Đăng xuất</span>
-            </button>
-          </div>
-        </div>
+            <!-- Nút menu popup: Nhập, Xuất, Xóa -->
+            <div class="bg-excel-menu-wrap" style="position: relative;">
+              <button type="button" class="bg-btn-icon-head" onclick="togglePartsExcelMenu(event)" title="Nhập, Xuất và Xóa dữ liệu">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </button>
+              <div id="bgPartsExcelDropdown" class="bg-excel-dropdown" style="display: none;">
+                <button type="button" class="bg-dropdown-item import" onclick="triggerImportPartsExcel()">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Nhập Excel</span>
+                </button>
+                <button type="button" class="bg-dropdown-item export" onclick="exportPartsToExcel()">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Xuất Excel</span>
+                </button>
+                <div class="bg-dropdown-divider"></div>
+                <button type="button" class="bg-dropdown-item delete" onclick="clearAllPartsData()">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  <span>Xóa tất cả</span>
+                </button>
+              </div>
+              <input type="file" id="bgPartsExcelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handlePartsExcelFileImport(event)">
+            </div>
 
-        <!-- HÀNG TIÊU ĐỀ SECTION & NÚT TẠO BÁO GIÁ -->
-        <div class="bg-subbar-row">
-          <div class="bg-subbar-left">
-            <div class="bg-section-heading">Linh kiện</div>
-            <div class="bg-section-stats" id="bgSectionStatsText">Kho linh kiện độc lập · 274 dòng · 420 sản phẩm</div>
-          </div>
-          <div class="bg-subbar-right">
+            <div class="bg-btn-shop-pill">Kim Chi Mobile</div>
+
+            <!-- Nút VỐN : -->
+            <div class="bg-btn-capital-pill" onclick="togglePartsCostVisibility()" title="Bấm để ẩn/hiện giá vốn & lãi">
+              <span class="cap-lbl">VỐN :</span>
+              <span class="cap-val" id="partsCapitalTotalVal">0</span>
+            </div>
+
             <button type="button" class="bg-btn-create-quote" onclick="openPartsModal()">
               <span class="plus-icon">+</span>
               <span>Tạo báo giá</span>
@@ -1839,60 +1848,30 @@
           </div>
         </div>
 
-        <!-- THANH BỘ LỌC TÌM KIẾM (BORDER BO GÓC) -->
-        <div class="bg-filter-bar">
-          <div class="bg-search-box">
-            <svg viewBox="0 0 24 24" class="bg-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" id="bgSearchDeviceInput" placeholder="Tìm chính xác thuộc loại máy..." oninput="handlePartsSearchFilter(this.value)">
-          </div>
-
-          <div class="bg-filter-select-wrap">
-            <select id="bgFilterBrand" onchange="handlePartsBrandSelect(this.value)">
-              <option value="">Tất cả hãng</option>
-            </select>
-            <span class="bg-select-arrow">▼</span>
-          </div>
-
-          <div class="bg-filter-select-wrap">
-            <select id="bgFilterDevice" onchange="handlePartsDeviceSelect(this.value)">
-              <option value="">Tất cả loại máy</option>
-            </select>
-            <span class="bg-select-arrow">▼</span>
-          </div>
-
-          <div class="bg-filter-select-wrap">
-            <select id="bgFilterType" onchange="handlePartsTypeSelect(this.value)">
-              <option value="">Tất cả loại LK</option>
-            </select>
-            <span class="bg-select-arrow">▼</span>
-          </div>
-
-          <div class="bg-filter-select-wrap">
-            <select id="bgFilterStatus" onchange="handlePartsStatusSelect(this.value)">
-              <option value="">Tất cả trạng thái</option>
-              <option value="in_stock">Còn hàng</option>
-              <option value="out_stock">Hết hàng</option>
-            </select>
-            <span class="bg-select-arrow">▼</span>
-          </div>
-
-          <button type="button" class="bg-btn-reset-filters" onclick="resetPartsFilters()" title="Xóa bộ lọc về mặc định">
+        <!-- HÀNG 1 THEO ẢNH: CÁC TAB HÃNG NỀN VIỀN BO TRÒN + NÚT + VÀ CON MẮT -->
+        <div class="bg-brand-tabs-bar" id="bgBrandTabsContainer">
+          <button type="button" class="bg-brand-tab active" data-brand="" onclick="selectPartsBrandTab('', this)">TẤT CẢ</button>
+          <button type="button" class="bg-brand-tab" data-brand="IPHONE" onclick="selectPartsBrandTab('IPHONE', this)">IPHONE</button>
+          <button type="button" class="bg-brand-tab" data-brand="SAMSUNG" onclick="selectPartsBrandTab('SAMSUNG', this)">SAMSUNG</button>
+          <button type="button" class="bg-brand-tab" data-brand="OPPO - REALME" onclick="selectPartsBrandTab('OPPO - REALME', this)">OPPO - REALME</button>
+          <button type="button" class="bg-brand-tab" data-brand="REDMI - POCO" onclick="selectPartsBrandTab('REDMI - POCO', this)">REDMI - POCO</button>
+          <button type="button" class="bg-brand-tab" data-brand="VIVO" onclick="selectPartsBrandTab('VIVO', this)">VIVO</button>
+          <button type="button" class="bg-brand-tab-btn-add" onclick="addNewBrandTab()" title="Thêm hãng mới">+</button>
+          <button type="button" class="bg-brand-tab-btn-eye" id="btnTogglePartsCostEye" onclick="togglePartsCostVisibility()" title="Ẩn/Hiện cột Vốn & Lãi">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 21v-7"></path>
-              <path d="M4 10V3"></path>
-              <path d="M12 21v-9"></path>
-              <path d="M12 8V3"></path>
-              <path d="M20 21v-5"></path>
-              <path d="M20 12V3"></path>
-              <circle cx="4" cy="14" r="2"></circle>
-              <circle cx="12" cy="8" r="2"></circle>
-              <circle cx="20" cy="16" r="2"></circle>
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
             </svg>
-            <span>Xóa lọc</span>
           </button>
+        </div>
+
+        <!-- HÀNG 2 THEO ẢNH: Ô TÌM KIẾM THEO TÊN MÁY HOẶC IMEI -->
+        <div class="bg-search-imei-row">
+          <div class="bg-search-imei-box">
+            <span class="bg-search-imei-label">TÌM KIẾM</span>
+            <span class="bg-search-imei-icon">🔍</span>
+            <input type="text" id="bgSearchDeviceInput" placeholder="tìm theo tên máy hoặc imei" oninput="handlePartsSearchFilter(this.value)">
+          </div>
         </div>
 
         <!-- THÔNG BÁO XUẤT EXCEL (NỀN XANH LÁ MỜ NHƯ MẪU) -->
@@ -1912,8 +1891,8 @@
                 <th style="width: 6%; text-align: center;">SL</th>
                 <th style="width: 10%; text-align: center;">TRẠNG THÁI</th>
                 <th style="width: 10%; text-align: center;">THAO TÁC</th>
-                <th style="width: 8%; text-align: center;">GIÁ NHẬP</th>
-                <th style="width: 6%; text-align: center;">LÃI</th>
+                <th class="bg-th-cost" style="width: 8%; text-align: center;">GIÁ NHẬP</th>
+                <th class="bg-th-profit" style="width: 6%; text-align: center;">LÃI</th>
                 <th style="width: 6%; text-align: center;">MÀU SẮC</th>
                 <th style="width: 10%; text-align: center;">NGÀY</th>
               </tr>
@@ -5410,10 +5389,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261102_090311"></script>
+  <script src="js/seed_data.js?v=20261102_091246"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261102_090311"></script>
+  <script src="js/main.js?v=20261102_091246"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
