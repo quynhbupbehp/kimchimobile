@@ -9407,7 +9407,16 @@
       align-items: center;
       gap: 7px;
       flex-wrap: wrap;
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.65rem;
+    }
+
+    /* Hàng Tab Linh Kiện & Kiểu */
+    .bg-subfilter-tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 0.65rem;
     }
 
     .bg-brand-tab {
@@ -9434,6 +9443,46 @@
       border-color: #3b82f6 !important;
       color: #ffffff !important;
       box-shadow: 0 0 14px rgba(37, 99, 235, 0.45);
+    }
+
+    /* Tab Linh Kiện con: màu xanh ngọc khi active */
+    .bg-subfilter-tab {
+      background: #090e18;
+      border: 1.5px solid #1e293b;
+      color: #94a3b8;
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    .bg-subfilter-tab:hover {
+      border-color: #10b981;
+      color: #ffffff;
+    }
+
+    .bg-subfilter-tab.active {
+      background: #059669 !important;
+      border-color: #10b981 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+    }
+
+    /* Tab Kiểu con: màu tím / xanh dương khi active */
+    .bg-subfilter-tab.style-tab:hover {
+      border-color: #6366f1;
+      color: #ffffff;
+    }
+
+    .bg-subfilter-tab.style-tab.active {
+      background: #4f46e5 !important;
+      border-color: #6366f1 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.45);
     }
 
     .bg-brand-tab-btn-add {

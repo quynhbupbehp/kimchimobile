@@ -202,6 +202,8 @@
       }
 
       if (tabName === 'baogia') {
+        if (typeof renderPartsTypeTabs === 'function') renderPartsTypeTabs();
+        if (typeof renderPartsStyleTabs === 'function') renderPartsStyleTabs();
         if (typeof renderPartsTable === 'function') renderPartsTable();
       }
       if (tabName === 'phanmem') {
@@ -12383,13 +12385,102 @@
     }
 
     let partsCurrentBrand = '';
+    let partsCurrentType = '';
+    let partsCurrentStyle = '';
     let partsHideCost = false;
 
     function selectPartsBrandTab(brand, btn) {
       partsCurrentBrand = brand || '';
       document.querySelectorAll('#bgBrandTabsContainer .bg-brand-tab').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
+      renderPartsTypeTabs();
+      renderPartsStyleTabs();
       renderPartsTable();
+    }
+
+    function selectPartsTypeTab(type, btn) {
+      partsCurrentType = type || '';
+      document.querySelectorAll('#bgTypeTabsContainer .bg-subfilter-tab').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderPartsStyleTabs();
+      renderPartsTable();
+    }
+
+    function selectPartsStyleTab(style, btn) {
+      partsCurrentStyle = style || '';
+      document.querySelectorAll('#bgStyleTabsContainer .bg-subfilter-tab').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderPartsTable();
+    }
+
+    // Render thanh tab LINH KIỆN (Bao gồm MÀN, PIN, và bất cứ gì thêm vào database)
+    function renderPartsTypeTabs() {
+      const container = document.getElementById('bgTypeTabsContainer');
+      if (!container) return;
+
+      // Danh sách mặc định ưu tiên: MÀN, PIN
+      const defaultTypes = ['MÀN', 'PIN'];
+      const dbTypes = Array.from(new Set(
+        partsDatabase
+          .filter(x => !partsCurrentBrand || x.brand === partsCurrentBrand)
+          .map(x => (x.type || '').trim())
+          .filter(Boolean)
+      ));
+
+      // Hợp nhất danh sách không trùng lặp
+      const allTypes = [...defaultTypes];
+      dbTypes.forEach(t => {
+        const upper = t.toUpperCase();
+        if (!allTypes.some(d => d.toUpperCase() === upper)) {
+          allTypes.push(t);
+        }
+      });
+
+      let html = `<button type="button" class="bg-subfilter-tab ${!partsCurrentType ? 'active' : ''}" onclick="selectPartsTypeTab('', this)">TẤT CẢ LK</button>`;
+      allTypes.forEach(t => {
+        const isActive = (partsCurrentType && partsCurrentType.toUpperCase() === t.toUpperCase());
+        html += `<button type="button" class="bg-subfilter-tab ${isActive ? 'active' : ''}" onclick="selectPartsTypeTab('${escapeHtml(t)}', this)">${escapeHtml(t.toUpperCase())}</button>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Render thanh tab KIỂU (ZIN, GX, JK, DẺO... tự động lấy theo dữ liệu)
+    function renderPartsStyleTabs() {
+      const container = document.getElementById('bgStyleTabsContainer');
+      if (!container) return;
+
+      const dbStyles = Array.from(new Set(
+        partsDatabase
+          .filter(x => {
+            if (partsCurrentBrand && x.brand !== partsCurrentBrand) return false;
+            if (partsCurrentType) {
+              const itemTypeUpper = (x.type || '').toUpperCase();
+              const curUpper = partsCurrentType.toUpperCase();
+              if (!itemTypeUpper.includes(curUpper) && !curUpper.includes(itemTypeUpper)) return false;
+            }
+            return true;
+          })
+          .map(x => (x.style || '').trim())
+          .filter(Boolean)
+      ));
+
+      const defaultStyles = ['ZIN'];
+      const allStyles = [...defaultStyles];
+      dbStyles.forEach(s => {
+        const upper = s.toUpperCase();
+        if (!allStyles.some(d => d.toUpperCase() === upper)) {
+          allStyles.push(s);
+        }
+      });
+
+      let html = `<button type="button" class="bg-subfilter-tab style-tab ${!partsCurrentStyle ? 'active' : ''}" onclick="selectPartsStyleTab('', this)">TẤT CẢ KIỂU</button>`;
+      allStyles.forEach(s => {
+        const isActive = (partsCurrentStyle && partsCurrentStyle.toUpperCase() === s.toUpperCase());
+        html += `<button type="button" class="bg-subfilter-tab style-tab ${isActive ? 'active' : ''}" onclick="selectPartsStyleTab('${escapeHtml(s)}', this)">${escapeHtml(s.toUpperCase())}</button>`;
+      });
+
+      container.innerHTML = html;
     }
 
     function addNewBrandTab() {
@@ -12559,6 +12650,18 @@
         }
 
         if (partsCurrentBrand && item.brand !== partsCurrentBrand) return false;
+
+        if (partsCurrentType) {
+          const itemTypeUpper = (item.type || '').toUpperCase();
+          const curTypeUpper = partsCurrentType.toUpperCase();
+          if (!itemTypeUpper.includes(curTypeUpper) && !curTypeUpper.includes(itemTypeUpper)) return false;
+        }
+
+        if (partsCurrentStyle) {
+          const itemStyleUpper = (item.style || '').toUpperCase();
+          const curStyleUpper = partsCurrentStyle.toUpperCase();
+          if (!itemStyleUpper.includes(curStyleUpper) && !curStyleUpper.includes(itemStyleUpper)) return false;
+        }
 
         return true;
       });
@@ -12787,6 +12890,9 @@
       }
 
       savePartsStorage();
+      renderPartsTypeTabs();
+      renderPartsStyleTabs();
+      renderPartsDatalists();
       renderPartsTable();
       closePartsModal();
     }
@@ -12802,6 +12908,9 @@
       };
       partsDatabase.unshift(cloned);
       savePartsStorage();
+      renderPartsTypeTabs();
+      renderPartsStyleTabs();
+      renderPartsDatalists();
       renderPartsTable();
       alert('Đã nhân bản linh kiện thành công!');
     }
@@ -12816,6 +12925,9 @@
         if (typeof logActivity === 'function') {
           logActivity('DELETE', 'linhkien', 'Linh kiện', `Xóa linh kiện: ${item.brand || ''} ${item.device} (${item.type})`, item, null, id);
         }
+        renderPartsTypeTabs();
+        renderPartsStyleTabs();
+        renderPartsDatalists();
         renderPartsTable();
       }
     }
@@ -12894,6 +13006,10 @@
     window.clonePartsItem = clonePartsItem;
     window.deletePartsItem = deletePartsItem;
     window.selectPartsBrandTab = selectPartsBrandTab;
+    window.selectPartsTypeTab = selectPartsTypeTab;
+    window.selectPartsStyleTab = selectPartsStyleTab;
+    window.renderPartsTypeTabs = renderPartsTypeTabs;
+    window.renderPartsStyleTabs = renderPartsStyleTabs;
     window.addNewBrandTab = addNewBrandTab;
     window.togglePartsCostVisibility = togglePartsCostVisibility;
     window.handlePartsSearchFilter = handlePartsSearchFilter;
@@ -14335,6 +14451,8 @@
 
       // Khởi chạy tab Báo Giá
       renderPartsDatalists();
+      renderPartsTypeTabs();
+      renderPartsStyleTabs();
       renderPartsTable();
 
       // Khởi chạy tab Sửa Chữa & Mình Nợ
