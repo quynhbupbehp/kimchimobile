@@ -399,25 +399,9 @@
                     <label
                         class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">TÊN
                         MÁY</label>
-                    <div class="flex items-center gap-2">
-                        <div class="relative flex-1">
-                            <input type="text" id="device-name" list="device-name-datalist" required placeholder=""
-                                class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 pr-8 shadow-inner"
-                                oninput="onModalNameInputChange(this.value)">
-                            <datalist id="device-name-datalist"></datalist>
-                        </div>
-                        <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" onclick="handleEntity('names', 'add')"
-                                class="w-9 h-9 bg-[#10b981] hover:bg-emerald-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
-                                title="THÊM TÊN MÁY"><i class="fa-solid fa-plus"></i></button>
-                            <button type="button" onclick="handleEntity('names', 'edit')"
-                                class="w-9 h-9 bg-[#2563eb] hover:bg-blue-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
-                                title="SỬA TÊN MÁY"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button type="button" onclick="handleEntity('names', 'delete')"
-                                class="w-9 h-9 bg-[#dc2626] hover:bg-red-500 text-white rounded-xl transition flex items-center justify-center font-bold text-sm shadow"
-                                title="XÓA TÊN MÁY"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </div>
-                    </div>
+                    <input type="text" id="device-name" required placeholder="NHẬP TÊN MÁY (VD: 12 PRO MAX, A12...)" autocomplete="off"
+                        class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 shadow-inner"
+                        oninput="onModalNameInputChange(this.value)">
                 </div>
 
                 <!-- 3. LINH KIỆN & KIỂU (NẰM TRÊN 1 HÀNG NGANG) -->
@@ -2037,35 +2021,11 @@
         }
 
         function updateModalNameOptions(selectedName = '') {
-            const brandSelect = document.getElementById('device-brand-select');
             const nameInput = document.getElementById('device-name');
-            const datalist = document.getElementById('device-name-datalist');
-            if (!brandSelect || !datalist) return;
-
-            const selectedBrand = brandSelect.value.trim().toUpperCase();
-
-            // Lấy danh sách tên máy thuộc hãng này
-            const nameSet = new Set();
-            devices.forEach(d => {
-                if ((d.brand || '').trim().toUpperCase() === selectedBrand && d.name) {
-                    nameSet.add(d.name.trim().toUpperCase());
-                }
-            });
-            names.forEach(n => nameSet.add(n.trim().toUpperCase()));
-
-            let sortedNames = Array.from(nameSet);
-            if (selectedBrand === 'IPHONE') {
-                sortedNames.sort((a, b) => getIphoneSortWeight(a) - getIphoneSortWeight(b));
-            } else {
-                sortedNames.sort((a, b) => a.localeCompare(b, 'vi', { numeric: true }));
-            }
-
-            datalist.innerHTML = sortedNames.map(n => `<option value="${n}">`).join('');
-
             if (nameInput) {
                 if (selectedName) {
                     nameInput.value = selectedName;
-                } else if (!nameInput.value) {
+                } else if (document.getElementById('device-index')?.value === '-1') {
                     nameInput.value = '';
                 }
             }
