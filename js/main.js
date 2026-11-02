@@ -13323,11 +13323,11 @@
     window.hidePartsSearchSuggestions = hidePartsSearchSuggestions;
     window.handlePartsPriceFilterChange = handlePartsPriceFilterChange;
     window.handlePartsStatusFilterChange = handlePartsStatusFilterChange;
-    window.toggleQuoteExcelExportMenu = toggleQuoteExcelExportMenu;
-    window.triggerQuoteExcelImport = triggerQuoteExcelImport;
-    window.handleQuoteExcelImport = handleQuoteExcelImport;
-    window.exportPartsExcel = exportPartsExcel;
-    window.clearAllPartsQuotes = clearAllPartsQuotes;
+    if (typeof toggleQuoteExcelExportMenu !== 'undefined') window.toggleQuoteExcelExportMenu = toggleQuoteExcelExportMenu;
+    if (typeof triggerQuoteExcelImport !== 'undefined') window.triggerQuoteExcelImport = triggerQuoteExcelImport;
+    if (typeof handleQuoteExcelImport !== 'undefined') window.handleQuoteExcelImport = handleQuoteExcelImport;
+    if (typeof exportPartsExcel !== 'undefined') window.exportPartsExcel = exportPartsExcel;
+    if (typeof clearAllPartsQuotes !== 'undefined') window.clearAllPartsQuotes = clearAllPartsQuotes;
     window.addNewPartsOption = addNewPartsOption;
     window.editPartsOption = editPartsOption;
     window.deletePartsOption = deletePartsOption;
