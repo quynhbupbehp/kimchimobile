@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261102_091546">
+  <link rel="stylesheet" href="css/style.css?v=20261102_092015">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -20,7 +20,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261102_091546";
+    var CURRENT_PAGE_VERSION = "20261102_092015";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1880,23 +1880,24 @@
           <table class="bg-quote-table">
             <thead>
               <tr>
-                <th style="width: 10%; text-align: left;">HÃNG</th>
-                <th style="width: 14%; text-align: center;">THUỘC LOẠI MÁY</th>
-                <th style="width: 16%; text-align: center;">LOẠI LINH KIỆN</th>
-                <th style="width: 10%; text-align: center;">GIÁ THAY KHÁCH</th>
-                <th style="width: 6%; text-align: center;">SL</th>
-                <th style="width: 10%; text-align: center;">TRẠNG THÁI</th>
-                <th style="width: 10%; text-align: center;">THAO TÁC</th>
-                <th class="bg-th-cost" style="width: 8%; text-align: center;">GIÁ NHẬP</th>
-                <th class="bg-th-profit" style="width: 6%; text-align: center;">LÃI</th>
-                <th style="width: 6%; text-align: center;">MÀU SẮC</th>
-                <th style="width: 10%; text-align: center;">NGÀY</th>
+                <th style="width: 18%; text-align: left; padding-left: 18px;">TÊN MÁY</th>
+                <th style="width: 15%; text-align: center;">LINH KIỆN</th>
+                <th style="width: 12%; text-align: center;">KIỂU</th>
+                <th style="width: 13%; text-align: center;">GIÁ BÁN</th>
+                <th style="width: 8%; text-align: center;">SL</th>
+                <th style="width: 14%; text-align: center;">THAO TÁC</th>
+                <th class="bg-th-cost" style="width: 10%; text-align: center;">GIÁ NHẬP</th>
+                <th class="bg-th-profit" style="width: 10%; text-align: center;">LÃI</th>
               </tr>
             </thead>
             <tbody id="bgPartsTableBody">
               <!-- Render tự động bởi renderPartsTable() -->
             </tbody>
           </table>
+          <div class="bg-table-footer">
+            <div class="bg-footer-count">TỔNG SỐ DÒNG: <span id="bgTotalRowsCount">1</span></div>
+            <div class="bg-footer-brand">KIM CHI MOBILE</div>
+          </div>
         </div>
       </div>
 
@@ -4381,13 +4382,12 @@
     </div>
   </div>
 
-  <!-- MODAL THÊM / SỬA LINH KIỆN MỚI (CHUẨN ẢNH 2) -->
+  <!-- MODAL THÊM / SỬA LINH KIỆN MỚI (CHUẨN 100% THEO ẢNH MẪU) -->
   <div class="modal-overlay" id="partsModal" style="z-index: 10000;">
     <div class="modal-parts-box">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <div class="modal-parts-header">
         <span class="modal-parts-title" id="partsModalTitle">THÊM LINH KIỆN MỚI</span>
-        <button type="button" onclick="closePartsModal()"
-          style="background: none; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer;">✕</button>
+        <button type="button" class="modal-parts-close-btn" onclick="closePartsModal()">✕</button>
       </div>
 
       <form id="partsForm" onsubmit="savePartsItem(event)">
@@ -4397,27 +4397,16 @@
         <div class="parts-form-field">
           <label class="parts-form-label">HÃNG</label>
           <div class="parts-input-with-trio">
-            <input type="text" id="partsFormBrand" list="partsBrandDatalist" required placeholder="Nhập hoặc chọn hãng"
-              value="SAMSUNG" oninput="formatTitleCaseInput(this)">
+            <input type="text" id="partsFormBrand" list="partsBrandDatalist" required placeholder="IPHONE"
+              value="IPHONE" oninput="formatTitleCaseInput(this)">
             <datalist id="partsBrandDatalist"></datalist>
             <div class="parts-trio-btns">
               <button type="button" class="parts-trio-btn add"
-                onclick="addNewPartsOption('brand', 'partsFormBrand', 'Thêm Hãng mới:')" title="Thêm"><svg
-                  viewBox="0 0 24 24">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg></button>
+                onclick="addNewPartsOption('brand', 'partsFormBrand', 'Thêm Hãng mới:')" title="Thêm">+</button>
               <button type="button" class="parts-trio-btn edit"
-                onclick="editPartsOption('brand', 'partsFormBrand', 'Sửa tên Hãng:')" title="Sửa"><svg
-                  viewBox="0 0 24 24">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg></button>
+                onclick="editPartsOption('brand', 'partsFormBrand', 'Sửa tên Hãng:')" title="Sửa">✏️</button>
               <button type="button" class="parts-trio-btn del" onclick="deletePartsOption('brand', 'partsFormBrand')"
-                title="Xóa"><svg viewBox="0 0 24 24">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg></button>
+                title="Xóa">🗑️</button>
             </div>
           </div>
         </div>
@@ -4427,144 +4416,104 @@
           <label class="parts-form-label">TÊN MÁY</label>
           <div class="parts-input-with-trio">
             <input type="text" id="partsFormDevice" list="partsDeviceDatalist" required
-              placeholder="Ví dụ: A02 M02 hoặc 6G, 12 Pro Max" oninput="formatTitleCaseInput(this)">
+              placeholder="" oninput="formatTitleCaseInput(this)">
             <datalist id="partsDeviceDatalist"></datalist>
             <div class="parts-trio-btns">
               <button type="button" class="parts-trio-btn add"
-                onclick="addNewPartsOption('device', 'partsFormDevice', 'Thêm Tên máy mới:')" title="Thêm"><svg
-                  viewBox="0 0 24 24">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg></button>
+                onclick="addNewPartsOption('device', 'partsFormDevice', 'Thêm Tên máy mới:')" title="Thêm">+</button>
               <button type="button" class="parts-trio-btn edit"
-                onclick="editPartsOption('device', 'partsFormDevice', 'Sửa Tên máy:')" title="Sửa"><svg
-                  viewBox="0 0 24 24">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg></button>
+                onclick="editPartsOption('device', 'partsFormDevice', 'Sửa Tên máy:')" title="Sửa">✏️</button>
               <button type="button" class="parts-trio-btn del" onclick="deletePartsOption('device', 'partsFormDevice')"
-                title="Xóa"><svg viewBox="0 0 24 24">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg></button>
+                title="Xóa">🗑️</button>
             </div>
           </div>
         </div>
 
         <!-- HÀNG 3: LINH KIỆN & KIỂU -->
-        <div style="display: flex; gap: 14px; margin-bottom: 1rem;">
-          <div style="flex: 1;">
+        <div class="parts-grid-2col">
+          <div class="parts-form-field">
             <label class="parts-form-label">LINH KIỆN</label>
             <div class="parts-input-with-trio">
               <input type="text" id="partsFormType" list="partsTypeDatalist" required
-                placeholder="MÀN HÌNH, PIN, LƯNG..." value="MÀN HÌNH" oninput="formatTitleCaseInput(this)">
+                placeholder="" value="" oninput="formatTitleCaseInput(this)">
               <datalist id="partsTypeDatalist"></datalist>
               <div class="parts-trio-btns">
                 <button type="button" class="parts-trio-btn add"
-                  onclick="addNewPartsOption('type', 'partsFormType', 'Thêm Loại linh kiện:')" title="Thêm"><svg
-                    viewBox="0 0 24 24">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg></button>
+                  onclick="addNewPartsOption('type', 'partsFormType', 'Thêm Loại linh kiện:')" title="Thêm">+</button>
                 <button type="button" class="parts-trio-btn edit"
-                  onclick="editPartsOption('type', 'partsFormType', 'Sửa Loại linh kiện:')" title="Sửa"><svg
-                    viewBox="0 0 24 24">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg></button>
+                  onclick="editPartsOption('type', 'partsFormType', 'Sửa Loại linh kiện:')" title="Sửa">✏️</button>
                 <button type="button" class="parts-trio-btn del" onclick="deletePartsOption('type', 'partsFormType')"
-                  title="Xóa"><svg viewBox="0 0 24 24">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg></button>
+                  title="Xóa">🗑️</button>
               </div>
             </div>
           </div>
 
-          <div style="flex: 1;">
+          <div class="parts-form-field">
             <label class="parts-form-label">KIỂU</label>
             <div class="parts-input-with-trio">
-              <input type="text" id="partsFormStyle" list="partsStyleDatalist" placeholder="ZIN, GX, LÔ - RẺ, LỖ TO..."
+              <input type="text" id="partsFormStyle" list="partsStyleDatalist" placeholder=""
                 oninput="formatTitleCaseInput(this)">
               <datalist id="partsStyleDatalist"></datalist>
               <div class="parts-trio-btns">
                 <button type="button" class="parts-trio-btn add"
-                  onclick="addNewPartsOption('style', 'partsFormStyle', 'Thêm Kiểu linh kiện:')" title="Thêm"><svg
-                    viewBox="0 0 24 24">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg></button>
+                  onclick="addNewPartsOption('style', 'partsFormStyle', 'Thêm Kiểu linh kiện:')" title="Thêm">+</button>
                 <button type="button" class="parts-trio-btn edit"
-                  onclick="editPartsOption('style', 'partsFormStyle', 'Sửa Kiểu linh kiện:')" title="Sửa"><svg
-                    viewBox="0 0 24 24">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg></button>
+                  onclick="editPartsOption('style', 'partsFormStyle', 'Sửa Kiểu linh kiện:')" title="Sửa">✏️</button>
                 <button type="button" class="parts-trio-btn del" onclick="deletePartsOption('style', 'partsFormStyle')"
-                  title="Xóa"><svg viewBox="0 0 24 24">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg></button>
+                  title="Xóa">🗑️</button>
               </div>
             </div>
           </div>
         </div>
 
         <!-- HÀNG 4: GIÁ BÁN & GIÁ NHẬP -->
-        <div style="display: flex; gap: 14px; margin-bottom: 1.25rem;">
-          <div style="flex: 1; text-align: center;">
+        <div class="parts-grid-2col">
+          <div class="parts-form-field" style="text-align: center;">
             <label class="parts-form-label" style="text-align: center;">GIÁ BÁN</label>
-            <div style="background: #111724; border: 1px solid #1f2a3e; border-radius: 8px; padding: 4px 10px;">
+            <div class="parts-input-pill-box">
               <input type="text" id="partsFormPriceSell" required
-                style="width: 100%; background: transparent; border: none; color: #fbbf24; font-size: 1.15rem; font-weight: 900; text-align: center; outline: none; padding: 6px 0;"
-                placeholder="0" oninput="formatCurrencyInput(this); calcPartsModalProfit();">
+                placeholder="" oninput="formatCurrencyInput(this); calcPartsModalProfit();">
             </div>
           </div>
 
-          <div style="flex: 1; text-align: center;">
+          <div class="parts-form-field" style="text-align: center;">
             <label class="parts-form-label" style="text-align: center;">GIÁ NHẬP</label>
-            <div style="background: #111724; border: 1px solid #1f2a3e; border-radius: 8px; padding: 4px 10px;">
+            <div class="parts-input-pill-box">
               <input type="text" id="partsFormPriceCost" required
-                style="width: 100%; background: transparent; border: none; color: #fff; font-size: 1.15rem; font-weight: 900; text-align: center; outline: none; padding: 6px 0;"
-                placeholder="0" oninput="formatCurrencyInput(this); calcPartsModalProfit();">
+                placeholder="" oninput="formatCurrencyInput(this); calcPartsModalProfit();">
             </div>
           </div>
         </div>
 
         <!-- HÀNG 5: SL, MÀU, LÃI / SP, HỦY, LƯU -->
-        <div
-          style="display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-top: 0.5rem;">
-          <div style="display: flex; flex-direction: column; align-items: center;">
+        <div class="parts-bottom-action-row">
+          <div class="parts-bottom-col">
             <label class="parts-form-label" style="text-align: center;">SL</label>
-            <div class="parts-stepper">
-              <button type="button" onclick="adjustPartsModalQty(-1)">-</button>
+            <div class="parts-stepper-round">
+              <button type="button" onclick="adjustPartsModalQty(-1)">−</button>
               <input type="text" id="partsFormQty" value="1" oninput="this.value = this.value.replace(/\D/g, '')">
               <button type="button" onclick="adjustPartsModalQty(1)">+</button>
             </div>
           </div>
 
-          <div style="display: flex; flex-direction: column; align-items: center; width: 110px;">
+          <div class="parts-bottom-col" style="flex: 1.2;">
             <label class="parts-form-label" style="text-align: center;">MÀU</label>
-            <div
-              style="background: #111724; border: 1px solid #1f2a3e; border-radius: 8px; width: 100%; height: 38px; display: flex; align-items: center; padding: 0 8px;">
-              <input type="text" id="partsFormColor" placeholder="Màu sắc..."
-                style="background: transparent; border: none; color: #fff; font-size: 0.85rem; font-weight: 700; width: 100%; text-align: center; outline: none;">
+            <div class="parts-input-pill-box">
+              <input type="text" id="partsFormColor" placeholder=""
+                style="text-align: center;">
             </div>
           </div>
 
-          <div style="display: flex; flex-direction: column; align-items: center; width: 110px;">
+          <div class="parts-bottom-col" style="flex: 1.5;">
             <label class="parts-form-label" style="text-align: center;">LÃI / SP</label>
-            <div
-              style="background: #111724; border: 1px solid #1f2a3e; border-radius: 8px; width: 100%; height: 38px; display: flex; align-items: center; justify-content: center;">
-              <span id="partsFormProfitDisplay" style="color: #10b981; font-weight: 900; font-size: 1.05rem;">0</span>
+            <div class="parts-input-pill-box" style="justify-content: center;">
+              <span id="partsFormProfitDisplay" class="parts-profit-green-val">0</span>
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
-            <button type="button" onclick="closePartsModal()"
-              style="background: #1e293b; color: #94a3b8; border: none; border-radius: 8px; padding: 9px 18px; font-weight: 800; cursor: pointer;">HỦY</button>
-            <button type="submit"
-              style="background: #d97706; color: #fff; border: none; border-radius: 8px; padding: 9px 24px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);">LƯU</button>
+          <div class="parts-bottom-buttons">
+            <button type="button" class="btn-parts-cancel-pill" onclick="closePartsModal()">HỦY</button>
+            <button type="submit" class="btn-parts-save-pill">LƯU</button>
           </div>
         </div>
       </form>
@@ -5385,10 +5334,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261102_091546"></script>
+  <script src="js/seed_data.js?v=20261102_092015"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261102_091546"></script>
+  <script src="js/main.js?v=20261102_092015"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

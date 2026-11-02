@@ -12575,62 +12575,91 @@
         capEl.innerText = formatNumberDisplay(totalCapital);
       }
 
+      // Cập nhật tổng số dòng
+      const totalRowsEl = document.getElementById('bgTotalRowsCount');
+      if (totalRowsEl) {
+        totalRowsEl.innerText = filtered.length;
+      }
+
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 2.5rem; color: #94a3b8; font-weight: 700;">Không có linh kiện nào phù hợp với bộ lọc</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2.5rem; color: #94a3b8; font-weight: 700;">Không có linh kiện nào phù hợp với bộ lọc</td></tr>`;
         return;
       }
 
       tbody.innerHTML = filtered.map(item => {
         const qtyNum = parseInt(item.qty, 10) || 0;
         const isOut = (qtyNum === 0);
-        const statusLabel = isOut ? 'Hết hàng' : (item.status || 'Còn hàng');
-        const colorDisplay = item.color && item.color !== '' ? escapeHtml(item.color) : '—';
-        const dateDisplay = item.date || '10/8/2026';
+        
+        // Icon thương hiệu cho TÊN MÁY
+        const brandUpper = (item.brand || '').toUpperCase();
+        let brandLogo = '';
+        if (brandUpper.includes('APPLE') || brandUpper.includes('IPHONE') || brandUpper === 'IP') {
+          brandLogo = `<span class="bg-brand-logo-icon" style="color: #f59e0b;" title="Apple"></span>`;
+        } else if (brandUpper.includes('SAMSUNG')) {
+          brandLogo = `<span class="bg-brand-logo-icon" style="color: #3b82f6; font-size: 0.9rem; font-weight: 900;" title="Samsung">S</span>`;
+        } else {
+          brandLogo = `<span class="bg-brand-logo-icon" style="color: #94a3b8; font-size: 0.9rem; font-weight: 900;">•</span>`;
+        }
+
+        // Chấm màu sắc (nếu có color)
+        let colorDotHtml = '';
+        if (item.color && item.color.trim() !== '') {
+          const col = item.color.trim().toLowerCase();
+          let bgCol = item.color.trim();
+          if (col === 'trắng' || col === 'white') bgCol = '#ffffff';
+          else if (col === 'đen' || col === 'black') bgCol = '#000000';
+          else if (col === 'vàng' || col === 'gold') bgCol = '#fbbf24';
+          else if (col === 'xanh' || col === 'blue') bgCol = '#3b82f6';
+          else if (col === 'đỏ' || col === 'red') bgCol = '#ef4444';
+          else if (col === 'tím' || col === 'purple') bgCol = '#a855f7';
+          else if (col === 'hồng' || col === 'pink') bgCol = '#ec4899';
+          else if (col === 'xám' || col === 'gray' || col === 'grey') bgCol = '#64748b';
+          
+          colorDotHtml = `<span class="bg-color-dot" style="background-color: ${escapeHtml(bgCol)};" title="Màu: ${escapeHtml(item.color)}"></span>`;
+        }
+
+        const lkText = escapeHtml((item.type || '').toUpperCase());
+        const kieuText = escapeHtml((item.style || item.status || 'ZIN').toUpperCase());
 
         return `
           <tr class="${isOut ? 'out-of-stock' : ''}">
-            <td style="text-align: left;">
-              <span class="bg-cell-brand">${escapeHtml(item.brand || 'IPHONE')}</span>
+            <td style="text-align: left; padding-left: 18px;">
+              <div class="bg-cell-devicename">
+                ${brandLogo}
+                <span class="bg-model-chip">${escapeHtml(item.device || '')}</span>
+                ${colorDotHtml}
+              </div>
             </td>
             <td style="text-align: center;">
-              <span class="bg-cell-device">${escapeHtml(item.device || '')}</span>
+              <span class="bg-cell-linhkien">${lkText}</span>
             </td>
             <td style="text-align: center;">
-              <span class="bg-pill-lk">${escapeHtml(item.type || '')}</span>
+              <span class="bg-cell-kieu">${kieuText}</span>
             </td>
             <td style="text-align: center;">
-              <span class="bg-price-customer">${formatPriceStr(item.priceSell)}</span>
+              <span class="bg-cell-giaban">${formatPriceStr(item.priceSell)}</span>
             </td>
             <td style="text-align: center;">
-              <span class="bg-qty-text">${qtyNum}</span>
-            </td>
-            <td style="text-align: center;">
-              <span class="bg-status-badge ${isOut ? 'out' : ''}">${statusLabel}</span>
+              <span class="bg-cell-sl">${qtyNum}</span>
             </td>
             <td style="text-align: center;">
               <div class="bg-actions-cell">
-                <button type="button" class="bg-action-btn edit" onclick="openPartsModal(${item.id})" title="Sửa linh kiện">
+                <button type="button" class="bg-action-btn edit" onclick="openPartsModal(${item.id})" title="Sửa">
                   <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button type="button" class="bg-action-btn clone" onclick="clonePartsItem(${item.id})" title="Nhân bản linh kiện">
+                <button type="button" class="bg-action-btn clone" onclick="clonePartsItem(${item.id})" title="Nhân bản">
                   <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
-                <button type="button" class="bg-action-btn del" onclick="deletePartsItem(${item.id})" title="Xóa linh kiện">
+                <button type="button" class="bg-action-btn del" onclick="deletePartsItem(${item.id})" title="Xóa">
                   <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               </div>
             </td>
             <td class="bg-td-cost" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
-              <span class="bg-cost-num">${formatPriceStr(item.priceCost)}</span>
+              <span class="bg-cell-gianhap">${formatPriceStr(item.priceCost)}</span>
             </td>
             <td class="bg-td-profit" style="text-align: center; ${partsHideCost ? 'display: none;' : ''}">
-              <span class="bg-profit-num">${formatPriceStr(item.profit)}</span>
-            </td>
-            <td style="text-align: center;">
-              <span class="bg-color-dash">${colorDisplay}</span>
-            </td>
-            <td style="text-align: center;">
-              <span class="bg-date-str">${dateDisplay}</span>
+              <span class="bg-cell-lai">${formatPriceStr(item.profit)}</span>
             </td>
           </tr>
         `;
