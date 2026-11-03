@@ -5340,62 +5340,62 @@
     <div
       style="background: #060913; border: 2px solid #22d3ee; border-radius: 16px; width: 100%; max-width: 580px; box-shadow: 0 10px 40px rgba(0,0,0,0.9), 0 0 25px rgba(34, 211, 238, 0.25); display: flex; flex-col; flex-direction: column; overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif;">
       
-      <!-- TIÊU ĐỀ: BẢNG SỐ LIỆU / BẢNG THEO DÕI DOANH THU -->
-      <div style="background: linear-gradient(180deg, #101c2e, #090e1a); padding: 16px 14px; text-align: center; border-bottom: 2px solid #22d3ee;">
+      <!-- TIÊU ĐỀ: THEO DÕI DOANH THU -->
+      <div style="background: linear-gradient(180deg, #101c2e, #090e1a); padding: 14px 10px; text-align: center; border-bottom: 2px solid #22d3ee;">
         <h2 style="margin: 0; color: #ffffff; font-size: 1.15rem; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">
-          BẢNG SỐ LIỆU / BẢNG THEO DÕI DOANH THU
+          THEO DÕI DOANH THU
         </h2>
       </div>
 
-      <!-- BẢNG BỌC VIỀN XANH NGỌC ĐÚNG Y CHANG ẢNH MẪU -->
-      <div style="padding: 12px; overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; border: 2px solid #38bdf8; text-align: center; background: #000000;">
+      <!-- BẢNG BỌC VIỀN XANH NGỌC - ÉP TRỌN VẸN 3 CỘT TRONG KHUNG HÌNH (TABLE-LAYOUT: FIXED) -->
+      <div style="padding: 10px 8px; width: 100%; box-sizing: border-box; overflow: hidden;">
+        <table style="width: 100%; table-layout: fixed; border-collapse: collapse; border: 2px solid #38bdf8; text-align: center; background: #000000;">
           <thead>
             <tr style="border-bottom: 2px solid #38bdf8; background: #050a14;">
-              <th style="padding: 12px 6px; color: #fbbf24; font-size: 1.05rem; font-weight: 900; border-right: 2px solid #38bdf8; width: 34%; text-transform: uppercase;">
+              <th style="padding: 10px 4px; color: #fbbf24; font-size: 0.88rem; font-weight: 900; border-right: 2px solid #38bdf8; width: 34%; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 HOẠT ĐỘNG
               </th>
-              <th style="padding: 12px 6px; color: #fbbf24; font-size: 1.05rem; font-weight: 900; border-right: 2px solid #38bdf8; width: 33%; text-transform: uppercase;">
+              <th style="padding: 10px 4px; color: #fbbf24; font-size: 0.88rem; font-weight: 900; border-right: 2px solid #38bdf8; width: 28%; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 SỐ ĐƠN
               </th>
-              <th style="padding: 12px 6px; color: #fbbf24; font-size: 1.05rem; font-weight: 900; width: 33%; text-transform: uppercase;">
+              <th style="padding: 10px 4px; color: #fbbf24; font-size: 0.88rem; font-weight: 900; width: 38%; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 SỐ TIỀN LÃI
               </th>
             </tr>
           </thead>
-          <tbody style="font-size: 1rem; font-weight: 800; color: #ffffff;">
+          <tbody style="font-size: 0.92rem; font-weight: 800; color: #ffffff;">
             <!-- HÀNG 1: Bán Hàng -->
             <tr style="border-bottom: 2px solid #38bdf8;">
-              <td style="padding: 12px 6px; border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff;">Bán Hàng</td>
-              <td id="mStatsCountBanhang" style="padding: 12px 6px; border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff;">0</td>
-              <td id="mStatsProfitBanhang" style="padding: 12px 6px; font-weight: 900; color: #34d399;">0</td>
+              <td style="padding: 10px 4px; border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Bán Hàng</td>
+              <td id="mStatsCountBanhang" style="padding: 10px 4px; border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">0</td>
+              <td id="mStatsProfitBanhang" style="padding: 10px 4px; font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">0</td>
             </tr>
             <!-- HÀNG 2: Sửa Chữa -->
             <tr style="border-bottom: 2px solid #38bdf8;">
-              <td style="padding: 12px 6px; border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff;">Sửa Chữa</td>
-              <td id="mStatsCountSuachua" style="padding: 12px 6px; border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff;">0</td>
-              <td id="mStatsProfitSuachua" style="padding: 12px 6px; font-weight: 900; color: #34d399;">0</td>
+              <td style="padding: 10px 4px; border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sửa Chữa</td>
+              <td id="mStatsCountSuachua" style="padding: 10px 4px; border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">0</td>
+              <td id="mStatsProfitSuachua" style="padding: 10px 4px; font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">0</td>
             </tr>
             <!-- HÀNG 3: Bán Gà -->
             <tr style="border-bottom: 2px solid #38bdf8;">
-              <td style="padding: 12px 6px; border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff;">Bán Gà</td>
-              <td id="mStatsCountBanga" style="padding: 12px 6px; border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff;">0</td>
-              <td id="mStatsProfitBanga" style="padding: 12px 6px; font-weight: 900; color: #34d399;">0</td>
+              <td style="padding: 10px 4px; border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Bán Gà</td>
+              <td id="mStatsCountBanga" style="padding: 10px 4px; border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">0</td>
+              <td id="mStatsProfitBanga" style="padding: 10px 4px; font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">0</td>
             </tr>
             <!-- HÀNG 4: Phần Mềm -->
             <tr style="border-bottom: 2px solid #38bdf8;">
-              <td style="padding: 12px 6px; border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff;">Phần Mềm</td>
-              <td id="mStatsCountPhanmem" style="padding: 12px 6px; border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff;">0</td>
-              <td id="mStatsProfitPhanmem" style="padding: 12px 6px; font-weight: 900; color: #34d399;">0</td>
+              <td style="padding: 10px 4px; border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Phần Mềm</td>
+              <td id="mStatsCountPhanmem" style="padding: 10px 4px; border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">0</td>
+              <td id="mStatsProfitPhanmem" style="padding: 10px 4px; font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">0</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- DÒNG DƯỚI CÙNG: Tổng Lợi Nhuận = Số Tiền Lãi (MÀU VÀNG CAM Y CHANG ẢNH) -->
-      <div style="padding: 8px 12px 14px 12px; text-align: center;">
-        <div style="color: #f59e0b; font-size: 1.12rem; font-weight: 900; letter-spacing: 0.3px;">
-          Tổng Lợi Nhuận = <span id="mStatsTotalProfit" style="color: #fbbf24; font-size: 1.25rem; font-weight: 900;">0</span>
+      <div style="padding: 6px 8px 12px 8px; text-align: center;">
+        <div style="color: #f59e0b; font-size: 1.05rem; font-weight: 900; letter-spacing: 0.2px;">
+          Tổng Lợi Nhuận = <span id="mStatsTotalProfit" style="color: #fbbf24; font-size: 1.18rem; font-weight: 900;">0</span>
         </div>
       </div>
 
