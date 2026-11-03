@@ -2151,6 +2151,7 @@
       // 7. Đồng bộ Phần Mềm (software) thời gian thực giữa Web và Mobile
       try {
         db.collection('software').onSnapshot(snapshot => {
+          const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
           let list = [];
           snapshot.forEach(doc => {
             let data = doc.data();
@@ -2158,6 +2159,10 @@
             list.push(data);
           });
           if (list.length > 0) {
+            if (isSoftwareCleared) {
+              // Người dùng vừa xóa sạch dữ liệu trên thiết bị này, không ghi đè lại
+              return;
+            }
             // Sắp xếp ID lớn nhất / mới nhất lên đầu
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             softwareDatabase = list;
@@ -2168,6 +2173,18 @@
               renderSoftwareDebtTable();
             }
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+          } else {
+            // Khi Firestore đã xóa hết hoặc trống
+            if (isSoftwareCleared || softwareDatabase.length === 0) {
+              softwareDatabase = [];
+              try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
+              if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+              if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+              if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+                renderSoftwareDebtTable();
+              }
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            }
           }
         }, err => console.error("Lỗi sync software realtime:", err));
       } catch (err) {
@@ -2293,6 +2310,36 @@
         updateSidebarOverallProfits();
       }
     });
+
+    // Dữ liệu mẫu khởi tạo chuẩn Phần Mềm
+    const DEFAULT_SOFTWARE_DATA = [
+      { id: 1, customer: "A Huy", device: "A3s", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "11:37", paymentStatus: "ĐÃ THANH TOÁN", selected: false },
+      { id: 2, customer: "Tấn Phát", device: "A3s", price: "150", cost: "0", profit: "150", dayMonth: "23-10", year: "2026", time: "11:36", paymentStatus: "ĐÃ THANH TOÁN", selected: false },
+      { id: 3, customer: "Kỳ Hường", device: "C71", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "11:36", paymentStatus: "NỢ DAI", selected: false },
+      { id: 4, customer: "Tấn Phát", device: "A3s", price: "150", cost: "0", profit: "150", dayMonth: "23-10", year: "2026", time: "11:20", paymentStatus: "NỢ DAI", selected: false },
+      { id: 5, customer: "Kỳ Hường", device: "C71 + F11", price: "250", cost: "0", profit: "250", dayMonth: "23-10", year: "2026", time: "11:15", paymentStatus: "NỢ DAI", selected: false },
+      { id: 6, customer: "Diệu (An Lâm)", device: "iPhone 7 Plus", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "10:50", paymentStatus: "NỢ DAI", selected: false },
+      { id: 7, customer: "Nguyễn Đức Hạnh (Lương)", device: "Y91c", price: "50", cost: "0", profit: "50", dayMonth: "23-10", year: "2026", time: "10:30", paymentStatus: "NỢ DAI", selected: false },
+      { id: 8, customer: "Cường Apple", device: "A5s + A15s", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "10:05", paymentStatus: "NỢ DAI", selected: false },
+      { id: 9, customer: "Tuyến Thảo", device: "Redmi Note 7 Pro + A32", price: "50", cost: "0", profit: "50", dayMonth: "22-10", year: "2026", time: "16:40", paymentStatus: "NỢ DAI", selected: false },
+      { id: 10, customer: "Quang Trung HY", device: "A06", price: "100", cost: "0", profit: "100", dayMonth: "22-10", year: "2026", time: "15:20", paymentStatus: "NỢ DAI", selected: false }
+    ];
+
+    let softwareDatabase = [];
+    try {
+      const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
+      const stored = localStorage.getItem('KIMCHI_PHANMEM_DB');
+      if (isSoftwareCleared) {
+        softwareDatabase = [];
+      } else if (stored !== null) {
+        softwareDatabase = JSON.parse(stored) || [];
+      } else {
+        softwareDatabase = DEFAULT_SOFTWARE_DATA;
+        localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
+      }
+    } catch (e) {
+      softwareDatabase = [];
+    }
 
     // Dữ liệu Bán Hàng & Bán Gà: Khởi tạo an toàn kèm đồng bộ Firebase Firestore
     let salesDatabase = [];
@@ -5671,14 +5718,42 @@
     window.exportSoftwareToExcel = exportSoftwareToExcel;
 
     function clearAllSoftwareData() {
-      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Phần Mềm!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
+      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Phần Mềm!\n\nVui lòng nhập: "đồng ý" (hoặc "ok") để xác nhận xóa:');
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
       if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
+        const oldItems = Array.isArray(softwareDatabase) ? [...softwareDatabase] : [];
         softwareDatabase = [];
         localStorage.setItem('KIMCHI_PHANMEM_CLEARED', 'true');
-        saveSoftwareStorage();
+        try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify([])); } catch(e){}
+
+        // Xóa sạch toàn bộ tài liệu phần mềm trên Firebase Firestore
+        if (typeof db !== 'undefined' && db) {
+          try {
+            db.collection('software').get().then(snapshot => {
+              snapshot.forEach(doc => {
+                doc.ref.delete().catch(console.error);
+              });
+            }).catch(err => {
+              // Dự phòng xóa theo danh sách cũ
+              oldItems.forEach(item => {
+                if (item && item.id) {
+                  db.collection('software').doc(String(item.id)).delete().catch(console.error);
+                }
+              });
+            });
+          } catch(e) {
+            console.error("Lỗi xóa Firestore software:", e);
+          }
+        }
+
         if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+        if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+        if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+          renderSoftwareDebtTable();
+        }
+        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+
         alert('Đã xóa sạch toàn bộ dữ liệu Phần Mềm thành công!');
       } else {
         alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
@@ -10904,35 +10979,7 @@
       }
     }
 
-    // Dữ liệu mẫu khởi tạo chuẩn y hệt Ảnh 1 & Ảnh 2
-    const DEFAULT_SOFTWARE_DATA = [
-      { id: 1, customer: "A Huy", device: "A3s", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "11:37", paymentStatus: "ĐÃ THANH TOÁN", selected: false },
-      { id: 2, customer: "Tấn Phát", device: "A3s", price: "150", cost: "0", profit: "150", dayMonth: "23-10", year: "2026", time: "11:36", paymentStatus: "ĐÃ THANH TOÁN", selected: false },
-      { id: 3, customer: "Kỳ Hường", device: "C71", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "11:36", paymentStatus: "NỢ DAI", selected: false },
-      { id: 4, customer: "Tấn Phát", device: "A3s", price: "150", cost: "0", profit: "150", dayMonth: "23-10", year: "2026", time: "11:20", paymentStatus: "NỢ DAI", selected: false },
-      { id: 5, customer: "Kỳ Hường", device: "C71 + F11", price: "250", cost: "0", profit: "250", dayMonth: "23-10", year: "2026", time: "11:15", paymentStatus: "NỢ DAI", selected: false },
-      { id: 6, customer: "Diệu (An Lâm)", device: "iPhone 7 Plus", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "10:50", paymentStatus: "NỢ DAI", selected: false },
-      { id: 7, customer: "Nguyễn Đức Hạnh (Lương)", device: "Y91c", price: "50", cost: "0", profit: "50", dayMonth: "23-10", year: "2026", time: "10:30", paymentStatus: "NỢ DAI", selected: false },
-      { id: 8, customer: "Cường Apple", device: "A5s + A15s", price: "100", cost: "0", profit: "100", dayMonth: "23-10", year: "2026", time: "10:05", paymentStatus: "NỢ DAI", selected: false },
-      { id: 9, customer: "Tuyến Thảo", device: "Redmi Note 7 Pro + A32", price: "50", cost: "0", profit: "50", dayMonth: "22-10", year: "2026", time: "16:40", paymentStatus: "NỢ DAI", selected: false },
-      { id: 10, customer: "Quang Trung HY", device: "A06", price: "100", cost: "0", profit: "100", dayMonth: "22-10", year: "2026", time: "15:20", paymentStatus: "NỢ DAI", selected: false }
-    ];
-
-    let softwareDatabase = [];
-    try {
-      const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
-      const stored = localStorage.getItem('KIMCHI_PHANMEM_DB');
-      if (isSoftwareCleared) {
-        softwareDatabase = [];
-      } else if (stored !== null) {
-        softwareDatabase = JSON.parse(stored) || [];
-      } else {
-        softwareDatabase = DEFAULT_SOFTWARE_DATA;
-        localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
-      }
-    } catch (e) {
-      softwareDatabase = [];
-    }
+    // (DEFAULT_SOFTWARE_DATA & softwareDatabase đã được khởi tạo ở đầu file trước DOMContentLoaded)
 
     function saveSoftwareStorage(itemToSync) {
       if (softwareDatabase.length > 0) localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
