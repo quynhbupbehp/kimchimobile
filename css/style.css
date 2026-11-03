@@ -9933,40 +9933,40 @@
       }
     }
 
-    /* === GIAO DIỆN WEB/DESKTOP: GIẢM 30% CỠ CHỮ BẢNG THEO DÕI DOANH THU === */
+    /* === GIAO DIỆN WEB/DESKTOP: TIẾP TỤC GIẢM 30% NỮA CỠ CHỮ BẢNG THEO DÕI DOANH THU === */
     @media (min-width: 768px) {
       #mobileRevenueStatsModal > div,
       #mobileRevenueStatsModal .stats-modal-inner {
-        max-width: 860px !important;
+        max-width: 720px !important;
       }
       #mobileRevenueStatsModal h2 {
-        font-size: 2rem !important; /* Tiêu đề THEO DÕI DOANH THU */
+        font-size: 1.45rem !important; /* Tiêu đề THEO DÕI DOANH THU */
       }
       #mobileRevenueStatsModal table th,
       #mobileRevenueStatsModal table th * {
-        font-size: 2.65rem !important; /* HOẠT ĐỘNG, SỐ ĐƠN, SỐ TIỀN LÃI */
-        padding: 16px 12px !important;
+        font-size: 1.85rem !important; /* HOẠT ĐỘNG, SỐ ĐƠN, SỐ TIỀN LÃI */
+        padding: 12px 10px !important;
         letter-spacing: 0.5px !important;
       }
       #mobileRevenueStatsModal table td,
       #mobileRevenueStatsModal table td * {
-        font-size: 2.65rem !important; /* Bán Hàng, Sửa Chữa, Bán Gà, Phần Mềm, số đơn và số tiền lãi */
-        padding: 16px 12px !important;
+        font-size: 1.85rem !important; /* Bán Hàng, Sửa Chữa, Bán Gà, Phần Mềm, số đơn và số tiền lãi */
+        padding: 12px 10px !important;
         font-weight: 900 !important;
       }
       #mobileRevenueStatsModal #mStatsTargetStatus,
       #mobileRevenueStatsModal div:has(> #mStatsTargetStatus) {
-        font-size: 1.7rem !important;
+        font-size: 1.25rem !important;
       }
       #mobileRevenueStatsModal #mStatsTotalProfit {
-        font-size: 2.4rem !important;
+        font-size: 1.7rem !important;
       }
       #mobileRevenueStatsModal div:has(> #mStatsTotalProfit) {
-        font-size: 2rem !important;
+        font-size: 1.45rem !important;
       }
       #mobileRevenueStatsModal button[onclick*="closeMobileRevenueStatsModal"] {
-        font-size: 1.7rem !important;
-        padding: 12px 64px !important;
+        font-size: 1.25rem !important;
+        padding: 10px 52px !important;
       }
     }
 
