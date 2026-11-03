@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261102_164847">
+  <link rel="stylesheet" href="css/style.css?v=20261103_132000">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261102_164847";
+    var CURRENT_PAGE_VERSION = "20261103_132000";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -5338,40 +5338,51 @@
     style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 12px; box-sizing: border-box;"
     onclick="if (event.target === this) closeMobileRevenueStatsModal()">
     <style>
+      /* CỠ CHỮ TRÊN MOBILE */
+      #mobileRevenueStatsModal .stats-modal-inner table th {
+        font-size: 0.76rem;
+        padding: 8px 3px;
+      }
+      #mobileRevenueStatsModal .stats-modal-inner table td {
+        font-size: 0.76rem;
+        padding: 8px 3px;
+      }
+
+      /* TĂNG THÊM X2 LẦN TRÊN GIAO DIỆN WEB/DESKTOP */
       @media (min-width: 768px) {
         #mobileRevenueStatsModal .stats-modal-inner {
-          max-width: 920px !important;
+          max-width: 1050px !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner h2 {
-          font-size: 2.2rem !important;
+          font-size: 2.8rem !important;
         }
-        /* TĂNG 50% TOÀN BỘ CỠ CHỮ: HOẠT ĐỘNG, SỐ ĐƠN, SỐ TIỀN LÃI, BÁN HÀNG, SỬA CHỮA, BÁN GÀ, PHẦN MỀM, SỐ ĐƠN VÀ SỐ TIỀN LÃI */
-        #mobileRevenueStatsModal .stats-modal-inner table th,
-        #mobileRevenueStatsModal .stats-modal-inner table th * {
-          font-size: 2.6rem !important;
-          padding: 18px 12px !important;
-          letter-spacing: 0.5px !important;
+        /* TOÀN BỘ CỠ CHỮ BẢNG TĂNG X2 LẦN: HOẠT ĐỘNG, SỐ ĐƠN, SỐ TIỀN LÃI, BÁN HÀNG, SỬA CHỮA, BÁN GÀ, PHẦN MỀM VÀ CÁC SỐ LIỆU */
+        #mobileRevenueStatsModal .stats-modal-inner table th {
+          font-size: 3.8rem !important;
+          padding: 24px 16px !important;
+          letter-spacing: 1px !important;
         }
-        #mobileRevenueStatsModal .stats-modal-inner table td,
-        #mobileRevenueStatsModal .stats-modal-inner table td * {
-          font-size: 2.6rem !important;
-          padding: 18px 12px !important;
+        #mobileRevenueStatsModal .stats-modal-inner table td {
+          font-size: 3.8rem !important;
+          padding: 24px 16px !important;
           font-weight: 900 !important;
         }
-        #mobileRevenueStatsModal .stats-modal-inner .stats-target-row {
-          font-size: 1.85rem !important;
-          padding: 14px 10px !important;
+        #mobileRevenueStatsModal .stats-modal-inner .stats-target-row,
+        #mobileRevenueStatsModal .stats-modal-inner .stats-target-row * {
+          font-size: 2.4rem !important;
+          padding: 16px 12px !important;
         }
-        #mobileRevenueStatsModal .stats-modal-inner .stats-total-row {
-          font-size: 2.2rem !important;
-          padding: 12px 10px 18px 10px !important;
+        #mobileRevenueStatsModal .stats-modal-inner .stats-total-row,
+        #mobileRevenueStatsModal .stats-modal-inner .stats-total-row * {
+          font-size: 2.8rem !important;
+          padding: 14px 12px 22px 12px !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner .stats-total-row #mStatsTotalProfit {
-          font-size: 2.6rem !important;
+          font-size: 3.4rem !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner .stats-close-btn {
-          font-size: 1.8rem !important;
-          padding: 14px 80px !important;
+          font-size: 2.4rem !important;
+          padding: 16px 96px !important;
         }
       }
     </style>
@@ -5390,13 +5401,13 @@
         <table style="width: 100% !important; min-width: 0 !important; max-width: 100% !important; table-layout: fixed !important; border-collapse: collapse; border: 2px solid #38bdf8; text-align: center; background: #000000;">
           <thead>
             <tr style="border-bottom: 2px solid #38bdf8; background: #050a14;">
-              <th style="padding: 8px 4px !important; color: #fbbf24; font-size: 0.76rem !important; font-weight: 900; border-right: 2px solid #38bdf8; width: 34% !important; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">
+              <th style="color: #fbbf24; font-weight: 900; border-right: 2px solid #38bdf8; width: 34% !important; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">
                 HOẠT ĐỘNG
               </th>
-              <th style="padding: 8px 2px !important; color: #fbbf24; font-size: 0.76rem !important; font-weight: 900; border-right: 2px solid #38bdf8; width: 26% !important; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">
+              <th style="color: #fbbf24; font-weight: 900; border-right: 2px solid #38bdf8; width: 26% !important; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">
                 SỐ ĐƠN
               </th>
-              <th style="padding: 8px 2px !important; color: #fbbf24; font-size: 0.76rem !important; font-weight: 900; width: 40% !important; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">
+              <th style="color: #fbbf24; font-weight: 900; width: 40% !important; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">
                 SỐ TIỀN LÃI
               </th>
             </tr>
@@ -5404,27 +5415,27 @@
           <tbody style="color: #ffffff;">
             <!-- HÀNG 1: Bán Hàng -->
             <tr style="border-bottom: 2px solid #38bdf8;">
-              <td style="padding: 8px 4px !important; border-right: 2px solid #38bdf8; font-size: 0.76rem !important; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">Bán Hàng</td>
-              <td id="mStatsCountBanhang" style="padding: 8px 2px !important; border-right: 2px solid #38bdf8; font-size: 0.76rem !important; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
-              <td id="mStatsProfitBanhang" style="padding: 8px 2px !important; font-size: 0.76rem !important; font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
+              <td style="border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">Bán Hàng</td>
+              <td id="mStatsCountBanhang" style="border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
+              <td id="mStatsProfitBanhang" style="font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
             </tr>
             <!-- HÀNG 2: Sửa Chữa -->
             <tr style="border-bottom: 2px solid #38bdf8;">
-              <td style="padding: 8px 4px !important; border-right: 2px solid #38bdf8; font-size: 0.76rem !important; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">Sửa Chữa</td>
-              <td id="mStatsCountSuachua" style="padding: 8px 2px !important; border-right: 2px solid #38bdf8; font-size: 0.76rem !important; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
-              <td id="mStatsProfitSuachua" style="padding: 8px 2px !important; font-size: 0.76rem !important; font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
+              <td style="border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">Sửa Chữa</td>
+              <td id="mStatsCountSuachua" style="border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
+              <td id="mStatsProfitSuachua" style="font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
             </tr>
             <!-- HÀNG 3: Bán Gà -->
             <tr style="border-bottom: 2px solid #38bdf8;">
-              <td style="padding: 8px 4px !important; border-right: 2px solid #38bdf8; font-size: 0.76rem !important; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">Bán Gà</td>
-              <td id="mStatsCountBanga" style="padding: 8px 2px !important; border-right: 2px solid #38bdf8; font-size: 0.76rem !important; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
-              <td id="mStatsProfitBanga" style="padding: 8px 2px !important; font-size: 0.76rem !important; font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
+              <td style="border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">Bán Gà</td>
+              <td id="mStatsCountBanga" style="border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
+              <td id="mStatsProfitBanga" style="font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
             </tr>
             <!-- HÀNG 4: Phần Mềm -->
             <tr style="border-bottom: 2px solid #38bdf8;">
-              <td style="padding: 8px 4px !important; border-right: 2px solid #38bdf8; font-size: 0.76rem !important; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">Phần Mềm</td>
-              <td id="mStatsCountPhanmem" style="padding: 8px 2px !important; border-right: 2px solid #38bdf8; font-size: 0.76rem !important; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
-              <td id="mStatsProfitPhanmem" style="padding: 8px 2px !important; font-size: 0.76rem !important; font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
+              <td style="border-right: 2px solid #38bdf8; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">Phần Mềm</td>
+              <td id="mStatsCountPhanmem" style="border-right: 2px solid #38bdf8; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
+              <td id="mStatsProfitPhanmem" style="font-weight: 900; color: #34d399; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">0</td>
             </tr>
           </tbody>
         </table>
