@@ -165,6 +165,20 @@
             border: 2px dashed #f59e0b !important;
             transform: scale(1.05);
         }
+
+        /* ẨN TRÊN GIAO DIỆN MOBILE (< 768px) CHO TAB BÁO GIÁ */
+        @media (max-width: 767px) {
+            #btn-toggle-privacy,
+            #privacy-icon,
+            button[onclick*="togglePrivacyMode"],
+            .bg-excel-menu-wrap,
+            #btn-excel-menu,
+            #filter-summary-badge,
+            #total-cost-wrapper,
+            #btn-reset-search-text {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -181,7 +195,7 @@
                 </h1>
 
                 <div class="flex items-center gap-2">
-                    <button onclick="togglePrivacyMode()"
+                    <button id="btn-toggle-privacy" onclick="togglePrivacyMode()"
                         class="w-9 h-9 rounded-xl bg-[#0b0f19] hover:bg-[#131b2e] border border-[#1e293b] text-emerald-400 hover:text-emerald-300 transition flex items-center justify-center shadow-sm"
                         title="Ẩn / Hiện Giá Nhập & Lãi">
                         <i class="fa-solid fa-eye text-sm" id="privacy-icon"></i>
@@ -216,7 +230,7 @@
                         <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="handleExcelFileImport(event)">
                     </div>
                     <div id="cloud-status" class="hidden"></div>
-                    <div
+                    <div id="total-cost-wrapper"
                         class="flex items-center bg-[#0b0f19] border border-[#1e293b] px-3.5 py-1.5 rounded-xl text-sm font-black shadow-sm">
                         <span class="text-amber-500 font-extrabold mr-1.5">VỐN :</span>
                         <span id="total-cost" class="text-sky-400 font-black">0</span>
@@ -741,9 +755,15 @@
                 colorDotHtml = getColorStyle(colorStr, isMobile);
             }
 
+            // Xử lý loại bỏ chữ ANDROID trên giao diện Mobile
+            let processedName = nameStr;
+            if (isMobile) {
+                processedName = processedName.replace(/\bANDROID\b/gi, '').replace(/\s*-\s*-\s*/g, ' - ').replace(/^[\s-]+|[\s-]+$/g, '').trim();
+            }
+
             // Tách các tên máy bởi dấu gạch ngang '-', hoặc hiển thị tên đơn lẻ
             // Màu chữ trắng và vàng xen kẽ, ngăn cách bằng dấu -
-            const rawTokens = nameStr.split('-');
+            const rawTokens = processedName.split('-');
             const tokensHtml = rawTokens.map((rawToken, idx) => {
                 const token = rawToken.trim();
                 if (!token) return '';
@@ -1090,6 +1110,14 @@
                 const btnClass = isSelected
                     ? 'bg-[#2563eb] text-white font-black shadow-lg shadow-blue-600/30 border border-blue-500'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
+                
+                // Loại bỏ chữ ANDROID trên mobile nếu có
+                let displayBrandName = b;
+                if (b.toUpperCase().includes('ANDROID')) {
+                    const cleanB = b.replace(/\bANDROID\b/gi, '').replace(/\s*-\s*-\s*/g, ' - ').replace(/^[\s-]+|[\s-]+$/g, '').trim();
+                    displayBrandName = `<span class="md:hidden">${cleanB}</span><span class="hidden md:inline">${b}</span>`;
+                }
+
                 return `<button draggable="true"
                     ondragstart="handleTabDragStart(event, 'brands', ${realBrandIdx})"
                     ondragend="handleTabDragEnd(event)"
@@ -1098,7 +1126,7 @@
                     ondrop="handleTabDrop(event, 'brands', ${realBrandIdx})"
                     onclick="switchBrand('${b}')"
                     class="draggable-tab px-3.5 py-2 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}"
-                    title="Bấm để chọn, giữ để kéo thay đổi vị trí">${b}</button>`;
+                    title="Bấm để chọn, giữ để kéo thay đổi vị trí">${displayBrandName}</button>`;
             }).join('');
 
             // Nút [+] thêm hãng mới ở cuối thanh tabs hãng (y chang ảnh mẫu 1 & 3)
@@ -1166,6 +1194,13 @@
                 const btnClass = isSelected
                     ? 'bg-[#10b981] text-white font-black shadow-lg shadow-emerald-600/30 border border-emerald-400'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
+                
+                // Trên Mobile (< 768px), MÀN HÌNH rút gọn thành MÀN
+                let displayCatName = c;
+                if (c.trim().toUpperCase() === 'MÀN HÌNH') {
+                    displayCatName = `<span class="md:hidden">MÀN</span><span class="hidden md:inline">MÀN HÌNH</span>`;
+                }
+
                 return `<button draggable="true"
                     ondragstart="handleTabDragStart(event, 'categories', ${realCatIdx})"
                     ondragend="handleTabDragEnd(event)"
@@ -1174,7 +1209,7 @@
                     ondrop="handleTabDrop(event, 'categories', ${realCatIdx})"
                     onclick="switchCategory('${c}')"
                     class="draggable-tab px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}"
-                    title="Bấm để chọn, giữ để kéo thay đổi vị trí">${c}</button>`;
+                    title="Bấm để chọn, giữ để kéo thay đổi vị trí">${displayCatName}</button>`;
             }).join('');
 
             const catTabsWrapper = document.getElementById('main-cat-tabs-desktop');
@@ -1772,7 +1807,8 @@
                         const qtyVal = parseInt(d.qty) || 0;
                         const priceFormatted = formatMoney(d.price);
                         const formattedNameHtml = renderDeviceNames(d.name, d.color, true);
-                        const displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : d.part;
+                        let displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : d.part;
+                        if (displayPart === 'MÀN HÌNH') displayPart = 'MÀN';
 
                         const zeroQtyClassMobile = isOutStockTab ? 'row-hover px-2 rounded-xl' : (qtyVal === 0 ? 'yellow-pulse-row px-2 rounded-xl' : 'row-hover px-2 rounded-xl');
 
