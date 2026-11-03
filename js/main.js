@@ -17233,7 +17233,7 @@
       if (editId) {
         const item = mainXacDatabase.find(x => String(x.id) === String(editId) || x.id == editId);
         if (item) {
-          if (titleEl) titleEl.innerText = "Chỉnh Sửa Thông Tin Main - Xác";
+          if (titleEl) titleEl.innerText = "Sửa Thông Tin Máy";
           if (editInput) editInput.value = item.id;
           const brandEl = document.getElementById('mxBrand');
           if (brandEl) brandEl.value = (item.brand || '').toUpperCase();
