@@ -5788,22 +5788,36 @@
             return;
           }
 
-          let cleanHeader = rows[0].map(h => String(h || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim());
+          let cleanHeader = rows[0].map(h => String(h || '')
+            .toLowerCase()
+            .replace(/đ/g, 'd')
+            .replace(/Đ/g, 'D')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim());
           let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxProfit = -1, colIdxTime = -1, colIdxStatus = -1;
 
           cleanHeader.forEach((col, idx) => {
-            if (col.includes('khach') || col.includes('customer') || col.includes('tho')) colIdxCustomer = idx;
-            else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung') || col.includes('dich vu') && !col.includes('phi')) colIdxDevice = idx;
-            else if (col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price') || col.includes('thu') || (col.includes('gia') && !col.includes('nhap') && !col.includes('von'))) colIdxPrice = idx;
-            else if (col.includes('phi dich vu') || col.includes('gia nhap') || col.includes('von') || col.includes('cost') || col.includes('chi phi') || col.includes('phi')) colIdxCost = idx;
-            else if (col.includes('lai') || col.includes('loi nhuan') || col.includes('profit')) colIdxProfit = idx;
-            else if (col.includes('gio') || col.includes('ngay') || col.includes('thoi gian') || col.includes('date') || col.includes('time')) colIdxTime = idx;
-            else if (col.includes('trang thai') || col.includes('thanh toan') || col.includes('status') || col.includes('tt')) colIdxStatus = idx;
+            if (col.includes('thoi gian') || col.includes('ngay gio') || col.includes('date') || col.includes('time') || col === 'gio' || col === 'ngay') {
+              colIdxTime = idx;
+            } else if (col.includes('khach') || col.includes('customer') || col === 'tho' || col.includes('ten tho')) {
+              colIdxCustomer = idx;
+            } else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung') || (col.includes('dich vu') && !col.includes('phi'))) {
+              colIdxDevice = idx;
+            } else if (col.includes('phi') || col.includes('gia nhap') || col.includes('von') || col.includes('cost') || col.includes('chi phi')) {
+              colIdxCost = idx;
+            } else if (col.includes('lai') || col.includes('loi nhuan') || col.includes('profit') || col.includes('dop')) {
+              colIdxProfit = idx;
+            } else if (col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price') || col.includes('thu') || col === 'gia') {
+              colIdxPrice = idx;
+            } else if (col.includes('trang thai') || col.includes('thanh toan') || col.includes('status') || col.includes('tt')) {
+              colIdxStatus = idx;
+            }
           });
 
           // Fallback vị trí nếu không tìm thấy header
           if (colIdxCustomer === -1 && colIdxDevice === -1) {
-            colIdxCustomer = 0; colIdxDevice = 1; colIdxPrice = 2; colIdxCost = 3; colIdxProfit = 4; colIdxTime = 5; colIdxStatus = 6;
+            colIdxCustomer = 0; colIdxDevice = 1; colIdxPrice = 2; colIdxCost = 3; colIdxProfit = 4; colIdxStatus = 5; colIdxTime = 6;
           }
 
           let newRecords = [];
@@ -5822,6 +5836,10 @@
 
             let customer = colIdxCustomer !== -1 && row[colIdxCustomer] ? String(row[colIdxCustomer]).trim() : 'Khách lẻ';
             let device = colIdxDevice !== -1 && row[colIdxDevice] ? String(row[colIdxDevice]).trim() : '';
+
+            // Bỏ qua dòng TỔNG CỘNG nếu có ở cuối bảng
+            if (/tong\s*cong|total/i.test(customer.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) continue;
+
             let rawPrice = colIdxPrice !== -1 && row[colIdxPrice] !== undefined ? String(row[colIdxPrice]).trim() : '0';
             let rawCost = colIdxCost !== -1 && row[colIdxCost] !== undefined ? String(row[colIdxCost]).trim() : '0';
             let rawProfit = colIdxProfit !== -1 && row[colIdxProfit] !== undefined ? String(row[colIdxProfit]).trim() : '';
@@ -5920,6 +5938,8 @@
 
           if (newRecords.length > 0 || updatedCount > 0) {
             if (newRecords.length > 0) softwareDatabase.push(...newRecords);
+            // Bỏ cờ cleared nếu có
+            localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
             saveSoftwareStorage();
             if (typeof setSoftwareMode === 'function') setSoftwareMode('all');
             else if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
