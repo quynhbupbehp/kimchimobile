@@ -2777,6 +2777,10 @@
 
     function setSalesPaymentFilter(method) {
       currentSalesPaymentFilter = method;
+      const selectEl = document.getElementById('salesPaymentMethodSelect');
+      if (selectEl && selectEl.value !== method) {
+        selectEl.value = method;
+      }
       const btnAll = document.getElementById('salesMethodAllBtn');
       const btnTm = document.getElementById('salesMethodTmBtn');
       const btnCk = document.getElementById('salesMethodCkBtn');
