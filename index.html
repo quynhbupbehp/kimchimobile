@@ -2184,151 +2184,14 @@
 
       <!-- TAB 9: MAIN - XÁC -->
       <div id="tab-quynhbupbe" class="tab-content">
-        <!-- HÀNG 1: TỔNG VỐN / DOANH THU (TRÁI) + BỘ LỌC XEM THEO NĂM/NGÀY/THÁNG (GIỮA) + LÃI DỰ KIẾN (PHẢI) -->
+        <!-- HÀNG 1 (CHUẨN ẢNH MẪU 100%): QUẢN LÝ MAIN - XÁC (TRÁI) | MAIN XÁC: 18 (PHẢI) | TỔNG GIÁ NHẬP (PHẢI) -->
         <div class="sales-header-bar"
           style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.9rem; flex-wrap: wrap; gap: 12px;">
-          <!-- 1. TỔNG VỐN (XANH) & SỐ LƯỢNG (TRẮNG) NỀN ĐEN -->
-          <div id="mainXacRevenueBadge"
-            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 7px 18px; display: flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
-            title="Bên trái: Tổng vốn Main - Xác | Bên phải: Số lượng">
-            <span id="mainXacTotalCostVal"
-              style="color: #4ade80 !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
-              title="Tổng vốn">0</span>
-            <svg viewBox="0 0 24 24"
-              style="width: 20px; height: 20px; flex-shrink: 0; display: inline-block; vertical-align: middle;">
-              <circle cx="12" cy="12" r="10" fill="#facc15" stroke="#eab308" stroke-width="1.5" />
-              <circle cx="12" cy="12" r="7.5" fill="none" stroke="#ca8a04" stroke-width="1" stroke-dasharray="2 1.5" />
-              <path
-                d="M12 6.5v11M9.5 9c0-1.4 1.1-2.2 2.5-2.2s2.5.8 2.5 2.2-1.5 2-2.5 2.5-2.5 1.1-2.5 2.5 1.1 2.2 2.5 2.2 2.5-.8 2.5-2.2"
-                fill="none" stroke="#78350f" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-            <span id="mainXacTotalCountVal"
-              style="color: #ffffff !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
-              title="Số lượng máy">0</span>
-          </div>
-
-          <!-- 2. BỘ LỌC XEM THEO (NGÀY / THÁNG / NĂM) & BOX CHỌN NGÀY Ở GIỮA -->
-          <div class="unified-date-filter-box">
-            <select class="unified-mode-select" id="mainXacModeSelect" onchange="setMainXacMode(this.value)"
-              title="Xem theo Năm / Ngày / Tháng / Tất cả">
-              <option value="year" selected>Năm</option>
-              <option value="day">Ngày</option>
-              <option value="month">Tháng</option>
-              <option value="all">Tất cả</option>
-            </select>
-
-            <div class="unified-date-ctrls" id="mainXacDateFilterBox" style="display: none;">
-              <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterDate(-1)" title="Lùi 1 ngày">
-                <svg viewBox="0 0 24 24">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-              <span class="unified-date-text" id="filterMainXacDateDisplay"
-                onclick="makeDateDisplayEditable(this, 'mainXac', 'day')"
-                title="Bấm để chỉnh sửa thủ công">27/10/2026</span>
-              <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterDate(1)" title="Tiến 1 ngày">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-              <button type="button" class="unified-arrow-btn" onclick="openDatePicker('mainXac')"
-                title="Mở lịch chọn ngày">
-                <svg viewBox="0 0 24 24">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-              </button>
-              <input type="date" id="nativeDatePicker_mainXac" class="hidden-native-datepicker"
-                onchange="handleNativeDateChange('mainXac', this.value)">
-            </div>
-
-            <div class="unified-date-ctrls" id="mainXacMonthFilterBox" style="display: none;">
-              <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterMonth(-1)"
-                title="Lùi 1 tháng">
-                <svg viewBox="0 0 24 24">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-              <span class="unified-date-text" id="filterMainXacMonthDisplay"
-                onclick="makeDateDisplayEditable(this, 'mainXac', 'month')"
-                title="Bấm để chỉnh sửa thủ công">10/2026</span>
-              <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterMonth(1)"
-                title="Tiến 1 tháng">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-            </div>
-
-            <div class="unified-date-ctrls" id="mainXacYearFilterBox">
-              <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterYear(-1)" title="Lùi 1 năm">
-                <svg viewBox="0 0 24 24">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-              <span class="unified-date-text" id="filterMainXacYearDisplay"
-                onclick="makeDateDisplayEditable(this, 'mainXac', 'year')" title="Bấm để chỉnh sửa thủ công">2026</span>
-              <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterYear(1)" title="Tiến 1 năm">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- 3. LÃI DỰ KIẾN (XANH) & LÃI TRUNG BÌNH (TRẮNG) NỀN ĐEN PHÍA BÊN PHẢI -->
-          <div id="mainXacProfitBadge"
-            style="background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 7px 18px; display: flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); flex-shrink: 0; cursor: default;"
-            title="Bên trái: Tổng lãi dự kiến | Bên phải: Lãi trung bình">
-            <span id="mainXacTotalProfitVal"
-              style="color: #4ade80 !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
-              title="Tổng Lãi Dự Kiến">0</span>
-            <img id="mainXacProfitEmojiIcon" src="img/icon_happy.png" alt="Icon Lãi"
-              style="width: 23px; height: 23px; object-fit: contain; flex-shrink: 0; display: inline-block; vertical-align: middle; transition: transform 0.2s ease;" />
-            <span id="mainXacAvgProfitVal"
-              style="color: #ffffff !important; font-weight: 900; font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
-              title="Lãi Trung Bình">0</span>
-          </div>
-        </div>
-
-        <!-- HÀNG 2: TIÊU ĐỀ + NÚT THÊM MỚI + TÌM KIẾM + BỘ LỌC TRẠNG THÁI + CỤM EXCEL + SỐ LƯỢNG -->
-        <div
-          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; gap: 12px; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 8px;">
             <span
               style="background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%); color: #ffffff; font-size: 1.16rem; font-weight: 900; padding: 7px 18px; border-radius: 8px; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">QUẢN
               LÝ MAIN - XÁC</span>
 
-            <button type="button" class="btn-add-phone-main" onclick="openMainXacModal()"
-              style="height: 38px; padding: 0 16px; border-radius: 8px; font-weight: 900; font-size: 0.97rem; background: var(--amber-color); color: #000; cursor: pointer; border: none; box-shadow: 0 3px 12px rgba(245,158,11,0.4); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
-              + THÊM MAIN - XÁC MỚI
-            </button>
-
-            <!-- Ô TÌM KIẾM CÓ CHỮ TÌM KIẾM Ở TRƯỚC -->
-            <div class="search-box-bm" style="width: 280px; height: 38px; box-sizing: border-box; padding: 6px 12px;">
-              <span class="search-label-single-line" style="color: #ffffff;">TÌM KIẾM</span>
-              <input type="text" id="mainXacSearchInput" class="search-input-field" inputmode="text"
-                placeholder="🔍 Tìm tên máy, IMEI, khác..." oninput="handleMainXacSearchInput(this)">
-              <button type="button" id="btnClearMainXacSearch" class="btn-clear-search" onclick="clearMainXacSearch()"
-                title="Xóa tìm kiếm">✕</button>
-            </div>
-
-            <!-- BỘ LỌC TRẠNG THÁI (BÊN PHẢI Ô TÌM KIẾM) -->
-            <div class="price-filter-box-bm" style="height: 38px; box-sizing: border-box; padding: 6px 12px;">
-              <span class="price-filter-label" style="color: #38bdf8;">TRẠNG THÁI</span>
-              <select id="mainXacStatusFilter" class="price-filter-select"
-                onchange="handleMainXacStatusFilterChange(this)">
-                <option value="ALL">Tất Cả</option>
-                <option value="Chưa Xử Lý" selected>Chưa Xử Lý</option>
-                <option value="Còn Hàng">Còn Hàng</option>
-                <option value="Máy Xác">Máy Xác</option>
-              </select>
-            </div>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 10px;">
             <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL MAIN XÁC -->
             <div style="display: inline-flex; align-items: center; gap: 8px;">
               <button type="button" id="btnMainXacExcelToggle" class="btn-excel-toggle-custom"
@@ -2357,12 +2220,134 @@
                   style="display: none;" onchange="handleImportMainXacExcelFile(event)">
               </div>
             </div>
+          </div>
 
+          <!-- CỤM BÊN PHẢI HÀNG 1: [Main Xác : 18] [1.234] -->
+          <div style="display: flex; align-items: center; gap: 10px;">
             <div
-              style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 14px; display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 0.97rem; color: #ffffff; font-weight: 800;" id="mainXacCountText">Main Xác :
-                0</span>
+              style="background: #000000; border: 1.5px solid #334155; border-radius: 8px; padding: 7px 16px; display: flex; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);">
+              <span style="font-size: 1rem; color: #ffffff; font-weight: 900; letter-spacing: 0.3px;" id="mainXacCountText">Main Xác : 0</span>
             </div>
+
+            <!-- Ô TRỐNG BÊN PHẢI GHI TỔNG SỐ TIỀN GIÁ NHẬP (CHỈ GHI SỐ TIỀN, VÍ DỤ 1.234) -->
+            <div
+              style="background: #000000; border: 1.5px solid #334155; border-radius: 8px; padding: 7px 16px; display: flex; align-items: center; justify-content: center; min-width: 80px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);"
+              title="Tổng số tiền giá nhập">
+              <span id="mainXacTotalCostVal" style="color: #ffffff; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.5px;">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- HÀNG 2 (CHUẨN ẢNH MẪU 100%): TÌM KIẾM | HÃNG : TẤT CẢ | NĂM 2026 | + THÊM MAIN - XÁC MỚI -->
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; gap: 12px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <!-- 1. Ô TÌM KIẾM -->
+            <div class="search-box-bm" style="width: 250px; height: 38px; box-sizing: border-box; padding: 6px 12px;">
+              <span class="search-label-single-line" style="color: #ffffff;">TÌM KIẾM</span>
+              <input type="text" id="mainXacSearchInput" class="search-input-field" inputmode="text"
+                placeholder="🔍 Tìm tên máy, IMEI, khác..." oninput="handleMainXacSearchInput(this)">
+              <button type="button" id="btnClearMainXacSearch" class="btn-clear-search" onclick="clearMainXacSearch()"
+                title="Xóa tìm kiếm">✕</button>
+            </div>
+
+            <!-- 2. BỘ LỌC HÃNG (MẶC ĐỊNH LÀ TẤT CẢ) -->
+            <div class="price-filter-box-bm" style="height: 38px; box-sizing: border-box; padding: 6px 12px;">
+              <span class="price-filter-label" style="color: #38bdf8;">HÃNG</span>
+              <select id="mainXacBrandFilter" class="price-filter-select"
+                onchange="handleMainXacBrandFilterChange(this)"
+                style="color: #f59e0b; font-weight: 800; cursor: pointer;">
+                <option value="ALL" selected>Tất Cả</option>
+                <option value="IPHONE">iPhone</option>
+                <option value="SAMSUNG">Samsung</option>
+                <option value="OPPO">Oppo</option>
+                <option value="REALME">Realme</option>
+                <option value="REDMI">Redmi</option>
+                <option value="POCO">Poco</option>
+                <option value="VIVO">Vivo</option>
+                <option value="XIAOMI">Xiaomi</option>
+                <option value="KHÁC">Khác</option>
+              </select>
+            </div>
+
+            <!-- 3. BỘ LỌC XEM THEO (NGÀY / THÁNG / NĂM) -->
+            <div class="unified-date-filter-box">
+              <select class="unified-mode-select" id="mainXacModeSelect" onchange="setMainXacMode(this.value)"
+                title="Xem theo Năm / Ngày / Tháng / Tất cả">
+                <option value="year" selected>Năm</option>
+                <option value="day">Ngày</option>
+                <option value="month">Tháng</option>
+                <option value="all">Tất cả</option>
+              </select>
+
+              <div class="unified-date-ctrls" id="mainXacDateFilterBox" style="display: none;">
+                <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterDate(-1)" title="Lùi 1 ngày">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <span class="unified-date-text" id="filterMainXacDateDisplay"
+                  onclick="makeDateDisplayEditable(this, 'mainXac', 'day')"
+                  title="Bấm để chỉnh sửa thủ công">27/10/2026</span>
+                <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterDate(1)" title="Tiến 1 ngày">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+                <button type="button" class="unified-arrow-btn" onclick="openDatePicker('mainXac')"
+                  title="Mở lịch chọn ngày">
+                  <svg viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </button>
+                <input type="date" id="nativeDatePicker_mainXac" class="hidden-native-datepicker"
+                  onchange="handleNativeDateChange('mainXac', this.value)">
+              </div>
+
+              <div class="unified-date-ctrls" id="mainXacMonthFilterBox" style="display: none;">
+                <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterMonth(-1)"
+                  title="Lùi 1 tháng">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <span class="unified-date-text" id="filterMainXacMonthDisplay"
+                  onclick="makeDateDisplayEditable(this, 'mainXac', 'month')"
+                  title="Bấm để chỉnh sửa thủ công">10/2026</span>
+                <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterMonth(1)"
+                  title="Tiến 1 tháng">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="unified-date-ctrls" id="mainXacYearFilterBox">
+                <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterYear(-1)" title="Lùi 1 năm">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <span class="unified-date-text" id="filterMainXacYearDisplay"
+                  onclick="makeDateDisplayEditable(this, 'mainXac', 'year')" title="Bấm để chỉnh sửa thủ công">2026</span>
+                <button type="button" class="unified-arrow-btn" onclick="changeMainXacFilterYear(1)" title="Tiến 1 năm">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. NÚT + THÊM MAIN - XÁC MỚI BÊN PHẢI (MÀU XANH DƯƠNG CHUẨN ẢNH MẪU) -->
+          <div>
+            <button type="button" class="btn-add-phone-main" onclick="openMainXacModal()"
+              style="height: 38px; padding: 0 20px; border-radius: 8px; font-weight: 900; font-size: 0.95rem; background: #2563eb; color: #ffffff; cursor: pointer; border: 1px solid #3b82f6; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45); display: inline-flex; align-items: center; justify-content: center; letter-spacing: 0.5px; white-space: nowrap;">
+              + THÊM MAIN - XÁC MỚI
+            </button>
           </div>
         </div>
 

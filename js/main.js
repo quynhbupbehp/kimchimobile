@@ -17074,6 +17074,7 @@
       localStorage.setItem('KIMCHI_MAIN_XAC_DB', JSON.stringify(mainXacDatabase));
     }
     let currentMainXacSearchQuery = '';
+    let currentMainXacBrandFilter = 'ALL';
     let currentMainXacStatusFilter = 'ALL';
     let mainXacViewMode = 'year';
     let currentMainXacDateFilter = getVietnamDate();
@@ -17580,6 +17581,12 @@
     }
     window.clearMainXacSearch = clearMainXacSearch;
 
+    function handleMainXacBrandFilterChange(select) {
+      currentMainXacBrandFilter = select.value;
+      renderMainXacGrid();
+    }
+    window.handleMainXacBrandFilterChange = handleMainXacBrandFilterChange;
+
     function handleMainXacStatusFilterChange(select) {
       currentMainXacStatusFilter = select.value;
       renderMainXacGrid();
@@ -17591,6 +17598,26 @@
       if (!tbody) return;
 
       let filtered = mainXacDatabase.filter(item => {
+        // Lọc theo Hãng
+        if (currentMainXacBrandFilter !== 'ALL') {
+          let itemBrand = (item.brand || '').trim().toUpperCase();
+          if (!itemBrand) {
+            let pName = (item.name || '').toUpperCase();
+            if (typeof isPhoneBrandIphone === 'function' && isPhoneBrandIphone('', pName)) itemBrand = 'IPHONE';
+            else if (/samsung/i.test(pName)) itemBrand = 'SAMSUNG';
+            else if (/oppo/i.test(pName)) itemBrand = 'OPPO';
+            else if (/realme/i.test(pName)) itemBrand = 'REALME';
+            else if (/redmi/i.test(pName)) itemBrand = 'REDMI';
+            else if (/poco/i.test(pName)) itemBrand = 'POCO';
+            else if (/vivo/i.test(pName)) itemBrand = 'VIVO';
+            else if (/xiaomi/i.test(pName)) itemBrand = 'XIAOMI';
+            else itemBrand = 'KHÁC';
+          }
+          if (itemBrand !== currentMainXacBrandFilter) {
+            return false;
+          }
+        }
+
         if (currentMainXacStatusFilter !== 'ALL' && item.status !== currentMainXacStatusFilter) {
           return false;
         }
@@ -17636,7 +17663,7 @@
         totalProfit += (pOut > 0 ? (pOut - pIn) : 0);
       });
 
-      // Cập nhật Box đen trên cùng bên trái
+      // Cập nhật ô tổng số tiền giá nhập bên phải ô Main Xác (chỉ ghi số tiền, ví dụ: 1.234)
       const costEl = document.getElementById('mainXacTotalCostVal');
       const countTopEl = document.getElementById('mainXacTotalCountVal');
       if (costEl) costEl.innerText = formatPriceStr(totalCost);
