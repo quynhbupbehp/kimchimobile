@@ -8698,7 +8698,16 @@
           font-weight: 900 !important;
         }
 
-        /* === BẢNG THEO DÕI DOANH THU MOBILE MODAL KHÔNG BỊ TRÀN 620PX === */
+        /* === BẢNG THEO DÕI DOANH THU MOBILE MODAL KHÔNG BỊ TRÀN 620PX VÀ KHÔNG BỊ GIÃN CAO === */
+        #mobileRevenueStatsModal .modal-stats-table-wrapper,
+        #mobileRevenueStatsModal div:has(> table) {
+          height: auto !important;
+          max-height: none !important;
+          border: none !important;
+          border-radius: 0 !important;
+          background: transparent !important;
+          box-shadow: none !important;
+        }
         #mobileRevenueStatsModal table {
           min-width: 100% !important;
           width: 100% !important;
