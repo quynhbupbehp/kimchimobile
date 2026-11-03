@@ -472,9 +472,9 @@
             </select>
           </div>
 
-          <!-- ĐỒNG HỒ SỐ CHẠY THỜI GIAN THỰC (GIỜ : PHÚT : GIÂY) NỀN ĐEN VIỀN BO -->
+          <!-- ĐỒNG HỒ SỐ CHẠY THỜI GIAN THỰC (GIỜ : PHÚT : GIÂY) NỀN HỒNG CHỮ TRẮNG -->
           <div id="salesLiveClock"
-            style="height: 36px; padding: 0 16px; box-sizing: border-box; background: #000000; border: 1.5px solid #1e293b; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-family: 'Consolas', 'Courier New', monospace; font-size: 1.35rem; font-weight: 900; color: #22c55e; letter-spacing: 2px; text-shadow: 0 0 10px rgba(34, 197, 94, 0.4); flex-shrink: 0; user-select: none;">
+            style="height: 36px; padding: 0 16px; box-sizing: border-box; background: linear-gradient(180deg, #ec4899 0%, #db2777 100%); border: 1.5px solid #f472b6; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-family: 'Consolas', 'Courier New', monospace; font-size: 1.35rem; font-weight: 900; color: #ffffff; letter-spacing: 2px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); box-shadow: 0 0 14px rgba(236, 72, 153, 0.5); flex-shrink: 0; user-select: none;">
             10:12:00
           </div>
 
@@ -518,18 +518,18 @@
           </div>
         </div>
 
-        <!-- HÀNG 2: DANH SÁCH BÁN HÀNG (TRÁI) + BỘ LỌC NGÀY (GIỮA) + ẨN & TẠO PHIẾU MỚI (PHẢI) -->
+        <!-- HÀNG 2: DANH SÁCH BÁN HÀNG , NGÀY DƯƠNG , NGÀY ÂM và TẠO PHIẾU MỚI CHIA ĐỀU KHOẢNG CÁCH TRONG HÀNG NGANG -->
         <div class="sales-actions-row"
-          style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; flex-wrap: nowrap; white-space: nowrap;">
-          <!-- Cụm bên trái: DANH SÁCH BÁN HÀNG NỀN HỒNG CHỮ TRẮNG -->
-          <div style="display: flex; align-items: center; flex-shrink: 0;">
+          style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: nowrap; white-space: nowrap; width: 100%;">
+          <!-- CỤM 1: DANH SÁCH BÁN HÀNG NỀN HỒNG CHỮ TRẮNG -->
+          <div style="display: flex; align-items: center; justify-content: flex-start; flex: 1 1 0; min-width: 0;">
             <button type="button" class="sw-pill-btn sw-btn-pink active" id="salesMainTitleBar"
               style="height: 32px; padding: 0 14px; border-radius: 8px; font-weight: 900; font-size: 0.92rem; letter-spacing: 0.5px; white-space: nowrap; cursor: default; text-transform: uppercase; box-shadow: 0 0 14px rgba(236,72,153,0.5); flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">DANH
               SÁCH BÁN HÀNG</button>
           </div>
 
-          <!-- Cụm ở giữa: BỘ LỌC XEM THEO THỐNG NHẤT (CHUẨN MẪU MỚI) -->
-          <div style="display: flex; align-items: center; justify-content: center; flex-grow: 1; flex-shrink: 0;">
+          <!-- CỤM 2: NGÀY DƯƠNG (TRÁI TIM + MODE + BỘ ĐIỀU KHIỂN NGÀY/THÁNG/NĂM DƯƠNG) -->
+          <div style="display: flex; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0;">
             <div class="unified-date-filter-box"
               style="margin: 0; display: inline-flex; align-items: center; gap: 6px;">
               <!-- NÚT TRÁI TIM: CHECK GIAO DỊCH BÁN HÀNG -->
@@ -617,32 +617,36 @@
                   </svg>
                 </button>
               </div>
+            </div>
+          </div>
 
-              <!-- CỤM HIỂN THỊ ÂM LỊCH & THỨ (Y CHANG ẢNH MẪU) -->
-              <div id="salesLunarBox" style="display: inline-flex; align-items: center; gap: 6px; margin-left: 6px;">
-                <!-- NÚT ÂM LỊCH NỀN ĐEN VIỀN TRẮNG -->
-                <button type="button" id="btnSalesLunarLabel"
-                  style="height: 32px; padding: 0 12px; background: #000000; border: 1.5px solid #334155; border-radius: 6px; color: #ffffff; font-weight: 900; font-size: 0.88rem; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; cursor: default; user-select: none;">
-                  Âm Lịch
-                </button>
-                <!-- KHUNG NGÀY ÂM LỊCH KÈM ICON LỊCH -->
-                <div
-                  style="height: 32px; padding: 0 8px 0 12px; background: #000000; border: 1.5px solid #334155; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px; box-sizing: border-box; user-select: none;">
-                  <span id="salesLunarDateDisplay" style="color: #ffffff; font-weight: 900; font-size: 0.92rem; letter-spacing: 0.5px;">25/09/2026</span>
-                  <span style="color: #10b981; font-size: 0.95rem; display: inline-flex; align-items: center;">📅</span>
-                </div>
-                <!-- Ô THỨ TRONG TUẦN (VÍ DỤ: T3) NỀN ĐEN CHỮ TRẮNG -->
-                <div id="salesDayOfWeekDisplay"
-                  style="height: 32px; min-width: 34px; padding: 0 8px; background: #000000; border: 1.5px solid #334155; border-radius: 6px; color: #ffffff; font-weight: 900; font-size: 0.92rem; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; user-select: none;"
-                  title="Thứ trong tuần">
-                  T3
-                </div>
+          <!-- CỤM 3: NGÀY ÂM (ÂM LỊCH + NGÀY ÂM LỊCH CÓ NÚT LỊCH CLICKABLE + THỨ TRONG TUẦN) -->
+          <div style="display: flex; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0;">
+            <div id="salesLunarBox" style="display: inline-flex; align-items: center; gap: 6px;">
+              <!-- NÚT ÂM LỊCH NỀN ĐEN VIỀN TRẮNG -->
+              <button type="button" id="btnSalesLunarLabel"
+                style="height: 32px; padding: 0 12px; background: #000000; border: 1.5px solid #334155; border-radius: 6px; color: #ffffff; font-weight: 900; font-size: 0.88rem; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; cursor: default; user-select: none;">
+                Âm Lịch
+              </button>
+              <!-- KHUNG NGÀY ÂM LỊCH KÈM ICON TỜ LỊCH (BẤM VÀO ĐỂ CHỌN NGÀY) -->
+              <div onclick="openDatePicker('sales')"
+                title="Bấm để mở lịch chọn ngày"
+                style="height: 32px; padding: 0 8px 0 12px; background: #000000; border: 1.5px solid #334155; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px; box-sizing: border-box; cursor: pointer; user-select: none; transition: border-color 0.2s;"
+                onmouseover="this.style.borderColor='#38bdf8';" onmouseout="this.style.borderColor='#334155';">
+                <span id="salesLunarDateDisplay" style="color: #ffffff; font-weight: 900; font-size: 0.92rem; letter-spacing: 0.5px;">25/09/2026</span>
+                <span id="btnSalesLunarCalendarIcon" style="color: #10b981; font-size: 0.95rem; display: inline-flex; align-items: center; cursor: pointer;" title="Bấm mở lịch">📅</span>
+              </div>
+              <!-- Ô THỨ TRONG TUẦN (VÍ DỤ: T3) NỀN ĐEN CHỮ TRẮNG -->
+              <div id="salesDayOfWeekDisplay"
+                style="height: 32px; min-width: 34px; padding: 0 8px; background: #000000; border: 1.5px solid #334155; border-radius: 6px; color: #ffffff; font-weight: 900; font-size: 0.92rem; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; user-select: none;"
+                title="Thứ trong tuần">
+                T3
               </div>
             </div>
           </div>
 
-          <!-- Cụm bên phải: Nút Ẩn và Nút Tạo phiếu mới -->
-          <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+          <!-- CỤM 4: ẨN & TẠO PHIẾU MỚI -->
+          <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 1 1 0; min-width: 0;">
             <button id="btnSalesToggleHide" class="btn-action-sales" onclick="toggleSalesSensitive()"
               style="height: 32px; padding: 0 14px; font-size: 0.92rem; font-weight: 900; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">👁
               Ẩn</button>
