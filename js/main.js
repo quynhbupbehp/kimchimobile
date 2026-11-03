@@ -3621,6 +3621,7 @@
       const elCountPhanmem = document.getElementById('mStatsCountPhanmem');
       const elProfitPhanmem = document.getElementById('mStatsProfitPhanmem');
       const elTotalProfit = document.getElementById('mStatsTotalProfit');
+      const elTargetStatus = document.getElementById('mStatsTargetStatus');
 
       if (elCountBanhang) elCountBanhang.textContent = countBanhang;
       if (elProfitBanhang) elProfitBanhang.textContent = formatPriceStr(profitBanhang);
@@ -3631,6 +3632,19 @@
       if (elCountPhanmem) elCountPhanmem.textContent = countPhanmem;
       if (elProfitPhanmem) elProfitPhanmem.textContent = formatPriceStr(profitPhanmem);
       if (elTotalProfit) elTotalProfit.textContent = formatPriceStr(totalProfit);
+
+      // Đánh giá chỉ tiêu 2.500k (2500 hoặc 2500000 tùy đơn vị hiển thị)
+      if (elTargetStatus) {
+        // totalProfit trong hệ thống: nếu lưu theo đơn vị k (ví dụ: 449 là 449k), ngưỡng là 2500; nếu lưu VNĐ (>= 2500000), ngưỡng là 2500000
+        const isTargetReached = totalProfit >= 2500000 || (totalProfit >= 2500 && totalProfit < 1000000);
+        if (isTargetReached) {
+          elTargetStatus.textContent = 'XUẤT SẮC (Cần Phát Huy)';
+          elTargetStatus.style.color = '#10b981'; // Xanh lá sáng xuất sắc
+        } else {
+          elTargetStatus.textContent = 'CHƯA ĐẠT (Cần Cố Gắng)';
+          elTargetStatus.style.color = '#ef4444'; // Đỏ nổi bật cảnh báo
+        }
+      }
     }
     window.renderMobileRevenueStats = renderMobileRevenueStats;
 
