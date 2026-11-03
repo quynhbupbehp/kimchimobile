@@ -12261,36 +12261,51 @@
       }
     }
 
-    /* GHI CHÚ PHẦN MỀM (GIAO DIỆN 2 CỘT: TIÊU ĐỀ BÊN TRÁI - NỘI DUNG BÊN PHẢI) */
-    let currentSwNoteId = null;
+    /* =========================================================
+       QUẢN LÝ LINK WEB PHẦN MỀM (CHUẨN Y CHANG 100% ẢNH MẪU)
+       ========================================================= */
+    let currentSwLinkId = null;
+
+    // Danh sách 12 link mẫu ban đầu chuẩn y chang 100% ảnh người dùng gửi
+    const DEFAULT_SW_WEB_LINKS = [
+      { id: 1, title: 'Boot Máy Chân Sạc Kém', content: 'https://www.youtube.com/shorts/4cTo9syjpmU' },
+      { id: 2, title: 'Hóa Đơn', content: 'https://drive.google.com/drive/folders/1Z2AphM5VD2uVF2FZOcei_AZMWS94Sk-a?usp=drive_link' },
+      { id: 3, title: 'Giá Nhập Linh Kiện', content: 'https://drive.google.com/drive/folders/1ESwRqBJIQYZJyN9M1WpF1QM_yaegLZu9?usp=drive_link' },
+      { id: 4, title: 'Chỉnh sửa ảnh', content: 'https://docs.google.com/document/d/15sKt2icIBsO2A3dtStVNHeHRPOcM6n0MXNzJVEdKhik/edit?usp=drive_link' },
+      { id: 5, title: 'Fix 2 sim dùng 4g', content: 'https://www.facebook.com/share/v/1DRSg6JZR6/?' },
+      { id: 6, title: 'Báo Giá Android', content: 'https://byvn.net/ArKp' },
+      { id: 7, title: 'Báo Giá iPhone', content: 'https://byvn.net/lO9c' },
+      { id: 8, title: 'Tải Tool Mobile', content: 'https://app.mediafire.com/folder/ounjl1vy9e6v6' },
+      { id: 9, title: 'quynhbupbe', content: 'https://quynhbupbehp2026.github.io/' },
+      { id: 10, title: 'Check TK Xiaomi', content: 'https://i.mi.com/find/device/activation/lockStatus' },
+      { id: 11, title: 'Check iCloud = IMEI (Link 2)', content: 'https://iunlocker.com/check_imei.php' },
+      { id: 12, title: 'Check iCloud = IMEI (Link 1)', content: 'https://sickw.com/' }
+    ];
 
     function getSwNotesList() {
       try {
-        let raw = localStorage.getItem('sw_notes_v2');
+        let raw = localStorage.getItem('sw_web_links_v1');
+        if (!raw) {
+          // Kiểm tra bản ghi cũ sw_notes_v2 nếu có để chuyển dữ liệu
+          raw = localStorage.getItem('sw_notes_v2');
+        }
         if (raw) {
           let parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         }
       } catch (e) {}
 
-      // Tự động chuyển đổi từ ghi chú cũ nếu có
-      let oldNote = localStorage.getItem('sw_software_notes') || '';
-      return [
-        {
-          id: Date.now(),
-          title: 'Ghi chú 1',
-          content: oldNote
-        }
-      ];
+      // Mặc định lưu bộ link mẫu y chang ảnh
+      try {
+        localStorage.setItem('sw_web_links_v1', JSON.stringify(DEFAULT_SW_WEB_LINKS));
+      } catch (e) {}
+      return [...DEFAULT_SW_WEB_LINKS];
     }
 
     function saveSwNotesList(list) {
       try {
+        localStorage.setItem('sw_web_links_v1', JSON.stringify(list));
         localStorage.setItem('sw_notes_v2', JSON.stringify(list));
-        let activeNote = list.find(n => n.id === currentSwNoteId) || list[0];
-        if (activeNote) {
-          localStorage.setItem('sw_software_notes', activeNote.content || '');
-        }
       } catch (e) {}
     }
 
@@ -12298,33 +12313,53 @@
       const modal = document.getElementById('swNotesModal');
       if (!modal) return;
       resetSwNoteForm();
+      const form = document.getElementById('swLinkForm');
+      if (form) form.style.display = 'none';
+      const searchInput = document.getElementById('swLinkSearchInput');
+      if (searchInput) searchInput.value = '';
       renderSwNotesList();
       modal.style.display = 'flex';
-      const inputContent = document.getElementById('swNotesContent');
-      if (inputContent) inputContent.focus();
     }
     window.openSwNotesModal = openSwNotesModal;
+    window.openSwLinksModal = openSwNotesModal;
 
     function closeSwNotesModal() {
       const modal = document.getElementById('swNotesModal');
       if (modal) modal.style.display = 'none';
       resetSwNoteForm();
+      const form = document.getElementById('swLinkForm');
+      if (form) form.style.display = 'none';
     }
     window.closeSwNotesModal = closeSwNotesModal;
 
+    function toggleSwLinkForm() {
+      const form = document.getElementById('swLinkForm');
+      if (!form) return;
+      if (form.style.display === 'none' || !form.style.display) {
+        resetSwNoteForm();
+        form.style.display = 'block';
+        const titleInput = document.getElementById('swNoteTitleInput');
+        if (titleInput) titleInput.focus();
+      } else {
+        form.style.display = 'none';
+        resetSwNoteForm();
+      }
+    }
+    window.toggleSwLinkForm = toggleSwLinkForm;
+
     function resetSwNoteForm() {
-      currentSwNoteId = null;
+      currentSwLinkId = null;
       const titleInput = document.getElementById('swNoteTitleInput');
       const contentInput = document.getElementById('swNotesContent');
       const btnSave = document.getElementById('btnSaveSwNote');
       const btnCancel = document.getElementById('btnCancelEditSwNote');
-      const statusEl = document.getElementById('swNotesSaveStatus');
+      const formTitle = document.getElementById('swLinkFormTitle');
 
       if (titleInput) titleInput.value = '';
       if (contentInput) contentInput.value = '';
       if (btnSave) btnSave.innerHTML = '💾 LƯU';
       if (btnCancel) btnCancel.style.display = 'none';
-      if (statusEl) statusEl.innerText = '';
+      if (formTitle) formTitle.innerText = '➕ THÊM LIÊN KẾT WEB MỚI';
     }
     window.resetSwNoteForm = resetSwNoteForm;
 
@@ -12332,94 +12367,130 @@
       if (event) event.preventDefault();
       const titleInput = document.getElementById('swNoteTitleInput');
       const contentInput = document.getElementById('swNotesContent');
-      const statusEl = document.getElementById('swNotesSaveStatus');
 
       const titleVal = titleInput ? titleInput.value.trim() : '';
-      const contentVal = contentInput ? contentInput.value.trim() : '';
+      let contentVal = contentInput ? contentInput.value.trim() : '';
 
-      if (!contentVal && !titleVal) {
-        alert('Vui lòng nhập nội dung hoặc tiêu đề ghi chú!');
+      if (!titleVal) {
+        alert('Vui lòng nhập TIÊU ĐỀ liên kết web!');
+        if (titleInput) titleInput.focus();
+        return;
+      }
+      if (!contentVal) {
+        alert('Vui lòng nhập LINK WEB!');
         if (contentInput) contentInput.focus();
         return;
       }
 
-      let list = getSwNotesList();
-      const nowStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' - ' +
-        new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      // Đảm bảo có giao thức http/https nếu người dùng gõ link dạng domain
+      if (!/^https?:\/\//i.test(contentVal) && !contentVal.startsWith('/') && !contentVal.startsWith('#')) {
+        contentVal = 'https://' + contentVal;
+      }
 
-      if (currentSwNoteId) {
-        // Cập nhật ghi chú đang sửa
-        let target = list.find(n => n.id === currentSwNoteId);
+      let list = getSwNotesList();
+
+      if (currentSwLinkId) {
+        let target = list.find(n => n.id === currentSwLinkId);
         if (target) {
           target.title = titleVal;
           target.content = contentVal;
-          target.updatedAt = nowStr;
         }
-        if (statusEl) statusEl.innerText = '✓ Đã cập nhật ghi chú!';
+        showSwToast('Đã cập nhật link web thành công!');
       } else {
-        // Thêm ghi chú mới vào đầu danh sách
-        const newNote = {
+        const newLink = {
           id: Date.now(),
           title: titleVal,
-          content: contentVal,
-          updatedAt: nowStr
+          content: contentVal
         };
-        list.unshift(newNote);
-        if (statusEl) statusEl.innerText = '✓ Đã lưu ghi chú mới!';
+        list.unshift(newLink);
+        showSwToast('Đã thêm link web mới thành công!');
       }
 
       saveSwNotesList(list);
       renderSwNotesList();
       resetSwNoteForm();
 
-      setTimeout(() => {
-        if (statusEl) statusEl.innerText = '';
-      }, 2500);
+      const form = document.getElementById('swLinkForm');
+      if (form) form.style.display = 'none';
     }
     window.handleSaveSwNoteSubmit = handleSaveSwNoteSubmit;
 
     function renderSwNotesList() {
       const container = document.getElementById('swNotesList');
-      const badgeCount = document.getElementById('swNotesCountBadge');
       if (!container) return;
-      const list = getSwNotesList();
 
-      if (badgeCount) {
-        badgeCount.innerText = `${list.length} ghi chú`;
+      const searchInput = document.getElementById('swLinkSearchInput');
+      const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+      let list = getSwNotesList();
+      if (keyword) {
+        list = list.filter(item => {
+          const t = (item.title || '').toLowerCase();
+          const c = (item.content || '').toLowerCase();
+          return t.includes(keyword) || c.includes(keyword);
+        });
       }
 
       if (list.length === 0) {
-        container.innerHTML = `<div style="text-align: center; padding: 2rem; color: #64748b; font-weight: 700;">Chưa có ghi chú nào được lưu.</div>`;
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #64748b; font-weight: 700; font-size: 0.95rem;">
+            ${keyword ? 'Không tìm thấy liên kết phù hợp với từ khóa.' : 'Chưa có liên kết web nào. Bấm nút "+ Thêm" để tạo mới!'}
+          </div>
+        `;
         return;
       }
 
-      container.innerHTML = list.map((item, index) => {
-        const displayTitle = item.title && item.title.trim() ? item.title : `Ghi chú #${list.length - index}`;
-        const hasCustomTitle = item.title && item.title.trim();
-        const isEditing = item.id === currentSwNoteId;
+      // Icon Copy SVG (2 ô chữ nhật chồng lên nhau)
+      const copySvg = `<svg viewBox="0 0 24 24" class="sw-link-svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+      // Icon Edit bút chì SVG
+      const editSvg = `<svg viewBox="0 0 24 24" class="sw-link-svg"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
+      // Icon Delete thùng rác SVG
+      const delSvg = `<svg viewBox="0 0 24 24" class="sw-link-svg"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+      // Icon Mở ngoài tab mới SVG
+      const openSvg = `<svg viewBox="0 0 24 24" class="sw-link-svg"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+
+      container.innerHTML = list.map(item => {
+        const title = item.title || 'Không có tiêu đề';
+        const url = item.content || '';
 
         return `
-          <div style="background: ${isEditing ? '#1e293b' : '#0c121e'}; border: 1px solid ${isEditing ? '#3b82f6' : '#1f2a3e'}; border-radius: 8px; padding: 10px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; transition: all 0.2s;">
-            <div style="flex: 1; min-width: 0;">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <span style="font-size: 0.95rem; font-weight: 900; color: ${hasCustomTitle ? '#facc15' : '#94a3b8'};">${escapeHtml(displayTitle)}</span>
-                ${item.updatedAt ? `<span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">(${item.updatedAt})</span>` : ''}
+          <div class="sw-link-card">
+            <!-- HÀNG 1: TIÊU ĐỀ (XANH NGỌC TIÊU ĐỀ + CHỮ VÀNG + CỤM NÚT COPY, SỬA, XÓA) -->
+            <div class="sw-link-section">
+              <div class="sw-link-meta">
+                <div class="sw-link-label sw-label-green">TIÊU ĐỀ</div>
+                <div class="sw-link-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
               </div>
-              <div style="font-size: 0.92rem; color: #f1f5f9; line-height: 1.5; white-space: pre-wrap; word-break: break-word;">${escapeHtml(item.content || '')}</div>
+              <div class="sw-link-actions">
+                <button type="button" class="sw-link-icon-btn" onclick="copySwLinkTitle('${item.id}')" title="Sao chép tiêu đề">
+                  ${copySvg}
+                </button>
+                <button type="button" class="sw-link-icon-btn sw-btn-edit" onclick="editSwNote('${item.id}')" title="Chỉnh sửa liên kết">
+                  ${editSvg}
+                </button>
+                <button type="button" class="sw-link-icon-btn sw-btn-del" onclick="deleteSwNote('${item.id}', event)" title="Xóa liên kết">
+                  ${delSvg}
+                </button>
+              </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-              <button type="button" onclick="editSwNote(${item.id})" title="Sửa ghi chú này"
-                style="background: #1e293b; border: 1px solid #334155; color: #38bdf8; padding: 5px 9px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 3px;">
-                ✏️ Sửa
-              </button>
-              <button type="button" onclick="copySingleSwNote(${item.id})" title="Sao chép nội dung"
-                style="background: #1e293b; border: 1px solid #334155; color: #10b981; padding: 5px 9px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 3px;">
-                📋 Chép
-              </button>
-              <button type="button" onclick="deleteSwNote(${item.id}, event)" title="Xóa ghi chú này"
-                style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171; padding: 5px 9px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 800;">
-                ✕
-              </button>
+
+            <!-- ĐƯỜNG PHÂN CÁCH MỎNG -->
+            <div class="sw-link-divider"></div>
+
+            <!-- HÀNG 2: LINK WEB (NHÃN XÁM + URL TRẮNG + CỤM NÚT COPY, MỞ TAB MỚI) -->
+            <div class="sw-link-section">
+              <div class="sw-link-meta">
+                <div class="sw-link-label">LINK WEB</div>
+                <div class="sw-link-url" onclick="openSwUrl('${escapeHtml(url)}')" title="${escapeHtml(url)}">${escapeHtml(url)}</div>
+              </div>
+              <div class="sw-link-actions">
+                <button type="button" class="sw-link-icon-btn" onclick="copySingleSwNote('${item.id}')" title="Sao chép link web">
+                  ${copySvg}
+                </button>
+                <button type="button" class="sw-link-icon-btn sw-btn-open" onclick="openSwUrl('${escapeHtml(url)}')" title="Mở trang web trong tab mới">
+                  ${openSvg}
+                </button>
+              </div>
             </div>
           </div>
         `;
@@ -12427,55 +12498,77 @@
     }
     window.renderSwNotesList = renderSwNotesList;
 
+    function copySwLinkTitle(id) {
+      const list = getSwNotesList();
+      const target = list.find(n => String(n.id) === String(id));
+      if (!target || !target.title) return;
+      copyText(target.title, `tiêu đề "${target.title}"`);
+    }
+    window.copySwLinkTitle = copySwLinkTitle;
+
+    function copySingleSwNote(id) {
+      const list = getSwNotesList();
+      const target = list.find(n => String(n.id) === String(id));
+      if (!target || !target.content) return;
+      copyText(target.content, 'link web');
+    }
+    window.copySingleSwNote = copySingleSwNote;
+
+    function openSwUrl(url) {
+      if (!url) return;
+      let finalUrl = url.trim();
+      if (!/^https?:\/\//i.test(finalUrl)) {
+        finalUrl = 'https://' + finalUrl;
+      }
+      window.open(finalUrl, '_blank', 'noopener,noreferrer');
+    }
+    window.openSwUrl = openSwUrl;
+
     function editSwNote(id) {
       const list = getSwNotesList();
-      const target = list.find(n => n.id === id);
+      const target = list.find(n => String(n.id) === String(id));
       if (!target) return;
 
-      currentSwNoteId = id;
+      currentSwLinkId = target.id;
+      const form = document.getElementById('swLinkForm');
+      const formTitle = document.getElementById('swLinkFormTitle');
       const titleInput = document.getElementById('swNoteTitleInput');
       const contentInput = document.getElementById('swNotesContent');
       const btnSave = document.getElementById('btnSaveSwNote');
       const btnCancel = document.getElementById('btnCancelEditSwNote');
 
-      if (titleInput) titleInput.value = target.title || '';
+      if (form) form.style.display = 'block';
+      if (formTitle) formTitle.innerText = `✏️ CHỈNH SỬA: ${target.title}`;
+      if (titleInput) {
+        titleInput.value = target.title || '';
+        titleInput.focus();
+      }
       if (contentInput) {
         contentInput.value = target.content || '';
-        contentInput.focus();
       }
       if (btnSave) btnSave.innerHTML = '💾 CẬP NHẬT';
       if (btnCancel) btnCancel.style.display = 'inline-flex';
-
-      renderSwNotesList();
     }
     window.editSwNote = editSwNote;
-
-    function copySingleSwNote(id) {
-      const list = getSwNotesList();
-      const target = list.find(n => n.id === id);
-      if (!target || !target.content) {
-        alert('Ghi chú này không có nội dung để sao chép!');
-        return;
-      }
-      copyText(target.content, 'nội dung ghi chú');
-    }
-    window.copySingleSwNote = copySingleSwNote;
 
     function deleteSwNote(id, event) {
       if (event) event.stopPropagation();
       let list = getSwNotesList();
-      const target = list.find(n => n.id === id);
+      const target = list.find(n => String(n.id) === String(id));
       if (!target) return;
 
-      if (!confirm(`Bạn có chắc muốn xóa ghi chú "${target.title || 'này'}"?`)) return;
+      if (!confirm(`Bạn có chắc muốn xóa liên kết "${target.title || target.content}"?`)) return;
 
-      list = list.filter(n => n.id !== id);
+      list = list.filter(n => String(n.id) !== String(id));
       saveSwNotesList(list);
 
-      if (currentSwNoteId === id) {
+      if (String(currentSwLinkId) === String(id)) {
         resetSwNoteForm();
+        const form = document.getElementById('swLinkForm');
+        if (form) form.style.display = 'none';
       }
       renderSwNotesList();
+      showSwToast(`Đã xóa liên kết "${target.title}"!`);
     }
     window.deleteSwNote = deleteSwNote;
 

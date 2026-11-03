@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261103_214719">
+  <link rel="stylesheet" href="css/style.css?v=20261103_221855">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261103_214719";
+    var CURRENT_PAGE_VERSION = "20261103_221855";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -785,7 +785,7 @@
             <button type="button" class="sw-pill-btn sw-btn-black sw-shortcut-accounts" onclick="openSwAccountsModal()"
               title="Quản lý tài khoản tool / server">TÀI KHOẢN</button>
             <button type="button" class="sw-pill-btn sw-btn-black sw-shortcut-notes" onclick="openSwNotesModal()"
-              title="Sổ ghi chú phần mềm">GHI CHÚ</button>
+              title="Quản lý link web phần mềm">LINK WEB</button>
             <button type="button" class="sw-pill-btn sw-btn-congno sw-shortcut-congno" id="swBtnCongNo"
               onclick="toggleSoftwareDebtView()" title="Xem sổ công nợ phần mềm">CÔNG NỢ</button>
           </div>
@@ -1863,7 +1863,7 @@
       <!-- TAB 5: BÁO GIÁ SỬA CHỮA & NHẬP HÀNG (CƠ SỞ DỮ LIỆU KIM CHI MOBILE) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261103_214719" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261103_221855" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -4280,79 +4280,65 @@
     </div>
   </div>
 
-  <!-- MODAL GHI CHÚ PHẦN MỀM (CHUẨN MẪU ẢNH: TIÊU ĐỀ + NỘI DUNG + NÚT LƯU) -->
+  <!-- MODAL LINK WEB PHẦN MỀM (CHUẨN 100% THEO ẢNH MẪU: TIÊU ĐỀ + TÌM KIẾM + NÚT THÊM + GRID 3 CỘT) -->
   <div class="modal-overlay" id="swNotesModal" style="z-index: 10005; display: none;"
     onclick="if(event.target === this) closeSwNotesModal()">
-    <div class="modal-ticket-box"
-      style="max-width: 900px; padding: 1.5rem; background: #0d121c; border: 1px solid #1e293b; border-radius: 12px; width: 95%; box-shadow: 0 10px 30px rgba(0,0,0,0.8);"
-      onclick="event.stopPropagation()">
-      <div
-        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid #1e293b; padding-bottom: 0.75rem;">
-        <div
-          style="font-size: 1.15rem; font-weight: 900; color: #facc15; display: flex; align-items: center; gap: 8px;">
-          📝 GHI CHÚ
+    <div class="sw-acc-modal-box sw-link-modal-box" onclick="event.stopPropagation()">
+      <!-- Thanh tiêu đề & Công cụ chuẩn theo ảnh -->
+      <div class="sw-link-header">
+        <div class="sw-link-header-title">
+          LINK WEB
         </div>
-        <button type="button" onclick="closeSwNotesModal()"
-          style="background: #1e293b; border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+        <div class="sw-link-header-search">
+          <input type="text" id="swLinkSearchInput" class="sw-link-search-input" inputmode="text"
+            placeholder="🔍 Tìm tiêu đề, link..." oninput="renderSwNotesList()">
+        </div>
+        <div class="sw-link-header-actions">
+          <button type="button" class="sw-link-btn-add" onclick="toggleSwLinkForm()">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:3.5;">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Thêm</span>
+          </button>
+          <button type="button" onclick="closeSwNotesModal()" class="sw-link-btn-close" title="Đóng">✕</button>
+        </div>
       </div>
 
-      <!-- FORM NHẬP GHI CHÚ Y CHANG ẢNH MẪU (TIÊU ĐỀ: Không bắt buộc | NỘI DUNG: Nhập nội dung... | NÚT LƯU) -->
-      <form onsubmit="handleSaveSwNoteSubmit(event)" style="margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;">
-          <!-- CỘT 1: TIÊU ĐỀ -->
-          <div style="width: 250px; flex-shrink: 0;">
-            <label
-              style="display: block; font-size: 0.82rem; font-weight: 900; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px;">TIÊU
-              ĐỀ</label>
-            <input type="text" id="swNoteTitleInput" placeholder="Không bắt buộc"
-              style="width: 100%; height: 42px; background: #0c121e; border: 1px solid #1f2a3e; border-radius: 8px; padding: 0 14px; color: #ffffff; font-size: 0.95rem; font-weight: 700; outline: none; box-sizing: border-box; transition: border-color 0.2s;"
-              onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#1f2a3e'">
+      <!-- FORM THÊM / SỬA LINK WEB (ẨN / HIỆN KHI BẤM NÚT THÊM HOẶC BẤM SỬA) -->
+      <form id="swLinkForm" onsubmit="handleSaveSwNoteSubmit(event)"
+        style="display: none; background: #0c121e; border: 1px solid #1f2a3e; border-radius: 10px; padding: 14px; margin-bottom: 1rem;">
+        <input type="hidden" id="swLinkEditId" value="">
+        <div style="font-weight: 800; font-size: 0.9rem; color: #10b981; margin-bottom: 10px;" id="swLinkFormTitle">
+          ➕ THÊM LIÊN KẾT WEB MỚI
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1.6fr auto; gap: 10px; align-items: end;">
+          <div>
+            <label style="font-size: 0.76rem; font-weight: 800; color: #10b981; display: block; margin-bottom: 4px;">TIÊU ĐỀ</label>
+            <input type="text" id="swNoteTitleInput" placeholder="VD: Báo Giá iPhone..." required
+              style="width: 100%; background: #080d16; border: 1px solid #1f293d; border-radius: 6px; padding: 8px 12px; color: #a3e635; font-weight: 800; font-size: 0.92rem; outline: none; box-sizing: border-box;">
           </div>
-
-          <!-- CỘT 2: NỘI DUNG -->
-          <div style="flex: 1; min-width: 260px;">
-            <label
-              style="display: block; font-size: 0.82rem; font-weight: 900; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px;">NỘI
-              DUNG</label>
-            <input type="text" id="swNotesContent" placeholder="Nhập nội dung..."
-              style="width: 100%; height: 42px; background: #0c121e; border: 1px solid #1f2a3e; border-radius: 8px; padding: 0 14px; color: #ffffff; font-size: 0.95rem; outline: none; box-sizing: border-box; transition: border-color 0.2s;"
-              onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#1f2a3e'">
+          <div>
+            <label style="font-size: 0.76rem; font-weight: 800; color: #94a3b8; display: block; margin-bottom: 4px;">LINK WEB</label>
+            <input type="text" id="swNotesContent" placeholder="VD: https://..." required
+              style="width: 100%; background: #080d16; border: 1px solid #1f293d; border-radius: 6px; padding: 8px 12px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
           </div>
-
-          <!-- CỘT 3: NÚT LƯU -->
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 6px;">
             <button type="submit" id="btnSaveSwNote"
-              style="height: 42px; background: #10b981; border: none; border-radius: 8px; padding: 0 20px; color: #ffffff; font-weight: 900; font-size: 0.92rem; letter-spacing: 0.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 3px 12px rgba(16, 185, 129, 0.4); white-space: nowrap; transition: all 0.2s;">
+              style="background: #059669; border: none; color: #fff; font-weight: 900; padding: 8px 18px; border-radius: 6px; cursor: pointer; white-space: nowrap; height: 38px; display: inline-flex; align-items: center; gap: 5px;">
               💾 LƯU
             </button>
             <button type="button" id="btnCancelEditSwNote" onclick="resetSwNoteForm()"
-              style="display: none; height: 42px; background: rgba(255,255,255,0.08); border: 1px solid #1f2a3e; border-radius: 8px; padding: 0 14px; color: #94a3b8; font-weight: 800; font-size: 0.88rem; cursor: pointer;">
+              style="background: rgba(255,255,255,0.08); border: 1px solid #1f293d; color: #94a3b8; font-weight: 800; padding: 8px 12px; border-radius: 6px; cursor: pointer; height: 38px;">
               HỦY
             </button>
           </div>
         </div>
       </form>
 
-      <!-- DANH SÁCH CÁC GHI CHÚ ĐÃ LƯU -->
-      <div
-        style="background: #111724; border: 1px solid #1f2a3e; border-radius: 8px; padding: 12px; margin-bottom: 1rem; max-height: 340px; overflow-y: auto;">
-        <div
-          style="font-size: 0.82rem; font-weight: 900; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-          <span>DANH SÁCH GHI CHÚ ĐÃ LƯU</span>
-          <span id="swNotesCountBadge" style="color: #94a3b8; font-size: 0.78rem;">0 ghi chú</span>
-        </div>
-        <div id="swNotesList" style="display: flex; flex-direction: column; gap: 8px;">
-          <!-- Render danh sách ghi chú từ JS -->
-        </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span id="swNotesSaveStatus" style="font-size: 0.82rem; color: #10b981; font-weight: 700;"></span>
-        <div style="display: flex; gap: 10px;">
-          <button type="button" onclick="closeSwNotesModal()"
-            style="background: #1e293b; border: 1px solid #334155; color: #fff; font-weight: 900; padding: 8px 22px; border-radius: 6px; cursor: pointer;">Đóng</button>
-        </div>
+      <!-- DANH SÁCH LƯỚI 3 CỘT (GRID) CHUẨN Y CHANG ẢNH MẪU -->
+      <div id="swNotesList" class="sw-link-grid">
+        <!-- Render động từ JS -->
       </div>
     </div>
   </div>
@@ -5521,10 +5507,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261103_214719"></script>
+  <script src="js/seed_data.js?v=20261103_221855"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261103_214719"></script>
+  <script src="js/main.js?v=20261103_221855"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
