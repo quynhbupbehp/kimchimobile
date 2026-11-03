@@ -12814,7 +12814,7 @@
                   title="Khách đã trả tiền 😊" alt="Đã trả tiền">
               `}
             </td>
-            <td class="sw-col-customer">
+            <td class="sw-col-customer" ondblclick="viewSoftwareTicket('${safeId}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewSoftwareTicket('${safeId}'); } this._lastTap=now;" style="cursor: pointer;" title="Nháy đúp 2 lần để xem chi tiết đơn">
               <span style="color: #f59e0b; font-weight: 900; font-size: 1.25rem;">${swHideProfits ? '**********' : escapeHtml(item.customer)}</span>
             </td>
             <td class="sw-col-device">
