@@ -227,6 +227,23 @@
           if (isDebt) btnCongNo.classList.add('active');
           else btnCongNo.classList.remove('active');
         }
+        // Mỗi khi vào tab phần mềm, tự động đồng bộ bộ lọc ngày về ngày hiện tại
+        const vnNow = getVietnamDate();
+        const ddStr = String(vnNow.getDate()).padStart(2, '0');
+        const mmStr = String(vnNow.getMonth() + 1).padStart(2, '0');
+        const yyyy = vnNow.getFullYear();
+        const curTodayStr = `${ddStr}/${mmStr}/${yyyy}`;
+
+        swFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
+        currentSoftwareMonthFilter = { month: vnNow.getMonth(), year: yyyy };
+        currentSoftwareYearFilter = yyyy;
+
+        const swDateDisp = document.getElementById('filterSoftwareDateDisplay');
+        if (swDateDisp) {
+          if (swDateDisp.tagName === 'INPUT') swDateDisp.value = curTodayStr;
+          swDateDisp.innerText = curTodayStr;
+        }
+
         if (typeof renderSoftwareTable === 'function') {
           renderSoftwareTable(typeof softwareDatabase !== 'undefined' ? softwareDatabase : []);
         }
@@ -1708,8 +1725,17 @@
 
       // 3. Tab PHẦN MỀM
       swFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
+      currentSoftwareMonthFilter = { month: vnNow.getMonth(), year: yyyy };
+      currentSoftwareYearFilter = yyyy;
       const swDateDisp = document.getElementById('filterSoftwareDateDisplay');
-      if (swDateDisp) swDateDisp.value = dateStr;
+      if (swDateDisp) {
+        if (swDateDisp.tagName === 'INPUT') swDateDisp.value = dateStr;
+        swDateDisp.innerText = dateStr;
+      }
+      const swMonthDisp = document.getElementById('filterSoftwareMonthDisplay');
+      if (swMonthDisp) swMonthDisp.innerText = monthStr;
+      const swYearDisp = document.getElementById('filterSoftwareYearDisplay');
+      if (swYearDisp) swYearDisp.innerText = String(yyyy);
 
       // 4. Tab SỬA CHỮA
       repairFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
