@@ -5691,23 +5691,29 @@
           let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxProfit = -1, colIdxTime = -1, colIdxStatus = -1;
 
           cleanHeader.forEach((col, idx) => {
-            if (col.includes('khach') || col.includes('customer')) colIdxCustomer = idx;
-            else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung')) colIdxDevice = idx;
-            else if (col.includes('gia ban') || col.includes('tien') || col.includes('price') || col.includes('thu') || (col.includes('gia') && !col.includes('nhap') && !col.includes('von'))) colIdxPrice = idx;
-            else if (col.includes('gia nhap') || col.includes('von') || col.includes('cost') || col.includes('chi phi')) colIdxCost = idx;
+            if (col.includes('khach') || col.includes('customer') || col.includes('tho')) colIdxCustomer = idx;
+            else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung') || col.includes('dich vu') && !col.includes('phi')) colIdxDevice = idx;
+            else if (col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price') || col.includes('thu') || (col.includes('gia') && !col.includes('nhap') && !col.includes('von'))) colIdxPrice = idx;
+            else if (col.includes('phi dich vu') || col.includes('gia nhap') || col.includes('von') || col.includes('cost') || col.includes('chi phi') || col.includes('phi')) colIdxCost = idx;
             else if (col.includes('lai') || col.includes('loi nhuan') || col.includes('profit')) colIdxProfit = idx;
             else if (col.includes('gio') || col.includes('ngay') || col.includes('thoi gian') || col.includes('date') || col.includes('time')) colIdxTime = idx;
-            else if (col.includes('trang thai') || col.includes('thanh toan') || col.includes('status')) colIdxStatus = idx;
+            else if (col.includes('trang thai') || col.includes('thanh toan') || col.includes('status') || col.includes('tt')) colIdxStatus = idx;
           });
 
           // Fallback vị trí nếu không tìm thấy header
           if (colIdxCustomer === -1 && colIdxDevice === -1) {
-            colIdxCustomer = 1; colIdxDevice = 2; colIdxPrice = 3; colIdxCost = 4; colIdxProfit = 5; colIdxTime = 6; colIdxStatus = 9;
+            colIdxCustomer = 0; colIdxDevice = 1; colIdxPrice = 2; colIdxCost = 3; colIdxProfit = 4; colIdxTime = 5; colIdxStatus = 6;
           }
 
           let newRecords = [];
           let updatedCount = 0;
           const currentYear = String(new Date().getFullYear());
+
+          // Danh sách dropdown hiện tại trong popup tạo đơn mới
+          let currentCustomers = getSwDropdownItems('customer');
+          let currentDevices = getSwDropdownItems('device');
+          let hasNewCustomer = false;
+          let hasNewDevice = false;
 
           for (let i = 1; i < rows.length; i++) {
             let row = rows[i];
@@ -5723,6 +5729,28 @@
 
             if (!device && !customer) continue;
             if (!device) device = 'Cài phần mềm';
+
+            let custFormatted = toTitleCase(customer);
+            let devFormatted = toTitleCase(device);
+
+            // Tự động lưu Khách hàng và Tên máy vào danh sách popup tạo đơn mới (chưa có thì lưu, có rồi bỏ qua)
+            if (custFormatted) {
+              let custNorm = custFormatted.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              let existsCust = currentCustomers.some(c => c.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '') === custNorm);
+              if (!existsCust) {
+                currentCustomers.push(custFormatted);
+                hasNewCustomer = true;
+              }
+            }
+
+            if (devFormatted) {
+              let devNorm = devFormatted.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              let existsDev = currentDevices.some(d => d.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '') === devNorm);
+              if (!existsDev) {
+                currentDevices.push(devFormatted);
+                hasNewDevice = true;
+              }
+            }
 
             let priceNum = parsePriceNum(rawPrice);
             let costNum = parsePriceNum(rawCost);
@@ -5767,8 +5795,8 @@
             } else {
               newRecords.push({
                 id: Date.now() + Math.random(),
-                customer: toTitleCase(customer),
-                device: toTitleCase(device),
+                customer: custFormatted,
+                device: devFormatted,
                 price: priceStr,
                 cost: costStr,
                 profit: profitStr,
@@ -5781,12 +5809,20 @@
             }
           }
 
+          // Lưu danh sách gợi ý vào popup tạo đơn mới nếu có mục mới
+          if (hasNewCustomer) {
+            saveSwDropdownItems('customer', currentCustomers);
+          }
+          if (hasNewDevice) {
+            saveSwDropdownItems('device', currentDevices);
+          }
+
           if (newRecords.length > 0 || updatedCount > 0) {
             if (newRecords.length > 0) softwareDatabase.push(...newRecords);
             saveSoftwareStorage();
             if (typeof setSoftwareMode === 'function') setSoftwareMode('all');
             else if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!`);
+            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!\n(Đã tự động đồng bộ danh sách Khách hàng và Tên máy vào popup tạo đơn mới)`);
           } else {
             alert("Không tìm thấy dữ liệu Phần Mềm hợp lệ trong file!");
           }
