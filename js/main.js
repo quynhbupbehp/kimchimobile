@@ -11035,8 +11035,11 @@
 
     function isSoftwareDebt(item) {
       if (!item || !item.paymentStatus) return false;
-      return item.paymentStatus.includes('NỢ DAI');
+      let s = String(item.paymentStatus).trim().toUpperCase();
+      let sClean = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return s.includes('NỢ') || sClean.includes('NO') || sClean.includes('DAI') || sClean.includes('CHUA');
     }
+    window.isSoftwareDebt = isSoftwareDebt;
 
     function updateSoftwarePayButtonVisibility() {
       const btn = document.getElementById('swBtnPay');
@@ -11137,7 +11140,7 @@
     }
 
     function markSoftwareAsPaidOnDblClick(id) {
-      const item = softwareDatabase.find(x => x.id === id);
+      const item = softwareDatabase.find(x => String(x.id) === String(id) || x.id == id);
       if (!item) return;
 
       // Chỉ khi nợ dai vl mới chuyển sang đã trả, đã trả thì không có tác dụng
@@ -11157,6 +11160,7 @@
         }
       }
     }
+    window.markSoftwareAsPaidOnDblClick = markSoftwareAsPaidOnDblClick;
 
     function openSoftwareModal(editId = null) {
       renderSwDatalists();
@@ -11186,7 +11190,7 @@
       document.getElementById('swFormPayment').value = 'NỢ DAI VL';
 
       if (editId) {
-        const item = softwareDatabase.find(x => x.id === editId);
+        const item = softwareDatabase.find(x => String(x.id) === String(editId) || x.id == editId);
         if (item) {
           document.getElementById('swModalTitle').innerText = "SỬA ĐƠN PHẦN MỀM";
           const swEditBtn = document.getElementById('swSubmitBtn');
@@ -11215,11 +11219,13 @@
 
       document.getElementById('softwareModal').classList.add('active');
     }
+    window.openSoftwareModal = openSoftwareModal;
 
     function closeSoftwareModal() {
       document.getElementById('softwareModal').classList.remove('active');
       closeAllSwDropdowns(null);
     }
+    window.closeSoftwareModal = closeSoftwareModal;
 
     function saveSoftwareTicket(e) {
       e.preventDefault();
@@ -11258,7 +11264,7 @@
       if (!devs.includes(device)) { devs.unshift(device); saveSwDropdownItems('device', devs); }
 
       if (editId) {
-        const idx = softwareDatabase.findIndex(x => x.id === parseFloat(editId));
+        const idx = softwareDatabase.findIndex(x => String(x.id) === String(editId) || x.id == editId);
         if (idx !== -1) {
           const oldData = JSON.parse(JSON.stringify(softwareDatabase[idx]));
           softwareDatabase[idx].customer = customer;
@@ -11322,9 +11328,10 @@
       renderSoftwareTable(softwareDatabase);
       updateSoftwarePayButtonVisibility();
     }
+    window.saveSoftwareTicket = saveSoftwareTicket;
 
     function viewSoftwareTicket(id) {
-      const item = softwareDatabase.find(x => x.id === id);
+      const item = softwareDatabase.find(x => String(x.id) === String(id) || x.id == id);
       if (!item) return;
 
       const viewModal = document.getElementById('viewPhoneModal');
@@ -11354,9 +11361,10 @@
         alert(`CHI TIẾT ĐƠN PHẦN MỀM:\n- Khách hàng: ${item.customer}\n- Thiết bị: ${item.device}\n- Báo giá: ${formatPriceStr(item.price)}\n- Phí dịch vụ: ${formatPriceStr(item.cost)}\n- Lãi: ${formatPriceStr(item.profit)}\n- Thời gian: ${item.dayMonth}-${item.year || '2026'} lúc ${item.time}\n- Trạng thái: ${item.paymentStatus}`);
       }
     }
+    window.viewSoftwareTicket = viewSoftwareTicket;
 
     function cloneSoftwareTicket(id) {
-      const item = softwareDatabase.find(x => x.id === id);
+      const item = softwareDatabase.find(x => String(x.id) === String(id) || x.id == id);
       if (!item) return;
 
       let cloned = JSON.parse(JSON.stringify(item));
@@ -11370,12 +11378,13 @@
       renderSoftwareTable(softwareDatabase);
       alert(`Đã nhân bản đơn phần mềm cho máy "${cloned.device}" thành công!`);
     }
+    window.cloneSoftwareTicket = cloneSoftwareTicket;
 
     function deleteSoftwareTicket(id) {
       let confirmText = prompt("Bạn có chắc chắn muốn xóa đơn phần mềm này không?\nNhập 'yes' để xác nhận xóa:");
       if (confirmText && confirmText.trim().toLowerCase() === 'yes') {
-        const item = softwareDatabase.find(x => x.id === id);
-        softwareDatabase = softwareDatabase.filter(x => x.id !== id);
+        const item = softwareDatabase.find(x => String(x.id) === String(id) || x.id == id);
+        softwareDatabase = softwareDatabase.filter(x => String(x.id) !== String(id) && x.id != id);
         saveSoftwareStorage();
         if (typeof db !== 'undefined' && db && id) {
           db.collection('software').doc(String(id)).delete().catch(console.error);
@@ -11390,6 +11399,7 @@
         alert("Thao tác xóa bị hủy. Bạn phải nhập chính xác chữ 'yes'.");
       }
     }
+    window.deleteSoftwareTicket = deleteSoftwareTicket;
 
     let swIsDebtViewActive = false;
     let swDebtAmountFilter = 'ALL';
@@ -12788,8 +12798,9 @@
 
       tbody.innerHTML = filtered.map(item => {
         let isDebt = isSoftwareDebt(item);
+        let safeId = String(item.id).replace(/'/g, "\\'");
         let statusBadgeHtml = isDebt
-          ? `<span class="sw-badge-debt" ondblclick="markSoftwareAsPaidOnDblClick(${item.id})" title="Nháy đúp 2 lần để chuyển sang ĐÃ TRẢ" style="cursor: pointer; user-select: none;">💀 NỢ DAI VL</span>`
+          ? `<span class="sw-badge-debt" ondblclick="markSoftwareAsPaidOnDblClick('${safeId}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ markSoftwareAsPaidOnDblClick('${safeId}'); } this._lastTap=now;" title="Nháy đúp 2 lần để chuyển sang ĐÃ TRẢ" style="cursor: pointer; user-select: none;">💀 NỢ DAI VL</span>`
           : `<span class="sw-badge-paid" style="cursor: default; user-select: none;">✔ ĐÃ TRẢ <span style="font-size: 0.95rem; margin-left: 2px;">💰</span></span>`;
 
         return `
@@ -12829,13 +12840,13 @@
             </td>
             <td class="sw-col-extra" style="text-align: center;">
               <div class="action-btn-group">
-                <button type="button" class="action-btn-icon action-btn-view" onclick="viewSoftwareTicket(${item.id})" title="Xem chi tiết">
+                <button type="button" class="action-btn-icon action-btn-view" onclick="viewSoftwareTicket('${safeId}')" title="Xem chi tiết">
                   <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
-                <button type="button" class="action-btn-icon action-btn-edit" onclick="openSoftwareModal(${item.id})" title="Sửa đơn">
+                <button type="button" class="action-btn-icon action-btn-edit" onclick="openSoftwareModal('${safeId}')" title="Sửa đơn">
                   <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 </button>
-                <button type="button" class="action-btn-icon action-btn-del" onclick="deleteSoftwareTicket(${item.id})" title="Xóa đơn">
+                <button type="button" class="action-btn-icon action-btn-del" onclick="deleteSoftwareTicket('${safeId}')" title="Xóa đơn">
                   <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                 </button>
               </div>
