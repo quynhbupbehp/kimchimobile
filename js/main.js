@@ -12440,14 +12440,14 @@
         return;
       }
 
-      // Icon Copy SVG (2 ô chữ nhật chồng lên nhau)
+      // Icon Mở ngoài tab mới SVG
+      const openSvg = `<svg viewBox="0 0 24 24" class="sw-link-svg"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+      // Icon Copy link SVG (2 ô chữ nhật chồng lên nhau)
       const copySvg = `<svg viewBox="0 0 24 24" class="sw-link-svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
       // Icon Edit bút chì SVG
       const editSvg = `<svg viewBox="0 0 24 24" class="sw-link-svg"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
       // Icon Delete thùng rác SVG
       const delSvg = `<svg viewBox="0 0 24 24" class="sw-link-svg"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-      // Icon Mở ngoài tab mới SVG
-      const openSvg = `<svg viewBox="0 0 24 24" class="sw-link-svg"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
 
       container.innerHTML = list.map(item => {
         const title = item.title || 'Không có tiêu đề';
@@ -12455,40 +12455,25 @@
 
         return `
           <div class="sw-link-card">
-            <!-- HÀNG 1: TIÊU ĐỀ (XANH NGỌC TIÊU ĐỀ + CHỮ VÀNG + CỤM NÚT COPY, SỬA, XÓA) -->
+            <!-- THẺ CHUẨN MẪU: TIÊU ĐỀ + 4 NÚT HÀNH ĐỘNG (MỞ TAB, COPY LINK, SỬA, XÓA) -->
             <div class="sw-link-section">
               <div class="sw-link-meta">
-                <div class="sw-link-label sw-label-green">TIÊU ĐỀ</div>
-                <div class="sw-link-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
+                <div class="sw-link-title" onclick="openSwUrl('${escapeHtml(url)}')" title="${escapeHtml(title)} - Bấm để mở link">
+                  ${escapeHtml(title)}
+                </div>
               </div>
               <div class="sw-link-actions">
-                <button type="button" class="sw-link-icon-btn" onclick="copySwLinkTitle('${item.id}')" title="Sao chép tiêu đề">
+                <button type="button" class="sw-link-icon-btn sw-btn-open" onclick="openSwUrl('${escapeHtml(url)}')" title="Mở trang web trong tab mới">
+                  ${openSvg}
+                </button>
+                <button type="button" class="sw-link-icon-btn" onclick="copySingleSwNote('${item.id}')" title="Sao chép link web">
                   ${copySvg}
                 </button>
-                <button type="button" class="sw-link-icon-btn sw-btn-edit" onclick="editSwNote('${item.id}')" title="Chỉnh sửa liên kết">
+                <button type="button" class="sw-link-icon-btn sw-btn-edit" onclick="editSwNote('${item.id}')" title="Sửa (Xem và đổi link web)">
                   ${editSvg}
                 </button>
                 <button type="button" class="sw-link-icon-btn sw-btn-del" onclick="deleteSwNote('${item.id}', event)" title="Xóa liên kết">
                   ${delSvg}
-                </button>
-              </div>
-            </div>
-
-            <!-- ĐƯỜNG PHÂN CÁCH MỎNG -->
-            <div class="sw-link-divider"></div>
-
-            <!-- HÀNG 2: LINK WEB (NHÃN XÁM + URL TRẮNG + CỤM NÚT COPY, MỞ TAB MỚI) -->
-            <div class="sw-link-section">
-              <div class="sw-link-meta">
-                <div class="sw-link-label">LINK WEB</div>
-                <div class="sw-link-url" onclick="openSwUrl('${escapeHtml(url)}')" title="${escapeHtml(url)}">${escapeHtml(url)}</div>
-              </div>
-              <div class="sw-link-actions">
-                <button type="button" class="sw-link-icon-btn" onclick="copySingleSwNote('${item.id}')" title="Sao chép link web">
-                  ${copySvg}
-                </button>
-                <button type="button" class="sw-link-icon-btn sw-btn-open" onclick="openSwUrl('${escapeHtml(url)}')" title="Mở trang web trong tab mới">
-                  ${openSvg}
                 </button>
               </div>
             </div>
