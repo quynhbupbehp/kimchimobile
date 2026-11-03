@@ -635,6 +635,67 @@
         </div>
     </div>
 
+    <!-- MODAL XEM CHI TIẾT TÊN MÁY KHI NHÁY ĐÚP (DOUBLE CLICK / DOUBLE TAP) -->
+    <div id="view-device-modal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden"
+        onclick="if (event.target === this) closeViewDeviceModal()">
+        <div class="bg-[#0b0f19] border border-[#1e293b] rounded-2xl w-full max-w-lg p-5 shadow-2xl relative flex flex-col gap-4 text-white">
+            <div class="flex items-center justify-between border-b border-[#1e293b] pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                    <h3 class="text-base md:text-lg font-black text-[#f59e0b] uppercase tracking-wide">
+                        CHI TIẾT TÊN MÁY & LINH KIỆN
+                    </h3>
+                </div>
+                <button type="button" onclick="closeViewDeviceModal()"
+                    class="w-8 h-8 rounded-xl bg-[#131b2e] hover:bg-[#1e293b] text-gray-400 hover:text-white flex items-center justify-center transition border border-[#1e293b] cursor-pointer">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- TÊN MÁY ĐẦY ĐỦ TRÌNH BÀY NỔI BẬT KHÔNG BỊ TRUNCATE / CẮT BỚT -->
+            <div class="bg-[#070b14] border border-[#1e293b] rounded-xl p-4 flex flex-col gap-2">
+                <span class="text-xs font-bold text-gray-400 uppercase">TÊN MÁY ĐẦY ĐỦ:</span>
+                <div id="view-device-fullname" class="text-base md:text-xl font-black text-white break-words leading-relaxed">
+                    <!-- Sẽ chèn nội dung đầy đủ -->
+                </div>
+            </div>
+
+            <!-- THÔNG TIN PHỤ: HÃNG, LINH KIỆN, KIỂU, MÀU, TỒN KHO, GIÁ BÁN -->
+            <div class="grid grid-cols-2 gap-2.5 text-xs md:text-sm">
+                <div class="bg-[#070b14] border border-[#1e293b] rounded-xl p-3 flex flex-col gap-1">
+                    <span class="text-gray-400 font-bold uppercase text-[11px]">HÃNG:</span>
+                    <span id="view-device-brand" class="font-black text-blue-400 text-sm">---</span>
+                </div>
+                <div class="bg-[#070b14] border border-[#1e293b] rounded-xl p-3 flex flex-col gap-1">
+                    <span class="text-gray-400 font-bold uppercase text-[11px]">LINH KIỆN:</span>
+                    <span id="view-device-part" class="font-black text-emerald-400 text-sm">---</span>
+                </div>
+                <div class="bg-[#070b14] border border-[#1e293b] rounded-xl p-3 flex flex-col gap-1">
+                    <span class="text-gray-400 font-bold uppercase text-[11px]">KIỂU / MÀU:</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span id="view-device-type" class="font-black text-sky-400 text-sm">---</span>
+                        <span id="view-device-color" class="font-black text-amber-300 text-sm"></span>
+                    </div>
+                </div>
+                <div class="bg-[#070b14] border border-[#1e293b] rounded-xl p-3 flex flex-col gap-1">
+                    <span class="text-gray-400 font-bold uppercase text-[11px]">TỒN KHO / GIÁ:</span>
+                    <div class="flex items-center justify-between font-black">
+                        <span id="view-device-qty" class="text-red-400 text-sm">SL: 0</span>
+                        <span id="view-device-price" class="text-amber-400 text-base">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-1">
+                <button type="button" onclick="closeViewDeviceModal()"
+                    class="px-5 py-2 rounded-xl bg-[#2563eb] hover:bg-blue-600 text-white font-black text-xs md:text-sm uppercase tracking-wider transition shadow-lg shadow-blue-600/30">
+                    ĐÓNG
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL NHẬP HÀNG -->
     <div id="import-modal"
         class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
@@ -820,7 +881,67 @@
             return `<span class="inline-block ${sizeClass} rounded-full ml-1.5 mr-1 shrink-0 align-middle shadow-sm" style="background-color: ${hex}; ${borderStyle};" title="MÀU: ${colorName}"></span>`;
         }
 
-        function renderDeviceNames(nameStr, colorStr, isMobile = false) {
+        // ==================== TÍNH NĂNG NHÁY ĐÚP VÀO TÊN MÁY ĐỂ XEM CHI TIẾT ====================
+        let lastDeviceTapTime = 0;
+        let lastDeviceTapIndex = null;
+
+        function handleDeviceNameTouch(realIndex) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastDeviceTapTime;
+            if (lastDeviceTapIndex === realIndex && tapLength < 350 && tapLength > 0) {
+                // Double tap trên mobile
+                showDeviceDetailsModal(realIndex);
+                lastDeviceTapTime = 0;
+                lastDeviceTapIndex = null;
+            } else {
+                lastDeviceTapTime = currentTime;
+                lastDeviceTapIndex = realIndex;
+            }
+        }
+
+        function showDeviceDetailsModal(realIndex) {
+            if (realIndex === undefined || realIndex === null || !devices[realIndex]) return;
+            const d = devices[realIndex];
+
+            const nameEl = document.getElementById('view-device-fullname');
+            const brandEl = document.getElementById('view-device-brand');
+            const partEl = document.getElementById('view-device-part');
+            const typeEl = document.getElementById('view-device-type');
+            const colorEl = document.getElementById('view-device-color');
+            const qtyEl = document.getElementById('view-device-qty');
+            const priceEl = document.getElementById('view-device-price');
+            const modalEl = document.getElementById('view-device-modal');
+
+            if (nameEl) {
+                // Tách các tên máy bởi dấu gạch ngang '-' và tô màu xen kẽ đẹp mắt
+                const rawTokens = (d.name || '').split('-');
+                const formattedName = rawTokens.map((rawToken, idx) => {
+                    const token = rawToken.trim();
+                    if (!token) return '';
+                    const colorClass = (idx % 2 === 0) ? 'text-white font-black' : 'text-[#f59e0b] font-black';
+                    const separatorHtml = (idx > 0) ? `<span class="text-gray-500 font-bold mx-1.5 select-none">-</span>` : '';
+                    return `${separatorHtml}<span class="${colorClass}">${token}</span>`;
+                }).join('');
+                nameEl.innerHTML = formattedName || (d.name || '---');
+            }
+
+            if (brandEl) brandEl.textContent = d.brand || '---';
+            let displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : (d.part || '---');
+            if (partEl) partEl.textContent = displayPart;
+            if (typeEl) typeEl.textContent = d.type || 'ZIN';
+            if (colorEl) colorEl.textContent = d.color ? `(${d.color})` : '';
+            if (qtyEl) qtyEl.textContent = `SL TỒN: ${d.qty ?? 0}`;
+            if (priceEl) priceEl.textContent = `${formatMoney(d.price)} đ`;
+
+            if (modalEl) modalEl.classList.remove('hidden');
+        }
+
+        function closeViewDeviceModal() {
+            const modalEl = document.getElementById('view-device-modal');
+            if (modalEl) modalEl.classList.add('hidden');
+        }
+
+        function renderDeviceNames(nameStr, colorStr, isMobile = false, realIndex = null) {
             if (!nameStr) return '';
 
             let colorDotHtml = '';
@@ -845,11 +966,14 @@
                 return `${separatorHtml}<span class="${colorClass}">${token}</span>`;
             }).join('');
 
+            const dblClickAttr = realIndex !== null ? `ondblclick="event.stopPropagation(); showDeviceDetailsModal(${realIndex})"` : '';
+            const touchEndAttr = realIndex !== null ? `ontouchend="handleDeviceNameTouch(${realIndex})"` : '';
+
             // Thẻ tên máy có viền bo tròn nhẹ, nền xám đen (#131b2e)
             if (isMobile) {
                 return `
-                    <div class="mobile-device-card-name-wrapper inline-flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
-                        <span class="mobile-device-card-name-pill px-2 py-0.5 rounded-lg bg-[#131b2e] border border-[#1e293b] text-xs md:text-sm tracking-wide whitespace-nowrap overflow-hidden text-ellipsis shadow-sm max-w-full inline-block">
+                    <div class="mobile-device-card-name-wrapper inline-flex items-center gap-1 min-w-0 flex-1 overflow-hidden" ${dblClickAttr} ${touchEndAttr} title="Nháy đúp để xem chi tiết tên máy">
+                        <span class="mobile-device-card-name-pill px-2 py-0.5 rounded-lg bg-[#131b2e] border border-[#1e293b] text-xs md:text-sm tracking-wide whitespace-nowrap overflow-hidden text-ellipsis shadow-sm max-w-full inline-block cursor-pointer active:scale-95 transition-transform">
                             ${tokensHtml}
                         </span>
                         ${colorDotHtml}
@@ -858,8 +982,8 @@
             }
 
             return `
-                <div class="inline-flex items-center gap-1.5 flex-wrap">
-                    <span class="px-2.5 py-1 rounded-lg bg-[#131b2e] border border-[#1e293b] text-sm md:text-base tracking-wide whitespace-nowrap shadow-sm inline-flex items-center">
+                <div class="inline-flex items-center gap-1.5 flex-wrap" ${dblClickAttr} title="Nháy đúp để xem chi tiết tên máy">
+                    <span class="px-2.5 py-1 rounded-lg bg-[#131b2e] border border-[#1e293b] text-sm md:text-base tracking-wide whitespace-nowrap shadow-sm inline-flex items-center cursor-pointer hover:border-amber-500 transition-colors">
                         ${tokensHtml}
                     </span>
                     ${colorDotHtml}
@@ -1871,7 +1995,7 @@
                         const costFormatted = formatMoney(d.cost);
                         const profitVal = parseMoney(d.price) - parseMoney(d.cost);
                         const profitFormatted = formatMoney(profitVal);
-                        const formattedNameHtml = renderDeviceNames(d.name, d.color, false);
+                        const formattedNameHtml = renderDeviceNames(d.name, d.color, false, realIndex);
                         const displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : d.part;
 
                         const zeroQtyClass = (qtyVal === 0 ? 'yellow-pulse-row' : 'row-hover');
@@ -1977,7 +2101,7 @@
                         const realIndex = devices.indexOf(d);
                         const qtyVal = parseInt(d.qty) || 0;
                         const priceFormatted = formatMoney(d.price);
-                        const formattedNameHtml = renderDeviceNames(d.name, d.color, true);
+                        const formattedNameHtml = renderDeviceNames(d.name, d.color, true, realIndex);
                         let displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : d.part;
                         if (displayPart === 'MÀN HÌNH') displayPart = 'MÀN';
 
