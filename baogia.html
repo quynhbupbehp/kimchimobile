@@ -1297,6 +1297,54 @@
             renderTable();
         }
 
+        // ==================== LOGO THƯƠNG HIỆU CHO TAB HÃNG TRÊN GIAO DIỆN MOBILE ====================
+        function getBrandMobileLogoHtml(brandName) {
+            const b = (brandName || '').trim().toUpperCase();
+
+            // 1. IPHONE -> Logo Táo khuyết
+            if (b.includes('IPHONE') || b.includes('APPLE')) {
+                return `<i class="fa-brands fa-apple text-base md:text-lg leading-none" title="IPHONE"></i>`;
+            }
+
+            // 2. SAMSUNG -> Logo Samsung
+            if (b.includes('SAMSUNG')) {
+                return `<svg class="h-3.5 w-auto max-w-[56px] inline-block align-middle fill-current" viewBox="0 0 100 24" xmlns="http://www.w3.org/2000/svg" title="SAMSUNG">
+                    <text x="50" y="17" font-family="'Arial Black', Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="currentColor">SAMSUNG</text>
+                </svg>`;
+            }
+
+            // 3. OPPO - REALME -> Logo Oppo
+            if (b.includes('OPPO') || b.includes('REALME')) {
+                return `<svg class="h-3.5 w-auto max-w-[50px] inline-block align-middle fill-current" viewBox="0 0 80 24" xmlns="http://www.w3.org/2000/svg" title="OPPO">
+                    <text x="40" y="17" font-family="'Century Gothic', 'Segoe UI', Arial, sans-serif" font-size="17" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="currentColor">oppo</text>
+                </svg>`;
+            }
+
+            // 4. REDMI - POCO / XIAOMI -> Logo Mi
+            if (b.includes('REDMI') || b.includes('POCO') || b.includes('XIAOMI') || b.includes('MI')) {
+                return `<span class="inline-flex items-center justify-center bg-[#ff6900] text-white rounded-md w-5 h-5 font-black text-[11px] leading-none shrink-0 shadow-sm" style="font-family: Arial, sans-serif;" title="REDMI - POCO (MI)">mi</span>`;
+            }
+
+            // 5. VIVO -> Logo Vivo
+            if (b.includes('VIVO')) {
+                return `<svg class="h-3.5 w-auto max-w-[46px] inline-block align-middle fill-current" viewBox="0 0 70 24" xmlns="http://www.w3.org/2000/svg" title="VIVO">
+                    <text x="35" y="17" font-family="'Futura', 'Segoe UI', Arial, sans-serif" font-size="17" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="currentColor">vivo</text>
+                </svg>`;
+            }
+
+            // 6. VSMART -> Logo Vsmart
+            if (b.includes('VSMART')) {
+                return `<span class="inline-flex items-center gap-1 shrink-0" title="VSMART">
+                    <svg class="w-4 h-4 text-orange-500 fill-current inline-block" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L4 7v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V7l-8-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z" fill="#f97316"/>
+                    </svg>
+                    <span class="text-[11px] font-black tracking-tight leading-none text-white">Vsmart</span>
+                </span>`;
+            }
+
+            return brandName;
+        }
+
         function initTabs() {
             const isDesktop = window.innerWidth > 768;
             const dragAttr = isDesktop ? 'draggable="true"' : 'draggable="false"';
@@ -1309,7 +1357,7 @@
             // Nút "TẤT CẢ" đầu tiên màu xanh dương đậm khi active (bg-[#2563eb]), còn lại màu xám đen (bg-[#131b2e])
             const isAllBrand = (currentBrand === 'TẤT CẢ' || !currentBrand);
             let brandTabsHtml = `
-                <button onclick="switchBrand('TẤT CẢ')" class="px-4 py-2 rounded-xl text-xs md:text-sm font-black transition uppercase tracking-wider shrink-0 ${isAllBrand ? 'bg-[#2563eb] text-white shadow-lg shadow-blue-600/30 border border-blue-500' : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]'}">
+                <button onclick="switchBrand('TẤT CẢ')" class="px-3.5 md:px-4 py-2 rounded-xl text-xs md:text-sm font-black transition uppercase tracking-wider shrink-0 ${isAllBrand ? 'bg-[#2563eb] text-white shadow-lg shadow-blue-600/30 border border-blue-500' : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]'}">
                     TẤT CẢ
                 </button>
             `;
@@ -1321,12 +1369,19 @@
                     ? 'bg-[#2563eb] text-white font-black shadow-lg shadow-blue-600/30 border border-blue-500'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
                 
-                // Loại bỏ chữ ANDROID trên mobile nếu có
-                let displayBrandName = b;
+                // Trên Mobile (< 768px): Thay tên các hãng bằng logo thương hiệu theo yêu cầu
+                const mobileLogo = getBrandMobileLogoHtml(b);
+
+                // Loại bỏ chữ ANDROID trên tên hiển thị desktop nếu có
+                let desktopBrandName = b;
                 if (b.toUpperCase().includes('ANDROID')) {
-                    const cleanB = b.replace(/\bANDROID\b/gi, '').replace(/\s*-\s*-\s*/g, ' - ').replace(/^[\s-]+|[\s-]+$/g, '').trim();
-                    displayBrandName = `<span class="md:hidden">${cleanB}</span><span class="hidden md:inline">${b}</span>`;
+                    desktopBrandName = b.replace(/\bANDROID\b/gi, '').replace(/\s*-\s*-\s*/g, ' - ').replace(/^[\s-]+|[\s-]+$/g, '').trim();
                 }
+
+                const displayBrandContent = `
+                    <span class="md:hidden flex items-center justify-center min-h-[16px]">${mobileLogo}</span>
+                    <span class="hidden md:inline">${desktopBrandName}</span>
+                `;
 
                 return `<button ${dragAttr}
                     ondragstart="handleTabDragStart(event, 'brands', ${realBrandIdx})"
@@ -1335,8 +1390,8 @@
                     ondragleave="handleTabDragLeave(event)"
                     ondrop="handleTabDrop(event, 'brands', ${realBrandIdx})"
                     onclick="switchBrand('${b}')"
-                    class="draggable-tab px-3.5 py-2 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 ${btnClass}"
-                    title="Bấm để chọn, giữ để kéo thay đổi vị trí">${displayBrandName}</button>`;
+                    class="draggable-tab px-3 md:px-3.5 py-2 rounded-xl text-xs md:text-sm font-black transition uppercase shrink-0 flex items-center justify-center gap-1.5 ${btnClass}"
+                    title="${b}">${displayBrandContent}</button>`;
             }).join('');
 
             // Nút [+] thêm hãng mới ở cuối thanh tabs hãng (y chang ảnh mẫu 1 & 3)
