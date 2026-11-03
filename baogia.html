@@ -227,8 +227,14 @@
             <!-- THANH BỘ LỌC CÁC CẤP (TABS HÃNG, LINH KIỆN, KIỂU, TÌM KIẾM) -->
             <div
                 class="bg-[#0b0f19] p-3 md:p-4 rounded-2xl border border-[#151d2f] flex flex-col gap-3 shadow-2xl w-full">
-                <!-- HÀNG 1: TABS HÃNG -->
-                <div class="flex items-center gap-2 overflow-x-auto no-scrollbar w-full" id="brand-tabs"></div>
+                <!-- HÀNG 1: TABS HÃNG + BADGE SỐ LK : SỐ TIỀN -->
+                <div class="flex items-center justify-between gap-2 w-full">
+                    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 min-w-0" id="brand-tabs"></div>
+                    <div id="filter-summary-badge"
+                        class="bg-[#2563eb] text-white px-4 py-2 rounded-xl text-xs md:text-sm font-black whitespace-nowrap shadow-lg shadow-blue-600/30 shrink-0 uppercase tracking-wide cursor-default select-none border border-blue-400">
+                        0 LK : 0
+                    </div>
+                </div>
 
                 <!-- HÀNG 2: TABS LINH KIỆN -->
                 <div class="flex items-center gap-2 overflow-x-auto no-scrollbar w-full" id="categories-filter-wrapper">
@@ -1531,12 +1537,25 @@
             const showKieuTab = (brandUp === 'IPHONE' || brandUp === 'TẤT CẢ' || brandUp === '' || isOutStockTab);
 
             let totalCostSum = 0;
+            let totalQtySum = 0;
             if (!isImportTab) {
                 filtered.forEach(d => {
-                    totalCostSum += (parseMoney(d.cost) * (parseInt(d.qty) || 0));
+                    const q = parseInt(d.qty) || 0;
+                    totalQtySum += q;
+                    totalCostSum += (parseMoney(d.cost) * q);
                 });
             }
             if (totalCostEl) totalCostEl.innerText = isPrivacyMode ? '***' : formatMoney(totalCostSum);
+
+            const filterBadgeEl = document.getElementById('filter-summary-badge');
+            if (filterBadgeEl) {
+                if (isImportTab) {
+                    filterBadgeEl.innerText = `${expandedImportRows.length} ĐƠN`;
+                } else {
+                    const formattedCost = isPrivacyMode ? '***' : formatMoney(totalCostSum);
+                    filterBadgeEl.innerText = `${totalQtySum} LK : ${formattedCost}`;
+                }
+            }
 
             // TIÊU ĐỀ BẢNG DESKTOP (NỀN HỒNG)
             const desktopHeader = document.getElementById('desktop-table-header');
