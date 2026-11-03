@@ -6696,6 +6696,11 @@
       .btn-excel-toggle-custom,
       #btnSalesExcelToggle,
       #salesExcelActionsBox,
+      #salesLiveClock,
+      #salesWeatherWidget,
+      #salesLunarBox,
+      #tab-banhang .sales-actions-row > div:first-child,
+      #tab-banhang .sales-actions-row > div:nth-child(3),
       .sales-actions-row > div:first-child,
       .repair-actions-row > div:first-child {
         display: none !important;
@@ -6725,6 +6730,11 @@
         .btn-excel-toggle-custom,
         #btnSalesExcelToggle,
         #salesExcelActionsBox,
+        #salesLiveClock,
+        #salesWeatherWidget,
+        #salesLunarBox,
+        #tab-banhang .sales-actions-row > div:first-child,
+        #tab-banhang .sales-actions-row > div:nth-child(3),
         .sales-actions-row > div:first-child,
         .repair-actions-row > div:first-child {
           display: none !important;
