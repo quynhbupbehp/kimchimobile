@@ -1306,18 +1306,14 @@
                 return `<i class="fa-brands fa-apple text-base md:text-lg leading-none" title="IPHONE"></i>`;
             }
 
-            // 2. SAMSUNG -> Logo Samsung
+            // 2. SAMSUNG -> Logo Samsung (từ ảnh mẫu người dùng gửi)
             if (b.includes('SAMSUNG')) {
-                return `<svg class="h-3.5 w-auto max-w-[56px] inline-block align-middle fill-current" viewBox="0 0 100 24" xmlns="http://www.w3.org/2000/svg" title="SAMSUNG">
-                    <text x="50" y="17" font-family="'Arial Black', Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="currentColor">SAMSUNG</text>
-                </svg>`;
+                return `<img src="img/tab_logo_samsung.png" alt="SAMSUNG" class="h-4 w-auto max-w-[65px] rounded-sm object-contain inline-block align-middle shadow-xs" title="SAMSUNG" />`;
             }
 
-            // 3. OPPO - REALME -> Logo Oppo
+            // 3. OPPO - REALME -> Logo Oppo (từ ảnh mẫu người dùng gửi)
             if (b.includes('OPPO') || b.includes('REALME')) {
-                return `<svg class="h-3.5 w-auto max-w-[50px] inline-block align-middle fill-current" viewBox="0 0 80 24" xmlns="http://www.w3.org/2000/svg" title="OPPO">
-                    <text x="40" y="17" font-family="'Century Gothic', 'Segoe UI', Arial, sans-serif" font-size="17" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="currentColor">oppo</text>
-                </svg>`;
+                return `<img src="img/tab_logo_oppo.png" alt="OPPO" class="h-4 w-auto max-w-[55px] rounded-sm object-contain inline-block align-middle shadow-xs" title="OPPO - REALME" />`;
             }
 
             // 4. REDMI - POCO / XIAOMI -> Logo Mi
@@ -1325,11 +1321,9 @@
                 return `<span class="inline-flex items-center justify-center bg-[#ff6900] text-white rounded-md w-5 h-5 font-black text-[11px] leading-none shrink-0 shadow-sm" style="font-family: Arial, sans-serif;" title="REDMI - POCO (MI)">mi</span>`;
             }
 
-            // 5. VIVO -> Logo Vivo
+            // 5. VIVO -> Logo Vivo (từ ảnh mẫu người dùng gửi)
             if (b.includes('VIVO')) {
-                return `<svg class="h-3.5 w-auto max-w-[46px] inline-block align-middle fill-current" viewBox="0 0 70 24" xmlns="http://www.w3.org/2000/svg" title="VIVO">
-                    <text x="35" y="17" font-family="'Futura', 'Segoe UI', Arial, sans-serif" font-size="17" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="currentColor">vivo</text>
-                </svg>`;
+                return `<img src="img/tab_logo_vivo.png" alt="VIVO" class="h-4 w-auto max-w-[50px] rounded-sm object-contain inline-block align-middle shadow-xs" title="VIVO" />`;
             }
 
             // 6. VSMART -> Logo Vsmart
