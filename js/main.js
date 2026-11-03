@@ -2144,6 +2144,7 @@
             // Sắp xếp ID lớn nhất / mới nhất lên đầu
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             softwareDatabase = list;
+            localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
             try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
             if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
             if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
@@ -2151,6 +2152,18 @@
               renderSoftwareDebtTable();
             }
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+          } else if (snapshot.empty || list.length === 0) {
+            // Khi Firestore trống hoặc đã xóa hết
+            if (localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true' || softwareDatabase.length === 0) {
+              softwareDatabase = [];
+              try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify([])); } catch(e){}
+              if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+              if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+              if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+                renderSoftwareDebtTable();
+              }
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            }
           }
         }, err => console.error("Lỗi sync software realtime:", err));
       } catch (err) {
@@ -5654,20 +5667,102 @@
     window.exportSoftwareToExcel = exportSoftwareToExcel;
 
     function clearAllSoftwareData() {
-      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Phần Mềm!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
+      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Phần Mềm trên cả máy này và đám mây!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
       if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
+        const oldDocs = [...softwareDatabase];
         softwareDatabase = [];
         localStorage.setItem('KIMCHI_PHANMEM_CLEARED', 'true');
-        saveSoftwareStorage();
+        try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify([])); } catch(e){}
+
+        // Xóa sạch toàn bộ tài liệu Phần Mềm trên Firestore
+        if (typeof db !== 'undefined' && db) {
+          try {
+            db.collection('software').get().then(snapshot => {
+              const batch = db.batch();
+              snapshot.forEach(doc => {
+                batch.delete(doc.ref);
+              });
+              return batch.commit();
+            }).catch(err => {
+              console.error("Lỗi xóa batch Firestore software:", err);
+              // Fallback xóa từng doc
+              oldDocs.forEach(item => {
+                if (item && item.id) {
+                  db.collection('software').doc(String(item.id)).delete().catch(console.error);
+                }
+              });
+            });
+          } catch(e) {
+            console.error("Lỗi clear Firestore:", e);
+          }
+        }
+
         if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+        if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
         alert('Đã xóa sạch toàn bộ dữ liệu Phần Mềm thành công!');
       } else {
         alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
       }
     }
     window.clearAllSoftwareData = clearAllSoftwareData;
+
+    function clearSoftwareMonthData(targetMonth, targetYear) {
+      const now = new Date();
+      const currentM = (typeof targetMonth === 'number') ? targetMonth : (currentSoftwareMonthFilter ? (currentSoftwareMonthFilter.month + 1) : (now.getMonth() + 1));
+      const currentY = targetYear || (currentSoftwareMonthFilter ? currentSoftwareMonthFilter.year : now.getFullYear());
+      const mStr = String(currentM).padStart(2, '0');
+      const yStr = String(currentY);
+
+      let confirmText = prompt(`⚠️ XÁC NHẬN XÓA THÁNG ${mStr}/${yStr}:\nThao tác này sẽ xóa toàn bộ đơn Phần Mềm trong tháng ${mStr}/${yStr}!\n\nNhập "ok" hoặc "yes" để xác nhận:`);
+      if (confirmText === null) return;
+      let clean = confirmText.trim().toLowerCase();
+      if (clean === 'ok' || clean === 'yes' || clean === 'dong y' || clean === 'đồng ý') {
+        const toDelete = [];
+        softwareDatabase = softwareDatabase.filter(item => {
+          let itemParts = (item.dayMonth || '').replace(/\//g, '-').split('-');
+          let itemMonth = itemParts.length === 2 ? itemParts[1] : '';
+          let itemYear = String(item.year || yStr);
+          if (itemMonth === mStr && itemYear === yStr) {
+            toDelete.push(item);
+            return false;
+          }
+          return true;
+        });
+
+        saveSoftwareStorage();
+
+        // Xóa các doc thuộc tháng này trên Firestore
+        if (typeof db !== 'undefined' && db && toDelete.length > 0) {
+          try {
+            const batch = db.batch();
+            toDelete.forEach(docItem => {
+              if (docItem && docItem.id) {
+                batch.delete(db.collection('software').doc(String(docItem.id)));
+              }
+            });
+            batch.commit().catch(err => {
+              console.error("Lỗi batch delete tháng:", err);
+              toDelete.forEach(d => {
+                if (d && d.id) db.collection('software').doc(String(d.id)).delete().catch(console.error);
+              });
+            });
+          } catch(e) {
+            console.error(e);
+          }
+        }
+
+        if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+        if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+        alert(`Đã xóa thành công ${toDelete.length} đơn Phần Mềm của tháng ${mStr}/${yStr}!`);
+      } else {
+        alert("Đã hủy thao tác xóa tháng.");
+      }
+    }
+    window.clearSoftwareMonthData = clearSoftwareMonthData;
 
     function handleImportSoftwareExcelFile(event) {
       const file = event.target.files && event.target.files[0];
@@ -5739,6 +5834,9 @@
           let hasNewCustomer = false;
           let hasNewDevice = false;
 
+          // Helper chuẩn hóa so sánh không phân biệt hoa thường, dấu tiếng Việt, khoảng trắng thừa
+          const normKey = (str) => String(str || '').toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+
           for (let i = 1; i < rows.length; i++) {
             let row = rows[i];
             if (!row || row.length === 0 || row.every(c => String(c).trim() === '')) continue;
@@ -5762,8 +5860,8 @@
 
             // Tự động lưu Khách hàng và Tên máy vào danh sách popup tạo đơn mới (chưa có thì lưu, có rồi bỏ qua)
             if (custFormatted) {
-              let custNorm = custFormatted.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-              let existsCust = currentCustomers.some(c => c.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '') === custNorm);
+              let custNorm = normKey(custFormatted);
+              let existsCust = currentCustomers.some(c => normKey(c) === custNorm);
               if (!existsCust) {
                 currentCustomers.push(custFormatted);
                 hasNewCustomer = true;
@@ -5771,8 +5869,8 @@
             }
 
             if (devFormatted) {
-              let devNorm = devFormatted.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-              let existsDev = currentDevices.some(d => d.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '') === devNorm);
+              let devNorm = normKey(devFormatted);
+              let existsDev = currentDevices.some(d => normKey(d) === devNorm);
               if (!existsDev) {
                 currentDevices.push(devFormatted);
                 hasNewDevice = true;
@@ -5814,9 +5912,19 @@
               }
             }
 
+            // Chuẩn hóa dayMonthPart dạng 2 chữ số (DD-MM)
+            let dmParts = dayMonthPart.replace(/\//g, '-').split('-');
+            if (dmParts.length === 2) {
+              dayMonthPart = `${dmParts[0].padStart(2, '0')}-${dmParts[1].padStart(2, '0')}`;
+            }
+
             // Xử lý thanh toán
             let statusClean = rawStatus.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             let paymentStatus = (statusClean.includes('no') || statusClean.includes('dai') || statusClean.includes('chua')) ? 'NỢ DAI' : 'ĐÃ TRẢ';
+
+            // Khóa nhận diện chống trùng lặp đa tầng
+            let custNorm = normKey(custFormatted);
+            let devNorm = normKey(devFormatted);
 
             // 1. Kiểm tra trùng lặp trong database hiện có
             let existing = null;
@@ -5824,13 +5932,23 @@
               existing = softwareDatabase.find(s => String(s.id) === String(rowId));
             }
             if (!existing) {
-              existing = softwareDatabase.find(s => 
-                s.customer.toLowerCase().trim() === customer.toLowerCase() &&
-                s.device.toLowerCase().trim() === device.toLowerCase() &&
-                s.dayMonth === dayMonthPart &&
-                s.year === yearPart &&
-                (s.time === timePart || s.price === priceStr)
-              );
+              // Tìm khớp chính xác hoặc khớp tương đương (khách, máy, ngày tháng, năm, giá)
+              existing = softwareDatabase.find(s => {
+                let sCustNorm = normKey(s.customer);
+                let sDevNorm = normKey(s.device);
+                let sDayMonth = (s.dayMonth || '').replace(/\//g, '-');
+                let sYear = String(s.year || currentYear);
+                let sPriceNum = parsePriceNum(s.price);
+
+                let sameCust = (sCustNorm === custNorm);
+                let sameDev = (sDevNorm === devNorm);
+                let sameDate = (sDayMonth === dayMonthPart && sYear === yearPart);
+                let samePrice = (sPriceNum === priceNum);
+                let sameTime = (s.time === timePart);
+
+                // Khớp nếu cùng mã / cùng khách + cùng máy + cùng ngày + cùng giá (hoặc cùng giờ)
+                return (sameCust && sameDev && sameDate && (samePrice || sameTime));
+              });
             }
 
             if (existing) {
@@ -5841,19 +5959,20 @@
               existing.profit = profitStr;
               existing.dayMonth = dayMonthPart;
               existing.year = yearPart;
-              existing.time = timePart;
+              if (timePart && timePart !== "10:00") existing.time = timePart;
               existing.paymentStatus = paymentStatus;
               updatedCount++;
             } else {
               // 2. Kiểm tra tránh trùng lặp trong chính file Excel (nếu file Excel có các dòng trùng nhau)
-              let alreadyInNew = newRecords.find(nr => 
-                (rowId && String(nr.id) === String(rowId)) ||
-                (nr.customer.toLowerCase() === custFormatted.toLowerCase() &&
-                 nr.device.toLowerCase() === devFormatted.toLowerCase() &&
-                 nr.dayMonth === dayMonthPart &&
-                 nr.year === yearPart &&
-                 nr.time === timePart)
-              );
+              let alreadyInNew = newRecords.find(nr => {
+                if (rowId && String(nr.id) === String(rowId)) return true;
+                let nrCust = normKey(nr.customer);
+                let nrDev = normKey(nr.device);
+                let nrDm = (nr.dayMonth || '').replace(/\//g, '-');
+                let nrY = String(nr.year || currentYear);
+                let nrPriceNum = parsePriceNum(nr.price);
+                return (nrCust === custNorm && nrDev === devNorm && nrDm === dayMonthPart && nrY === yearPart && (nrPriceNum === priceNum || nr.time === timePart));
+              });
 
               if (alreadyInNew) {
                 alreadyInNew.price = priceStr;
@@ -5889,10 +6008,28 @@
 
           if (newRecords.length > 0 || updatedCount > 0) {
             if (newRecords.length > 0) softwareDatabase.push(...newRecords);
+
+            // Tự động lọc trùng triệt để toàn bộ database một lần nữa
+            const seenKeys = new Set();
+            const uniqueDb = [];
+            softwareDatabase.forEach(item => {
+              let c = normKey(item.customer);
+              let d = normKey(item.device);
+              let dm = (item.dayMonth || '').replace(/\//g, '-');
+              let y = String(item.year || currentYear);
+              let p = parsePriceNum(item.price);
+              let dedupeKey = `${c}_${d}_${dm}_${y}_${p}`;
+              if (!seenKeys.has(dedupeKey)) {
+                seenKeys.add(dedupeKey);
+                uniqueDb.push(item);
+              }
+            });
+            softwareDatabase = uniqueDb;
+
             saveSoftwareStorage();
             if (typeof setSoftwareMode === 'function') setSoftwareMode('all');
             else if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!\n(Đã tự động lọc trùng lặp & đồng bộ danh sách Khách hàng, Tên máy)`);
+            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!\n(Đã tự động loại bỏ 100% trùng lặp & đồng bộ khách hàng, tên máy)`);
           } else {
             alert("Không tìm thấy dữ liệu Phần Mềm hợp lệ trong file!");
           }
