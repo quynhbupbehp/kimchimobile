@@ -472,6 +472,24 @@
             </select>
           </div>
 
+          <!-- ĐỒNG HỒ SỐ CHẠY THỜI GIAN THỰC (GIỜ : PHÚT : GIÂY) NỀN ĐEN VIỀN BO -->
+          <div id="salesLiveClock"
+            style="height: 36px; padding: 0 16px; box-sizing: border-box; background: #000000; border: 1.5px solid #1e293b; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-family: 'Consolas', 'Courier New', monospace; font-size: 1.35rem; font-weight: 900; color: #22c55e; letter-spacing: 2px; text-shadow: 0 0 10px rgba(34, 197, 94, 0.4); flex-shrink: 0; user-select: none;">
+            10:12:00
+          </div>
+
+          <!-- DỰ BÁO THỜI TIẾT & VỊ TRÍ: X. Nam Sách - TP. Hải Phòng -->
+          <div id="salesWeatherWidget"
+            style="height: 36px; padding: 2px 10px; box-sizing: border-box; background: #000000; border: 1.5px solid #1e293b; border-radius: 8px; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; flex-shrink: 0; user-select: none; line-height: 1.15; cursor: default;"
+            title="Thời tiết & Nhiệt độ hiện tại tại X. Nam Sách - TP. Hải Phòng">
+            <div id="salesWeatherCondition" style="font-size: 0.76rem; font-weight: 800; color: #facc15; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+              <span>🌧️ 28°C, Mưa nhỏ</span>
+            </div>
+            <div id="salesWeatherLocation" style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; white-space: nowrap;">
+              X.Nam Sách - TP.Hải Phòng
+            </div>
+          </div>
+
           <!-- Cụm TÌM KIẾM TRONG KHUNG -->
           <div
             style="display: flex; align-items: center; gap: 8px; height: 36px; box-sizing: border-box; background: #0c121e; border: 1.5px solid #1e293b; border-radius: 8px; padding: 0 12px; flex-shrink: 0; flex-wrap: nowrap;">
@@ -598,6 +616,27 @@
                     <path d="M9 18l6-6-6-6" />
                   </svg>
                 </button>
+              </div>
+
+              <!-- CỤM HIỂN THỊ ÂM LỊCH & THỨ (Y CHANG ẢNH MẪU) -->
+              <div id="salesLunarBox" style="display: inline-flex; align-items: center; gap: 6px; margin-left: 6px;">
+                <!-- NÚT ÂM LỊCH NỀN ĐEN VIỀN TRẮNG -->
+                <button type="button" id="btnSalesLunarLabel"
+                  style="height: 32px; padding: 0 12px; background: #000000; border: 1.5px solid #334155; border-radius: 6px; color: #ffffff; font-weight: 900; font-size: 0.88rem; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; cursor: default; user-select: none;">
+                  Âm Lịch
+                </button>
+                <!-- KHUNG NGÀY ÂM LỊCH KÈM ICON LỊCH -->
+                <div
+                  style="height: 32px; padding: 0 8px 0 12px; background: #000000; border: 1.5px solid #334155; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px; box-sizing: border-box; user-select: none;">
+                  <span id="salesLunarDateDisplay" style="color: #ffffff; font-weight: 900; font-size: 0.92rem; letter-spacing: 0.5px;">25/09/2026</span>
+                  <span style="color: #10b981; font-size: 0.95rem; display: inline-flex; align-items: center;">📅</span>
+                </div>
+                <!-- Ô THỨ TRONG TUẦN (VÍ DỤ: T3) NỀN ĐEN CHỮ TRẮNG -->
+                <div id="salesDayOfWeekDisplay"
+                  style="height: 32px; min-width: 34px; padding: 0 8px; background: #000000; border: 1.5px solid #334155; border-radius: 6px; color: #ffffff; font-weight: 900; font-size: 0.92rem; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; user-select: none;"
+                  title="Thứ trong tuần">
+                  T3
+                </div>
               </div>
             </div>
           </div>

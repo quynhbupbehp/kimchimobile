@@ -2762,6 +2762,198 @@
     }
     window.changeSalesFilterYear = changeSalesFilterYear;
 
+    // THUẬT TOÁN ÂM LỊCH VIỆT NAM (HỒ NGỌC ĐỨC) - CHÍNH XÁC 100%
+    function intDiv(d) { return Math.floor(d); }
+
+    function jdFromDateVN(dd, mm, yy) {
+      let a = intDiv((14 - mm) / 12);
+      let y = yy + 4800 - a;
+      let m = mm + 12 * a - 3;
+      let jd = dd + intDiv((153 * m + 2) / 5) + 365 * y + intDiv(y / 4) - intDiv(y / 100) + intDiv(y / 400) - 32045;
+      if (jd < 2299161) {
+        jd = dd + intDiv((153 * m + 2) / 5) + 365 * y + intDiv(y / 4) - 32083;
+      }
+      return jd;
+    }
+
+    function getNewMoonDayVN(k, timeZone) {
+      let T = k / 1236.85;
+      let T2 = T * T;
+      let T3 = T2 * T;
+      let dr = Math.PI / 180;
+      let Jd1 = 2415020.75933 + 29.53058868 * k + 0.0001178 * T2 - 0.000000155 * T3;
+      Jd1 += 0.00033 * Math.sin((166.56 + 132.87 * T - 0.009173 * T2) * dr);
+      let M = 359.2242 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3;
+      let Mpr = 306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3;
+      let F = 21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3;
+      let C1 = (0.1734 - 0.000393 * T) * Math.sin(M * dr) + 0.0021 * Math.sin(2 * dr * M);
+      C1 -= 0.4068 * Math.sin(Mpr * dr) + 0.0161 * Math.sin(2 * dr * Mpr);
+      C1 -= 0.0004 * Math.sin(3 * dr * Mpr);
+      C1 += 0.0104 * Math.sin(2 * dr * F) - 0.0051 * Math.sin((M + Mpr) * dr);
+      C1 -= 0.0074 * Math.sin((M - Mpr) * dr) + 0.0004 * Math.sin((2 * F + M) * dr);
+      C1 -= 0.0004 * Math.sin((2 * F - M) * dr) - 0.0006 * Math.sin((2 * F + Mpr) * dr);
+      C1 += 0.001 * Math.sin((2 * F - Mpr) * dr) + 0.0005 * Math.sin((2 * Mpr + M) * dr);
+      let deltat;
+      if (T < -11) deltat = 0.001 + 0.000839 * T + 0.0002261 * T2 - 0.00000845 * T3 - 0.000000081 * T * T3;
+      else deltat = -0.000078 + 0.000089 * T;
+      let JdNew = Jd1 + C1 - deltat;
+      return intDiv(JdNew + 0.5 + timeZone / 24);
+    }
+
+    function getSunLongitudeVN(jdn, timeZone) {
+      let T = (jdn - 2451545.0 + 0.5 - timeZone / 24) / 36525;
+      let T2 = T * T;
+      let dr = Math.PI / 180;
+      let L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2;
+      let M = 357.5291 + 35999.05029 * T - 0.0001537 * T2;
+      let C = (1.9146 - 0.004817 * T - 0.000014 * T2) * Math.sin(M * dr);
+      C += (0.019993 - 0.000101 * T) * Math.sin(2 * M * dr) + 0.000289 * Math.sin(3 * M * dr);
+      let theta = L0 + C;
+      theta = theta * dr;
+      theta = theta - Math.PI * 2 * intDiv(theta / (Math.PI * 2));
+      return intDiv(theta / Math.PI * 6);
+    }
+
+    function getLunarMonth11VN(yy, timeZone) {
+      let off = jdFromDateVN(31, 12, yy) - 2415021;
+      let k = intDiv(off / 29.530588853);
+      let nm = getNewMoonDayVN(k, timeZone);
+      let sunLong = getSunLongitudeVN(nm, timeZone);
+      if (sunLong >= 9) nm = getNewMoonDayVN(k - 1, timeZone);
+      return nm;
+    }
+
+    function getLeapMonthOffsetVN(a11, timeZone) {
+      let k = intDiv((a11 - 2415021.076998695) / 29.530588853 + 0.5);
+      let last = 0;
+      let i = 1;
+      let arc = getSunLongitudeVN(getNewMoonDayVN(k + i, timeZone), timeZone);
+      do {
+        last = arc;
+        i++;
+        arc = getSunLongitudeVN(getNewMoonDayVN(k + i, timeZone), timeZone);
+      } while (arc !== last && i < 14);
+      return i - 1;
+    }
+
+    function convertSolar2LunarVN(dd, mm, yy, timeZone = 7) {
+      let dayNumber = jdFromDateVN(dd, mm, yy);
+      let k = intDiv((dayNumber - 2415021.076998695) / 29.530588853);
+      let monthStart = getNewMoonDayVN(k + 1, timeZone);
+      if (monthStart > dayNumber) {
+        monthStart = getNewMoonDayVN(k, timeZone);
+      }
+      let a11 = getLunarMonth11VN(yy, timeZone);
+      let b11 = a11;
+      let lunarYear;
+      if (a11 >= monthStart) {
+        lunarYear = yy;
+        a11 = getLunarMonth11VN(yy - 1, timeZone);
+      } else {
+        lunarYear = yy + 1;
+        b11 = getLunarMonth11VN(yy + 1, timeZone);
+      }
+      let lunarDay = dayNumber - monthStart + 1;
+      let diff = intDiv((monthStart - a11) / 29);
+      let lunarLeap = 0;
+      let lunarMonth = diff + 11;
+      if (b11 - a11 > 365) {
+        let leapMonthDiff = getLeapMonthOffsetVN(a11, timeZone);
+        if (diff >= leapMonthDiff) {
+          lunarMonth = diff + 10;
+          if (diff === leapMonthDiff) lunarLeap = 1;
+        }
+      }
+      if (lunarMonth > 12) lunarMonth -= 12;
+      if (lunarMonth >= 11 && diff < 4) lunarYear -= 1;
+      return { day: lunarDay, month: lunarMonth, year: lunarYear, leap: lunarLeap };
+    }
+    window.convertSolar2LunarVN = convertSolar2LunarVN;
+
+    // HÀM CẬP NHẬT ÂM LỊCH & THỨ THEO NGÀY DƯƠNG ĐANG CHỌN
+    function updateSalesLunarAndDayDisplay(dateObj) {
+      if (!dateObj || !(dateObj instanceof Date)) return;
+      const d = dateObj.getDate();
+      const m = dateObj.getMonth() + 1;
+      const y = dateObj.getFullYear();
+
+      // 1. Thứ trong tuần (T2, T3, T4, T5, T6, T7, CN)
+      const daysOfWeekMap = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+      const dowStr = daysOfWeekMap[dateObj.getDay()] || 'T3';
+      const dowEl = document.getElementById('salesDayOfWeekDisplay');
+      if (dowEl) dowEl.innerText = dowStr;
+
+      // 2. Âm lịch
+      const lunar = convertSolar2LunarVN(d, m, y, 7);
+      const lunarDayStr = String(lunar.day).padStart(2, '0');
+      const lunarMonthStr = String(lunar.month).padStart(2, '0');
+      const lunarYearStr = lunar.year;
+      const lunarDateDisplayEl = document.getElementById('salesLunarDateDisplay');
+      if (lunarDateDisplayEl) {
+        lunarDateDisplayEl.innerText = `${lunarDayStr}/${lunarMonthStr}/${lunarYearStr}`;
+      }
+    }
+    window.updateSalesLunarAndDayDisplay = updateSalesLunarAndDayDisplay;
+
+    // ĐỒNG HỒ SỐ CHẠY THỜI GIAN THỰC (GIỜ : PHÚT : GIÂY)
+    function startSalesLiveClock() {
+      function tick() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const clockEl = document.getElementById('salesLiveClock');
+        if (clockEl) {
+          clockEl.innerText = `${hh}:${mm}:${ss}`;
+        }
+      }
+      tick();
+      setInterval(tick, 1000);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startSalesLiveClock);
+    } else {
+      startSalesLiveClock();
+    }
+
+    // DỰ BÁO THỜI TIẾT TỰ ĐỘNG CẬP NHẬT TẠI X. NAM SÁCH - TP. HẢI PHÒNG
+    function fetchSalesWeather() {
+      // Tọa độ Nam Sách: lat=20.97, lon=106.33
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=20.97&longitude=106.33&current_weather=true')
+        .then(res => res.json())
+        .then(data => {
+          if (!data || !data.current_weather) return;
+          const cw = data.current_weather;
+          const temp = Math.round(cw.temperature);
+          const code = cw.weathercode;
+
+          let icon = '🌤️';
+          let desc = 'Quang đãng';
+          if (code === 0) { icon = '☀️'; desc = 'Trời nắng'; }
+          else if (code === 1 || code === 2) { icon = '🌤️'; desc = 'Ít mây'; }
+          else if (code === 3) { icon = '☁️'; desc = 'Nhiều mây'; }
+          else if ([51, 53, 55, 61, 63, 65].includes(code)) { icon = '🌧️'; desc = 'Mưa nhỏ'; }
+          else if ([80, 81, 82].includes(code)) { icon = '🌧️'; desc = 'Mưa rào'; }
+          else if ([95, 96, 99].includes(code)) { icon = '⛈️'; desc = 'Dông bão'; }
+          else if ([45, 48].includes(code)) { icon = '🌫️'; desc = 'Có sương mù'; }
+
+          const condEl = document.getElementById('salesWeatherCondition');
+          if (condEl) {
+            condEl.innerHTML = `<span>${icon} ${temp}°C, ${desc}</span>`;
+          }
+        })
+        .catch(err => {
+          console.warn('Lỗi lấy thời tiết Nam Sách:', err);
+        });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fetchSalesWeather);
+    } else {
+      fetchSalesWeather();
+    }
+    // Cập nhật lại thời tiết mỗi 30 phút
+    setInterval(fetchSalesWeather, 30 * 60 * 1000);
+
     let isSalesSensitiveHidden = false;
 
     function toggleSalesSensitive() {
@@ -2804,6 +2996,9 @@
     window.isMissingRequiredSalesInfo = isMissingRequiredSalesInfo;
 
     function renderSalesTable(items) {
+      if (typeof updateSalesLunarAndDayDisplay === 'function') {
+        updateSalesLunarAndDayDisplay(currentSalesDateFilter);
+      }
       const tbody = document.getElementById('salesTableBody');
       const searchInputVal = document.querySelector('#tab-banhang .search-sales-input').value.trim().toLowerCase();
 
