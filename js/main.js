@@ -10931,13 +10931,13 @@
         }
         brandNamePart = formatBrandDeviceName(brandNamePart);
         let cleanStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
-        let dotHtml = getColorDotHtml(p.color, 28);
-        let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.16rem;">${cleanStorage}</span>` : '';
-        let imeiPart = p.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.27rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${p.imei}</span>` : '';
+        let dotHtml = getColorDotHtml(p.color, 25);
+        let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.04rem;">${cleanStorage}</span>` : '';
+        let imeiPart = p.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.14rem; padding: 2px 6px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${p.imei}</span>` : '';
 
         let nameHtml = `
-          <div style="display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; flex-wrap: nowrap; white-space: nowrap;">
-            <span style="font-size: 1.33rem; font-weight: 800; white-space: nowrap;">${brandNamePart}</span>
+          <div style="display: inline-flex; align-items: center; justify-content: flex-start; gap: 7px; flex-wrap: nowrap; white-space: nowrap;">
+            <span style="font-size: 1.20rem; font-weight: 800; white-space: nowrap;">${brandNamePart}</span>
             ${dotHtml}
             ${storagePart}
             ${imeiPart}
@@ -10967,7 +10967,7 @@
               ${nameHtml}
             </td>
             <td style="text-align: center; vertical-align: middle;">
-              <span style="display: inline-block; background: #ec4899; color: #ffffff; font-weight: 900; font-size: 1.425rem; padding: 4px 12px; border-radius: 8px; border: 1.5px solid #f472b6; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4); line-height: 1.2;">
+              <span style="display: inline-block; background: #ec4899; color: #ffffff; font-weight: 900; font-size: 1.28rem; padding: 3px 11px; border-radius: 7px; border: 1.5px solid #f472b6; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4); line-height: 1.2;">
                 ${displayPriceOut}
               </span>
             </td>
