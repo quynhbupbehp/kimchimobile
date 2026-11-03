@@ -9936,31 +9936,35 @@
     /* === GIAO DIỆN WEB/DESKTOP: TĂNG CỠ CHỮ BẢNG THEO DÕI DOANH THU LÊN 50% === */
     @media (min-width: 768px) {
       #mobileRevenueStatsModal > div {
-        max-width: 720px !important;
+        max-width: 820px !important;
       }
       #mobileRevenueStatsModal h2 {
-        font-size: 1.72rem !important; /* Tăng 50% từ 1.15rem */
+        font-size: 1.85rem !important; /* Tiêu đề THEO DÕI DOANH THU */
       }
-      #mobileRevenueStatsModal table th {
-        font-size: 1.15rem !important; /* Tăng 50% từ 0.76rem */
-        padding: 12px 8px !important;
+      #mobileRevenueStatsModal table th,
+      #mobileRevenueStatsModal table th * {
+        font-size: 1.72rem !important; /* Tiêu đề cột tăng 50%+ rõ nét */
+        padding: 16px 12px !important;
+        letter-spacing: 0.5px !important;
       }
-      #mobileRevenueStatsModal table td {
-        font-size: 1.15rem !important; /* Tăng 50% từ 0.76rem */
-        padding: 12px 8px !important;
+      #mobileRevenueStatsModal table td,
+      #mobileRevenueStatsModal table td * {
+        font-size: 1.72rem !important; /* Hàng dữ liệu tăng 50%+ rõ nét */
+        padding: 16px 12px !important;
+        font-weight: 900 !important;
       }
       #mobileRevenueStatsModal #mStatsTargetStatus,
       #mobileRevenueStatsModal div:has(> #mStatsTargetStatus) {
-        font-size: 1.42rem !important; /* Tăng 50% từ 0.95rem */
+        font-size: 1.55rem !important;
       }
       #mobileRevenueStatsModal #mStatsTotalProfit {
-        font-size: 1.75rem !important; /* Tăng 50% từ 1.18rem */
+        font-size: 1.95rem !important;
       }
       #mobileRevenueStatsModal div:has(> #mStatsTotalProfit) {
-        font-size: 1.55rem !important; /* Tăng 50% từ 1.05rem */
+        font-size: 1.7rem !important;
       }
       #mobileRevenueStatsModal button[onclick*="closeMobileRevenueStatsModal"] {
-        font-size: 1.5rem !important; /* Tăng 50% từ 1rem */
+        font-size: 1.5rem !important;
         padding: 12px 64px !important;
       }
     }
