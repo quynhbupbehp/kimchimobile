@@ -5797,31 +5797,45 @@
           }
 
           let cleanHeader = rows[0].map(h => String(h || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim());
+          // Nhận diện cột theo thứ tự ưu tiên chính xác nhất
           let colIdxId = -1;
           let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxProfit = -1;
           let colIdxTime = -1, colIdxDate = -1, colIdxYear = -1, colIdxStatus = -1;
 
           cleanHeader.forEach((col, idx) => {
-            if (col.includes('ma don') || col === 'id' || col.includes('stt') || col.includes('ma')) colIdxId = idx;
-            else if (col.includes('khach') || col.includes('customer') || col.includes('tho')) colIdxCustomer = idx;
-            else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung') || (col.includes('dich vu') && !col.includes('phi'))) colIdxDevice = idx;
-            else if (col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price') || col.includes('thu') || (col.includes('gia') && !col.includes('nhap') && !col.includes('von'))) colIdxPrice = idx;
-            else if (col.includes('phi dich vu') || col.includes('gia nhap') || col.includes('von') || col.includes('cost') || col.includes('chi phi') || col.includes('phi')) colIdxCost = idx;
-            else if (col.includes('lai') || col.includes('loi nhuan') || col.includes('profit')) colIdxProfit = idx;
-            else if (col.includes('gio') || col.includes('time') || col.includes('thoi gian')) colIdxTime = idx;
-            else if (col.includes('ngay thang') || col.includes('ngay') || col.includes('date')) colIdxDate = idx;
-            else if (col.includes('nam') || col.includes('year')) colIdxYear = idx;
-            else if (col.includes('trang thai') || col.includes('thanh toan') || col.includes('status') || col.includes('tt')) colIdxStatus = idx;
+            if (col.includes('ma don') || col === 'id' || col.includes('stt') || col.includes('ma')) {
+              if (colIdxId === -1) colIdxId = idx;
+            } else if (col.includes('khach') || col.includes('customer') || col.includes('tho')) {
+              if (colIdxCustomer === -1) colIdxCustomer = idx;
+            } else if (col.includes('ten may') || col.includes('thiet bi') || col.includes('device') || col.includes('model') || col.includes('noi dung') || col.includes('phan mem')) {
+              if (colIdxDevice === -1) colIdxDevice = idx;
+            } else if (col.includes('bao gia') || col.includes('gia ban') || col.includes('gia thu') || col.includes('thu khach') || col.includes('price')) {
+              if (colIdxPrice === -1) colIdxPrice = idx;
+            } else if (col.includes('phi dich vu') || col.includes('gia nhap') || col.includes('von') || col.includes('cost') || col.includes('chi phi') || col.includes('phi')) {
+              if (colIdxCost === -1) colIdxCost = idx;
+            } else if (col.includes('lai') || col.includes('loi nhuan') || col.includes('profit')) {
+              if (colIdxProfit === -1) colIdxProfit = idx;
+            } else if (col.includes('gio') || col.includes('time') || col.includes('thoi gian') || col.includes('ngay thang') || col.includes('ngay') || col.includes('date')) {
+              if (colIdxTime === -1) colIdxTime = idx;
+            } else if (col.includes('nam') || col.includes('year')) {
+              if (colIdxYear === -1) colIdxYear = idx;
+            } else if (col.includes('trang thai') || col.includes('thanh toan') || col.includes('status') || col.includes('tt')) {
+              if (colIdxStatus === -1) colIdxStatus = idx;
+            }
           });
 
-          // Nếu có cột ngày/giờ chung
-          if (colIdxDate === -1 && colIdxTime !== -1) {
-            colIdxDate = colIdxTime;
+          // Nếu có cột giá bán chưa bắt được mà có từ 'gia' hoặc 'tien'
+          if (colIdxPrice === -1) {
+            cleanHeader.forEach((col, idx) => {
+              if (idx !== colIdxCost && idx !== colIdxProfit && (col.includes('gia') || col.includes('tien') || col.includes('thu'))) {
+                colIdxPrice = idx;
+              }
+            });
           }
 
           // Fallback vị trí nếu không tìm thấy header rõ ràng
           if (colIdxCustomer === -1 && colIdxDevice === -1) {
-            colIdxCustomer = 0; colIdxDevice = 1; colIdxPrice = 2; colIdxCost = 3; colIdxProfit = 4; colIdxDate = 5; colIdxStatus = 6;
+            colIdxCustomer = 0; colIdxDevice = 1; colIdxPrice = 2; colIdxCost = 3; colIdxProfit = 4; colIdxTime = 5; colIdxStatus = 6;
           }
 
           let newRecords = [];
@@ -5842,8 +5856,8 @@
             if (!row || row.length === 0 || row.every(c => String(c).trim() === '')) continue;
 
             let rowId = colIdxId !== -1 && row[colIdxId] !== undefined ? String(row[colIdxId]).trim() : '';
-            let customer = colIdxCustomer !== -1 && row[colIdxCustomer] ? String(row[colIdxCustomer]).trim() : 'Khách lẻ';
-            let device = colIdxDevice !== -1 && row[colIdxDevice] ? String(row[colIdxDevice]).trim() : '';
+            let rawCustomer = colIdxCustomer !== -1 && row[colIdxCustomer] !== undefined ? String(row[colIdxCustomer]).trim() : '';
+            let rawDevice = colIdxDevice !== -1 && row[colIdxDevice] !== undefined ? String(row[colIdxDevice]).trim() : '';
             let rawPrice = colIdxPrice !== -1 && row[colIdxPrice] !== undefined ? String(row[colIdxPrice]).trim() : '0';
             let rawCost = colIdxCost !== -1 && row[colIdxCost] !== undefined ? String(row[colIdxCost]).trim() : '0';
             let rawProfit = colIdxProfit !== -1 && row[colIdxProfit] !== undefined ? String(row[colIdxProfit]).trim() : '';
@@ -5852,11 +5866,16 @@
             let rawYear = colIdxYear !== -1 && row[colIdxYear] !== undefined ? String(row[colIdxYear]).trim() : '';
             let rawStatus = colIdxStatus !== -1 && row[colIdxStatus] !== undefined ? String(row[colIdxStatus]).trim() : '';
 
-            if (!device && !customer) continue;
-            if (!device) device = 'Cài phần mềm';
+            // Bỏ qua dòng trống hoàn toàn
+            if (!rawCustomer && !rawDevice && !rawPrice && !rawTime) continue;
+
+            let customer = rawCustomer || 'Khách lẻ';
+            // GIỮ NGUYÊN TÊN MÁY CHÍNH XÁC DO NGƯỜI DÙNG GHI (Kể cả 2-3 con máy ghép nhau như "A77 + Y11", "X3 + A31", "A5S (2 Bé)...")
+            let device = rawDevice ? rawDevice : (customer !== 'Khách lẻ' ? 'Cài phần mềm' : 'Cài phần mềm');
 
             let custFormatted = toTitleCase(customer);
-            let devFormatted = toTitleCase(device);
+            // Giữ nguyên các ký tự đặc biệt, dấu cộng (+), ngoặc đơn của tên máy
+            let devFormatted = device.trim();
 
             // Tự động lưu Khách hàng và Tên máy vào danh sách popup tạo đơn mới (chưa có thì lưu, có rồi bỏ qua)
             if (custFormatted) {
@@ -5868,13 +5887,17 @@
               }
             }
 
-            if (devFormatted) {
-              let devNorm = normKey(devFormatted);
-              let existsDev = currentDevices.some(d => normKey(d) === devNorm);
-              if (!existsDev) {
-                currentDevices.push(devFormatted);
-                hasNewDevice = true;
-              }
+            if (devFormatted && devFormatted !== 'Cài phần mềm') {
+              // Nếu khách sửa nhiều máy cùng lúc (ví dụ "A77 + Y11"), lưu từng máy riêng vào danh sách gợi ý
+              let subDevices = devFormatted.split('+').map(d => d.trim()).filter(Boolean);
+              subDevices.forEach(subDev => {
+                let devNorm = normKey(subDev);
+                let existsDev = currentDevices.some(d => normKey(d) === devNorm);
+                if (!existsDev && devNorm) {
+                  currentDevices.push(subDev);
+                  hasNewDevice = true;
+                }
+              });
             }
 
             let priceNum = parsePriceNum(rawPrice);
@@ -5890,25 +5913,33 @@
             let dayMonthPart = "01-01";
             let yearPart = rawYear || currentYear;
 
-            // Kiểm tra nếu rawTime có dạng HH:mm
-            let rawTimeStr = String(rawTime || '').trim();
-            let mTimeOnly = rawTimeStr.match(/^(\d{1,2}):(\d{2})$/);
-            if (mTimeOnly) {
-              timePart = `${mTimeOnly[1].padStart(2, '0')}:${mTimeOnly[2].padStart(2, '0')}`;
-            }
+            let rawDateTimeStr = String(rawDate || rawTime || '').trim();
 
-            // Kiểm tra rawDate dạng DD-MM hoặc DD/MM hoặc DD/MM/YYYY
-            let rawDateStr = String(rawDate || '').trim();
-            let mDayMonthOnly = rawDateStr.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
-            if (mDayMonthOnly) {
-              dayMonthPart = `${mDayMonthOnly[1].padStart(2, '0')}-${mDayMonthOnly[2].padStart(2, '0')}`;
+            // Nhận diện dạng đặc biệt Excel Sửa Chữa/Phần Mềm: "DD-MMYYYYHH:mm" (ví dụ: "03-11202614:18")
+            let mCondensed = rawDateTimeStr.match(/^(\d{1,2})[\/\-](\d{1,2})(\d{4})(\d{1,2}):(\d{2})$/);
+            if (mCondensed) {
+              dayMonthPart = `${mCondensed[1].padStart(2, '0')}-${mCondensed[2].padStart(2, '0')}`;
+              yearPart = mCondensed[3];
+              timePart = `${mCondensed[4].padStart(2, '0')}:${mCondensed[5].padStart(2, '0')}`;
             } else {
-              let dtFormatted = formatImportDateTime(rawDateStr || rawTimeStr); // "HH:mm - DD/MM/YYYY"
-              let mDt = dtFormatted.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-              if (mDt) {
-                if (!mTimeOnly) timePart = `${mDt[1].padStart(2, '0')}:${mDt[2].padStart(2, '0')}`;
-                dayMonthPart = `${mDt[3].padStart(2, '0')}-${mDt[4].padStart(2, '0')}`;
-                if (!rawYear) yearPart = mDt[5];
+              // Kiểm tra nếu rawTime có dạng HH:mm
+              let mTimeOnly = rawDateTimeStr.match(/^(\d{1,2}):(\d{2})$/);
+              if (mTimeOnly) {
+                timePart = `${mTimeOnly[1].padStart(2, '0')}:${mTimeOnly[2].padStart(2, '0')}`;
+              }
+
+              // Kiểm tra dạng DD-MM hoặc DD/MM
+              let mDayMonthOnly = rawDateTimeStr.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
+              if (mDayMonthOnly) {
+                dayMonthPart = `${mDayMonthOnly[1].padStart(2, '0')}-${mDayMonthOnly[2].padStart(2, '0')}`;
+              } else {
+                let dtFormatted = formatImportDateTime(rawDateTimeStr);
+                let mDt = dtFormatted.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (mDt) {
+                  if (!mTimeOnly) timePart = `${mDt[1].padStart(2, '0')}:${mDt[2].padStart(2, '0')}`;
+                  dayMonthPart = `${mDt[3].padStart(2, '0')}-${mDt[4].padStart(2, '0')}`;
+                  if (!rawYear) yearPart = mDt[5];
+                }
               }
             }
 
@@ -5922,7 +5953,7 @@
             let statusClean = rawStatus.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             let paymentStatus = (statusClean.includes('no') || statusClean.includes('dai') || statusClean.includes('chua')) ? 'NỢ DAI' : 'ĐÃ TRẢ';
 
-            // Khóa nhận diện chống trùng lặp đa tầng
+            // Khóa nhận diện chống trùng lặp
             let custNorm = normKey(custFormatted);
             let devNorm = normKey(devFormatted);
 
@@ -5932,7 +5963,6 @@
               existing = softwareDatabase.find(s => String(s.id) === String(rowId));
             }
             if (!existing) {
-              // Tìm khớp chính xác hoặc khớp tương đương (khách, máy, ngày tháng, năm, giá)
               existing = softwareDatabase.find(s => {
                 let sCustNorm = normKey(s.customer);
                 let sDevNorm = normKey(s.device);
@@ -5946,7 +5976,7 @@
                 let samePrice = (sPriceNum === priceNum);
                 let sameTime = (s.time === timePart);
 
-                // Khớp nếu cùng mã / cùng khách + cùng máy + cùng ngày + cùng giá (hoặc cùng giờ)
+                // Chỉ tính là trùng khi khớp CẢ khách hàng, CẢ tên máy, CẢ ngày tháng và CẢ giờ/giá
                 return (sameCust && sameDev && sameDate && (samePrice || sameTime));
               });
             }
@@ -5959,11 +5989,11 @@
               existing.profit = profitStr;
               existing.dayMonth = dayMonthPart;
               existing.year = yearPart;
-              if (timePart && timePart !== "10:00") existing.time = timePart;
+              if (timePart) existing.time = timePart;
               existing.paymentStatus = paymentStatus;
               updatedCount++;
             } else {
-              // 2. Kiểm tra tránh trùng lặp trong chính file Excel (nếu file Excel có các dòng trùng nhau)
+              // 2. Kiểm tra tránh trùng lặp trong chính file Excel (nếu file Excel có các dòng hoàn toàn giống nhau)
               let alreadyInNew = newRecords.find(nr => {
                 if (rowId && String(nr.id) === String(rowId)) return true;
                 let nrCust = normKey(nr.customer);
@@ -5971,7 +6001,7 @@
                 let nrDm = (nr.dayMonth || '').replace(/\//g, '-');
                 let nrY = String(nr.year || currentYear);
                 let nrPriceNum = parsePriceNum(nr.price);
-                return (nrCust === custNorm && nrDev === devNorm && nrDm === dayMonthPart && nrY === yearPart && (nrPriceNum === priceNum || nr.time === timePart));
+                return (nrCust === custNorm && nrDev === devNorm && nrDm === dayMonthPart && nrY === yearPart && (nrPriceNum === priceNum && nr.time === timePart));
               });
 
               if (alreadyInNew) {
@@ -6009,27 +6039,10 @@
           if (newRecords.length > 0 || updatedCount > 0) {
             if (newRecords.length > 0) softwareDatabase.push(...newRecords);
 
-            // Tự động lọc trùng triệt để toàn bộ database một lần nữa
-            const seenKeys = new Set();
-            const uniqueDb = [];
-            softwareDatabase.forEach(item => {
-              let c = normKey(item.customer);
-              let d = normKey(item.device);
-              let dm = (item.dayMonth || '').replace(/\//g, '-');
-              let y = String(item.year || currentYear);
-              let p = parsePriceNum(item.price);
-              let dedupeKey = `${c}_${d}_${dm}_${y}_${p}`;
-              if (!seenKeys.has(dedupeKey)) {
-                seenKeys.add(dedupeKey);
-                uniqueDb.push(item);
-              }
-            });
-            softwareDatabase = uniqueDb;
-
             saveSoftwareStorage();
             if (typeof setSoftwareMode === 'function') setSoftwareMode('all');
             else if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!\n(Đã tự động loại bỏ 100% trùng lặp & đồng bộ khách hàng, tên máy)`);
+            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!\n(Đã giữ nguyên 100% đầy đủ tên máy & đồng bộ khách hàng)`);
           } else {
             alert("Không tìm thấy dữ liệu Phần Mềm hợp lệ trong file!");
           }
