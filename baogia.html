@@ -289,6 +289,12 @@
                             </div>
                         </div>
 
+                        <!-- NÚT XÓA TÌM KIẾM BÊN PHẢI SÁT Ô TÌM KIẾM (NỀN ĐỎ CHỮ TRẮNG) -->
+                        <button type="button" id="btn-reset-search-text" onclick="clearSearch()"
+                            class="bg-red-600 hover:bg-red-500 text-white font-black px-3.5 py-2 rounded-xl text-xs md:text-sm transition flex items-center gap-1.5 shadow-md shadow-red-600/30 shrink-0 uppercase tracking-wide cursor-pointer border border-red-500">
+                            <i class="fa-solid fa-rotate-left text-xs"></i> XÓA TÌM KIẾM
+                        </button>
+
                         <!-- DROPDOWN TÌNH TRẠNG (CÒN HÀNG / HẾT HÀNG / TẤT CẢ) -->
                         <div
                             class="inline-flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-xs md:text-sm font-black shadow-inner shrink-0">
@@ -679,7 +685,7 @@
             return brandTypes[b];
         }
 
-        let currentBrand = localStorage.getItem('active_brand_tab') || brands[0] || '';
+        let currentBrand = 'TẤT CẢ';
         let currentCategory = 'TẤT CẢ';
         let currentType = '';
         let selectedDeviceNameFilter = ''; // Khi chọn chính xác 1 tên máy từ gợi ý tìm kiếm
@@ -2863,7 +2869,9 @@
         }
 
         window.onload = function () {
+            localStorage.removeItem('active_brand_tab');
             localStorage.removeItem('active_cat_tab');
+            currentBrand = 'TẤT CẢ';
             currentCategory = 'TẤT CẢ';
             currentType = '';
             selectedDeviceNameFilter = '';
