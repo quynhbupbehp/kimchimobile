@@ -8697,6 +8697,18 @@
           color: #facc15 !important;
           font-weight: 900 !important;
         }
+
+        /* === BẢNG THEO DÕI DOANH THU MOBILE MODAL KHÔNG BỊ TRÀN 620PX === */
+        #mobileRevenueStatsModal table {
+          min-width: 100% !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          table-layout: fixed !important;
+        }
+        #mobileRevenueStatsModal table th,
+        #mobileRevenueStatsModal table td {
+          box-sizing: border-box !important;
+        }
         .form-ticket-label,
         .form-label {
           font-size: 0.8rem !important;
