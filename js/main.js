@@ -823,6 +823,11 @@
         storageKey: 'KIMCHI_OPT_CONDITION',
         defaults: ["Likenew 99%", "Zin Đẹp 99%", "Kính Phẩy Nhẹ", "Máy 98%"]
       },
+      brand: {
+        listId: 'mBrandList',
+        storageKey: 'KIMCHI_OPT_BRAND',
+        defaults: ["IPHONE", "SAMSUNG", "OPPO", "REALME", "REDMI", "POCO", "VIVO", "XIAOMI", "KHÁC"]
+      },
       origin: {
         listId: 'mOriginList',
         storageKey: 'KIMCHI_OPT_ORIGIN',
@@ -899,6 +904,7 @@
       if (clean !== "") {
         if (type === 'pinPct') clean = formatPinByBrand(clean);
         if (type === 'storage') clean = formatStorageValue(clean);
+        if (type === 'brand') clean = clean.toUpperCase();
         let items = getDropdownItems(type);
         let exists = items.some(x => x.toLowerCase().trim() === clean.toLowerCase().trim());
         if (!exists) {
@@ -922,6 +928,7 @@
         let newVal = toTitleCase(val.trim());
         if (type === 'pinPct') newVal = formatPinByBrand(newVal);
         if (type === 'storage') newVal = formatStorageValue(newVal);
+        if (type === 'brand') newVal = newVal.toUpperCase();
         let items = getDropdownItems(type);
         let idx = items.findIndex(x => x.toLowerCase().trim() === currentVal.toLowerCase());
         if (idx !== -1) {
@@ -17176,6 +17183,7 @@
     function handleMxStatusChange(status) {
       const isConHang = (status === 'Còn Hàng');
       const starIds = [
+        'lblMxBrandStar',
         'lblMxImeiStar',
         'lblMxColorStar',
         'lblMxStorageStar',
@@ -17192,6 +17200,7 @@
       });
 
       const inputs = [
+        'mxBrand',
         'mxImei',
         'mxColor',
         'mxStorage',
@@ -17226,6 +17235,8 @@
         if (item) {
           if (titleEl) titleEl.innerText = "Chỉnh Sửa Thông Tin Main - Xác";
           if (editInput) editInput.value = item.id;
+          const brandEl = document.getElementById('mxBrand');
+          if (brandEl) brandEl.value = (item.brand || '').toUpperCase();
           document.getElementById('mxName').value = item.name || '';
           document.getElementById('mxImei').value = item.imei || '';
           document.getElementById('mxColor').value = item.color || '';
@@ -17246,6 +17257,8 @@
       } else {
         if (titleEl) titleEl.innerText = "Thêm Máy Xác";
         if (editInput) editInput.value = '';
+        const brandEl = document.getElementById('mxBrand');
+        if (brandEl) brandEl.value = '';
         document.getElementById('mxName').value = '';
         document.getElementById('mxImei').value = '';
         document.getElementById('mxColor').value = '';
@@ -17315,6 +17328,8 @@
     function saveNewMainXac(e) {
       e.preventDefault();
       const editId = document.getElementById('mxEditId').value;
+      const brandInput = document.getElementById('mxBrand');
+      let brand = brandInput ? brandInput.value.trim().toUpperCase() : '';
       const name = toTitleCase(document.getElementById('mxName').value.trim());
       const imei = document.getElementById('mxImei').value.trim();
       const color = toTitleCase(document.getElementById('mxColor').value.trim());
@@ -17339,6 +17354,11 @@
 
       // Khi chuyển trạng thái từ Chưa Xử Lý sang Còn Hàng: Toàn bộ dữ liệu đều bắt buộc nhập (trừ ghi chú)
       if (status === 'Còn Hàng') {
+        if (!brand) {
+          alert("Trạng thái Còn Hàng bắt buộc nhập Hãng!");
+          if (brandInput) brandInput.focus();
+          return;
+        }
         if (!imei) {
           alert("Trạng thái Còn Hàng bắt buộc nhập 4 số đuôi IMEI!");
           document.getElementById('mxImei').focus();
@@ -17385,23 +17405,25 @@
           return;
         }
 
-        // Tự động nhận diện Hãng máy để đưa vào kho Bán Máy
-        let detectedBrand = 'IPHONE';
-        if (typeof isPhoneBrandIphone === 'function' && isPhoneBrandIphone('', name)) detectedBrand = 'IPHONE';
-        else if (/samsung/i.test(name)) detectedBrand = 'SAMSUNG';
-        else if (/oppo/i.test(name)) detectedBrand = 'OPPO';
-        else if (/realme/i.test(name)) detectedBrand = 'REALME';
-        else if (/redmi/i.test(name)) detectedBrand = 'REDMI';
-        else if (/poco/i.test(name)) detectedBrand = 'POCO';
-        else if (/vivo/i.test(name)) detectedBrand = 'VIVO';
-        else detectedBrand = 'KHÁC';
+        // Ưu tiên hãng người dùng đã chọn / nhập, nếu chưa có thì tự động nhận diện từ tên
+        let resolvedBrand = brand;
+        if (!resolvedBrand) {
+          if (typeof isPhoneBrandIphone === 'function' && isPhoneBrandIphone('', name)) resolvedBrand = 'IPHONE';
+          else if (/samsung/i.test(name)) resolvedBrand = 'SAMSUNG';
+          else if (/oppo/i.test(name)) resolvedBrand = 'OPPO';
+          else if (/realme/i.test(name)) resolvedBrand = 'REALME';
+          else if (/redmi/i.test(name)) resolvedBrand = 'REDMI';
+          else if (/poco/i.test(name)) resolvedBrand = 'POCO';
+          else if (/vivo/i.test(name)) resolvedBrand = 'VIVO';
+          else resolvedBrand = 'KHÁC';
+        }
 
         let formattedStorageVal = typeof formatStorageValue === 'function' ? formatStorageValue(storage) : storage;
-        let formattedPinVal = typeof formatPinByBrand === 'function' ? formatPinByBrand(pinPct, detectedBrand, name) : pinPct;
+        let formattedPinVal = typeof formatPinByBrand === 'function' ? formatPinByBrand(pinPct, resolvedBrand, name) : pinPct;
 
         const newPhoneItem = {
           id: Date.now() + Math.random(),
-          brand: detectedBrand,
+          brand: resolvedBrand,
           name: name,
           color: color,
           storage: formattedStorageVal ? `(${formattedStorageVal})` : '',
@@ -17420,7 +17442,7 @@
         // Thêm vào danh sách Bán Máy
         phoneDatabase.unshift(newPhoneItem);
         if (typeof logActivity === 'function') {
-          logActivity('ADD', 'banmay', 'Bán máy', `Chuyển từ Main Xác sang Bán Máy: ${detectedBrand} ${name} (${imei}) - Giá: ${priceOut}`, null, newPhoneItem, newPhoneItem.id);
+          logActivity('ADD', 'banmay', 'Bán máy', `Chuyển từ Main Xác sang Bán Máy: ${resolvedBrand} ${name} (${imei}) - Giá: ${priceOut}`, null, newPhoneItem, newPhoneItem.id);
         }
 
         // Nếu là sửa từ main xác cũ, xóa mục đó khỏi main xác
@@ -17448,9 +17470,22 @@
       }
 
       // Trạng thái Chưa Xử Lý (lưu bình thường trong kho Main - Xác)
+      let resolvedBrandForMainXac = brand;
+      if (!resolvedBrandForMainXac) {
+        if (typeof isPhoneBrandIphone === 'function' && isPhoneBrandIphone('', name)) resolvedBrandForMainXac = 'IPHONE';
+        else if (/samsung/i.test(name)) resolvedBrandForMainXac = 'SAMSUNG';
+        else if (/oppo/i.test(name)) resolvedBrandForMainXac = 'OPPO';
+        else if (/realme/i.test(name)) resolvedBrandForMainXac = 'REALME';
+        else if (/redmi/i.test(name)) resolvedBrandForMainXac = 'REDMI';
+        else if (/poco/i.test(name)) resolvedBrandForMainXac = 'POCO';
+        else if (/vivo/i.test(name)) resolvedBrandForMainXac = 'VIVO';
+        else resolvedBrandForMainXac = '';
+      }
+
       if (editId) {
         const item = mainXacDatabase.find(x => String(x.id) === String(editId) || x.id == editId);
         if (item) {
+          item.brand = resolvedBrandForMainXac;
           item.name = name;
           item.imei = imei;
           item.color = color;
@@ -17465,12 +17500,13 @@
           item.note = note;
           item.date = dateIn;
           if (typeof logActivity === 'function') {
-            logActivity('EDIT', 'mainxac', 'Main - Xác', `Sửa thông tin main xác: ${name} (${imei}) - Giá: ${priceOut}`);
+            logActivity('EDIT', 'mainxac', 'Main - Xác', `Sửa thông tin main xác: ${resolvedBrandForMainXac ? resolvedBrandForMainXac + ' - ' : ''}${name} (${imei}) - Giá: ${priceOut}`);
           }
         }
       } else {
         const newItem = {
           id: Date.now() + Math.random(),
+          brand: resolvedBrandForMainXac,
           name,
           imei,
           color,
@@ -17487,7 +17523,7 @@
         };
         mainXacDatabase.unshift(newItem);
         if (typeof logActivity === 'function') {
-          logActivity('ADD', 'mainxac', 'Main - Xác', `Nhập main xác mới: ${name} (${imei}) - Vốn: ${newItem.priceIn}`);
+          logActivity('ADD', 'mainxac', 'Main - Xác', `Nhập main xác mới: ${resolvedBrandForMainXac ? resolvedBrandForMainXac + ' - ' : ''}${name} (${imei}) - Vốn: ${newItem.priceIn}`);
         }
       }
 
