@@ -5406,10 +5406,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+      background: #000000;
       color: #ffffff;
-      border: 1.5px solid #f472b6;
-      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.45);
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65);
       font-size: 1.3rem;
       font-weight: 900;
       padding: 6px 18px;
