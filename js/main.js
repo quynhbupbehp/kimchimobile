@@ -3519,7 +3519,21 @@
     }
     window.updateSidebarOverallProfits = updateSidebarOverallProfits;
 
-    // ==================== BẢNG SỐ LIỆU / BẢNG THEO DÕI DOANH THU TRÊN MOBILE ====================
+    // ==================== BẢNG SỐ LIỆU / BẢNG THEO DÕI DOANH THU TRÊN MOBILE & WEB/DESKTOP ====================
+    let currentMobileStatsMode = 'day'; // Mặc định: 'day' (Ngày), 'month' (Tháng), 'all' (Tất Cả)
+    window.currentMobileStatsMode = currentMobileStatsMode;
+
+    function setMobileStatsMode(mode) {
+      currentMobileStatsMode = mode || 'day';
+      window.currentMobileStatsMode = currentMobileStatsMode;
+      const selectEl = document.getElementById('mStatsPeriodSelect');
+      if (selectEl && selectEl.value !== currentMobileStatsMode) {
+        selectEl.value = currentMobileStatsMode;
+      }
+      renderMobileRevenueStats();
+    }
+    window.setMobileStatsMode = setMobileStatsMode;
+
     function renderMobileRevenueStats() {
       let targetD, targetM, targetY;
       if (typeof currentSalesDateFilter !== 'undefined' && currentSalesDateFilter instanceof Date && !isNaN(currentSalesDateFilter)) {
@@ -3531,6 +3545,18 @@
         targetD = vnNow.getDate();
         targetM = vnNow.getMonth();
         targetY = vnNow.getFullYear();
+      }
+
+      const mode = currentMobileStatsMode || 'day';
+
+      function isItemMatchPeriod(dmy) {
+        if (!dmy) return false;
+        if (mode === 'all') return true;
+        if (mode === 'month') {
+          return dmy.m === targetM && dmy.y === targetY;
+        }
+        // mode === 'day'
+        return dmy.d === targetD && dmy.m === targetM && dmy.y === targetY;
       }
 
       function parseItemDMY(dateRaw) {
@@ -3557,7 +3583,7 @@
       if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
         salesDatabase.forEach(item => {
           let dmy = parseItemDMY(item.dateTime);
-          if (dmy && dmy.d === targetD && dmy.m === targetM && dmy.y === targetY) {
+          if (isItemMatchPeriod(dmy)) {
             countBanhang++;
             profitBanhang += parsePriceNum(item.profit || 0);
           }
@@ -3579,7 +3605,7 @@
       if (Array.isArray(rList)) {
         rList.forEach(item => {
           let dmy = parseItemDMY(item.dateFormatted || item.dateTime);
-          if (dmy && dmy.d === targetD && dmy.m === targetM && dmy.y === targetY) {
+          if (isItemMatchPeriod(dmy)) {
             countSuachua++;
             profitSuachua += parsePriceNum(item.profit || 0);
           }
@@ -3590,7 +3616,7 @@
       if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
         bangaDatabase.forEach(bg => {
           let dmy = parseItemDMY(bg.dateTime);
-          if (dmy && dmy.d === targetD && dmy.m === targetM && dmy.y === targetY) {
+          if (isItemMatchPeriod(dmy)) {
             countBanga++;
             profitBanga += parsePriceNum(bg.profit || 0);
           }
@@ -3603,9 +3629,20 @@
           let itemYear = parseInt(item.year || targetY, 10);
           let rawDM = item.dayMonth || '';
           let dmy = parseItemDMY(rawDM + (item.year ? `-${item.year}` : `-${targetY}`));
-          if (dmy && dmy.d === targetD && dmy.m === targetM && itemYear === targetY) {
+          if (mode === 'all') {
             countPhanmem++;
             profitPhanmem += parsePriceNum(item.profit || 0);
+          } else if (mode === 'month') {
+            if (dmy && dmy.m === targetM && itemYear === targetY) {
+              countPhanmem++;
+              profitPhanmem += parsePriceNum(item.profit || 0);
+            }
+          } else {
+            // mode === 'day'
+            if (dmy && dmy.d === targetD && dmy.m === targetM && itemYear === targetY) {
+              countPhanmem++;
+              profitPhanmem += parsePriceNum(item.profit || 0);
+            }
           }
         });
       }
@@ -3622,6 +3659,7 @@
       const elProfitPhanmem = document.getElementById('mStatsProfitPhanmem');
       const elTotalProfit = document.getElementById('mStatsTotalProfit');
       const elTargetStatus = document.getElementById('mStatsTargetStatus');
+      const elTargetLabelVal = document.getElementById('mStatsTargetLabelVal');
 
       if (elCountBanhang) elCountBanhang.textContent = countBanhang;
       if (elProfitBanhang) elProfitBanhang.textContent = formatPriceStr(profitBanhang);
@@ -3633,16 +3671,24 @@
       if (elProfitPhanmem) elProfitPhanmem.textContent = formatPriceStr(profitPhanmem);
       if (elTotalProfit) elTotalProfit.textContent = formatPriceStr(totalProfit);
 
-      // Đánh giá chỉ tiêu 2.500k (2500 hoặc 2500000 tùy đơn vị hiển thị)
+      // Đánh giá chỉ tiêu: ngày (2.500K), tháng (75.000K), tất cả (75.000K)
+      let targetK = 2500;
+      if (mode === 'month') targetK = 75000;
+      else if (mode === 'all') targetK = 75000;
+
+      if (elTargetLabelVal) {
+        elTargetLabelVal.textContent = mode === 'month' ? '75.000K' : (mode === 'all' ? 'TỔNG' : '2.500K');
+      }
+
       if (elTargetStatus) {
-        // totalProfit trong hệ thống: nếu lưu theo đơn vị k (ví dụ: 449 là 449k), ngưỡng là 2500; nếu lưu VNĐ (>= 2500000), ngưỡng là 2500000
-        const isTargetReached = totalProfit >= 2500000 || (totalProfit >= 2500 && totalProfit < 1000000);
+        const thresholdVal = targetK >= 1000 ? targetK : targetK;
+        const isTargetReached = totalProfit >= thresholdVal * 1000 || (totalProfit >= thresholdVal && totalProfit < 1000000);
         if (isTargetReached) {
           elTargetStatus.textContent = 'XUẤT SẮC (Cần Phát Huy)';
-          elTargetStatus.style.color = '#10b981'; // Xanh lá sáng xuất sắc
+          elTargetStatus.style.color = '#10b981';
         } else {
           elTargetStatus.textContent = 'CHƯA ĐẠT (Cần Cố Gắng)';
-          elTargetStatus.style.color = '#ef4444'; // Đỏ nổi bật cảnh báo
+          elTargetStatus.style.color = '#ef4444';
         }
       }
     }
