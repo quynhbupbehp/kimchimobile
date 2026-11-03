@@ -9933,3 +9933,35 @@
       }
     }
 
+    /* === GIAO DIỆN WEB/DESKTOP: TĂNG CỠ CHỮ BẢNG THEO DÕI DOANH THU LÊN 50% === */
+    @media (min-width: 768px) {
+      #mobileRevenueStatsModal > div {
+        max-width: 720px !important;
+      }
+      #mobileRevenueStatsModal h2 {
+        font-size: 1.72rem !important; /* Tăng 50% từ 1.15rem */
+      }
+      #mobileRevenueStatsModal table th {
+        font-size: 1.15rem !important; /* Tăng 50% từ 0.76rem */
+        padding: 12px 8px !important;
+      }
+      #mobileRevenueStatsModal table td {
+        font-size: 1.15rem !important; /* Tăng 50% từ 0.76rem */
+        padding: 12px 8px !important;
+      }
+      #mobileRevenueStatsModal #mStatsTargetStatus,
+      #mobileRevenueStatsModal div:has(> #mStatsTargetStatus) {
+        font-size: 1.42rem !important; /* Tăng 50% từ 0.95rem */
+      }
+      #mobileRevenueStatsModal #mStatsTotalProfit {
+        font-size: 1.75rem !important; /* Tăng 50% từ 1.18rem */
+      }
+      #mobileRevenueStatsModal div:has(> #mStatsTotalProfit) {
+        font-size: 1.55rem !important; /* Tăng 50% từ 1.05rem */
+      }
+      #mobileRevenueStatsModal button[onclick*="closeMobileRevenueStatsModal"] {
+        font-size: 1.5rem !important; /* Tăng 50% từ 1rem */
+        padding: 12px 64px !important;
+      }
+    }
+
