@@ -11009,7 +11009,7 @@
       device: {
         listId: 'swDeviceList',
         storageKey: 'KIMCHI_SW_OPT_DEVICES',
-        defaults: ["Đã Thanh Toán", "A3s", "C71", "iPhone 11", "iPhone 12 Pro Max", "iPhone 13 Pro Max", "Samsung A52", "Xiaomi K40"]
+        defaults: ["Đã Thanh Toán"]
       },
       price: {
         listId: 'swPriceList',
@@ -16092,6 +16092,10 @@
 
     // Tự động khởi chạy datalists và khách hàng cho phần mềm khi tải trang
     window.addEventListener('DOMContentLoaded', () => {
+      // Đảm bảo danh sách tên máy trong mục tạo đơn phần mềm chỉ để lại duy nhất "Đã Thanh Toán"
+      try {
+        localStorage.setItem('KIMCHI_SW_OPT_DEVICES', JSON.stringify(["Đã Thanh Toán"]));
+      } catch(e){}
       renderSwDatalists();
       renderSwCustomerFilterOptions();
       initSoftwareTimeSelectors();
