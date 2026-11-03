@@ -11194,6 +11194,8 @@
 
       renderSwCustomerFilterOptions();
       renderSoftwareTable(softwareDatabase);
+      if (typeof renderSoftwareDebtTable === 'function') renderSoftwareDebtTable();
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
     window.setSoftwareMode = setSoftwareMode;
 
@@ -13068,6 +13070,9 @@
         `;
       }).join('');
       updateSoftwarePayButtonVisibility();
+      if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+        renderSoftwareDebtTable();
+      }
     }
 
     function togglePaymentStatus(id) {
