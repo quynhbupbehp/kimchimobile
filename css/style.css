@@ -2605,6 +2605,22 @@
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.9) !important;
     }
 
+    /* LINK WEB: NỀN HỒNG ĐÓNG KHUNG */
+    .sw-btn-pink {
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%) !important;
+      color: #ffffff !important;
+      border: 1.5px solid #f472b6 !important;
+      box-shadow: 0 2px 10px rgba(236, 72, 153, 0.5) !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.5px !important;
+    }
+    .sw-btn-pink:hover {
+      background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%) !important;
+      border-color: #fbcfe8 !important;
+      box-shadow: 0 4px 16px rgba(236, 72, 153, 0.75) !important;
+      transform: translateY(-1px);
+    }
+
     /* 3. TESTPOINT: NỀN VÀNG */
     .sw-btn-yellow {
       background: #eab308 !important;
@@ -5381,9 +5397,23 @@
     }
 
     .sw-link-header-title {
-      font-size: 1.5rem;
-      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sw-link-badge-pink {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
       color: #ffffff;
+      border: 1.5px solid #f472b6;
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.45);
+      font-size: 1.3rem;
+      font-weight: 900;
+      padding: 6px 18px;
+      border-radius: 8px;
       letter-spacing: 0.5px;
       text-transform: uppercase;
       white-space: nowrap;
@@ -5464,20 +5494,23 @@
       color: #ffffff;
     }
 
+    /* CHIA BẢNG RA THÀNH 3 CỘT BẰNG NHAU (EQUAL WIDTH 3 COLUMNS) */
     .sw-link-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
       gap: 14px;
       overflow-y: auto;
       padding-right: 4px;
       padding-bottom: 6px;
       max-height: calc(90vh - 110px);
+      width: 100% !important;
+      box-sizing: border-box !important;
     }
-    @media (max-width: 1100px) {
-      .sw-link-grid { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 900px) {
+      .sw-link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     }
-    @media (max-width: 680px) {
-      .sw-link-grid { grid-template-columns: 1fr; }
+    @media (max-width: 600px) {
+      .sw-link-grid { grid-template-columns: minmax(0, 1fr) !important; }
     }
 
     .sw-link-card {
@@ -5490,6 +5523,9 @@
       gap: 9px;
       transition: all 0.2s ease;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
     }
     .sw-link-card:hover {
       border-color: #2b3952;
@@ -5503,11 +5539,14 @@
       justify-content: space-between;
       align-items: center;
       gap: 10px;
+      min-width: 0 !important;
+      width: 100% !important;
     }
 
     .sw-link-meta {
-      flex: 1;
-      min-width: 0;
+      flex: 1 1 0% !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
     }
 
     .sw-link-label {
@@ -5523,23 +5562,31 @@
       color: #10b981 !important;
     }
 
+    /* ÉP BUỘC HIỂN THỊ 1 HÀNG - QUÁ DÀI THÌ CHỈ GHI ... */
     .sw-link-title {
       font-size: 1.02rem;
       font-weight: 900;
       color: #a3e635;
       line-height: 1.35;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
 
+    /* ÉP BUỘC HIỂN THỊ 1 HÀNG - LINK NÀO QUÁ DÀI THÌ CHỈ GHI ... KO HIỂN THỊ HẾT */
     .sw-link-url {
       font-size: 0.88rem;
       font-weight: 700;
       color: #ffffff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
       line-height: 1.35;
       cursor: pointer;
       transition: color 0.15s ease;
@@ -5559,7 +5606,7 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      flex-shrink: 0;
+      flex-shrink: 0 !important;
     }
 
     .sw-link-icon-btn {
