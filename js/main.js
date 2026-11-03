@@ -2385,7 +2385,7 @@
     // Helper lấy nhãn phạm vi thời gian đang chọn của tab Bán Hàng
     function getCurrentSalesScopeLabel() {
       if (typeof salesViewMode === 'undefined' || salesViewMode === 'all') {
-        return 'TẤT CẢ thời gian';
+        return 'TẤT CẢ';
       }
       if (salesViewMode === 'day') {
         const dd = String(currentSalesDateFilter.getDate()).padStart(2, '0');
@@ -2401,9 +2401,255 @@
       if (salesViewMode === 'year') {
         return `NĂM ${currentSalesYearFilter}`;
       }
-      return 'TẤT CẢ thời gian';
+      return 'TẤT CẢ';
     }
     window.getCurrentSalesScopeLabel = getCurrentSalesScopeLabel;
+
+    // Helper kiểm tra một đơn Phần Mềm có khớp với phạm vi thời gian đang chọn
+    function isSoftwareItemMatchingCurrentFilter(item) {
+      if (!item) return false;
+      if (typeof swViewMode === 'undefined' || swViewMode === 'all') return true;
+      let dayMonth = String(item.dayMonth || '').trim();
+      let year = String(item.year || '2026').trim();
+
+      if (swViewMode === 'day') {
+        if (typeof swFilterDate === 'undefined' || !swFilterDate) return true;
+        const dd = String(swFilterDate.getDate()).padStart(2, '0');
+        const mm = String(swFilterDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = String(swFilterDate.getFullYear());
+        return dayMonth === `${dd}-${mm}` && year === yyyy;
+      } else if (swViewMode === 'month') {
+        if (typeof currentSoftwareMonthFilter === 'undefined' || !currentSoftwareMonthFilter) return true;
+        const mm = String(currentSoftwareMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = String(currentSoftwareMonthFilter.year);
+        let parts = dayMonth.split('-');
+        let m = parts.length === 2 ? parts[1] : '';
+        return m === mm && year === yyyy;
+      } else if (swViewMode === 'year') {
+        if (typeof currentSoftwareYearFilter === 'undefined') return true;
+        const yyyy = String(currentSoftwareYearFilter);
+        return year === yyyy;
+      }
+      return true;
+    }
+    window.isSoftwareItemMatchingCurrentFilter = isSoftwareItemMatchingCurrentFilter;
+
+    function getCurrentSoftwareScopeLabel() {
+      if (typeof swViewMode === 'undefined' || swViewMode === 'all') return 'TẤT CẢ';
+      if (swViewMode === 'day') {
+        const dd = String(swFilterDate.getDate()).padStart(2, '0');
+        const mm = String(swFilterDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = swFilterDate.getFullYear();
+        return `NGÀY ${dd}/${mm}/${yyyy}`;
+      }
+      if (swViewMode === 'month') {
+        const mm = String(currentSoftwareMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentSoftwareMonthFilter.year;
+        return `THÁNG ${mm}/${yyyy}`;
+      }
+      if (swViewMode === 'year') {
+        return `NĂM ${currentSoftwareYearFilter}`;
+      }
+      return 'TẤT CẢ';
+    }
+    window.getCurrentSoftwareScopeLabel = getCurrentSoftwareScopeLabel;
+
+    // Helper kiểm tra một đơn Sửa Chữa có khớp với phạm vi thời gian đang chọn
+    function isRepairItemMatchingCurrentFilter(item) {
+      if (!item) return false;
+      if (typeof repairViewMode === 'undefined' || repairViewMode === 'all') return true;
+      let dateFormatted = String(item.dateFormatted || '').trim();
+      let parts = dateFormatted.split('/');
+      if (parts.length < 3) return false;
+      let d = parseInt(parts[0], 10);
+      let m = parseInt(parts[1], 10);
+      let y = parseInt(parts[2], 10);
+
+      if (repairViewMode === 'day') {
+        if (typeof repairFilterDate === 'undefined' || !repairFilterDate) return true;
+        const curD = repairFilterDate.getDate();
+        const curM = repairFilterDate.getMonth() + 1;
+        const curY = repairFilterDate.getFullYear();
+        return d === curD && m === curM && y === curY;
+      } else if (repairViewMode === 'month') {
+        if (typeof currentRepairMonthFilter === 'undefined' || !currentRepairMonthFilter) return true;
+        return (m - 1) === currentRepairMonthFilter.month && y === currentRepairMonthFilter.year;
+      } else if (repairViewMode === 'year') {
+        if (typeof currentRepairYearFilter === 'undefined') return true;
+        return y === currentRepairYearFilter;
+      }
+      return true;
+    }
+    window.isRepairItemMatchingCurrentFilter = isRepairItemMatchingCurrentFilter;
+
+    function getCurrentRepairScopeLabel() {
+      if (typeof repairViewMode === 'undefined' || repairViewMode === 'all') return 'TẤT CẢ';
+      if (repairViewMode === 'day') {
+        const dd = String(repairFilterDate.getDate()).padStart(2, '0');
+        const mm = String(repairFilterDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = repairFilterDate.getFullYear();
+        return `NGÀY ${dd}/${mm}/${yyyy}`;
+      }
+      if (repairViewMode === 'month') {
+        const mm = String(currentRepairMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentRepairMonthFilter.year;
+        return `THÁNG ${mm}/${yyyy}`;
+      }
+      if (repairViewMode === 'year') {
+        return `NĂM ${currentRepairYearFilter}`;
+      }
+      return 'TẤT CẢ';
+    }
+    window.getCurrentRepairScopeLabel = getCurrentRepairScopeLabel;
+
+    // Helper kiểm tra một đơn Bán Gà có khớp với phạm vi thời gian đang chọn
+    function isBangaItemMatchingCurrentFilter(item) {
+      if (!item || !item.dateTime) return false;
+      if (typeof bangaViewMode === 'undefined' || bangaViewMode === 'all') return true;
+      let parts = String(item.dateTime).split(' - ');
+      if (parts.length < 2) return false;
+      let datePart = parts[1].trim();
+      let [d, m, y] = datePart.split('/').map(n => parseInt(n, 10));
+      if (!y || !m) return false;
+
+      if (bangaViewMode === 'day') {
+        if (typeof currentBangaDateFilter === 'undefined' || !currentBangaDateFilter) return true;
+        const curD = currentBangaDateFilter.getDate();
+        const curM = currentBangaDateFilter.getMonth() + 1;
+        const curY = currentBangaDateFilter.getFullYear();
+        return d === curD && m === curM && y === curY;
+      } else if (bangaViewMode === 'month') {
+        if (typeof currentBangaMonthFilter === 'undefined' || !currentBangaMonthFilter) return true;
+        return (m - 1) === currentBangaMonthFilter.month && y === currentBangaMonthFilter.year;
+      } else if (bangaViewMode === 'year') {
+        if (typeof currentBangaYearFilter === 'undefined') return true;
+        return y === currentBangaYearFilter;
+      }
+      return true;
+    }
+    window.isBangaItemMatchingCurrentFilter = isBangaItemMatchingCurrentFilter;
+
+    function getCurrentBangaScopeLabel() {
+      if (typeof bangaViewMode === 'undefined' || bangaViewMode === 'all') return 'TẤT CẢ';
+      if (bangaViewMode === 'day') {
+        const dd = String(currentBangaDateFilter.getDate()).padStart(2, '0');
+        const mm = String(currentBangaDateFilter.getMonth() + 1).padStart(2, '0');
+        const yyyy = currentBangaDateFilter.getFullYear();
+        return `NGÀY ${dd}/${mm}/${yyyy}`;
+      }
+      if (bangaViewMode === 'month') {
+        const mm = String(currentBangaMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentBangaMonthFilter.year;
+        return `THÁNG ${mm}/${yyyy}`;
+      }
+      if (bangaViewMode === 'year') {
+        return `NĂM ${currentBangaYearFilter}`;
+      }
+      return 'TẤT CẢ';
+    }
+    window.getCurrentBangaScopeLabel = getCurrentBangaScopeLabel;
+
+    // Helper kiểm tra một đơn Bảo Hành (SoldPhone) có khớp với phạm vi thời gian đang chọn
+    function isSoldPhoneItemMatchingCurrentFilter(item) {
+      if (!item) return false;
+      if (typeof soldPhoneViewMode === 'undefined' || soldPhoneViewMode === 'all') return true;
+      let dtStr = item.dateTime || item.soldDate || item.date || '';
+      let datePart = dtStr;
+      if (dtStr.includes(' - ')) {
+        datePart = dtStr.split(' - ')[1].trim();
+      }
+      let parts = datePart.split('/');
+      if (parts.length < 3) return false;
+      let d = parseInt(parts[0], 10);
+      let m = parseInt(parts[1], 10);
+      let y = parseInt(parts[2], 10);
+      if (!y || !m) return false;
+
+      if (soldPhoneViewMode === 'day') {
+        if (typeof currentSoldPhoneDateFilter === 'undefined' || !currentSoldPhoneDateFilter) return true;
+        const curD = currentSoldPhoneDateFilter.getDate();
+        const curM = currentSoldPhoneDateFilter.getMonth() + 1;
+        const curY = currentSoldPhoneDateFilter.getFullYear();
+        return d === curD && m === curM && y === curY;
+      } else if (soldPhoneViewMode === 'month') {
+        if (typeof currentSoldPhoneMonthFilter === 'undefined' || !currentSoldPhoneMonthFilter) return true;
+        return (m - 1) === currentSoldPhoneMonthFilter.month && y === currentSoldPhoneMonthFilter.year;
+      } else if (soldPhoneViewMode === 'year') {
+        if (typeof currentSoldPhoneYearFilter === 'undefined') return true;
+        return y === currentSoldPhoneYearFilter;
+      }
+      return true;
+    }
+    window.isSoldPhoneItemMatchingCurrentFilter = isSoldPhoneItemMatchingCurrentFilter;
+
+    function getCurrentSoldPhoneScopeLabel() {
+      if (typeof soldPhoneViewMode === 'undefined' || soldPhoneViewMode === 'all') return 'TẤT CẢ';
+      if (soldPhoneViewMode === 'day') {
+        const dd = String(currentSoldPhoneDateFilter.getDate()).padStart(2, '0');
+        const mm = String(currentSoldPhoneDateFilter.getMonth() + 1).padStart(2, '0');
+        const yyyy = currentSoldPhoneDateFilter.getFullYear();
+        return `NGÀY ${dd}/${mm}/${yyyy}`;
+      }
+      if (soldPhoneViewMode === 'month') {
+        const mm = String(currentSoldPhoneMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentSoldPhoneMonthFilter.year;
+        return `THÁNG ${mm}/${yyyy}`;
+      }
+      if (soldPhoneViewMode === 'year') {
+        return `NĂM ${currentSoldPhoneYearFilter}`;
+      }
+      return 'TẤT CẢ';
+    }
+    window.getCurrentSoldPhoneScopeLabel = getCurrentSoldPhoneScopeLabel;
+
+    // Helper kiểm tra một đơn Main Xác có khớp với phạm vi thời gian đang chọn
+    function isMainXacItemMatchingCurrentFilter(item) {
+      if (!item) return false;
+      if (typeof mainXacViewMode === 'undefined' || mainXacViewMode === 'all') return true;
+      let dateStr = String(item.date || '').trim();
+      let parts = dateStr.split('/');
+      if (parts.length < 3) return false;
+      let d = parseInt(parts[0], 10);
+      let m = parseInt(parts[1], 10);
+      let y = parseInt(parts[2], 10);
+      if (!y || !m) return false;
+
+      if (mainXacViewMode === 'day') {
+        if (typeof currentMainXacDateFilter === 'undefined' || !currentMainXacDateFilter) return true;
+        const curD = currentMainXacDateFilter.getDate();
+        const curM = currentMainXacDateFilter.getMonth() + 1;
+        const curY = currentMainXacDateFilter.getFullYear();
+        return d === curD && m === curM && y === curY;
+      } else if (mainXacViewMode === 'month') {
+        if (typeof currentMainXacMonthFilter === 'undefined' || !currentMainXacMonthFilter) return true;
+        return (m - 1) === currentMainXacMonthFilter.month && y === currentMainXacMonthFilter.year;
+      } else if (mainXacViewMode === 'year') {
+        if (typeof currentMainXacYearFilter === 'undefined') return true;
+        return y === currentMainXacYearFilter;
+      }
+      return true;
+    }
+    window.isMainXacItemMatchingCurrentFilter = isMainXacItemMatchingCurrentFilter;
+
+    function getCurrentMainXacScopeLabel() {
+      if (typeof mainXacViewMode === 'undefined' || mainXacViewMode === 'all') return 'TẤT CẢ';
+      if (mainXacViewMode === 'day') {
+        const dd = String(currentMainXacDateFilter.getDate()).padStart(2, '0');
+        const mm = String(currentMainXacDateFilter.getMonth() + 1).padStart(2, '0');
+        const yyyy = currentMainXacDateFilter.getFullYear();
+        return `NGÀY ${dd}/${mm}/${yyyy}`;
+      }
+      if (mainXacViewMode === 'month') {
+        const mm = String(currentMainXacMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentMainXacMonthFilter.year;
+        return `THÁNG ${mm}/${yyyy}`;
+      }
+      if (mainXacViewMode === 'year') {
+        return `NĂM ${currentMainXacYearFilter}`;
+      }
+      return 'TẤT CẢ';
+    }
+    window.getCurrentMainXacScopeLabel = getCurrentMainXacScopeLabel;
 
     function clearAllSalesData() {
       let scopeLabel = getCurrentSalesScopeLabel();
@@ -5070,11 +5316,31 @@
     /* ============================================================
        XUẤT EXCEL BÁN HÀNG THEO NGÀY, THÁNG, NĂM HOẶC TẤT CẢ DÙNG SHEETJS (.XLSX)
        ============================================================ */
-    function exportSalesToExcel(type = 'full') {
-      executeExportSales(type);
+    function openSalesExportModal() {
+      const modal = document.getElementById('salesExportModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        updateSalesExportModalUI();
+      } else {
+        exportSalesToExcel('full');
+      }
+    }
+    window.openSalesExportModal = openSalesExportModal;
+
+    function closeSalesExportModal() {
+      const modal = document.getElementById('salesExportModal');
+      if (modal) modal.style.display = 'none';
+    }
+    window.closeSalesExportModal = closeSalesExportModal;
+
+    function exportSalesToExcel(type) {
+      if (!type) {
+        openSalesExportModal();
+      } else {
+        executeExportSales(type);
+      }
     }
     window.exportSalesToExcel = exportSalesToExcel;
-    window.openSalesExportModal = exportSalesToExcel;
 
     function getSalesDataForExport() {
       if (!Array.isArray(salesDatabase)) return [];
@@ -5084,36 +5350,18 @@
     function updateSalesExportModalUI() {
       const disp = document.getElementById('exportSalesMonthDisplay');
       const countDisp = document.getElementById('exportSalesCountText');
-      const btnAll = document.getElementById('btnExportToggleAllMonths');
-      const monthBox = document.getElementById('exportSalesMonthPickerBox');
+      let scopeLabel = getCurrentSalesScopeLabel();
 
-      const mm = String(exportSalesSelectedMonth.month + 1).padStart(2, '0');
-      const yyyy = exportSalesSelectedMonth.year;
-
-      if (exportSalesSelectedMonth.allMonths) {
-        if (disp) disp.innerText = "Tất cả các tháng";
-        if (btnAll) {
-          btnAll.innerText = "✓ Đang chọn: Tất cả";
-          btnAll.style.background = "#2563eb";
-          btnAll.style.color = "#ffffff";
-        }
-        if (monthBox) monthBox.style.opacity = "0.45";
-      } else {
-        if (disp) disp.innerText = `Tháng ${mm}/${yyyy}`;
-        if (btnAll) {
-          btnAll.innerText = "Chọn tất cả các tháng";
-          btnAll.style.background = "#1e293b";
-          btnAll.style.color = "#cbd5e1";
-        }
-        if (monthBox) monthBox.style.opacity = "1";
+      if (disp) {
+        disp.innerText = scopeLabel;
       }
 
       const items = getSalesDataForExport();
       if (countDisp) {
         if (items.length > 0) {
-          countDisp.innerHTML = `Tìm thấy <strong style="color: #10b981; font-size: 1.05rem;">${items.length}</strong> phiếu bán hàng sẵn sàng xuất.`;
+          countDisp.innerHTML = `Tìm thấy <strong style="color: #10b981; font-size: 1.05rem;">${items.length}</strong> phiếu bán hàng thuộc <strong>${scopeLabel}</strong> sẵn sàng xuất.`;
         } else {
-          countDisp.innerHTML = `<span style="color: #f87171;">Không có phiếu bán hàng nào trong thời gian này.</span>`;
+          countDisp.innerHTML = `<span style="color: #f87171;">Không có phiếu bán hàng nào thuộc <strong>${scopeLabel}</strong> để xuất.</span>`;
         }
       }
     }
@@ -5177,15 +5425,16 @@
           return [id, name, totalNum, priceInNum, profitNum, method, dateTime, customer];
         });
       } else {
-        // Kiểu 2: Rút gọn (Tên hàng hóa, Giá bán, Hình thức, Giờ - Ngày bán)
+        // Kiểu 2: Rút gọn (Tên hàng, Giá bán, Hình thức, Giờ, Ngày bán)
         fileName = `KimChiMobile_BanHang_RutGon_${timeSuffix}`;
         sheetName = `BanHang_RutGon_${timeSuffix}`;
-        headerArr = ["Tên Hàng Hóa", "Giá Bán", "Hình Thức", "Giờ - Ngày Bán"];
+        headerArr = ["Tên Hàng Hóa", "Giá Bán", "Hình Thức", "Giờ", "Ngày Bán"];
         colsArr = [
           { wch: 38 }, // Tên Hàng Hóa
           { wch: 16 }, // Giá Bán
           { wch: 18 }, // Hình Thức
-          { wch: 22 }  // Giờ - Ngày Bán
+          { wch: 12 }, // Giờ
+          { wch: 16 }  // Ngày Bán
         ];
 
         rowsArr = items.map(item => {
@@ -5193,7 +5442,14 @@
           let totalNum = parsePriceNum(item.total || item.price);
           let method = String(item.method || '');
           let dateTime = String(item.dateTime || '');
-          return [name, totalNum, method, dateTime];
+          let timeVal = '';
+          let dateVal = dateTime;
+          if (dateTime.includes(' - ')) {
+            let parts = dateTime.split(' - ');
+            timeVal = parts[0].trim();
+            dateVal = parts[1].trim();
+          }
+          return [name, totalNum, method, timeVal, dateVal];
         });
       }
 
@@ -5695,12 +5951,29 @@
     window.triggerImportSoftwareExcel = triggerImportSoftwareExcel;
 
     function exportSoftwareToExcel() {
-      if (!Array.isArray(softwareDatabase) || softwareDatabase.length === 0) {
-        alert("Chưa có dữ liệu Phần Mềm để xuất Excel!");
+      let scopeLabel = getCurrentSoftwareScopeLabel();
+      let itemsToExport = softwareDatabase.filter(isSoftwareItemMatchingCurrentFilter);
+      if (!Array.isArray(itemsToExport) || itemsToExport.length === 0) {
+        alert(`Không có dữ liệu Phần Mềm nào thuộc [${scopeLabel}] để xuất Excel!`);
         return;
       }
+
+      let timeSuffix = "TatCa";
+      if (swViewMode === 'day') {
+        const dd = String(swFilterDate.getDate()).padStart(2, '0');
+        const mm = String(swFilterDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = swFilterDate.getFullYear();
+        timeSuffix = `Ngay_${dd}_${mm}_${yyyy}`;
+      } else if (swViewMode === 'month') {
+        const mm = String(currentSoftwareMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentSoftwareMonthFilter.year;
+        timeSuffix = `Thang_${mm}_${yyyy}`;
+      } else if (swViewMode === 'year') {
+        timeSuffix = `Nam_${currentSoftwareYearFilter}`;
+      }
+
       const headers = ["Mã Đơn", "Khách Hàng", "Thiết Bị / Phần Mềm", "Giá Bán", "Giá Vốn", "Tiền Lãi", "Giờ", "Ngày Tháng", "Năm", "Trạng Thái Thanh Toán"];
-      const rows = softwareDatabase.map(item => [
+      const rows = itemsToExport.map(item => [
         item.id || '',
         item.customer || '',
         item.device || '',
@@ -5712,40 +5985,45 @@
         item.year || '',
         item.paymentStatus || 'ĐÃ TRẢ'
       ]);
-      exportAoaToExcelOrCsv(headers, rows, "KimChiMobile_PhanMem", "PhanMem");
-      alert(`Đã xuất thành công ${softwareDatabase.length} đơn Phần Mềm ra file Excel!`);
+      exportAoaToExcelOrCsv(headers, rows, `KimChiMobile_PhanMem_${timeSuffix}`, "PhanMem");
+      alert(`Đã xuất thành công ${itemsToExport.length} đơn Phần Mềm (${scopeLabel}) ra file Excel!`);
     }
     window.exportSoftwareToExcel = exportSoftwareToExcel;
 
     function clearAllSoftwareData() {
-      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Phần Mềm!\n\nVui lòng nhập: "đồng ý" (hoặc "ok") để xác nhận xóa:');
+      let scopeLabel = getCurrentSoftwareScopeLabel();
+      let itemsToDelete = softwareDatabase.filter(isSoftwareItemMatchingCurrentFilter);
+
+      if (itemsToDelete.length === 0) {
+        alert(`Không có đơn Phần Mềm nào thuộc [${scopeLabel}] để xóa!`);
+        return;
+      }
+
+      let confirmText = prompt(`⚠️ CẢNH BÁO: Thao tác này sẽ xóa vĩnh viễn ${itemsToDelete.length} đơn Phần Mềm thuộc [${scopeLabel}]!\n\nVui lòng nhập: "đồng ý" (hoặc "ok") để xác nhận xóa:`);
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
       if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
-        const oldItems = Array.isArray(softwareDatabase) ? [...softwareDatabase] : [];
-        softwareDatabase = [];
-        localStorage.setItem('KIMCHI_PHANMEM_CLEARED', 'true');
-        try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify([])); } catch(e){}
+        let deleteIds = new Set(itemsToDelete.map(it => String(it.id)));
 
-        // Xóa sạch toàn bộ tài liệu phần mềm trên Firebase Firestore
+        // Xóa tài liệu phần mềm trên Firebase Firestore
         if (typeof db !== 'undefined' && db) {
           try {
-            db.collection('software').get().then(snapshot => {
-              snapshot.forEach(doc => {
-                doc.ref.delete().catch(console.error);
-              });
-            }).catch(err => {
-              // Dự phòng xóa theo danh sách cũ
-              oldItems.forEach(item => {
-                if (item && item.id) {
-                  db.collection('software').doc(String(item.id)).delete().catch(console.error);
-                }
-              });
+            itemsToDelete.forEach(item => {
+              if (item && item.id) {
+                db.collection('software').doc(String(item.id)).delete().catch(console.error);
+              }
             });
           } catch(e) {
             console.error("Lỗi xóa Firestore software:", e);
           }
         }
+
+        // Cập nhật lại softwareDatabase: chỉ giữ lại các mục không thuộc phạm vi xóa
+        softwareDatabase = softwareDatabase.filter(it => !deleteIds.has(String(it.id)));
+        if (softwareDatabase.length === 0) {
+          localStorage.setItem('KIMCHI_PHANMEM_CLEARED', 'true');
+        }
+        try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
 
         if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
         if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
@@ -5754,7 +6032,7 @@
         }
         if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
 
-        alert('Đã xóa sạch toàn bộ dữ liệu Phần Mềm thành công!');
+        alert(`Đã xóa thành công ${itemsToDelete.length} đơn Phần Mềm thuộc [${scopeLabel}]!`);
       } else {
         alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
       }
@@ -5880,7 +6158,7 @@
             let profitStr = formatPriceStr(profitNum);
 
             // Xử lý ngày giờ
-            let dtFormatted = formatImportDateTime(rawTime); // "HH:mm - DD/MM/YYYY"
+            let dtFormatted = formatImportDateTime(rawTime || rawDayMonth); // "HH:mm - DD/MM/YYYY"
             let timePart = "10:00";
             let dayMonthPart = "01-01";
             let yearPart = currentYear;
@@ -5890,6 +6168,24 @@
               timePart = `${mDt[1].padStart(2, '0')}:${mDt[2].padStart(2, '0')}`;
               dayMonthPart = `${mDt[3].padStart(2, '0')}-${mDt[4].padStart(2, '0')}`;
               yearPart = mDt[5];
+            } else if (rawDayMonth) {
+              let rawStr = String(rawDayMonth).trim();
+              let mParts = rawStr.split(/[-/]/);
+              if (mParts.length >= 2) {
+                dayMonthPart = `${mParts[0].padStart(2, '0')}-${mParts[1].padStart(2, '0')}`;
+                if (mParts.length >= 3 && mParts[2].length === 4) {
+                  yearPart = mParts[2];
+                }
+              }
+            }
+            if (rawYear && /^\d{4}$/.test(rawYear)) {
+              yearPart = rawYear;
+            }
+
+            // Kiểm tra xem đơn Phần Mềm này có khớp với phạm vi thời gian đang chọn (Ngày/Tháng/Năm/Tất Cả) hay không
+            let checkItem = { dayMonth: dayMonthPart, year: yearPart };
+            if (!isSoftwareItemMatchingCurrentFilter(checkItem)) {
+              continue;
             }
 
             // Xử lý thanh toán
@@ -5984,12 +6280,29 @@
     window.triggerImportRepairExcel = triggerImportRepairExcel;
 
     function exportRepairToExcel() {
-      if (!Array.isArray(repairDatabase) || repairDatabase.length === 0) {
-        alert("Chưa có dữ liệu Sửa Chữa để xuất Excel!");
+      let scopeLabel = getCurrentRepairScopeLabel();
+      let itemsToExport = repairDatabase.filter(isRepairItemMatchingCurrentFilter);
+      if (!Array.isArray(itemsToExport) || itemsToExport.length === 0) {
+        alert(`Không có dữ liệu Sửa Chữa nào thuộc [${scopeLabel}] để xuất Excel!`);
         return;
       }
+
+      let timeSuffix = "TatCa";
+      if (repairViewMode === 'day') {
+        const dd = String(repairFilterDate.getDate()).padStart(2, '0');
+        const mm = String(repairFilterDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = repairFilterDate.getFullYear();
+        timeSuffix = `Ngay_${dd}_${mm}_${yyyy}`;
+      } else if (repairViewMode === 'month') {
+        const mm = String(currentRepairMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentRepairMonthFilter.year;
+        timeSuffix = `Thang_${mm}_${yyyy}`;
+      } else if (repairViewMode === 'year') {
+        timeSuffix = `Nam_${currentRepairYearFilter}`;
+      }
+
       const headers = ["Mã Đơn", "Khách Hàng", "Tên Máy", "Tình Trạng / Lỗi", "Tiền Sửa", "Tiền Linh Kiện", "Lãi", "Ngày Nhận / Sửa", "Giờ", "Trạng Thái", "Hình Thức"];
-      const rows = repairDatabase.map(item => [
+      const rows = itemsToExport.map(item => [
         item.id || '',
         item.customer || '',
         item.device || '',
@@ -6002,21 +6315,47 @@
         item.status || 'Đã thanh toán',
         item.method || 'Tiền mặt'
       ]);
-      exportAoaToExcelOrCsv(headers, rows, "KimChiMobile_SuaChua", "SuaChua");
-      alert(`Đã xuất thành công ${repairDatabase.length} phiếu Sửa Chữa ra file Excel!`);
+      exportAoaToExcelOrCsv(headers, rows, `KimChiMobile_SuaChua_${timeSuffix}`, "SuaChua");
+      alert(`Đã xuất thành công ${itemsToExport.length} phiếu Sửa Chữa (${scopeLabel}) ra file Excel!`);
     }
     window.exportRepairToExcel = exportRepairToExcel;
 
     function clearAllRepairData() {
-      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Sửa Chữa!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
+      let scopeLabel = getCurrentRepairScopeLabel();
+      let itemsToDelete = repairDatabase.filter(isRepairItemMatchingCurrentFilter);
+
+      if (itemsToDelete.length === 0) {
+        alert(`Không có phiếu Sửa Chữa nào thuộc [${scopeLabel}] để xóa!`);
+        return;
+      }
+
+      let confirmText = prompt(`⚠️ CẢNH BÁO: Thao tác này sẽ xóa vĩnh viễn ${itemsToDelete.length} phiếu Sửa Chữa thuộc [${scopeLabel}]!\n\nVui lòng nhập: "đồng ý" (hoặc "ok") để xác nhận xóa:`);
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
       if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
-        repairDatabase = [];
-        localStorage.setItem('KIMCHI_REPAIR_CLEARED', 'true');
+        let deleteIds = new Set(itemsToDelete.map(it => String(it.id)));
+
+        // Xóa tài liệu sửa chữa trên Firebase Firestore nếu có
+        if (typeof db !== 'undefined' && db) {
+          try {
+            itemsToDelete.forEach(item => {
+              if (item && item.id) {
+                db.collection('repairs').doc(String(item.id)).delete().catch(console.error);
+              }
+            });
+          } catch(e) {
+            console.error("Lỗi xóa Firestore repairs:", e);
+          }
+        }
+
+        // Cập nhật lại repairDatabase
+        repairDatabase = repairDatabase.filter(it => !deleteIds.has(String(it.id)));
+        if (repairDatabase.length === 0) {
+          localStorage.setItem('KIMCHI_REPAIR_CLEARED', 'true');
+        }
         saveRepairDb();
         if (typeof renderRepairTable === 'function') renderRepairTable();
-        alert('Đã xóa sạch toàn bộ dữ liệu Sửa Chữa thành công!');
+        alert(`Đã xóa thành công ${itemsToDelete.length} phiếu Sửa Chữa thuộc [${scopeLabel}]!`);
       } else {
         alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
       }
@@ -6117,6 +6456,12 @@
             if (mDt) {
               timeFormatted = mDt[1];
               dateFormatted = mDt[2];
+            }
+
+            // Kiểm tra xem đơn Sửa Chữa có khớp với phạm vi thời gian đang chọn hay không
+            let checkItem = { dateFormatted: dateFormatted };
+            if (!isRepairItemMatchingCurrentFilter(checkItem)) {
+              continue;
             }
 
             let statusClean = rawStatus.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -6658,12 +7003,29 @@
     window.triggerImportBangaExcel = triggerImportBangaExcel;
 
     function exportBangaToExcel() {
-      if (!Array.isArray(bangaDatabase) || bangaDatabase.length === 0) {
-        alert("Chưa có dữ liệu Bán Gà để xuất Excel!");
+      let scopeLabel = getCurrentBangaScopeLabel();
+      let itemsToExport = bangaDatabase.filter(isBangaItemMatchingCurrentFilter);
+      if (!Array.isArray(itemsToExport) || itemsToExport.length === 0) {
+        alert(`Không có dữ liệu Bán Gà nào thuộc [${scopeLabel}] để xuất Excel!`);
         return;
       }
+
+      let timeSuffix = "TatCa";
+      if (bangaViewMode === 'day') {
+        const dd = String(currentBangaDateFilter.getDate()).padStart(2, '0');
+        const mm = String(currentBangaDateFilter.getMonth() + 1).padStart(2, '0');
+        const yyyy = currentBangaDateFilter.getFullYear();
+        timeSuffix = `Ngay_${dd}_${mm}_${yyyy}`;
+      } else if (bangaViewMode === 'month') {
+        const mm = String(currentBangaMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentBangaMonthFilter.year;
+        timeSuffix = `Thang_${mm}_${yyyy}`;
+      } else if (bangaViewMode === 'year') {
+        timeSuffix = `Nam_${currentBangaYearFilter}`;
+      }
+
       const headers = ["Mã Phiếu", "Tên Máy / Linh Kiện", "Giá Bán", "Giá Nhập", "Lãi", "Hình Thức", "Giờ - Ngày Bán", "Khách Hàng"];
-      const rows = bangaDatabase.map(item => [
+      const rows = itemsToExport.map(item => [
         item.id || '',
         item.name || '',
         item.total || '0',
@@ -6673,21 +7035,47 @@
         item.dateTime || '',
         item.customer || 'Khách lẻ'
       ]);
-      exportAoaToExcelOrCsv(headers, rows, "KimChiMobile_BanGa", "BanGa");
-      alert(`Đã xuất thành công ${bangaDatabase.length} phiếu Bán Gà ra file Excel!`);
+      exportAoaToExcelOrCsv(headers, rows, `KimChiMobile_BanGa_${timeSuffix}`, "BanGa");
+      alert(`Đã xuất thành công ${itemsToExport.length} phiếu Bán Gà (${scopeLabel}) ra file Excel!`);
     }
     window.exportBangaToExcel = exportBangaToExcel;
 
     function clearAllBangaData() {
-      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Bán Gà!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
+      let scopeLabel = getCurrentBangaScopeLabel();
+      let itemsToDelete = bangaDatabase.filter(isBangaItemMatchingCurrentFilter);
+
+      if (itemsToDelete.length === 0) {
+        alert(`Không có phiếu Bán Gà nào thuộc [${scopeLabel}] để xóa!`);
+        return;
+      }
+
+      let confirmText = prompt(`⚠️ CẢNH BÁO: Thao tác này sẽ xóa vĩnh viễn ${itemsToDelete.length} phiếu Bán Gà thuộc [${scopeLabel}]!\n\nVui lòng nhập: "đồng ý" (hoặc "ok") để xác nhận xóa:`);
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
       if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
-        bangaDatabase = [];
-        localStorage.setItem('KIMCHI_BANGA_CLEARED', 'true');
+        let deleteIds = new Set(itemsToDelete.map(it => String(it.id)));
+
+        // Xóa tài liệu banga trên Firebase Firestore nếu có
+        if (typeof db !== 'undefined' && db) {
+          try {
+            itemsToDelete.forEach(item => {
+              if (item && item.id) {
+                db.collection('banga').doc(String(item.id)).delete().catch(console.error);
+              }
+            });
+          } catch(e) {
+            console.error("Lỗi xóa Firestore banga:", e);
+          }
+        }
+
+        // Cập nhật lại bangaDatabase
+        bangaDatabase = bangaDatabase.filter(it => !deleteIds.has(String(it.id)));
+        if (bangaDatabase.length === 0) {
+          localStorage.setItem('KIMCHI_BANGA_CLEARED', 'true');
+        }
         saveBangaStorage();
         if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
-        alert('Đã xóa sạch toàn bộ dữ liệu Bán Gà thành công!');
+        alert(`Đã xóa thành công ${itemsToDelete.length} phiếu Bán Gà thuộc [${scopeLabel}]!`);
       } else {
         alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
       }
@@ -6772,6 +7160,12 @@
             let method = normalizePaymentMethod(rawMethod);
             let paymentStatus = (method === 'Nợ') ? 'Nợ Dai VL' : 'Đã Trả';
             let dateTime = formatImportDateTime(rawDate);
+
+            // Kiểm tra xem dòng Bán Gà này có khớp với phạm vi thời gian đang chọn hay không
+            let checkItem = { dateTime: dateTime };
+            if (!isBangaItemMatchingCurrentFilter(checkItem)) {
+              continue;
+            }
             let nonMachineRegex = /bán thẻ|thẻ nhớ|nạp|cầm đồ|thay lưng|sửa|míc|mic|ép kính|sim|bán màn|đớp|viettel|huy linh|rút tiền|bộ sạc|dây sạc|củ sạc|tai nghe|cường lực|ốp lưng|dán|pin|vỏ|camera|loa|hòa/i;
             let isMachine = false;
             if (rawType) {
@@ -6897,12 +7291,29 @@
     window.triggerImportSoldPhoneExcel = triggerImportSoldPhoneExcel;
 
     function exportSoldPhoneToExcel() {
-      if (!Array.isArray(soldPhoneDatabase) || soldPhoneDatabase.length === 0) {
-        alert("Chưa có dữ liệu Bảo Hành để xuất Excel!");
+      let scopeLabel = getCurrentSoldPhoneScopeLabel();
+      let itemsToExport = soldPhoneDatabase.filter(isSoldPhoneItemMatchingCurrentFilter);
+      if (!Array.isArray(itemsToExport) || itemsToExport.length === 0) {
+        alert(`Không có dữ liệu Bảo Hành nào thuộc [${scopeLabel}] để xuất Excel!`);
         return;
       }
+
+      let timeSuffix = "TatCa";
+      if (soldPhoneViewMode === 'day') {
+        const dd = String(currentSoldPhoneDateFilter.getDate()).padStart(2, '0');
+        const mm = String(currentSoldPhoneDateFilter.getMonth() + 1).padStart(2, '0');
+        const yyyy = currentSoldPhoneDateFilter.getFullYear();
+        timeSuffix = `Ngay_${dd}_${mm}_${yyyy}`;
+      } else if (soldPhoneViewMode === 'month') {
+        const mm = String(currentSoldPhoneMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentSoldPhoneMonthFilter.year;
+        timeSuffix = `Thang_${mm}_${yyyy}`;
+      } else if (soldPhoneViewMode === 'year') {
+        timeSuffix = `Nam_${currentSoldPhoneYearFilter}`;
+      }
+
       const headers = ["Hãng", "Tên Máy", "Dung Lượng", "Màu Sắc", "IMEI", "Giá Bán", "Giá Nhập", "Lãi", "Hình Thức", "Giờ - Ngày Bán", "Khách Hàng", "Bảo Hành", "Quà Tặng", "Ghi Chú"];
-      const rows = soldPhoneDatabase.map(p => [
+      const rows = itemsToExport.map(p => [
         p.brand || 'IPHONE',
         p.name || '',
         p.storage || '',
@@ -6918,23 +7329,46 @@
         p.giftStr || '',
         p.note || ''
       ]);
-      exportAoaToExcelOrCsv(headers, rows, "KimChiMobile_BaoHanh", "BaoHanh");
-      alert(`Đã xuất thành công ${soldPhoneDatabase.length} máy Bảo Hành ra file Excel!`);
+      exportAoaToExcelOrCsv(headers, rows, `KimChiMobile_BaoHanh_${timeSuffix}`, "BaoHanh");
+      alert(`Đã xuất thành công ${itemsToExport.length} máy Bảo Hành (${scopeLabel}) ra file Excel!`);
     }
     window.exportSoldPhoneToExcel = exportSoldPhoneToExcel;
 
     function clearAllSoldPhoneData() {
-      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Máy đã bán / Bảo Hành!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
+      let scopeLabel = getCurrentSoldPhoneScopeLabel();
+      let itemsToDelete = soldPhoneDatabase.filter(isSoldPhoneItemMatchingCurrentFilter);
+
+      if (itemsToDelete.length === 0) {
+        alert(`Không có phiếu Bảo Hành nào thuộc [${scopeLabel}] để xóa!`);
+        return;
+      }
+
+      let confirmText = prompt(`⚠️ CẢNH BÁO: Thao tác này sẽ xóa vĩnh viễn ${itemsToDelete.length} máy Bảo Hành thuộc [${scopeLabel}]!\n\nVui lòng nhập: "đồng ý" (hoặc "ok") để xác nhận xóa:`);
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
       if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
-        soldPhoneDatabase = [];
-        try {
-          localStorage.setItem('KIMCHI_SOLD_PHONE_CLEARED', 'true');
-          saveSoldPhoneStorage();
-        } catch (e) {}
+        let deleteIds = new Set(itemsToDelete.map(it => String(it.id)));
+
+        // Xóa trên Firebase Firestore nếu có
+        if (typeof db !== 'undefined' && db) {
+          try {
+            itemsToDelete.forEach(item => {
+              if (item && item.id) {
+                db.collection('sold_phones').doc(String(item.id)).delete().catch(console.error);
+              }
+            });
+          } catch(e) {
+            console.error("Lỗi xóa Firestore sold_phones:", e);
+          }
+        }
+
+        soldPhoneDatabase = soldPhoneDatabase.filter(it => !deleteIds.has(String(it.id)));
+        if (soldPhoneDatabase.length === 0) {
+          try { localStorage.setItem('KIMCHI_SOLD_PHONE_CLEARED', 'true'); } catch (e) {}
+        }
+        try { saveSoldPhoneStorage(); } catch (e) {}
         if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-        alert('Đã xóa sạch toàn bộ dữ liệu Bảo Hành thành công!');
+        alert(`Đã xóa thành công ${itemsToDelete.length} máy Bảo Hành thuộc [${scopeLabel}]!`);
       } else {
         alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
       }
@@ -7025,6 +7459,12 @@
             let profitStr = formatPriceStr(profitNum);
             let method = normalizePaymentMethod(rawMethod);
             let dateTime = formatImportDateTime(rawDate);
+
+            // Kiểm tra xem máy Bảo Hành này có khớp với phạm vi thời gian đang chọn hay không
+            let checkItem = { dateTime: dateTime };
+            if (!isSoldPhoneItemMatchingCurrentFilter(checkItem)) {
+              continue;
+            }
 
             // Kiểm tra trùng lặp
             let existing = soldPhoneDatabase.find(p => 
@@ -17289,15 +17729,40 @@
     window.toggleMainXacExcelActions = toggleMainXacExcelActions;
 
     function clearAllMainXacData() {
-      const confirmWord = prompt("⚠️ CẢNH BÁO: Thao tác này sẽ xóa toàn bộ danh sách Main - Xác!\n\nNhập đúng chữ \"yes\" hoặc \"tôi đồng ý xóa\" để xác nhận xóa:");
+      let scopeLabel = getCurrentMainXacScopeLabel();
+      let itemsToDelete = mainXacDatabase.filter(isMainXacItemMatchingCurrentFilter);
+
+      if (itemsToDelete.length === 0) {
+        alert(`Không có mục Main - Xác nào thuộc [${scopeLabel}] để xóa!`);
+        return;
+      }
+
+      const confirmWord = prompt(`⚠️ CẢNH BÁO: Thao tác này sẽ xóa vĩnh viễn ${itemsToDelete.length} mục Main - Xác thuộc [${scopeLabel}]!\n\nVui lòng nhập: "đồng ý" (hoặc "ok") để xác nhận xóa:`);
       if (confirmWord !== null) {
         const clean = confirmWord.trim().toLowerCase();
-        if (clean === "yes" || clean === "tôi đồng ý xóa" || clean === "toi dong y xoa") {
-          mainXacDatabase = [];
-          localStorage.setItem('KIMCHI_MAINXAC_CLEARED', 'true');
+        if (clean === "yes" || clean === "ok" || clean === "đồng ý" || clean === "dong y" || clean === "tôi đồng ý xóa" || clean === "toi dong y xoa") {
+          let deleteIds = new Set(itemsToDelete.map(it => String(it.id)));
+
+          // Xóa tài liệu trên Firebase Firestore nếu có
+          if (typeof db !== 'undefined' && db) {
+            try {
+              itemsToDelete.forEach(item => {
+                if (item && item.id) {
+                  db.collection('mainxac').doc(String(item.id)).delete().catch(console.error);
+                }
+              });
+            } catch(e) {
+              console.error("Lỗi xóa Firestore mainxac:", e);
+            }
+          }
+
+          mainXacDatabase = mainXacDatabase.filter(it => !deleteIds.has(String(it.id)));
+          if (mainXacDatabase.length === 0) {
+            localStorage.setItem('KIMCHI_MAINXAC_CLEARED', 'true');
+          }
           saveMainXacStorage();
           renderMainXacGrid();
-          alert("Đã xóa sạch toàn bộ danh sách Main - Xác!");
+          alert(`Đã xóa thành công ${itemsToDelete.length} mục Main - Xác thuộc [${scopeLabel}]!`);
         } else {
           alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
         }
@@ -17898,11 +18363,28 @@
     window.renderMainXacGrid = renderMainXacGrid;
 
     function exportMainXacToExcel() {
-      if (mainXacDatabase.length === 0) {
-        alert("Chưa có dữ liệu Main - Xác để xuất!");
+      let scopeLabel = getCurrentMainXacScopeLabel();
+      let itemsToExport = mainXacDatabase.filter(isMainXacItemMatchingCurrentFilter);
+      if (itemsToExport.length === 0) {
+        alert(`Không có dữ liệu Main - Xác nào thuộc [${scopeLabel}] để xuất!`);
         return;
       }
-      const data = mainXacDatabase.map((item, idx) => ({
+
+      let timeSuffix = "TatCa";
+      if (mainXacViewMode === 'day') {
+        const dd = String(currentMainXacDateFilter.getDate()).padStart(2, '0');
+        const mm = String(currentMainXacDateFilter.getMonth() + 1).padStart(2, '0');
+        const yyyy = currentMainXacDateFilter.getFullYear();
+        timeSuffix = `Ngay_${dd}_${mm}_${yyyy}`;
+      } else if (mainXacViewMode === 'month') {
+        const mm = String(currentMainXacMonthFilter.month + 1).padStart(2, '0');
+        const yyyy = currentMainXacMonthFilter.year;
+        timeSuffix = `Thang_${mm}_${yyyy}`;
+      } else if (mainXacViewMode === 'year') {
+        timeSuffix = `Nam_${currentMainXacYearFilter}`;
+      }
+
+      const data = itemsToExport.map((item, idx) => ({
         "STT": idx + 1,
         "Tên Máy / Main": item.name || '',
         "Dung Lượng": item.storage || '',
@@ -17921,7 +18403,8 @@
       const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "MAIN_XAC");
-      XLSX.writeFile(wb, `Danh_Sach_Main_Xac_${getCurrentDateStr().replace(/\//g, '_')}.xlsx`);
+      XLSX.writeFile(wb, `Danh_Sach_Main_Xac_${timeSuffix}.xlsx`);
+      alert(`Đã xuất thành công ${itemsToExport.length} mục Main - Xác (${scopeLabel}) ra file Excel!`);
     }
 
     function triggerImportMainXacExcel() {
@@ -17944,6 +18427,12 @@
             json.forEach(row => {
               const name = row["Tên Máy / Main"] || row["Tên Máy"] || row["Ten May"] || '';
               if (name) {
+                let rawDate = row["Ngày Nhập"] || row["Ngay Nhap"] || getCurrentDateStr();
+                let checkItem = { date: rawDate };
+                if (!isMainXacItemMatchingCurrentFilter(checkItem)) {
+                  return; // Bỏ qua nếu không thuộc phạm vi thời gian đang chọn
+                }
+
                 mainXacDatabase.unshift({
                   id: Date.now() + Math.random(),
                   name: toTitleCase(String(name).trim()),
@@ -17958,14 +18447,15 @@
                   price: String(row["Giá Bán"] || row["Gia Ban"] || '0'),
                   status: row["Trạng Thái"] || 'Còn Hàng',
                   note: row["Ghi Chú"] || '',
-                  date: row["Ngày Nhập"] || getCurrentDateStr()
+                  date: rawDate
                 });
                 count++;
               }
             });
             saveMainXacStorage();
             renderMainXacGrid();
-            alert(`Đã nhập thành công ${count} mục Main - Xác từ Excel!`);
+            let scopeLabel = getCurrentMainXacScopeLabel();
+            alert(`Đã nhập thành công ${count} mục Main - Xác thuộc [${scopeLabel}] từ Excel!`);
           }
         } catch (err) {
           alert("Lỗi khi đọc file Excel: " + err.message);
