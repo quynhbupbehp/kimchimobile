@@ -12463,9 +12463,6 @@
                 </div>
               </div>
               <div class="sw-link-actions">
-                <button type="button" class="sw-link-icon-btn sw-btn-open" onclick="openSwUrl('${escapeHtml(url)}')" title="Mở trang web trong tab mới">
-                  ${openSvg}
-                </button>
                 <button type="button" class="sw-link-icon-btn" onclick="copySingleSwNote('${item.id}')" title="Sao chép link web">
                   ${copySvg}
                 </button>
