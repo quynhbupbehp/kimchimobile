@@ -17173,6 +17173,48 @@
     }
     window.saveMainXacStorage = saveMainXacStorage;
 
+    function handleMxStatusChange(status) {
+      const isConHang = (status === 'Còn Hàng');
+      const starIds = [
+        'lblMxImeiStar',
+        'lblMxColorStar',
+        'lblMxStorageStar',
+        'lblMxConditionStar',
+        'lblMxPinStatusStar',
+        'lblMxPinPctStar',
+        'lblMxOriginStar',
+        'lblMxPriceInStar',
+        'lblMxPriceOutStar'
+      ];
+      starIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = isConHang ? 'inline' : 'none';
+      });
+
+      const inputs = [
+        'mxImei',
+        'mxColor',
+        'mxStorage',
+        'mxCondition',
+        'mxPinStatus',
+        'mxPinPct',
+        'mxOrigin',
+        'mxPriceIn',
+        'mxPriceOut'
+      ];
+      inputs.forEach(id => {
+        const inp = document.getElementById(id);
+        if (inp) {
+          if (isConHang) {
+            inp.setAttribute('required', 'required');
+          } else {
+            inp.removeAttribute('required');
+          }
+        }
+      });
+    }
+    window.handleMxStatusChange = handleMxStatusChange;
+
     function openMainXacModal(editId = null) {
       renderAllDropdowns();
       const modal = document.getElementById('mainXacModal');
@@ -17190,17 +17232,19 @@
           document.getElementById('mxStorage').value = (item.storage || '').replace(/[()]/g, '');
           document.getElementById('mxCondition').value = item.condition || '';
           document.getElementById('mxPinStatus').value = item.pinStatus || '';
-          document.getElementById('mxPinPct').value = item.pin || '100%';
+          document.getElementById('mxPinPct').value = item.pin || '';
           document.getElementById('mxOrigin').value = item.origin || '';
-          document.getElementById('mxStatus').value = item.status || 'Còn Hàng';
+          const stVal = (item.status === 'Còn Hàng') ? 'Còn Hàng' : 'Chưa Xử Lý';
+          document.getElementById('mxStatus').value = stVal;
           document.getElementById('mxPriceIn').value = item.priceIn || '';
-          document.getElementById('mxPriceOut').value = item.price || '';
+          document.getElementById('mxPriceOut').value = item.price && item.price !== '0' ? item.price : '';
           document.getElementById('mxNote').value = item.note || '';
           document.getElementById('mxDateVal').value = item.date || getCurrentDateStr();
+          handleMxStatusChange(stVal);
           calcMainXacModalProfit();
         }
       } else {
-        if (titleEl) titleEl.innerText = "Thêm Thông Tin Máy Mới";
+        if (titleEl) titleEl.innerText = "Thêm Máy Xác";
         if (editInput) editInput.value = '';
         document.getElementById('mxName').value = '';
         document.getElementById('mxImei').value = '';
@@ -17208,13 +17252,14 @@
         document.getElementById('mxStorage').value = '';
         document.getElementById('mxCondition').value = '';
         document.getElementById('mxPinStatus').value = '';
-        document.getElementById('mxPinPct').value = '100%';
+        document.getElementById('mxPinPct').value = '';
         document.getElementById('mxOrigin').value = '';
-        document.getElementById('mxStatus').value = 'Còn Hàng';
+        document.getElementById('mxStatus').value = 'Chưa Xử Lý';
         document.getElementById('mxPriceIn').value = '';
         document.getElementById('mxPriceOut').value = '';
         document.getElementById('mxNote').value = '';
         document.getElementById('mxDateVal').value = getCurrentDateStr();
+        handleMxStatusChange('Chưa Xử Lý');
         calcMainXacModalProfit();
       }
 
@@ -17280,10 +17325,129 @@
       const origin = document.getElementById('mxOrigin').value.trim().toUpperCase() || 'VN/A';
       const status = document.getElementById('mxStatus').value;
       const priceIn = document.getElementById('mxPriceIn').value.trim();
-      const priceOut = document.getElementById('mxPriceOut').value.trim();
+      let priceOut = document.getElementById('mxPriceOut').value.trim();
+      if (!priceOut) priceOut = '0';
       const note = toTitleCase(document.getElementById('mxNote').value.trim());
       const dateIn = document.getElementById('mxDateVal').value.trim() || getCurrentDateStr();
 
+      // Bắt buộc nhập Tên Máy
+      if (!name) {
+        alert("Vui lòng nhập Tên Máy!");
+        document.getElementById('mxName').focus();
+        return;
+      }
+
+      // Khi chuyển trạng thái từ Chưa Xử Lý sang Còn Hàng: Toàn bộ dữ liệu đều bắt buộc nhập (trừ ghi chú)
+      if (status === 'Còn Hàng') {
+        if (!imei) {
+          alert("Trạng thái Còn Hàng bắt buộc nhập 4 số đuôi IMEI!");
+          document.getElementById('mxImei').focus();
+          return;
+        }
+        if (!color) {
+          alert("Trạng thái Còn Hàng bắt buộc nhập Màu Sắc!");
+          document.getElementById('mxColor').focus();
+          return;
+        }
+        if (!storage) {
+          alert("Trạng thái Còn Hàng bắt buộc nhập Dung Lượng Máy!");
+          document.getElementById('mxStorage').focus();
+          return;
+        }
+        if (!condition) {
+          alert("Trạng thái Còn Hàng bắt buộc nhập Tình Trạng Máy!");
+          document.getElementById('mxCondition').focus();
+          return;
+        }
+        if (!pinStatus) {
+          alert("Trạng thái Còn Hàng bắt buộc nhập Tình Trạng Pin!");
+          document.getElementById('mxPinStatus').focus();
+          return;
+        }
+        if (!pinPct) {
+          alert("Trạng thái Còn Hàng bắt buộc nhập Dung Lượng Pin!");
+          document.getElementById('mxPinPct').focus();
+          return;
+        }
+        if (!origin) {
+          alert("Trạng thái Còn Hàng bắt buộc nhập Quốc Gia!");
+          document.getElementById('mxOrigin').focus();
+          return;
+        }
+        if (!priceIn) {
+          alert("Trạng thái Còn Hàng bắt buộc nhập Giá Nhập!");
+          document.getElementById('mxPriceIn').focus();
+          return;
+        }
+        if (!priceOut || priceOut === '0') {
+          alert("Trạng thái Còn Hàng bắt buộc nhập Giá Bán hợp lệ (khác 0)!");
+          document.getElementById('mxPriceOut').focus();
+          return;
+        }
+
+        // Tự động nhận diện Hãng máy để đưa vào kho Bán Máy
+        let detectedBrand = 'IPHONE';
+        if (typeof isPhoneBrandIphone === 'function' && isPhoneBrandIphone('', name)) detectedBrand = 'IPHONE';
+        else if (/samsung/i.test(name)) detectedBrand = 'SAMSUNG';
+        else if (/oppo/i.test(name)) detectedBrand = 'OPPO';
+        else if (/realme/i.test(name)) detectedBrand = 'REALME';
+        else if (/redmi/i.test(name)) detectedBrand = 'REDMI';
+        else if (/poco/i.test(name)) detectedBrand = 'POCO';
+        else if (/vivo/i.test(name)) detectedBrand = 'VIVO';
+        else detectedBrand = 'KHÁC';
+
+        let formattedStorageVal = typeof formatStorageValue === 'function' ? formatStorageValue(storage) : storage;
+        let formattedPinVal = typeof formatPinByBrand === 'function' ? formatPinByBrand(pinPct, detectedBrand, name) : pinPct;
+
+        const newPhoneItem = {
+          id: Date.now() + Math.random(),
+          brand: detectedBrand,
+          name: name,
+          color: color,
+          storage: formattedStorageVal ? `(${formattedStorageVal})` : '',
+          imei: imei,
+          price: priceOut,
+          condition: condition,
+          pinStatus: pinStatus,
+          pin: formattedPinVal,
+          origin: origin,
+          priceIn: priceIn || '0',
+          status: 'Còn Hàng',
+          note: note,
+          date: dateIn
+        };
+
+        // Thêm vào danh sách Bán Máy
+        phoneDatabase.unshift(newPhoneItem);
+        if (typeof logActivity === 'function') {
+          logActivity('ADD', 'banmay', 'Bán máy', `Chuyển từ Main Xác sang Bán Máy: ${detectedBrand} ${name} (${imei}) - Giá: ${priceOut}`, null, newPhoneItem, newPhoneItem.id);
+        }
+
+        // Nếu là sửa từ main xác cũ, xóa mục đó khỏi main xác
+        if (editId) {
+          mainXacDatabase = mainXacDatabase.filter(x => String(x.id) !== String(editId) && x.id != editId);
+          if (typeof db !== 'undefined' && db) {
+            db.collection('mainxac').doc(String(editId)).delete().catch(console.error);
+          }
+        }
+
+        savePhoneStorage();
+        saveMainXacStorage();
+        closeMainXacModal();
+        renderMainXacGrid();
+        if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
+
+        // Chuyển sang tab Bán Máy
+        if (typeof switchMainTab === 'function') {
+          const banMayBtn = document.querySelector("button[onclick*=\"'banmay'\"]");
+          switchMainTab('banmay', banMayBtn);
+        }
+
+        alert("🎉 Đã chuyển máy thành công sang kho BÁN MÁY!");
+        return;
+      }
+
+      // Trạng thái Chưa Xử Lý (lưu bình thường trong kho Main - Xác)
       if (editId) {
         const item = mainXacDatabase.find(x => String(x.id) === String(editId) || x.id == editId);
         if (item) {
@@ -17466,7 +17630,7 @@
       if (footCountTextEl) footCountTextEl.innerText = `Hiển thị ${filtered.length} main - xác.`;
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-sub); font-size: 0.95rem;">Không tìm thấy mục Main - Xác nào phù hợp</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--text-sub); font-size: 0.95rem;">Không tìm thấy mục Main - Xác nào phù hợp</td></tr>`;
         return;
       }
 
@@ -17495,11 +17659,6 @@
           </div>
         `;
 
-        let pIn = parsePriceNum(item.priceIn);
-        let pOut = parsePriceNum(item.price);
-        let profitVal = pOut > 0 ? (pOut - pIn) : 0;
-        let profitStr = pOut > 0 ? ((profitVal < 0 ? '-' : '') + formatPriceStr(Math.abs(profitVal))) : '0';
-
         let stColor = '#10b981';
         if (item.status === 'Chưa Xử Lý') stColor = '#38bdf8';
         else if (item.status === 'Máy Xác') stColor = '#f59e0b';
@@ -17513,10 +17672,8 @@
             <td style="font-weight: 800; text-align: left; padding-left: 16px; vertical-align: middle;">
               ${nameHtml}
             </td>
-            <td style="font-weight: 900; color: #f87171; font-size: 1.38rem; text-align: center; vertical-align: middle;">${formatPriceStr(item.price || '0')}</td>
             <td style="color: #ffffff; font-weight: 900; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(item.priceIn || '0')}</td>
-            <td style="font-weight: 900; color: #eab308; font-size: 1.05rem; text-align: center; vertical-align: middle;">${formatPriceStr(profitStr)}</td>
-            <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; font-size: 1.05rem; color: ${stColor};">${item.status || 'Còn Hàng'}</span></td>
+            <td style="text-align: center; vertical-align: middle;"><span style="font-weight: 800; font-size: 1.05rem; color: ${stColor};">${item.status || 'Chưa Xử Lý'}</span></td>
             <td style="color: #ec4899; font-weight: 800; font-size: 1.05rem; text-align: center; vertical-align: middle;">${dateDisplay}</td>
             <td style="text-align: center; vertical-align: middle;">
               <div class="action-btn-group" style="justify-content: center;">

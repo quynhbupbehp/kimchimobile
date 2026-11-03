@@ -2321,11 +2321,9 @@
               <select id="mainXacStatusFilter" class="price-filter-select"
                 onchange="handleMainXacStatusFilterChange(this)">
                 <option value="ALL">Tất Cả</option>
+                <option value="Chưa Xử Lý" selected>Chưa Xử Lý</option>
                 <option value="Còn Hàng">Còn Hàng</option>
-                <option value="Chưa Xử Lý">Chưa Xử Lý</option>
                 <option value="Máy Xác">Máy Xác</option>
-                <option value="Đã Rã Xác">Đã Rã Xác</option>
-                <option value="Đã Bán">Đã Bán</option>
               </select>
             </div>
           </div>
@@ -2374,9 +2372,7 @@
               <tr>
                 <th style="color: #eab308; text-align: left; padding-left: 16px; font-size: 1.08rem;">HÃNG / TÊN MÁY
                 </th>
-                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ BÁN</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">GIÁ NHẬP</th>
-                <th style="color: #eab308; text-align: center; font-size: 1.08rem;">LÃI</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">TRẠNG THÁI</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">NGÀY NHẬP</th>
                 <th style="color: #eab308; text-align: center; font-size: 1.08rem;">THAO TÁC</th>
@@ -2392,10 +2388,7 @@
           <div id="mainXacFooterSummary"
             style="display: flex; align-items: center; gap: 20px; font-weight: 800; font-size: 1.05rem;">
             <span>Tổng Máy : <span id="mainXacFootCount" style="color: #ffffff; font-weight: 800;">0</span></span>
-            <span style="color: #f87171;">Giá Bán : <span id="mainXacFootPrice"
-                style="font-weight: 900;">0</span></span>
-            <span style="color: #eab308;">Vốn : <span id="mainXacFootCost" style="font-weight: 900;">0</span></span>
-            <span style="color: #10b981;">Lãi : <span id="mainXacFootProfit" style="font-weight: 900;">0</span></span>
+            <span style="color: #eab308;">Tổng Vốn : <span id="mainXacFootCost" style="font-weight: 900;">0</span></span>
           </div>
         </div>
       </div>
@@ -3050,7 +3043,7 @@
   <div class="modal-overlay" id="mainXacModal">
     <div class="modal-ticket-box" style="max-width: 644px;">
       <div class="ticket-header">
-        <span id="mainXacModalTitle">Thêm Thông Tin Máy Mới</span>
+        <span id="mainXacModalTitle">Thêm Máy Xác</span>
         <button type="button" onclick="closeMainXacModal()"
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
@@ -3061,7 +3054,7 @@
         <!-- HÀNG 1: TÊN MÁY | IMEI | MÀU SẮC -->
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Tên Máy *</label>
+            <label class="form-ticket-label">Tên Máy <span style="color: #ef4444;">*</span></label>
             <div class="input-with-actions">
               <input type="text" list="mNameList" class="ticket-input" id="mxName" required autocomplete="off"
                 oninput="formatTitleCaseInput(this)">
@@ -3089,16 +3082,16 @@
 
           <div style="flex: 1; display: flex; gap: 6px;">
             <div class="form-ticket-group" style="width: 58px; flex-shrink: 0;">
-              <label class="form-ticket-label" style="text-align: center;">IMEI *</label>
-              <input type="text" class="ticket-input" id="mxImei" required maxlength="4" inputmode="numeric"
+              <label class="form-ticket-label" style="text-align: center;">IMEI <span id="lblMxImeiStar" style="color: #ef4444; display: none;">*</span></label>
+              <input type="text" class="ticket-input" id="mxImei" maxlength="4" inputmode="numeric"
                 pattern="[0-9]{4}" placeholder="" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4);"
                 style="text-align: center; font-weight: 800; padding: 9px 4px; letter-spacing: 0.5px;">
             </div>
 
             <div class="form-ticket-group" style="flex: 1; min-width: 0;">
-              <label class="form-ticket-label">Màu Sắc *</label>
+              <label class="form-ticket-label">Màu Sắc <span id="lblMxColorStar" style="color: #ef4444; display: none;">*</span></label>
               <div class="input-with-actions">
-                <input type="text" list="mColorList" class="ticket-input" id="mxColor" required autocomplete="off"
+                <input type="text" list="mColorList" class="ticket-input" id="mxColor" autocomplete="off"
                   oninput="formatTitleCaseInput(this)">
                 <div class="icon-btn-set">
                   <button type="button" class="btn-svg-action btn-svg-add"
@@ -3127,7 +3120,7 @@
         <!-- HÀNG 2: DUNG LƯỢNG MÁY | TÌNH TRẠNG MÁY -->
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Dung Lượng Máy</label>
+            <label class="form-ticket-label">Dung Lượng Máy <span id="lblMxStorageStar" style="color: #ef4444; display: none;">*</span></label>
             <div class="input-with-actions">
               <input type="text" list="mStorageList" class="ticket-input" id="mxStorage" autocomplete="off"
                 oninput="formatTitleCaseInput(this)" onblur="formatStorageInput(this)">
@@ -3154,9 +3147,9 @@
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Tình Trạng Máy *</label>
+            <label class="form-ticket-label">Tình Trạng Máy <span id="lblMxConditionStar" style="color: #ef4444; display: none;">*</span></label>
             <div class="input-with-actions">
-              <input type="text" list="mConditionList" class="ticket-input" id="mxCondition" required autocomplete="off"
+              <input type="text" list="mConditionList" class="ticket-input" id="mxCondition" autocomplete="off"
                 oninput="formatTitleCaseInput(this)">
               <div class="icon-btn-set">
                 <button type="button" class="btn-svg-action btn-svg-add"
@@ -3185,7 +3178,7 @@
         <!-- HÀNG 3: TÌNH TRẠNG PIN | DUNG LƯỢNG PIN -->
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Tình Trạng Pin</label>
+            <label class="form-ticket-label">Tình Trạng Pin <span id="lblMxPinStatusStar" style="color: #ef4444; display: none;">*</span></label>
             <div class="input-with-actions">
               <input type="text" list="mPinStatusList" class="ticket-input" id="mxPinStatus" autocomplete="off"
                 oninput="formatTitleCaseInput(this)">
@@ -3213,9 +3206,9 @@
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Dung Lượng Pin</label>
+            <label class="form-ticket-label">Dung Lượng Pin <span id="lblMxPinPctStar" style="color: #ef4444; display: none;">*</span></label>
             <div class="input-with-actions">
-              <input type="text" list="mPinPctList" class="ticket-input" id="mxPinPct" autocomplete="off"
+              <input type="text" list="mPinPctList" class="ticket-input" id="mxPinPct" placeholder="" autocomplete="off"
                 onblur="formatBatteryInput(this)">
               <div class="icon-btn-set">
                 <button type="button" class="btn-svg-action btn-svg-add"
@@ -3243,7 +3236,7 @@
         <!-- HÀNG 4: QUỐC GIA | TRẠNG THÁI -->
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Quốc Gia</label>
+            <label class="form-ticket-label">Quốc Gia <span id="lblMxOriginStar" style="color: #ef4444; display: none;">*</span></label>
             <div class="input-with-actions">
               <input type="text" list="mOriginList" class="ticket-input" id="mxOrigin" autocomplete="off"
                 oninput="formatTitleCaseInput(this)">
@@ -3271,12 +3264,10 @@
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Trạng Thái <span style="color: #ef4444;">*</span></label>
-            <select class="ticket-input" id="mxStatus" required
+            <select class="ticket-input" id="mxStatus" required onchange="handleMxStatusChange(this.value)"
               style="cursor: pointer; font-weight: 800; background: #1e293b; color: #fff; border: 1px solid var(--border-color);">
-              <option value="Còn Hàng" selected>Còn Hàng</option>
-              <option value="Chưa Xử Lý">Chưa Xử Lý</option>
-              <option value="Đã Rã Xác">Đã Rã Xác</option>
-              <option value="Đã Bán">Đã Bán</option>
+              <option value="Chưa Xử Lý" selected>Chưa Xử Lý</option>
+              <option value="Còn Hàng">Còn Hàng</option>
             </select>
           </div>
         </div>
@@ -3284,15 +3275,15 @@
         <!-- HÀNG 5: GIÁ NHẬP | GIÁ BÁN -->
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Giá Nhập</label>
+            <label class="form-ticket-label">Giá Nhập <span id="lblMxPriceInStar" style="color: #ef4444; display: none;">*</span></label>
             <input type="text" class="ticket-input" id="mxPriceIn"
               oninput="formatCurrencyInput(this); calcMainXacModalProfit();">
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Giá Bán *</label>
-            <input type="text" class="ticket-input" id="mxPriceOut"
-              oninput="formatCurrencyInput(this); calcMainXacModalProfit();" required>
+            <label class="form-ticket-label">Giá Bán <span id="lblMxPriceOutStar" style="color: #ef4444; display: none;">*</span></label>
+            <input type="text" class="ticket-input" id="mxPriceOut" placeholder="0"
+              oninput="formatCurrencyInput(this); calcMainXacModalProfit();">
           </div>
         </div>
 
