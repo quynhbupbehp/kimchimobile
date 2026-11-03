@@ -149,7 +149,8 @@
         .draggable-tab {
             cursor: grab;
             user-select: none;
-            touch-action: pan-y;
+            -webkit-user-select: none;
+            touch-action: pan-x pan-y !important;
         }
 
         .draggable-tab:active {
@@ -166,15 +167,19 @@
             transform: scale(1.05);
         }
 
-        /* HỖ TRỢ CUỘN NGANG MƯỢT MÀ CHO CÁC THANH TABS (HÃNG, LINH KIỆN, KIỂU) TRÊN MOBILE & DESKTOP */
+        /* HỖ TRỢ CUỘN / VUỐT NGANG MƯỢT MÀ CHO CÁC THANH TABS (HÃNG, LINH KIỆN, KIỂU) TRÊN MOBILE & DESKTOP */
         #brand-tabs,
         #categories-filter-wrapper,
         #main-cat-tabs-desktop,
         #type-tabs-container-desktop {
+            display: flex !important;
+            flex-wrap: nowrap !important;
             overflow-x: auto !important;
+            overflow-y: hidden !important;
             -webkit-overflow-scrolling: touch !important;
-            touch-action: pan-x !important;
+            touch-action: pan-x pan-y !important;
             scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
         }
 
         #brand-tabs::-webkit-scrollbar,
@@ -182,6 +187,8 @@
         #main-cat-tabs-desktop::-webkit-scrollbar,
         #type-tabs-container-desktop::-webkit-scrollbar {
             display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
 
         /* ẨN TRÊN GIAO DIỆN MOBILE (< 768px) CHO TAB BÁO GIÁ */
@@ -219,6 +226,30 @@
                 text-overflow: ellipsis !important;
                 white-space: nowrap !important;
                 display: inline-block !important;
+            }
+
+            /* ĐẢM BẢO CÁC THANH TABS VUỐT CẢM ỨNG NGANG CỰC MƯỢT TRÊN MOBILE */
+            #brand-tabs,
+            #categories-filter-wrapper,
+            #main-cat-tabs-desktop,
+            #type-tabs-container-desktop {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                touch-action: pan-x pan-y !important;
+                cursor: grab;
+                user-select: none !important;
+                -webkit-user-select: none !important;
+            }
+
+            .draggable-tab {
+                touch-action: pan-x pan-y !important;
+                -webkit-user-drag: none !important;
+                user-select: none !important;
+                -webkit-user-select: none !important;
+                flex-shrink: 0 !important;
             }
         }
     </style>
@@ -1143,6 +1174,8 @@
         }
 
         function initTabs() {
+            const isDesktop = window.innerWidth > 768;
+            const dragAttr = isDesktop ? 'draggable="true"' : 'draggable="false"';
             const isImportTab = currentBrand === 'NHẬP HÀNG';
             const isIphoneTab = currentBrand.toUpperCase() === 'IPHONE';
 
@@ -1171,7 +1204,7 @@
                     displayBrandName = `<span class="md:hidden">${cleanB}</span><span class="hidden md:inline">${b}</span>`;
                 }
 
-                return `<button draggable="true"
+                return `<button ${dragAttr}
                     ondragstart="handleTabDragStart(event, 'brands', ${realBrandIdx})"
                     ondragend="handleTabDragEnd(event)"
                     ondragover="handleTabDragOver(event)"
@@ -1190,7 +1223,10 @@
             `;
 
             const brandTabsEl = document.getElementById('brand-tabs');
-            if (brandTabsEl) brandTabsEl.innerHTML = brandTabsHtml;
+            if (brandTabsEl) {
+                brandTabsEl.innerHTML = brandTabsHtml;
+                enableDragScroll(brandTabsEl);
+            }
 
             // Xử lý tabs Linh Kiện (Hàng 2)
             // CHỈ HIỂN THỊ LINH KIỆN ĐÃ ĐƯỢC THÊM TRONG DANH SÁCH (CÁI NÀO CHƯA CÓ KHÔNG HIỆN)
@@ -1254,7 +1290,7 @@
                     displayCatName = `<span class="md:hidden">MÀN</span><span class="hidden md:inline">MÀN HÌNH</span>`;
                 }
 
-                return `<button draggable="true"
+                return `<button ${dragAttr}
                     ondragstart="handleTabDragStart(event, 'categories', ${realCatIdx})"
                     ondragend="handleTabDragEnd(event)"
                     ondragover="handleTabDragOver(event)"
@@ -1266,7 +1302,13 @@
             }).join('');
 
             const catTabsWrapper = document.getElementById('main-cat-tabs-desktop');
-            if (catTabsWrapper) catTabsWrapper.innerHTML = catTabsHtml;
+            if (catTabsWrapper) {
+                catTabsWrapper.innerHTML = catTabsHtml;
+            }
+            const catFilterWrapper = document.getElementById('categories-filter-wrapper');
+            if (catFilterWrapper) {
+                enableDragScroll(catFilterWrapper);
+            }
 
             // Xử lý tabs Kiểu (Hàng 3):
             // NGOẠI TRỪ HÃNG IPHONE, CÁC HÃNG KHÁC ẨN HOÀN TOÀN PHẦN KIỂU ĐI
@@ -1323,7 +1365,7 @@
                         const btnClass = isSelected
                             ? 'bg-[#6366f1] text-white font-black shadow-lg shadow-indigo-600/30 border border-indigo-400'
                             : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
-                        return `<button draggable="true"
+                        return `<button ${dragAttr}
                             ondragstart="handleTabDragStart(event, 'types', ${realTypeIdx})"
                             ondragend="handleTabDragEnd(event)"
                             ondragover="handleTabDragOver(event)"
@@ -1335,12 +1377,88 @@
                     }).join('');
 
                     typeTabsWrapper.innerHTML = typeTabsHtml;
+                    enableDragScroll(typeTabsWrapper);
                 }
             }
 
             // Cập nhật trạng thái select tình trạng hàng
             const statusSelect = document.getElementById('stock-status-select');
             if (statusSelect) statusSelect.value = currentStockStatus;
+        }
+
+        // ==================== HỖ TRỢ KÉO / VUỐT NGANG (DRAG-TO-SCROLL & TOUCH SWIPE) CHO THANH TABS ====================
+        function enableDragScroll(slider) {
+            if (!slider || slider.dataset.dragScrollInit === 'true') return;
+            slider.dataset.dragScrollInit = 'true';
+
+            let isDown = false;
+            let startX = 0;
+            let scrollLeft = 0;
+            let hasMoved = false;
+
+            // Touch events (cho thiết bị cảm ứng mobile/tablet)
+            slider.addEventListener('touchstart', (e) => {
+                if (!e.touches || e.touches.length === 0) return;
+                isDown = true;
+                hasMoved = false;
+                startX = e.touches[0].pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            }, { passive: true });
+
+            slider.addEventListener('touchmove', (e) => {
+                if (!isDown || !e.touches || e.touches.length === 0) return;
+                const x = e.touches[0].pageX - slider.offsetLeft;
+                const walk = x - startX;
+                if (Math.abs(walk) > 4) {
+                    hasMoved = true;
+                    slider.scrollLeft = scrollLeft - walk;
+                }
+            }, { passive: true });
+
+            const touchEndHandler = () => {
+                isDown = false;
+            };
+            slider.addEventListener('touchend', touchEndHandler, { passive: true });
+            slider.addEventListener('touchcancel', touchEndHandler, { passive: true });
+
+            // Mouse drag-to-scroll (cho cả desktop kéo chuột hoặc test mobile view trên trình duyệt)
+            slider.addEventListener('mousedown', (e) => {
+                // Chỉ kích hoạt nếu không bấm vào nút đang kéo HTML5 reorder
+                if (window.innerWidth > 768 && e.target.closest('.draggable-tab')) {
+                    // Trên desktop khi drag reorder thì để HTML5 drag xử lý
+                    return;
+                }
+                isDown = true;
+                hasMoved = false;
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 1.5;
+                if (Math.abs(walk) > 5) {
+                    hasMoved = true;
+                    e.preventDefault();
+                    slider.scrollLeft = scrollLeft - walk;
+                }
+            });
+
+            const mouseUpHandler = () => {
+                isDown = false;
+            };
+            slider.addEventListener('mouseup', mouseUpHandler);
+            slider.addEventListener('mouseleave', mouseUpHandler);
+
+            // Ngăn chặn click nhầm vào tab khi vừa vuốt / kéo di chuyển
+            slider.addEventListener('click', (e) => {
+                if (hasMoved) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    hasMoved = false;
+                }
+            }, true);
         }
 
         function switchType(t) {
