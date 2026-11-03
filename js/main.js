@@ -1708,17 +1708,8 @@
 
       // 3. Tab PHẦN MỀM
       swFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
-      currentSoftwareMonthFilter = { month: vnNow.getMonth(), year: yyyy };
-      currentSoftwareYearFilter = yyyy;
       const swDateDisp = document.getElementById('filterSoftwareDateDisplay');
-      if (swDateDisp) {
-        if (swDateDisp.tagName === 'INPUT') swDateDisp.value = dateStr;
-        else swDateDisp.innerText = dateStr;
-      }
-      const swMonthDisp = document.getElementById('filterSoftwareMonthDisplay');
-      if (swMonthDisp) swMonthDisp.innerText = monthStr;
-      const swYearDisp = document.getElementById('filterSoftwareYearDisplay');
-      if (swYearDisp) swYearDisp.innerText = String(yyyy);
+      if (swDateDisp) swDateDisp.value = dateStr;
 
       // 4. Tab SỬA CHỮA
       repairFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
@@ -2144,7 +2135,6 @@
             // Sắp xếp ID lớn nhất / mới nhất lên đầu
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             softwareDatabase = list;
-            localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
             try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
             if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
             if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
@@ -2152,18 +2142,6 @@
               renderSoftwareDebtTable();
             }
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-          } else if (snapshot.empty || list.length === 0) {
-            // Khi Firestore trống hoặc đã xóa hết
-            if (localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true' || softwareDatabase.length === 0) {
-              softwareDatabase = [];
-              try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify([])); } catch(e){}
-              if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-              if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
-              if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
-                renderSoftwareDebtTable();
-              }
-              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-            }
           }
         }, err => console.error("Lỗi sync software realtime:", err));
       } catch (err) {
@@ -5667,41 +5645,14 @@
     window.exportSoftwareToExcel = exportSoftwareToExcel;
 
     function clearAllSoftwareData() {
-      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Phần Mềm trên cả máy này và đám mây!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
+      let confirmText = prompt('⚠️ CẢNH BÁO: Thao tác này sẽ xóa sạch toàn bộ danh sách Phần Mềm!\n\nVui lòng nhập chính xác: "tôi đồng ý xóa" để xác nhận:');
       if (confirmText === null) return;
       let clean = confirmText.trim().toLowerCase();
       if (clean === 'tôi đồng ý xóa' || clean === 'toi dong y xoa' || clean === 'yes' || clean === 'ok' || clean === 'đồng ý' || clean === 'dong y') {
-        const oldDocs = [...softwareDatabase];
         softwareDatabase = [];
         localStorage.setItem('KIMCHI_PHANMEM_CLEARED', 'true');
-        try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify([])); } catch(e){}
-
-        // Xóa sạch toàn bộ tài liệu Phần Mềm trên Firestore
-        if (typeof db !== 'undefined' && db) {
-          try {
-            db.collection('software').get().then(snapshot => {
-              const batch = db.batch();
-              snapshot.forEach(doc => {
-                batch.delete(doc.ref);
-              });
-              return batch.commit();
-            }).catch(err => {
-              console.error("Lỗi xóa batch Firestore software:", err);
-              // Fallback xóa từng doc
-              oldDocs.forEach(item => {
-                if (item && item.id) {
-                  db.collection('software').doc(String(item.id)).delete().catch(console.error);
-                }
-              });
-            });
-          } catch(e) {
-            console.error("Lỗi clear Firestore:", e);
-          }
-        }
-
+        saveSoftwareStorage();
         if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-        if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
-        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
         alert('Đã xóa sạch toàn bộ dữ liệu Phần Mềm thành công!');
       } else {
         alert('Xác nhận không chính xác! Đã hủy thao tác xóa.');
@@ -5709,73 +5660,13 @@
     }
     window.clearAllSoftwareData = clearAllSoftwareData;
 
-    function clearSoftwareMonthData(targetMonth, targetYear) {
-      const now = new Date();
-      const currentM = (typeof targetMonth === 'number') ? targetMonth : (currentSoftwareMonthFilter ? (currentSoftwareMonthFilter.month + 1) : (now.getMonth() + 1));
-      const currentY = targetYear || (currentSoftwareMonthFilter ? currentSoftwareMonthFilter.year : now.getFullYear());
-      const mStr = String(currentM).padStart(2, '0');
-      const yStr = String(currentY);
-
-      let confirmText = prompt(`⚠️ XÁC NHẬN XÓA THÁNG ${mStr}/${yStr}:\nThao tác này sẽ xóa toàn bộ đơn Phần Mềm trong tháng ${mStr}/${yStr}!\n\nNhập "ok" hoặc "yes" để xác nhận:`);
-      if (confirmText === null) return;
-      let clean = confirmText.trim().toLowerCase();
-      if (clean === 'ok' || clean === 'yes' || clean === 'dong y' || clean === 'đồng ý') {
-        const toDelete = [];
-        softwareDatabase = softwareDatabase.filter(item => {
-          let itemParts = (item.dayMonth || '').replace(/\//g, '-').split('-');
-          let itemMonth = itemParts.length === 2 ? itemParts[1] : '';
-          let itemYear = String(item.year || yStr);
-          if (itemMonth === mStr && itemYear === yStr) {
-            toDelete.push(item);
-            return false;
-          }
-          return true;
-        });
-
-        saveSoftwareStorage();
-
-        // Xóa các doc thuộc tháng này trên Firestore
-        if (typeof db !== 'undefined' && db && toDelete.length > 0) {
-          try {
-            const batch = db.batch();
-            toDelete.forEach(docItem => {
-              if (docItem && docItem.id) {
-                batch.delete(db.collection('software').doc(String(docItem.id)));
-              }
-            });
-            batch.commit().catch(err => {
-              console.error("Lỗi batch delete tháng:", err);
-              toDelete.forEach(d => {
-                if (d && d.id) db.collection('software').doc(String(d.id)).delete().catch(console.error);
-              });
-            });
-          } catch(e) {
-            console.error(e);
-          }
-        }
-
-        if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-        if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
-        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-        alert(`Đã xóa thành công ${toDelete.length} đơn Phần Mềm của tháng ${mStr}/${yStr}!`);
-      } else {
-        alert("Đã hủy thao tác xóa tháng.");
-      }
-    }
-    window.clearSoftwareMonthData = clearSoftwareMonthData;
-
     function handleImportSoftwareExcelFile(event) {
-      const file = event.target.files && event.target.files[0];
+      const file = event.target.files[0];
       if (!file) return;
-
-      // Reset value ngay để tránh duplicate event và cho phép chọn lại cùng file
-      const fileInputEl = event.target;
 
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
-          if (fileInputEl) fileInputEl.value = '';
-
           let rows = [];
           if (typeof XLSX !== 'undefined') {
             const data = new Uint8Array(e.target.result);
@@ -5797,43 +5688,19 @@
           }
 
           let cleanHeader = rows[0].map(h => String(h || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim());
-          // Nhận diện cột theo thứ tự ưu tiên chính xác nhất
-          let colIdxId = -1;
-          let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxProfit = -1;
-          let colIdxTime = -1, colIdxDate = -1, colIdxYear = -1, colIdxStatus = -1;
+          let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxProfit = -1, colIdxTime = -1, colIdxStatus = -1;
 
           cleanHeader.forEach((col, idx) => {
-            if (col.includes('ma don') || col === 'id' || col.includes('stt') || col.includes('ma')) {
-              if (colIdxId === -1) colIdxId = idx;
-            } else if (col.includes('khach') || col.includes('customer') || col.includes('tho')) {
-              if (colIdxCustomer === -1) colIdxCustomer = idx;
-            } else if (col.includes('ten may') || col.includes('thiet bi') || col.includes('device') || col.includes('model') || col.includes('noi dung') || col.includes('phan mem')) {
-              if (colIdxDevice === -1) colIdxDevice = idx;
-            } else if (col.includes('bao gia') || col.includes('gia ban') || col.includes('gia thu') || col.includes('thu khach') || col.includes('price')) {
-              if (colIdxPrice === -1) colIdxPrice = idx;
-            } else if (col.includes('phi dich vu') || col.includes('gia nhap') || col.includes('von') || col.includes('cost') || col.includes('chi phi') || col.includes('phi')) {
-              if (colIdxCost === -1) colIdxCost = idx;
-            } else if (col.includes('lai') || col.includes('loi nhuan') || col.includes('profit')) {
-              if (colIdxProfit === -1) colIdxProfit = idx;
-            } else if (col.includes('gio') || col.includes('time') || col.includes('thoi gian') || col.includes('ngay thang') || col.includes('ngay') || col.includes('date')) {
-              if (colIdxTime === -1) colIdxTime = idx;
-            } else if (col.includes('nam') || col.includes('year')) {
-              if (colIdxYear === -1) colIdxYear = idx;
-            } else if (col.includes('trang thai') || col.includes('thanh toan') || col.includes('status') || col.includes('tt')) {
-              if (colIdxStatus === -1) colIdxStatus = idx;
-            }
+            if (col.includes('khach') || col.includes('customer') || col.includes('tho')) colIdxCustomer = idx;
+            else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung') || col.includes('dich vu') && !col.includes('phi')) colIdxDevice = idx;
+            else if (col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price') || col.includes('thu') || (col.includes('gia') && !col.includes('nhap') && !col.includes('von'))) colIdxPrice = idx;
+            else if (col.includes('phi dich vu') || col.includes('gia nhap') || col.includes('von') || col.includes('cost') || col.includes('chi phi') || col.includes('phi')) colIdxCost = idx;
+            else if (col.includes('lai') || col.includes('loi nhuan') || col.includes('profit')) colIdxProfit = idx;
+            else if (col.includes('gio') || col.includes('ngay') || col.includes('thoi gian') || col.includes('date') || col.includes('time')) colIdxTime = idx;
+            else if (col.includes('trang thai') || col.includes('thanh toan') || col.includes('status') || col.includes('tt')) colIdxStatus = idx;
           });
 
-          // Nếu có cột giá bán chưa bắt được mà có từ 'gia' hoặc 'tien'
-          if (colIdxPrice === -1) {
-            cleanHeader.forEach((col, idx) => {
-              if (idx !== colIdxCost && idx !== colIdxProfit && (col.includes('gia') || col.includes('tien') || col.includes('thu'))) {
-                colIdxPrice = idx;
-              }
-            });
-          }
-
-          // Fallback vị trí nếu không tìm thấy header rõ ràng
+          // Fallback vị trí nếu không tìm thấy header
           if (colIdxCustomer === -1 && colIdxDevice === -1) {
             colIdxCustomer = 0; colIdxDevice = 1; colIdxPrice = 2; colIdxCost = 3; colIdxProfit = 4; colIdxTime = 5; colIdxStatus = 6;
           }
@@ -5848,56 +5715,41 @@
           let hasNewCustomer = false;
           let hasNewDevice = false;
 
-          // Helper chuẩn hóa so sánh không phân biệt hoa thường, dấu tiếng Việt, khoảng trắng thừa
-          const normKey = (str) => String(str || '').toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-
           for (let i = 1; i < rows.length; i++) {
             let row = rows[i];
             if (!row || row.length === 0 || row.every(c => String(c).trim() === '')) continue;
 
-            let rowId = colIdxId !== -1 && row[colIdxId] !== undefined ? String(row[colIdxId]).trim() : '';
-            let rawCustomer = colIdxCustomer !== -1 && row[colIdxCustomer] !== undefined ? String(row[colIdxCustomer]).trim() : '';
-            let rawDevice = colIdxDevice !== -1 && row[colIdxDevice] !== undefined ? String(row[colIdxDevice]).trim() : '';
+            let customer = colIdxCustomer !== -1 && row[colIdxCustomer] ? String(row[colIdxCustomer]).trim() : 'Khách lẻ';
+            let device = colIdxDevice !== -1 && row[colIdxDevice] ? String(row[colIdxDevice]).trim() : '';
             let rawPrice = colIdxPrice !== -1 && row[colIdxPrice] !== undefined ? String(row[colIdxPrice]).trim() : '0';
             let rawCost = colIdxCost !== -1 && row[colIdxCost] !== undefined ? String(row[colIdxCost]).trim() : '0';
             let rawProfit = colIdxProfit !== -1 && row[colIdxProfit] !== undefined ? String(row[colIdxProfit]).trim() : '';
             let rawTime = colIdxTime !== -1 && row[colIdxTime] !== undefined ? row[colIdxTime] : '';
-            let rawDate = colIdxDate !== -1 && row[colIdxDate] !== undefined ? row[colIdxDate] : '';
-            let rawYear = colIdxYear !== -1 && row[colIdxYear] !== undefined ? String(row[colIdxYear]).trim() : '';
             let rawStatus = colIdxStatus !== -1 && row[colIdxStatus] !== undefined ? String(row[colIdxStatus]).trim() : '';
 
-            // Bỏ qua dòng trống hoàn toàn
-            if (!rawCustomer && !rawDevice && !rawPrice && !rawTime) continue;
-
-            let customer = rawCustomer || 'Khách lẻ';
-            // GIỮ NGUYÊN TÊN MÁY CHÍNH XÁC DO NGƯỜI DÙNG GHI (Kể cả 2-3 con máy ghép nhau như "A77 + Y11", "X3 + A31", "A5S (2 Bé)...")
-            let device = rawDevice ? rawDevice : (customer !== 'Khách lẻ' ? 'Cài phần mềm' : 'Cài phần mềm');
+            if (!device && !customer) continue;
+            if (!device) device = 'Cài phần mềm';
 
             let custFormatted = toTitleCase(customer);
-            // Giữ nguyên các ký tự đặc biệt, dấu cộng (+), ngoặc đơn của tên máy
-            let devFormatted = device.trim();
+            let devFormatted = toTitleCase(device);
 
             // Tự động lưu Khách hàng và Tên máy vào danh sách popup tạo đơn mới (chưa có thì lưu, có rồi bỏ qua)
             if (custFormatted) {
-              let custNorm = normKey(custFormatted);
-              let existsCust = currentCustomers.some(c => normKey(c) === custNorm);
+              let custNorm = custFormatted.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              let existsCust = currentCustomers.some(c => c.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '') === custNorm);
               if (!existsCust) {
                 currentCustomers.push(custFormatted);
                 hasNewCustomer = true;
               }
             }
 
-            if (devFormatted && devFormatted !== 'Cài phần mềm') {
-              // Nếu khách sửa nhiều máy cùng lúc (ví dụ "A77 + Y11"), lưu từng máy riêng vào danh sách gợi ý
-              let subDevices = devFormatted.split('+').map(d => d.trim()).filter(Boolean);
-              subDevices.forEach(subDev => {
-                let devNorm = normKey(subDev);
-                let existsDev = currentDevices.some(d => normKey(d) === devNorm);
-                if (!existsDev && devNorm) {
-                  currentDevices.push(subDev);
-                  hasNewDevice = true;
-                }
-              });
+            if (devFormatted) {
+              let devNorm = devFormatted.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              let existsDev = currentDevices.some(d => d.toLowerCase().replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '') === devNorm);
+              if (!existsDev) {
+                currentDevices.push(devFormatted);
+                hasNewDevice = true;
+              }
             }
 
             let priceNum = parsePriceNum(rawPrice);
@@ -5909,122 +5761,51 @@
             let profitStr = formatPriceStr(profitNum);
 
             // Xử lý ngày giờ
+            let dtFormatted = formatImportDateTime(rawTime); // "HH:mm - DD/MM/YYYY"
             let timePart = "10:00";
             let dayMonthPart = "01-01";
-            let yearPart = rawYear || currentYear;
+            let yearPart = currentYear;
 
-            let rawDateTimeStr = String(rawDate || rawTime || '').trim();
-
-            // Nhận diện dạng đặc biệt Excel Sửa Chữa/Phần Mềm: "DD-MMYYYYHH:mm" (ví dụ: "03-11202614:18")
-            let mCondensed = rawDateTimeStr.match(/^(\d{1,2})[\/\-](\d{1,2})(\d{4})(\d{1,2}):(\d{2})$/);
-            if (mCondensed) {
-              dayMonthPart = `${mCondensed[1].padStart(2, '0')}-${mCondensed[2].padStart(2, '0')}`;
-              yearPart = mCondensed[3];
-              timePart = `${mCondensed[4].padStart(2, '0')}:${mCondensed[5].padStart(2, '0')}`;
-            } else {
-              // Kiểm tra nếu rawTime có dạng HH:mm
-              let mTimeOnly = rawDateTimeStr.match(/^(\d{1,2}):(\d{2})$/);
-              if (mTimeOnly) {
-                timePart = `${mTimeOnly[1].padStart(2, '0')}:${mTimeOnly[2].padStart(2, '0')}`;
-              }
-
-              // Kiểm tra dạng DD-MM hoặc DD/MM
-              let mDayMonthOnly = rawDateTimeStr.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
-              if (mDayMonthOnly) {
-                dayMonthPart = `${mDayMonthOnly[1].padStart(2, '0')}-${mDayMonthOnly[2].padStart(2, '0')}`;
-              } else {
-                let dtFormatted = formatImportDateTime(rawDateTimeStr);
-                let mDt = dtFormatted.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-                if (mDt) {
-                  if (!mTimeOnly) timePart = `${mDt[1].padStart(2, '0')}:${mDt[2].padStart(2, '0')}`;
-                  dayMonthPart = `${mDt[3].padStart(2, '0')}-${mDt[4].padStart(2, '0')}`;
-                  if (!rawYear) yearPart = mDt[5];
-                }
-              }
-            }
-
-            // Chuẩn hóa dayMonthPart dạng 2 chữ số (DD-MM)
-            let dmParts = dayMonthPart.replace(/\//g, '-').split('-');
-            if (dmParts.length === 2) {
-              dayMonthPart = `${dmParts[0].padStart(2, '0')}-${dmParts[1].padStart(2, '0')}`;
+            let mDt = dtFormatted.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if (mDt) {
+              timePart = `${mDt[1].padStart(2, '0')}:${mDt[2].padStart(2, '0')}`;
+              dayMonthPart = `${mDt[3].padStart(2, '0')}-${mDt[4].padStart(2, '0')}`;
+              yearPart = mDt[5];
             }
 
             // Xử lý thanh toán
             let statusClean = rawStatus.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             let paymentStatus = (statusClean.includes('no') || statusClean.includes('dai') || statusClean.includes('chua')) ? 'NỢ DAI' : 'ĐÃ TRẢ';
 
-            // Khóa nhận diện chống trùng lặp
-            let custNorm = normKey(custFormatted);
-            let devNorm = normKey(devFormatted);
-
-            // 1. Kiểm tra trùng lặp trong database hiện có
-            let existing = null;
-            if (rowId) {
-              existing = softwareDatabase.find(s => String(s.id) === String(rowId));
-            }
-            if (!existing) {
-              existing = softwareDatabase.find(s => {
-                let sCustNorm = normKey(s.customer);
-                let sDevNorm = normKey(s.device);
-                let sDayMonth = (s.dayMonth || '').replace(/\//g, '-');
-                let sYear = String(s.year || currentYear);
-                let sPriceNum = parsePriceNum(s.price);
-
-                let sameCust = (sCustNorm === custNorm);
-                let sameDev = (sDevNorm === devNorm);
-                let sameDate = (sDayMonth === dayMonthPart && sYear === yearPart);
-                let samePrice = (sPriceNum === priceNum);
-                let sameTime = (s.time === timePart);
-
-                // Chỉ tính là trùng khi khớp CẢ khách hàng, CẢ tên máy, CẢ ngày tháng và CẢ giờ/giá
-                return (sameCust && sameDev && sameDate && (samePrice || sameTime));
-              });
-            }
+            // Kiểm tra trùng lặp
+            let existing = softwareDatabase.find(s => 
+              s.customer.toLowerCase().trim() === customer.toLowerCase() &&
+              s.device.toLowerCase().trim() === device.toLowerCase() &&
+              s.dayMonth === dayMonthPart &&
+              s.year === yearPart &&
+              s.time === timePart
+            );
 
             if (existing) {
-              existing.customer = custFormatted;
-              existing.device = devFormatted;
               existing.price = priceStr;
               existing.cost = costStr;
               existing.profit = profitStr;
-              existing.dayMonth = dayMonthPart;
-              existing.year = yearPart;
-              if (timePart) existing.time = timePart;
               existing.paymentStatus = paymentStatus;
               updatedCount++;
             } else {
-              // 2. Kiểm tra tránh trùng lặp trong chính file Excel (nếu file Excel có các dòng hoàn toàn giống nhau)
-              let alreadyInNew = newRecords.find(nr => {
-                if (rowId && String(nr.id) === String(rowId)) return true;
-                let nrCust = normKey(nr.customer);
-                let nrDev = normKey(nr.device);
-                let nrDm = (nr.dayMonth || '').replace(/\//g, '-');
-                let nrY = String(nr.year || currentYear);
-                let nrPriceNum = parsePriceNum(nr.price);
-                return (nrCust === custNorm && nrDev === devNorm && nrDm === dayMonthPart && nrY === yearPart && (nrPriceNum === priceNum && nr.time === timePart));
+              newRecords.push({
+                id: Date.now() + Math.random(),
+                customer: custFormatted,
+                device: devFormatted,
+                price: priceStr,
+                cost: costStr,
+                profit: profitStr,
+                dayMonth: dayMonthPart,
+                year: yearPart,
+                time: timePart,
+                paymentStatus: paymentStatus,
+                selected: false
               });
-
-              if (alreadyInNew) {
-                alreadyInNew.price = priceStr;
-                alreadyInNew.cost = costStr;
-                alreadyInNew.profit = profitStr;
-                alreadyInNew.paymentStatus = paymentStatus;
-                updatedCount++;
-              } else {
-                newRecords.push({
-                  id: rowId ? (isNaN(parseFloat(rowId)) ? rowId : parseFloat(rowId)) : (Date.now() + Math.random()),
-                  customer: custFormatted,
-                  device: devFormatted,
-                  price: priceStr,
-                  cost: costStr,
-                  profit: profitStr,
-                  dayMonth: dayMonthPart,
-                  year: yearPart,
-                  time: timePart,
-                  paymentStatus: paymentStatus,
-                  selected: false
-                });
-              }
             }
           }
 
@@ -6038,19 +5819,16 @@
 
           if (newRecords.length > 0 || updatedCount > 0) {
             if (newRecords.length > 0) softwareDatabase.push(...newRecords);
-
             saveSoftwareStorage();
             if (typeof setSoftwareMode === 'function') setSoftwareMode('all');
             else if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!\n(Đã giữ nguyên 100% đầy đủ tên máy & đồng bộ khách hàng)`);
+            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!\n(Đã tự động đồng bộ danh sách Khách hàng và Tên máy vào popup tạo đơn mới)`);
           } else {
             alert("Không tìm thấy dữ liệu Phần Mềm hợp lệ trong file!");
           }
         } catch (err) {
           console.error("Lỗi đọc file Excel Phần Mềm:", err);
           alert("Lỗi khi đọc file: " + (err.message || "Vui lòng kiểm tra file Excel!"));
-        } finally {
-          if (fileInputEl) fileInputEl.value = '';
         }
       };
       reader.readAsArrayBuffer(file);
@@ -11194,8 +10972,6 @@
 
       renderSwCustomerFilterOptions();
       renderSoftwareTable(softwareDatabase);
-      if (typeof renderSoftwareDebtTable === 'function') renderSoftwareDebtTable();
-      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
     window.setSoftwareMode = setSoftwareMode;
 
@@ -11396,9 +11172,8 @@
       document.getElementById('swFeeInput').value = '';
 
       const filterDateEl = document.getElementById('filterSoftwareDateDisplay');
-      const curFilterDateStr = filterDateEl ? (filterDateEl.value || filterDateEl.innerText || '').trim() : '';
-      if (curFilterDateStr && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(curFilterDateStr)) {
-        document.getElementById('swFormDate').value = curFilterDateStr;
+      if (filterDateEl && filterDateEl.value) {
+        document.getElementById('swFormDate').value = filterDateEl.value;
       } else {
         document.getElementById('swFormDate').value = getCurrentDateStr();
       }
@@ -11523,8 +11298,7 @@
       swFilterDate = new Date(parseInt(year, 10), parseInt(mmStr, 10) - 1, parseInt(ddStr, 10));
       const disp = document.getElementById('filterSoftwareDateDisplay');
       if (disp) {
-        if (disp.tagName === 'INPUT') disp.value = `${ddStr}/${mmStr}/${year}`;
-        else disp.innerText = `${ddStr}/${mmStr}/${year}`;
+        disp.value = `${ddStr}/${mmStr}/${year}`;
       }
       swIsAllMonths = false;
       const allMonthsBtn = document.getElementById('swBtnAllMonths');
@@ -13070,9 +12844,6 @@
         `;
       }).join('');
       updateSoftwarePayButtonVisibility();
-      if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
-        renderSoftwareDebtTable();
-      }
     }
 
     function togglePaymentStatus(id) {

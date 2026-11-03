@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261103_173700";
+    var CURRENT_PAGE_VERSION = "20261103_175200";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -737,11 +737,6 @@
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
                   📤 Xuất
                 </button>
-                <button type="button" class="btn-action-sales" onclick="clearSoftwareMonthData()"
-                  title="Xóa nhanh dữ liệu Phần Mềm của tháng đang chọn"
-                  style="background: #0f172a; border: 1.5px solid #f97316; color: #fdba74; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(249,115,22,0.25); cursor: pointer;">
-                  🗓️ Xóa Tháng
-                </button>
                 <button type="button" class="btn-action-sales" onclick="clearAllSoftwareData()"
                   title="Xóa toàn bộ danh sách Phần Mềm để nhập lại từ đầu"
                   style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
@@ -835,11 +830,10 @@
             <div style="display: flex; align-items: center; justify-content: center;">
               <div class="unified-date-filter-box">
                 <select class="unified-mode-select" id="swModeSelect" onchange="setSoftwareMode(this.value)"
-                  title="Xem theo Ngày / Tháng / Năm / Tất Cả">
+                  title="Xem theo Ngày / Tháng / Năm">
                   <option value="day" selected>Ngày</option>
                   <option value="month">Tháng</option>
                   <option value="year">Năm</option>
-                  <option value="all">Tất Cả</option>
                 </select>
 
                 <div class="unified-date-ctrls" id="swDateFilterBox">
@@ -851,7 +845,7 @@
                   </button>
                   <span class="unified-date-text" id="filterSoftwareDateDisplay"
                     onclick="makeDateDisplayEditable(this, 'sw', 'day')"
-                    title="Bấm để chỉnh sửa thủ công">27/10/2026</span>
+                    title="Bấm để chỉnh sửa thủ công">24/10/2026</span>
                   <button type="button" class="unified-arrow-btn" onclick="changeSoftwareFilterDate(1)"
                     title="Tiến 1 ngày">
                     <svg viewBox="0 0 24 24">
@@ -5536,10 +5530,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261103_173700"></script>
+  <script src="js/seed_data.js?v=20261103_175200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261103_173700"></script>
+  <script src="js/main.js?v=20261103_175200"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
