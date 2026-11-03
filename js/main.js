@@ -3510,8 +3510,146 @@
         dayEl.innerText = formatPriceStr(totalDay);
         dayEl.title = `Lãi Ngày = Bán Hàng + Sửa Chữa + Phần Mềm + Bán Gà (${formatPriceStr(totalDay)})`;
       }
+
+      // Tự động cập nhật bảng số liệu thống kê mobile nếu modal đang mở
+      const statsModal = document.getElementById('mobileRevenueStatsModal');
+      if (statsModal && statsModal.style.display === 'flex') {
+        renderMobileRevenueStats();
+      }
     }
     window.updateSidebarOverallProfits = updateSidebarOverallProfits;
+
+    // ==================== BẢNG SỐ LIỆU / BẢNG THEO DÕI DOANH THU TRÊN MOBILE ====================
+    function renderMobileRevenueStats() {
+      let targetD, targetM, targetY;
+      if (typeof currentSalesDateFilter !== 'undefined' && currentSalesDateFilter instanceof Date && !isNaN(currentSalesDateFilter)) {
+        targetD = currentSalesDateFilter.getDate();
+        targetM = currentSalesDateFilter.getMonth();
+        targetY = currentSalesDateFilter.getFullYear();
+      } else {
+        const vnNow = getVietnamDate();
+        targetD = vnNow.getDate();
+        targetM = vnNow.getMonth();
+        targetY = vnNow.getFullYear();
+      }
+
+      function parseItemDMY(dateRaw) {
+        if (!dateRaw) return null;
+        let s = String(dateRaw).trim();
+        let parts = s.split(' - ');
+        let dStr = parts.length >= 2 ? parts[1].trim() : parts[0].trim();
+        let match = dStr.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}))?/);
+        if (match) {
+          let d = parseInt(match[1], 10);
+          let m = parseInt(match[2], 10) - 1;
+          let y = match[3] ? parseInt(match[3], 10) : targetY;
+          return { d, m, y };
+        }
+        return null;
+      }
+
+      let countBanhang = 0, profitBanhang = 0;
+      let countSuachua = 0, profitSuachua = 0;
+      let countBanga = 0, profitBanga = 0;
+      let countPhanmem = 0, profitPhanmem = 0;
+
+      // 1. Bán Hàng
+      if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+        salesDatabase.forEach(item => {
+          let dmy = parseItemDMY(item.dateTime);
+          if (dmy && dmy.d === targetD && dmy.m === targetM && dmy.y === targetY) {
+            countBanhang++;
+            profitBanhang += parsePriceNum(item.profit || 0);
+          }
+        });
+      }
+
+      // 2. Sửa Chữa
+      let rList = [];
+      try {
+        if (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) {
+          rList = repairDatabase;
+        } else {
+          const savedRep = localStorage.getItem('KIMCHI_REPAIR_DB');
+          rList = savedRep ? JSON.parse(savedRep) : [];
+        }
+      } catch (e) {
+        rList = [];
+      }
+      if (Array.isArray(rList)) {
+        rList.forEach(item => {
+          let dmy = parseItemDMY(item.dateFormatted || item.dateTime);
+          if (dmy && dmy.d === targetD && dmy.m === targetM && dmy.y === targetY) {
+            countSuachua++;
+            profitSuachua += parsePriceNum(item.profit || 0);
+          }
+        });
+      }
+
+      // 3. Bán Gà
+      if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
+        bangaDatabase.forEach(bg => {
+          let dmy = parseItemDMY(bg.dateTime);
+          if (dmy && dmy.d === targetD && dmy.m === targetM && dmy.y === targetY) {
+            countBanga++;
+            profitBanga += parsePriceNum(bg.profit || 0);
+          }
+        });
+      }
+
+      // 4. Phần Mềm
+      if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
+        softwareDatabase.forEach(item => {
+          let itemYear = parseInt(item.year || targetY, 10);
+          let rawDM = item.dayMonth || '';
+          let dmy = parseItemDMY(rawDM + (item.year ? `-${item.year}` : `-${targetY}`));
+          if (dmy && dmy.d === targetD && dmy.m === targetM && itemYear === targetY) {
+            countPhanmem++;
+            profitPhanmem += parsePriceNum(item.profit || 0);
+          }
+        });
+      }
+
+      const totalProfit = profitBanhang + profitSuachua + profitBanga + profitPhanmem;
+
+      const elCountBanhang = document.getElementById('mStatsCountBanhang');
+      const elProfitBanhang = document.getElementById('mStatsProfitBanhang');
+      const elCountSuachua = document.getElementById('mStatsCountSuachua');
+      const elProfitSuachua = document.getElementById('mStatsProfitSuachua');
+      const elCountBanga = document.getElementById('mStatsCountBanga');
+      const elProfitBanga = document.getElementById('mStatsProfitBanga');
+      const elCountPhanmem = document.getElementById('mStatsCountPhanmem');
+      const elProfitPhanmem = document.getElementById('mStatsProfitPhanmem');
+      const elTotalProfit = document.getElementById('mStatsTotalProfit');
+
+      if (elCountBanhang) elCountBanhang.textContent = countBanhang;
+      if (elProfitBanhang) elProfitBanhang.textContent = formatPriceStr(profitBanhang);
+      if (elCountSuachua) elCountSuachua.textContent = countSuachua;
+      if (elProfitSuachua) elProfitSuachua.textContent = formatPriceStr(profitSuachua);
+      if (elCountBanga) elCountBanga.textContent = countBanga;
+      if (elProfitBanga) elProfitBanga.textContent = formatPriceStr(profitBanga);
+      if (elCountPhanmem) elCountPhanmem.textContent = countPhanmem;
+      if (elProfitPhanmem) elProfitPhanmem.textContent = formatPriceStr(profitPhanmem);
+      if (elTotalProfit) elTotalProfit.textContent = formatPriceStr(totalProfit);
+    }
+    window.renderMobileRevenueStats = renderMobileRevenueStats;
+
+    function openMobileRevenueStatsModal() {
+      const modal = document.getElementById('mobileRevenueStatsModal');
+      if (modal) {
+        renderMobileRevenueStats();
+        modal.style.display = 'flex';
+      }
+    }
+    window.openMobileRevenueStatsModal = openMobileRevenueStatsModal;
+
+    function closeMobileRevenueStatsModal() {
+      const modal = document.getElementById('mobileRevenueStatsModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+    window.closeMobileRevenueStatsModal = closeMobileRevenueStatsModal;
 
     function toggleSalePaymentStatus(id) {
       const item = salesDatabase.find(x => x.id === id);
