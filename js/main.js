@@ -1708,8 +1708,17 @@
 
       // 3. Tab PHẦN MỀM
       swFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
+      currentSoftwareMonthFilter = { month: vnNow.getMonth(), year: yyyy };
+      currentSoftwareYearFilter = yyyy;
       const swDateDisp = document.getElementById('filterSoftwareDateDisplay');
-      if (swDateDisp) swDateDisp.value = dateStr;
+      if (swDateDisp) {
+        if (swDateDisp.tagName === 'INPUT') swDateDisp.value = dateStr;
+        else swDateDisp.innerText = dateStr;
+      }
+      const swMonthDisp = document.getElementById('filterSoftwareMonthDisplay');
+      if (swMonthDisp) swMonthDisp.innerText = monthStr;
+      const swYearDisp = document.getElementById('filterSoftwareYearDisplay');
+      if (swYearDisp) swYearDisp.innerText = String(yyyy);
 
       // 4. Tab SỬA CHỮA
       repairFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
@@ -11235,8 +11244,9 @@
       document.getElementById('swFeeInput').value = '';
 
       const filterDateEl = document.getElementById('filterSoftwareDateDisplay');
-      if (filterDateEl && filterDateEl.value) {
-        document.getElementById('swFormDate').value = filterDateEl.value;
+      const curFilterDateStr = filterDateEl ? (filterDateEl.value || filterDateEl.innerText || '').trim() : '';
+      if (curFilterDateStr && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(curFilterDateStr)) {
+        document.getElementById('swFormDate').value = curFilterDateStr;
       } else {
         document.getElementById('swFormDate').value = getCurrentDateStr();
       }
@@ -11361,7 +11371,8 @@
       swFilterDate = new Date(parseInt(year, 10), parseInt(mmStr, 10) - 1, parseInt(ddStr, 10));
       const disp = document.getElementById('filterSoftwareDateDisplay');
       if (disp) {
-        disp.value = `${ddStr}/${mmStr}/${year}`;
+        if (disp.tagName === 'INPUT') disp.value = `${ddStr}/${mmStr}/${year}`;
+        else disp.innerText = `${ddStr}/${mmStr}/${year}`;
       }
       swIsAllMonths = false;
       const allMonthsBtn = document.getElementById('swBtnAllMonths');
