@@ -5661,12 +5661,17 @@
     window.clearAllSoftwareData = clearAllSoftwareData;
 
     function handleImportSoftwareExcelFile(event) {
-      const file = event.target.files[0];
+      const file = event.target.files && event.target.files[0];
       if (!file) return;
+
+      // Reset value ngay để tránh duplicate event và cho phép chọn lại cùng file
+      const fileInputEl = event.target;
 
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
+          if (fileInputEl) fileInputEl.value = '';
+
           let rows = [];
           if (typeof XLSX !== 'undefined') {
             const data = new Uint8Array(e.target.result);
@@ -5688,21 +5693,31 @@
           }
 
           let cleanHeader = rows[0].map(h => String(h || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim());
-          let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxProfit = -1, colIdxTime = -1, colIdxStatus = -1;
+          let colIdxId = -1;
+          let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxProfit = -1;
+          let colIdxTime = -1, colIdxDate = -1, colIdxYear = -1, colIdxStatus = -1;
 
           cleanHeader.forEach((col, idx) => {
-            if (col.includes('khach') || col.includes('customer') || col.includes('tho')) colIdxCustomer = idx;
-            else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung') || col.includes('dich vu') && !col.includes('phi')) colIdxDevice = idx;
+            if (col.includes('ma don') || col === 'id' || col.includes('stt') || col.includes('ma')) colIdxId = idx;
+            else if (col.includes('khach') || col.includes('customer') || col.includes('tho')) colIdxCustomer = idx;
+            else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung') || (col.includes('dich vu') && !col.includes('phi'))) colIdxDevice = idx;
             else if (col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price') || col.includes('thu') || (col.includes('gia') && !col.includes('nhap') && !col.includes('von'))) colIdxPrice = idx;
             else if (col.includes('phi dich vu') || col.includes('gia nhap') || col.includes('von') || col.includes('cost') || col.includes('chi phi') || col.includes('phi')) colIdxCost = idx;
             else if (col.includes('lai') || col.includes('loi nhuan') || col.includes('profit')) colIdxProfit = idx;
-            else if (col.includes('gio') || col.includes('ngay') || col.includes('thoi gian') || col.includes('date') || col.includes('time')) colIdxTime = idx;
+            else if (col.includes('gio') || col.includes('time') || col.includes('thoi gian')) colIdxTime = idx;
+            else if (col.includes('ngay thang') || col.includes('ngay') || col.includes('date')) colIdxDate = idx;
+            else if (col.includes('nam') || col.includes('year')) colIdxYear = idx;
             else if (col.includes('trang thai') || col.includes('thanh toan') || col.includes('status') || col.includes('tt')) colIdxStatus = idx;
           });
 
-          // Fallback vị trí nếu không tìm thấy header
+          // Nếu có cột ngày/giờ chung
+          if (colIdxDate === -1 && colIdxTime !== -1) {
+            colIdxDate = colIdxTime;
+          }
+
+          // Fallback vị trí nếu không tìm thấy header rõ ràng
           if (colIdxCustomer === -1 && colIdxDevice === -1) {
-            colIdxCustomer = 0; colIdxDevice = 1; colIdxPrice = 2; colIdxCost = 3; colIdxProfit = 4; colIdxTime = 5; colIdxStatus = 6;
+            colIdxCustomer = 0; colIdxDevice = 1; colIdxPrice = 2; colIdxCost = 3; colIdxProfit = 4; colIdxDate = 5; colIdxStatus = 6;
           }
 
           let newRecords = [];
@@ -5719,12 +5734,15 @@
             let row = rows[i];
             if (!row || row.length === 0 || row.every(c => String(c).trim() === '')) continue;
 
+            let rowId = colIdxId !== -1 && row[colIdxId] !== undefined ? String(row[colIdxId]).trim() : '';
             let customer = colIdxCustomer !== -1 && row[colIdxCustomer] ? String(row[colIdxCustomer]).trim() : 'Khách lẻ';
             let device = colIdxDevice !== -1 && row[colIdxDevice] ? String(row[colIdxDevice]).trim() : '';
             let rawPrice = colIdxPrice !== -1 && row[colIdxPrice] !== undefined ? String(row[colIdxPrice]).trim() : '0';
             let rawCost = colIdxCost !== -1 && row[colIdxCost] !== undefined ? String(row[colIdxCost]).trim() : '0';
             let rawProfit = colIdxProfit !== -1 && row[colIdxProfit] !== undefined ? String(row[colIdxProfit]).trim() : '';
             let rawTime = colIdxTime !== -1 && row[colIdxTime] !== undefined ? row[colIdxTime] : '';
+            let rawDate = colIdxDate !== -1 && row[colIdxDate] !== undefined ? row[colIdxDate] : '';
+            let rawYear = colIdxYear !== -1 && row[colIdxYear] !== undefined ? String(row[colIdxYear]).trim() : '';
             let rawStatus = colIdxStatus !== -1 && row[colIdxStatus] !== undefined ? String(row[colIdxStatus]).trim() : '';
 
             if (!device && !customer) continue;
@@ -5761,51 +5779,94 @@
             let profitStr = formatPriceStr(profitNum);
 
             // Xử lý ngày giờ
-            let dtFormatted = formatImportDateTime(rawTime); // "HH:mm - DD/MM/YYYY"
             let timePart = "10:00";
             let dayMonthPart = "01-01";
-            let yearPart = currentYear;
+            let yearPart = rawYear || currentYear;
 
-            let mDt = dtFormatted.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-            if (mDt) {
-              timePart = `${mDt[1].padStart(2, '0')}:${mDt[2].padStart(2, '0')}`;
-              dayMonthPart = `${mDt[3].padStart(2, '0')}-${mDt[4].padStart(2, '0')}`;
-              yearPart = mDt[5];
+            // Kiểm tra nếu rawTime có dạng HH:mm
+            let rawTimeStr = String(rawTime || '').trim();
+            let mTimeOnly = rawTimeStr.match(/^(\d{1,2}):(\d{2})$/);
+            if (mTimeOnly) {
+              timePart = `${mTimeOnly[1].padStart(2, '0')}:${mTimeOnly[2].padStart(2, '0')}`;
+            }
+
+            // Kiểm tra rawDate dạng DD-MM hoặc DD/MM hoặc DD/MM/YYYY
+            let rawDateStr = String(rawDate || '').trim();
+            let mDayMonthOnly = rawDateStr.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
+            if (mDayMonthOnly) {
+              dayMonthPart = `${mDayMonthOnly[1].padStart(2, '0')}-${mDayMonthOnly[2].padStart(2, '0')}`;
+            } else {
+              let dtFormatted = formatImportDateTime(rawDateStr || rawTimeStr); // "HH:mm - DD/MM/YYYY"
+              let mDt = dtFormatted.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+              if (mDt) {
+                if (!mTimeOnly) timePart = `${mDt[1].padStart(2, '0')}:${mDt[2].padStart(2, '0')}`;
+                dayMonthPart = `${mDt[3].padStart(2, '0')}-${mDt[4].padStart(2, '0')}`;
+                if (!rawYear) yearPart = mDt[5];
+              }
             }
 
             // Xử lý thanh toán
             let statusClean = rawStatus.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             let paymentStatus = (statusClean.includes('no') || statusClean.includes('dai') || statusClean.includes('chua')) ? 'NỢ DAI' : 'ĐÃ TRẢ';
 
-            // Kiểm tra trùng lặp
-            let existing = softwareDatabase.find(s => 
-              s.customer.toLowerCase().trim() === customer.toLowerCase() &&
-              s.device.toLowerCase().trim() === device.toLowerCase() &&
-              s.dayMonth === dayMonthPart &&
-              s.year === yearPart &&
-              s.time === timePart
-            );
+            // 1. Kiểm tra trùng lặp trong database hiện có
+            let existing = null;
+            if (rowId) {
+              existing = softwareDatabase.find(s => String(s.id) === String(rowId));
+            }
+            if (!existing) {
+              existing = softwareDatabase.find(s => 
+                s.customer.toLowerCase().trim() === customer.toLowerCase() &&
+                s.device.toLowerCase().trim() === device.toLowerCase() &&
+                s.dayMonth === dayMonthPart &&
+                s.year === yearPart &&
+                (s.time === timePart || s.price === priceStr)
+              );
+            }
 
             if (existing) {
+              existing.customer = custFormatted;
+              existing.device = devFormatted;
               existing.price = priceStr;
               existing.cost = costStr;
               existing.profit = profitStr;
+              existing.dayMonth = dayMonthPart;
+              existing.year = yearPart;
+              existing.time = timePart;
               existing.paymentStatus = paymentStatus;
               updatedCount++;
             } else {
-              newRecords.push({
-                id: Date.now() + Math.random(),
-                customer: custFormatted,
-                device: devFormatted,
-                price: priceStr,
-                cost: costStr,
-                profit: profitStr,
-                dayMonth: dayMonthPart,
-                year: yearPart,
-                time: timePart,
-                paymentStatus: paymentStatus,
-                selected: false
-              });
+              // 2. Kiểm tra tránh trùng lặp trong chính file Excel (nếu file Excel có các dòng trùng nhau)
+              let alreadyInNew = newRecords.find(nr => 
+                (rowId && String(nr.id) === String(rowId)) ||
+                (nr.customer.toLowerCase() === custFormatted.toLowerCase() &&
+                 nr.device.toLowerCase() === devFormatted.toLowerCase() &&
+                 nr.dayMonth === dayMonthPart &&
+                 nr.year === yearPart &&
+                 nr.time === timePart)
+              );
+
+              if (alreadyInNew) {
+                alreadyInNew.price = priceStr;
+                alreadyInNew.cost = costStr;
+                alreadyInNew.profit = profitStr;
+                alreadyInNew.paymentStatus = paymentStatus;
+                updatedCount++;
+              } else {
+                newRecords.push({
+                  id: rowId ? (isNaN(parseFloat(rowId)) ? rowId : parseFloat(rowId)) : (Date.now() + Math.random()),
+                  customer: custFormatted,
+                  device: devFormatted,
+                  price: priceStr,
+                  cost: costStr,
+                  profit: profitStr,
+                  dayMonth: dayMonthPart,
+                  year: yearPart,
+                  time: timePart,
+                  paymentStatus: paymentStatus,
+                  selected: false
+                });
+              }
             }
           }
 
@@ -5822,13 +5883,15 @@
             saveSoftwareStorage();
             if (typeof setSoftwareMode === 'function') setSoftwareMode('all');
             else if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!\n(Đã tự động đồng bộ danh sách Khách hàng và Tên máy vào popup tạo đơn mới)`);
+            alert(`Đã nhập thành công ${newRecords.length} đơn Phần Mềm mới và cập nhật ${updatedCount} đơn!\n(Đã tự động lọc trùng lặp & đồng bộ danh sách Khách hàng, Tên máy)`);
           } else {
             alert("Không tìm thấy dữ liệu Phần Mềm hợp lệ trong file!");
           }
         } catch (err) {
           console.error("Lỗi đọc file Excel Phần Mềm:", err);
           alert("Lỗi khi đọc file: " + (err.message || "Vui lòng kiểm tra file Excel!"));
+        } finally {
+          if (fileInputEl) fileInputEl.value = '';
         }
       };
       reader.readAsArrayBuffer(file);
