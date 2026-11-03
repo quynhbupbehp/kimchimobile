@@ -2238,25 +2238,27 @@
           </div>
         </div>
 
-        <!-- HÀNG 2 (CHUẨN ẢNH MẪU 100%): TÌM KIẾM | HÃNG : TẤT CẢ | NĂM 2026 | + THÊM MAIN - XÁC MỚI -->
+        <!-- HÀNG 2 (CHUẨN ẢNH MẪU 100%): TÌM KIẾM | HÃNG : TẤT CẢ | (CHÍNH GIỮA: BỘ LỌC NGÀY/THÁNG/NĂM) | + THÊM MAIN - XÁC MỚI -->
         <div
           style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; gap: 12px; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+          
+          <!-- BÊN TRÁI: TÌM KIẾM + HÃNG -->
+          <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
             <!-- 1. Ô TÌM KIẾM -->
-            <div class="search-box-bm" style="width: 250px; height: 38px; box-sizing: border-box; padding: 6px 12px;">
-              <span class="search-label-single-line" style="color: #ffffff;">TÌM KIẾM</span>
+            <div class="search-box-bm" style="width: 250px; height: 38px; box-sizing: border-box; padding: 6px 12px; display: inline-flex; align-items: center;">
+              <span class="search-label-single-line" style="color: #ffffff; line-height: 1;">TÌM KIẾM</span>
               <input type="text" id="mainXacSearchInput" class="search-input-field" inputmode="text"
                 placeholder="🔍 Tìm tên máy, IMEI, khác..." oninput="handleMainXacSearchInput(this)">
               <button type="button" id="btnClearMainXacSearch" class="btn-clear-search" onclick="clearMainXacSearch()"
                 title="Xóa tìm kiếm">✕</button>
             </div>
 
-            <!-- 2. BỘ LỌC HÃNG (MẶC ĐỊNH LÀ TẤT CẢ) -->
-            <div class="price-filter-box-bm" style="height: 38px; box-sizing: border-box; padding: 6px 12px;">
-              <span class="price-filter-label" style="color: #38bdf8;">HÃNG</span>
+            <!-- 2. BỘ LỌC HÃNG (CĂN THẲNG HÀNG 100% HÃNG & TẤT CẢ) -->
+            <div class="price-filter-box-bm" style="height: 38px; box-sizing: border-box; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px;">
+              <span class="price-filter-label" style="color: #38bdf8; font-weight: 800; font-size: 0.88rem; line-height: 1; margin: 0; padding: 0; display: inline-flex; align-items: center;">HÃNG</span>
               <select id="mainXacBrandFilter" class="price-filter-select"
                 onchange="handleMainXacBrandFilterChange(this)"
-                style="color: #f59e0b; font-weight: 800; cursor: pointer;">
+                style="color: #f59e0b; font-weight: 800; cursor: pointer; height: 100%; border: none; outline: none; background: transparent; padding: 0; margin: 0; display: inline-flex; align-items: center; line-height: normal;">
                 <option value="ALL" selected>Tất Cả</option>
                 <option value="IPHONE">iPhone</option>
                 <option value="SAMSUNG">Samsung</option>
@@ -2269,8 +2271,10 @@
                 <option value="KHÁC">Khác</option>
               </select>
             </div>
+          </div>
 
-            <!-- 3. BỘ LỌC XEM THEO (NGÀY / THÁNG / NĂM) -->
+          <!-- CHÍNH GIỮA: BỘ LỌC XEM THEO NGÀY / THÁNG / NĂM / TẤT CẢ -->
+          <div style="display: flex; justify-content: center; align-items: center; flex: 1 1 auto;">
             <div class="unified-date-filter-box">
               <select class="unified-mode-select" id="mainXacModeSelect" onchange="setMainXacMode(this.value)"
                 title="Xem theo Năm / Ngày / Tháng / Tất cả">
@@ -2342,8 +2346,8 @@
             </div>
           </div>
 
-          <!-- 4. NÚT + THÊM MAIN - XÁC MỚI BÊN PHẢI (MÀU XANH DƯƠNG CHUẨN ẢNH MẪU) -->
-          <div>
+          <!-- BÊN PHẢI: NÚT + THÊM MAIN - XÁC MỚI (MÀU XANH DƯƠNG CHUẨN ẢNH MẪU) -->
+          <div style="flex-shrink: 0;">
             <button type="button" class="btn-add-phone-main" onclick="openMainXacModal()"
               style="height: 38px; padding: 0 20px; border-radius: 8px; font-weight: 900; font-size: 0.95rem; background: #2563eb; color: #ffffff; cursor: pointer; border: 1px solid #3b82f6; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45); display: inline-flex; align-items: center; justify-content: center; letter-spacing: 0.5px; white-space: nowrap;">
               + THÊM MAIN - XÁC MỚI
