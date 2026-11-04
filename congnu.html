@@ -58,12 +58,18 @@
       filter: blur(15px);
     }
     .brand-title {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 900;
-      letter-spacing: 1px;
-      color: #10b981;
+      letter-spacing: 1.2px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      padding: 7px 18px;
+      border-radius: 12px;
+      display: inline-block;
       text-transform: uppercase;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 15px rgba(109, 40, 217, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .brand-sub {
       font-size: 0.8rem;
@@ -158,14 +164,15 @@
       text-align: left;
     }
     .debt-table th {
-      padding: 10px 12px;
-      background: rgba(15, 23, 42, 0.6);
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: #64748b;
+      padding: 11px 10px;
+      background: linear-gradient(135deg, #eab308, #ca8a04);
+      font-size: 0.82rem;
+      font-weight: 900;
+      color: #ffffff;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      letter-spacing: 0.6px;
+      border-bottom: 2px solid rgba(202, 138, 4, 0.8);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
     }
     .debt-table td {
       padding: 12px 12px;
@@ -180,11 +187,14 @@
       font-weight: 800;
       color: #ffffff;
       margin-bottom: 2px;
+      font-size: 0.78rem; /* Đã giảm 20% kích cỡ chữ tên máy sửa */
+      line-height: 1.35;
     }
     .item-date {
-      font-size: 0.78rem;
-      color: #64748b;
-      font-weight: 600;
+      font-size: 0.94rem; /* Đã tăng 20% kích cỡ ngày nợ */
+      color: #cbd5e1;
+      font-weight: 700;
+      letter-spacing: 0.3px;
     }
     .item-amount {
       text-align: right;
@@ -276,7 +286,7 @@
 
       <div class="live-status">
         <div class="live-dot"></div>
-        <span>Cập nhật thời gian thực từ cửa hàng</span>
+        <span>Công Nợ được cập nhật liên tục (1 phút phụt 3 phát)</span>
       </div>
     </div>
 
@@ -289,10 +299,10 @@
       <table class="debt-table">
         <thead>
           <tr>
-            <th style="width: 48px; text-align: center;">STT</th>
-            <th>TÊN MÁY / NỘI DUNG</th>
-            <th style="text-align: right; width: 110px;">SỐ TIỀN</th>
-            <th style="text-align: center; width: 95px;">NGÀY NỢ</th>
+            <th style="width: 44px; text-align: center;">STT</th>
+            <th style="width: 42%;">TÊN MÁY SỬA</th>
+            <th style="text-align: right; width: 100px;">SỐ TIỀN</th>
+            <th style="text-align: center; width: 115px;">NGÀY NỢ</th>
           </tr>
         </thead>
         <tbody id="debtTbody">
@@ -406,7 +416,8 @@
       } else {
         emptyState.style.display = 'none';
         tbody.innerHTML = activeDebts.map((item, idx) => {
-          let dateStr = (item.dayMonth || '') + (item.year ? ('-' + item.year) : '');
+          let rawDate = (item.dayMonth || '') + (item.year ? ('-' + item.year) : '');
+          let dateStr = rawDate.replace(/-/g, '/');
           let priceStr = formatMoney(parsePriceNum(item.price));
           return `
             <tr>
