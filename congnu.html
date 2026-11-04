@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Kim Chi Mobile - Đối Soát Công Nợ</title>
+  <title>QUYNH BUP BE - Đối Soát Công Nợ</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -86,27 +86,30 @@
       text-overflow: ellipsis;
     }
     .total-box {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px dashed rgba(239, 68, 68, 0.4);
+      background: linear-gradient(135deg, #ec4899, #db2777);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 14px;
-      padding: 12px 14px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      box-shadow: 0 6px 20px rgba(219, 39, 119, 0.35);
     }
     .total-label {
-      font-size: 0.9rem;
-      color: #cbd5e1;
-      font-weight: 700;
+      font-size: 0.92rem;
+      color: #ffffff;
+      font-weight: 800;
       display: flex;
       align-items: center;
       gap: 6px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
     .total-amount {
-      font-size: 1.55rem;
+      font-size: 1.7rem;
       font-weight: 900;
-      color: #f87171;
+      color: #ffffff;
       letter-spacing: 0.5px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
     .live-status {
       display: inline-flex;
@@ -260,7 +263,7 @@
   <div class="container" id="mainContainer" style="display: none;">
     <!-- Thẻ Tiêu Đề Khách & Tổng Nợ -->
     <div class="header-card">
-      <div class="brand-title">KIM CHI MOBILE</div>
+      <div class="brand-title">QUYNH BUP BE</div>
       <div class="brand-sub">Bảng Đối Soát Công Nợ Trực Tuyến</div>
       <div class="customer-badge" id="custName">Đang tải...</div>
       
@@ -268,7 +271,7 @@
         <div class="total-label">
           <span>⚠️</span> TỔNG CÔNG NỢ
         </div>
-        <div class="total-amount" id="custTotal">0 đ</div>
+        <div class="total-amount" id="custTotal">0 k</div>
       </div>
 
       <div class="live-status">
@@ -306,7 +309,7 @@
     <!-- Lời Cảm Ơn & Lưu Ý -->
     <div class="footer-note">
       <div>Quý khách vui lòng kiểm tra lại bảng đối soát. Mọi thắc mắc xin liên hệ lại cửa hàng để được hỗ trợ giải quyết ngay.</div>
-      <div class="footer-brand">KIM CHI MOBILE XIN CHÂN THÀNH CẢM ƠN QUÝ KHÁCH!</div>
+      <div class="footer-brand">QUYNH BUP BE XIN CHÂN THÀNH CẢM ƠN QUÝ KHÁCH!</div>
     </div>
   </div>
 
@@ -376,7 +379,7 @@
 
     function renderDebts(customerName, list) {
       custNameEl.innerText = customerName;
-      document.title = `Kim Chi Mobile - Đối Soát Công Nợ: ${customerName}`;
+      document.title = `QUYNH BUP BE - Đối Soát Công Nợ: ${customerName}`;
 
       const activeDebts = list.filter(item => {
         let cust = (item.customer || 'Khách lẻ').trim().toLowerCase();
@@ -394,7 +397,7 @@
       });
 
       let total = activeDebts.reduce((sum, item) => sum + (parsePriceNum(item.price) || 0), 0);
-      custTotalEl.innerText = formatMoney(total) + ' đ';
+      custTotalEl.innerText = formatMoney(total) + ' k';
       debtCountEl.innerText = `${activeDebts.length} đơn`;
 
       if (activeDebts.length === 0) {
@@ -480,7 +483,7 @@
         showError('Không thể kết nối đến máy chủ.');
       });
     } else {
-      showError('Thiếu mã bảo mật trên đường link. Vui lòng liên hệ Kim Chi Mobile để nhận lại liên kết chính xác.');
+      showError('Thiếu mã bảo mật trên đường link. Vui lòng liên hệ QUYNH BUP BE để nhận lại liên kết chính xác.');
     }
   </script>
 </body>
