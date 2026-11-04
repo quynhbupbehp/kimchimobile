@@ -3071,21 +3071,14 @@
       transform: translateY(-1px);
     }
 
-    /* GRID DANH SÁCH NỢ 4 CỘT & THẺ KHÁCH NỢ (DÃN ĐỀU RỘNG RÃI TOÀN MÀN HÌNH) */
+    /* GRID DANH SÁCH NỢ 3 CỘT & THẺ KHÁCH NỢ (DÃN ĐỀU RỘNG RÃI TOÀN MÀN HÌNH) */
     .sw-debt-grid {
       display: grid !important;
-      grid-template-columns: repeat(4, 1fr) !important;
+      grid-template-columns: repeat(3, 1fr) !important;
       gap: 24px !important;
       width: 100% !important;
       box-sizing: border-box;
       margin-top: 0.65rem;
-    }
-
-    @media (max-width: 1250px) {
-      .sw-debt-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 20px !important;
-      }
     }
 
     @media (max-width: 850px) {
