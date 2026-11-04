@@ -7161,11 +7161,6 @@
             let paymentStatus = (method === 'Nợ') ? 'Nợ Dai VL' : 'Đã Trả';
             let dateTime = formatImportDateTime(rawDate);
 
-            // Kiểm tra xem dòng Bán Gà này có khớp với phạm vi thời gian đang chọn hay không
-            let checkItem = { dateTime: dateTime };
-            if (!isBangaItemMatchingCurrentFilter(checkItem)) {
-              continue;
-            }
             let nonMachineRegex = /bán thẻ|thẻ nhớ|nạp|cầm đồ|thay lưng|sửa|míc|mic|ép kính|sim|bán màn|đớp|viettel|huy linh|rút tiền|bộ sạc|dây sạc|củ sạc|tai nghe|cường lực|ốp lưng|dán|pin|vỏ|camera|loa|hòa/i;
             let isMachine = false;
             if (rawType) {
@@ -7252,7 +7247,7 @@
         if (yearBox) yearBox.style.display = 'inline-flex';
 
         if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
-        alert(`🎉 ĐÃ NHẬP THÀNH CÔNG ${totalNewRecords.length} PHIẾU BÁN GÀ MỚI (Cập nhật ${totalUpdatedCount} phiếu) từ ${files.length} file!`);
+        alert(`🎉 ĐÃ NHẬP THÀNH CÔNG ${totalNewRecords.length} PHIẾU BÁN GÀ MỚI (Cập nhật ${totalUpdatedCount} phiếu) từ ${files.length} file!\n(Đã tự động chuyển sang chế độ xem Năm để hiển thị toàn bộ phiếu vừa nhập)`);
       } else {
         if (errorFiles.length > 0) {
           alert(`Có lỗi khi đọc các file: ${errorFiles.join(', ')}`);
