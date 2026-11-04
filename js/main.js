@@ -3964,6 +3964,18 @@
     }
     window.changeMobileStatsMonth = changeMobileStatsMonth;
 
+    function resetMobileStatsToCurrentDate() {
+      const vnNow = (typeof getVietnamDate === 'function') ? getVietnamDate() : new Date();
+      mStatsSelectedDate = new Date(vnNow.getFullYear(), vnNow.getMonth(), vnNow.getDate());
+      mStatsSelectedMonth = { month: vnNow.getMonth(), year: vnNow.getFullYear() };
+      currentMobileStatsMode = 'day';
+      window.currentMobileStatsMode = 'day';
+      const selectEl = document.getElementById('mStatsPeriodSelect');
+      if (selectEl) selectEl.value = 'day';
+      renderMobileRevenueStats();
+    }
+    window.resetMobileStatsToCurrentDate = resetMobileStatsToCurrentDate;
+
     function openMobileStatsNativeDatePicker() {
       const picker = document.getElementById('mStatsNativeDatePicker');
       if (!picker) return;

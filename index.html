@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261104_175805">
+  <link rel="stylesheet" href="css/style.css?v=20261104_181650">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261104_175805";
+    var CURRENT_PAGE_VERSION = "20261104_181650";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -1873,7 +1873,7 @@
       <!-- TAB 5: BÁO GIÁ SỬA CHỮA & NHẬP HÀNG (CƠ SỞ DỮ LIỆU KIM CHI MOBILE) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261104_175805" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261104_181650" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -5378,45 +5378,44 @@
         padding: 8px 3px;
       }
 
-      /* TIẾP TỤC GIẢM 30% NỮA TRÊN GIAO DIỆN WEB/DESKTOP */
+      /* TĂNG KÍCH CỠ BẢNG THEO DÕI DOANH THU LÊN 30% */
       @media (min-width: 768px) {
         #mobileRevenueStatsModal .stats-modal-inner {
-          max-width: 720px !important;
+          max-width: 936px !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner h2 {
-          font-size: 1.45rem !important; /* Giảm 30% từ 2rem */
+          font-size: 1.88rem !important;
         }
-        /* TOÀN BỘ CỠ CHỮ BẢNG GIẢM THÊM 30%: HOẠT ĐỘNG, SỐ ĐƠN, SỐ TIỀN LÃI, BÁN HÀNG, SỬA CHỮA, BÁN GÀ, PHẦN MỀM VÀ CÁC SỐ LIỆU */
         #mobileRevenueStatsModal .stats-modal-inner table th {
-          font-size: 1.85rem !important; /* Giảm 30% từ 2.65rem */
-          padding: 12px 10px !important;
+          font-size: 2.4rem !important;
+          padding: 14px 12px !important;
           letter-spacing: 0.5px !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner table td {
-          font-size: 1.85rem !important; /* Giảm 30% từ 2.65rem */
-          padding: 12px 10px !important;
+          font-size: 2.4rem !important;
+          padding: 14px 12px !important;
           font-weight: 900 !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner .stats-target-row,
         #mobileRevenueStatsModal .stats-modal-inner .stats-target-row * {
-          font-size: 1.25rem !important; /* Giảm 30% từ 1.7rem */
-          padding: 10px 8px !important;
+          font-size: 1.62rem !important;
+          padding: 12px 10px !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner .stats-total-row,
         #mobileRevenueStatsModal .stats-modal-inner .stats-total-row * {
-          font-size: 1.45rem !important; /* Giảm 30% từ 2rem */
-          padding: 8px 8px 14px 8px !important;
+          font-size: 1.88rem !important;
+          padding: 10px 10px 18px 10px !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner .stats-total-row #mStatsTotalProfit {
-          font-size: 1.7rem !important; /* Giảm 30% từ 2.4rem */
+          font-size: 2.2rem !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner .stats-close-btn {
-          font-size: 1.25rem !important; /* Giảm 30% từ 1.7rem */
-          padding: 10px 42px !important;
+          font-size: 1.62rem !important;
+          padding: 12px 52px !important;
         }
         #mobileRevenueStatsModal .stats-modal-inner .stats-period-btn {
-          font-size: 1.25rem !important;
-          padding: 10px 38px 10px 16px !important;
+          font-size: 1.62rem !important;
+          padding: 12px 42px 12px 18px !important;
         }
       }
     </style>
@@ -5496,19 +5495,19 @@
       <div class="stats-footer-actions" style="background: #090e1a; border-top: 1px solid #1e293b; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
         <!-- BÊN TRÁI: NÚT XEM THEO (NGÀY, THÁNG, TẤT CẢ) + BỘ CHỌN/LÙI/TIẾN THỜI GIAN THEO YÊU CẦU -->
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;" class="stats-period-group">
-          <!-- DROPDOWN CHỌN CHẾ ĐỘ XEM -->
+          <!-- DROPDOWN CHỌN CHẾ ĐỘ XEM (KÍCH CỠ KHUNG BẰNG MỤC HIỂN THỊ THÁNG/NGÀY) -->
           <div style="position: relative; display: inline-flex; align-items: center;">
             <select id="mStatsPeriodSelect" onchange="setMobileStatsMode(this.value)" class="stats-period-btn"
-              style="appearance: none; -webkit-appearance: none; background: linear-gradient(135deg, #0284c7, #0369a1); border: 1.5px solid #38bdf8; color: #ffffff; padding: 8px 28px 8px 12px; border-radius: 10px; font-size: 0.92rem; font-weight: 800; cursor: pointer; outline: none; box-shadow: 0 3px 10px rgba(2, 132, 199, 0.4); text-transform: uppercase;">
+              style="appearance: none; -webkit-appearance: none; background: linear-gradient(135deg, #0284c7, #0369a1); border: 1.5px solid #38bdf8; color: #ffffff; height: 38px; min-height: 38px; padding: 0 32px 0 12px; border-radius: 8px; font-size: 0.92rem; font-weight: 800; cursor: pointer; outline: none; box-shadow: 0 3px 10px rgba(2, 132, 199, 0.4); text-transform: uppercase; box-sizing: border-box; display: inline-flex; align-items: center;">
               <option value="day" selected style="background: #0f172a; color: #ffffff;">📅 Theo: Ngày</option>
               <option value="month" style="background: #0f172a; color: #ffffff;">📆 Theo: Tháng</option>
               <option value="all" style="background: #0f172a; color: #ffffff;">📊 Theo: Tất Cả</option>
             </select>
-            <span style="position: absolute; right: 9px; pointer-events: none; color: #ffffff; font-size: 0.72rem; font-weight: 900;">▼</span>
+            <span style="position: absolute; right: 10px; pointer-events: none; color: #ffffff; font-size: 0.72rem; font-weight: 900;">▼</span>
           </div>
 
           <!-- BỘ ĐIỀU KHIỂN THỜI GIAN THEO NGÀY (LÙI / CHỌN / TIẾN / LỊCH) -->
-          <div id="mStatsDateNavBox" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(15, 23, 42, 0.85); border: 1.5px solid #0284c7; border-radius: 8px; padding: 3px 6px;">
+          <div id="mStatsDateNavBox" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(15, 23, 42, 0.85); border: 1.5px solid #0284c7; border-radius: 8px; padding: 0 6px; height: 38px; min-height: 38px; box-sizing: border-box;">
             <button type="button" class="unified-arrow-btn" onclick="changeMobileStatsDate(-1)" title="Lùi 1 ngày"
               style="width: 28px; height: 28px; border-radius: 6px;">
               <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
@@ -5533,18 +5532,29 @@
           </div>
 
           <!-- BỘ ĐIỀU KHIỂN THỜI GIAN THEO THÁNG CỦA NĂM BẤT KỲ (LÙI THÁNG / TIẾN THÁNG / CHỌN NĂM) -->
-          <div id="mStatsMonthNavBox" style="display: none; align-items: center; gap: 4px; background: rgba(15, 23, 42, 0.85); border: 1.5px solid #0284c7; border-radius: 8px; padding: 3px 6px;">
+          <div id="mStatsMonthNavBox" style="display: none; align-items: center; gap: 4px; background: rgba(15, 23, 42, 0.85); border: 1.5px solid #0284c7; border-radius: 8px; padding: 0 6px; height: 38px; min-height: 38px; box-sizing: border-box;">
             <button type="button" class="unified-arrow-btn" onclick="changeMobileStatsMonth(-1)" title="Lùi 1 tháng"
               style="width: 28px; height: 28px; border-radius: 6px;">
               <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
             </button>
             <span id="mStatsMonthNavLabel"
-              style="color: #ffffff; font-weight: 900; font-size: 0.92rem; padding: 0 6px; user-select: none;">11/2026</span>
+              style="color: #ffffff; font-weight: 900; font-size: 0.92rem; padding: 0 6px; user-select: none;">Tháng 11/2026</span>
             <button type="button" class="unified-arrow-btn" onclick="changeMobileStatsMonth(1)" title="Tiến 1 tháng"
               style="width: 28px; height: 28px; border-radius: 6px;">
               <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
             </button>
           </div>
+
+          <!-- ICON THÙNG RÁC BÊN PHẢI ĐỂ XÓA LỌC, VỀ NGÀY HIỆN TẠI -->
+          <button type="button" class="unified-arrow-btn" onclick="resetMobileStatsToCurrentDate()" title="Xóa lọc - Về ngày hiện tại"
+            style="width: 38px; height: 38px; min-width: 38px; border-radius: 8px; background: linear-gradient(135deg, #ef4444, #b91c1c); border: 1.5px solid #f87171; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 3px 8px rgba(239, 68, 68, 0.35);">
+            <svg viewBox="0 0 24 24" style="width: 19px; height: 19px; stroke: #ffffff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </button>
         </div>
 
         <!-- BÊN PHẢI: NÚT ĐÓNG -->
@@ -5592,10 +5602,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261104_175805"></script>
+  <script src="js/seed_data.js?v=20261104_181650"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261104_175805"></script>
+  <script src="js/main.js?v=20261104_181650"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
