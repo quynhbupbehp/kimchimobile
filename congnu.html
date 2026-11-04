@@ -76,6 +76,29 @@
       color: #94a3b8;
       margin-bottom: 14px;
     }
+    .customer-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      max-width: 95%;
+      flex-wrap: wrap;
+    }
+    .tag-daigia {
+      display: inline-flex;
+      align-items: center;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      font-size: 1.05rem;
+      font-weight: 900;
+      padding: 6px 14px;
+      border-radius: 20px;
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
     .customer-badge {
       display: inline-block;
       background: rgba(245, 158, 11, 0.12);
@@ -85,8 +108,7 @@
       font-weight: 800;
       padding: 6px 16px;
       border-radius: 30px;
-      margin-bottom: 14px;
-      max-width: 90%;
+      max-width: 100%;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -273,9 +295,11 @@
   <div class="container" id="mainContainer" style="display: none;">
     <!-- Thẻ Tiêu Đề Khách & Tổng Nợ -->
     <div class="header-card">
-      <div class="brand-title">QUYNH BUP BE</div>
-      <div class="brand-sub">Bảng Đối Soát Công Nợ Trực Tuyến</div>
-      <div class="customer-badge" id="custName">Đang tải...</div>
+      <div class="brand-title">Bảng Đối Soát Công Nợ Trực Tuyến</div>
+      <div class="customer-row">
+        <span class="tag-daigia">Đại Gia</span>
+        <span class="customer-badge" id="custName">Đang tải...</span>
+      </div>
       
       <div class="total-box">
         <div class="total-label">
@@ -388,7 +412,7 @@
     }
 
     function renderDebts(customerName, list) {
-      custNameEl.innerText = 'Đại Gia ' + customerName;
+      custNameEl.innerText = customerName;
       document.title = `QUYNH BUP BE - Đối Soát Công Nợ: Đại Gia ${customerName}`;
 
       const activeDebts = list.filter(item => {
