@@ -353,6 +353,48 @@
       input.setSelectionRange(cursorPosition, cursorPosition);
     }
 
+    function formatSoftwareItemDateTime(item) {
+      if (!item) return { dateStr: '--/--/----', timeStr: '' };
+      let rawDM = String(item.dayMonth || '').trim();
+      let rawYear = String(item.year || '').trim();
+      let rawTime = String(item.time || '').trim();
+
+      let d = '01', m = '01', y = rawYear || '2026';
+
+      // 1. Kiểm tra nếu item.dayMonth chứa cả YYYY-MM-DD hoặc DD/MM/YYYY
+      let mIso = rawDM.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (mIso) {
+        y = mIso[1];
+        m = mIso[2].padStart(2, '0');
+        d = mIso[3].padStart(2, '0');
+      } else {
+        let parts = rawDM.replace(/\//g, '-').split('-');
+        if (parts.length === 3) {
+          if (parts[0].length === 4) {
+            y = parts[0]; m = parts[1].padStart(2, '0'); d = parts[2].padStart(2, '0');
+          } else {
+            d = parts[0].padStart(2, '0'); m = parts[1].padStart(2, '0'); y = parts[2];
+          }
+        } else if (parts.length === 2) {
+          d = parts[0].padStart(2, '0');
+          m = parts[1].padStart(2, '0');
+        }
+      }
+
+      if (!y || y.length < 4) y = '2026';
+
+      let dateStr = `${d}/${m}/${y}`;
+
+      // 2. Chuẩn hóa time: Nếu là '00:00', rỗng hoặc không có giờ -> để trống
+      let timeStr = '';
+      if (rawTime && rawTime !== '00:00' && rawTime !== '0:0' && rawTime !== '00:00:00') {
+        timeStr = rawTime;
+      }
+
+      return { dateStr, timeStr };
+    }
+    window.formatSoftwareItemDateTime = formatSoftwareItemDateTime;
+
     function formatBrandDeviceName(str) {
       if (!str || typeof str !== 'string') return str || '';
       let res = str;
@@ -11910,9 +11952,18 @@
 
       let cleanDate = dateVal.replace(/-/g, '/');
       let dParts = cleanDate.split('/');
-      let ddStr = dParts[0] ? String(parseInt(dParts[0], 10)).padStart(2, '0') : '23';
-      let mmStr = dParts[1] ? String(parseInt(dParts[1], 10)).padStart(2, '0') : '10';
-      let yyyyStr = (dParts.length >= 3 && dParts[2]) ? String(parseInt(dParts[2], 10)) : '2026';
+      let ddStr, mmStr, yyyyStr;
+      if (dParts.length === 3 && dParts[0].length === 4) {
+        // Định dạng YYYY/MM/DD
+        yyyyStr = dParts[0];
+        mmStr = String(parseInt(dParts[1], 10)).padStart(2, '0');
+        ddStr = String(parseInt(dParts[2], 10)).padStart(2, '0');
+      } else {
+        // Định dạng DD/MM/YYYY
+        ddStr = dParts[0] ? String(parseInt(dParts[0], 10)).padStart(2, '0') : '01';
+        mmStr = dParts[1] ? String(parseInt(dParts[1], 10)).padStart(2, '0') : '01';
+        yyyyStr = (dParts.length >= 3 && dParts[2]) ? String(parseInt(dParts[2], 10)) : '2026';
+      }
       let dayMonth = `${ddStr}-${mmStr}`;
       let year = yyyyStr;
       let time = `${hourVal}:${minVal}`;
@@ -12015,7 +12066,10 @@
           <div class="view-info-item"><span class="view-info-label">- Báo giá / Số tiền:</span> <span class="view-info-val" style="color: #f87171; font-weight: 900; font-size: 1.15rem;">${formatPriceStr(item.price)}</span></div>
           <div class="view-info-item"><span class="view-info-label">- Phí dịch vụ:</span> <span class="view-info-val" style="color: #cbd5e1; font-weight: 700;">${formatPriceStr(item.cost || '0')}</span></div>
           <div class="view-info-item"><span class="view-info-label">- Lợi nhuận (Lãi):</span> <span class="view-info-val" style="color: var(--green-badge); font-weight: 900; font-size: 1.05rem;">${formatPriceStr(item.profit)}</span></div>
-          <div class="view-info-item"><span class="view-info-label">- Thời gian:</span> <span class="view-info-val" style="color: #ec4899; font-weight: 800;">${(item.dayMonth || '').replace(/-/g, '/')}/${item.year || '2026'} lúc ${item.time || ''}</span></div>
+          <div class="view-info-item"><span class="view-info-label">- Thời gian:</span> <span class="view-info-val" style="color: #ec4899; font-weight: 800;">${(() => {
+            const dt = formatSoftwareItemDateTime(item);
+            return dt.timeStr ? `${dt.dateStr} lúc ${dt.timeStr}` : dt.dateStr;
+          })()}</span></div>
           <div class="view-info-item"><span class="view-info-label">- Trạng thái TT:</span> <span class="view-info-val">${statusBadge}</span></div>
         `;
         viewModal.classList.add('active');
@@ -13672,10 +13726,13 @@
               ${statusBadgeHtml}
             </td>
             <td class="sw-col-extra">
-              <div class="sw-time-display">
-                <span class="sw-d-date">${(item.dayMonth || '').replace(/-/g, '/')}/${item.year || '2026'}</span>
-                <span class="sw-d-time">${item.time}</span>
-              </div>
+              ${(() => {
+                const dt = formatSoftwareItemDateTime(item);
+                return `<div class="sw-time-display">
+                  <span class="sw-d-date">${dt.dateStr}</span>
+                  ${dt.timeStr ? `<span class="sw-d-time">${dt.timeStr}</span>` : ''}
+                </div>`;
+              })()}
             </td>
             <td class="sw-col-extra" style="text-align: center;">
               <div class="action-btn-group">
