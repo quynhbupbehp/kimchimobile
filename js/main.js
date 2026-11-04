@@ -13176,12 +13176,12 @@
         const customDebtDomain = localStorage.getItem('KIMCHI_CUSTOM_DEBT_DOMAIN') || 'https://thanhtoanno.vercel.app';
         let liveUrl = '';
         if (customDebtDomain) {
-          liveUrl = customDebtDomain.replace(/\/+$/, '') + '/congnu.html?token=' + token;
+          liveUrl = customDebtDomain.replace(/\/+$/, '') + '/congno.html?token=' + token;
         } else {
           const origin = window.location.origin;
           let pathname = window.location.pathname;
           let basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
-          liveUrl = origin + basePath + 'congnu.html?token=' + token;
+          liveUrl = origin + basePath + 'congno.html?token=' + token;
         }
 
         // Copy vào Clipboard
