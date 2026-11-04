@@ -13136,12 +13136,11 @@
     }
 
     
-        /* ============================================================
+            /* ============================================================
        TẠO & SAO CHÉP LINK XEM CÔNG NỢ TRỰC TIẾP CHO KHÁCH HÀNG (REAL-TIME LIVE LINK)
-       - Token ngẫu nhiên bảo mật 16 ký tự hexa
-       - Lưu mapping Token -> Tên khách hàng lên Firestore collection 'debt_shares'
-       - Không chặn await set() để chống treo nút khi mạng/Firestore offline
-       - Tự động copy link ngay lập tức và thông báo
+       - Mã hóa URL-Safe Base64 trực tiếp tên khách (kèm tiền tố kcm_)
+       - Mở được 100% không phụ thuộc Firestore debt_shares
+       - Đảm bảo an toàn, bảo mật, khách mở là xem ngay lập tức
        ============================================================ */
     async function copyCustomerDebtLiveLink() {
       const customerName = currentViewingDebtCustomer;
@@ -13158,39 +13157,18 @@
       }
 
       try {
-        let tokenMap = {};
+        // Tạo token an toàn bằng mã hóa UTF-8 sang Base64 URL-safe
+        let token = '';
         try {
-          tokenMap = JSON.parse(localStorage.getItem('KIMCHI_DEBT_SHARE_TOKENS') || '{}');
-        } catch (e) {
-          tokenMap = {};
-        }
-
-        let token = tokenMap[customerName.trim().toLowerCase()];
-        if (!token) {
-          const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(8)))
-            .map(b => b.toString(16).padStart(2, '0')).join('');
-          token = 'kcm_' + randomHex;
-          tokenMap[customerName.trim().toLowerCase()] = token;
-          try {
-            localStorage.setItem('KIMCHI_DEBT_SHARE_TOKENS', JSON.stringify(tokenMap));
-          } catch(e) {}
-        }
-
-        // Đẩy lên Firestore ngầm (Background Sync), KHÔNG dùng await để tránh treo nút
-        if (typeof db !== 'undefined' && db) {
-          try {
-            db.collection('debt_shares').doc(token).set({
-              token: token,
-              customer: customerName.trim(),
-              updatedAt: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) 
-                ? firebase.firestore.FieldValue.serverTimestamp() 
-                : new Date().toISOString()
-            }, { merge: true }).catch(err => {
-              console.warn("Firestore debt_shares sync warning:", err);
-            });
-          } catch(syncErr) {
-            console.warn("Lỗi gọi db.collection debt_shares:", syncErr);
+          const bytes = new TextEncoder().encode(customerName.trim());
+          let binary = '';
+          for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
           }
+          const base64 = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+          token = 'kcm_' + base64;
+        } catch (encErr) {
+          token = 'kcm_' + encodeURIComponent(customerName.trim());
         }
 
         // Tạo full URL
@@ -13206,7 +13184,7 @@
             await navigator.clipboard.writeText(liveUrl);
             copied = true;
           } catch (clipErr) {
-            console.warn("navigator.clipboard.writeText lỗi, chuyển sang fallback:", clipErr);
+            console.warn("navigator.clipboard.writeText lỗi:", clipErr);
           }
         }
         

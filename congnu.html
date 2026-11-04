@@ -326,9 +326,27 @@
     }
     const db = firebase.firestore();
 
-    // 2. Lấy Token từ URL
+    // 2. Hàm giải mã token an toàn
+    function decodeCustomerFromToken(tk) {
+      if (!tk) return null;
+      try {
+        let clean = tk;
+        if (clean.startsWith('kcm_')) clean = clean.substring(4);
+        clean = clean.replace(/-/g, '+').replace(/_/g, '/');
+        while (clean.length % 4) clean += '=';
+        let bin = atob(clean);
+        let bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+        let decoded = new TextDecoder('utf-8').decode(bytes);
+        if (decoded && decoded.trim().length > 0) return decoded.trim();
+      } catch (e) {
+        console.warn("Giải mã token trực tiếp thất bại:", e);
+      }
+      return null;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const token = (urlParams.get('token') || '').trim();
+    const directCust = (urlParams.get('c') || urlParams.get('khach') || '').trim();
 
     const overlay = document.getElementById('loadingOverlay');
     const container = document.getElementById('mainContainer');
@@ -423,41 +441,46 @@
       `;
     }
 
-    if (!token) {
-      showError('Thiếu mã bảo mật (token) trên đường link. Vui lòng liên hệ Kim Chi Mobile để nhận lại liên kết chính xác.');
-    } else {
-      // 3. Tra cứu token trong collection debt_shares
+    function startListeningSoftware(targetCustomer) {
+      db.collection('software').onSnapshot(snapshot => {
+        let softwareList = [];
+        snapshot.forEach(doc => {
+          let data = doc.data();
+          if (!data.id) data.id = doc.id;
+          softwareList.push(data);
+        });
+        renderDebts(targetCustomer, softwareList);
+      }, err => {
+        console.error("Lỗi lắng nghe phần mềm:", err);
+        showError('Không thể tải dữ liệu công nợ. Vui lòng kiểm tra lại kết nối mạng.');
+      });
+    }
+
+    // 3. Phân tích khách hàng từ URL (Hỗ trợ cả token giải mã trực tiếp và qua Firestore)
+    let resolvedCustomer = directCust || decodeCustomerFromToken(token);
+
+    if (resolvedCustomer) {
+      startListeningSoftware(resolvedCustomer);
+    } else if (token) {
+      // Thử tìm trong Firestore collection 'debt_shares' nếu là mã random cũ
       db.collection('debt_shares').doc(token).onSnapshot(tokenDoc => {
         if (!tokenDoc.exists) {
           showError('Đường link công nợ này không tồn tại hoặc đã bị thu hồi.');
           return;
         }
-
         const shareData = tokenDoc.data();
-        const targetCustomer = (shareData.customer || '').trim();
-        if (!targetCustomer) {
+        const target = (shareData.customer || '').trim();
+        if (!target) {
           showError('Dữ liệu khách hàng không hợp lệ.');
           return;
         }
-
-        // 4. Lắng nghe real-time bảng phần mềm từ Firestore
-        db.collection('software').onSnapshot(snapshot => {
-          let softwareList = [];
-          snapshot.forEach(doc => {
-            let data = doc.data();
-            if (!data.id) data.id = doc.id;
-            softwareList.push(data);
-          });
-          renderDebts(targetCustomer, softwareList);
-        }, err => {
-          console.error("Lỗi lắng nghe phần mềm:", err);
-          showError('Không thể tải dữ liệu công nợ. Vui lòng kiểm tra lại kết nối mạng.');
-        });
-
+        startListeningSoftware(target);
       }, err => {
-        console.error("Lỗi tra cứu token:", err);
+        console.error("Lỗi tra cứu token Firestore:", err);
         showError('Không thể kết nối đến máy chủ.');
       });
+    } else {
+      showError('Thiếu mã bảo mật trên đường link. Vui lòng liên hệ Kim Chi Mobile để nhận lại liên kết chính xác.');
     }
   </script>
 </body>
