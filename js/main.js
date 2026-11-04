@@ -11597,6 +11597,7 @@
 
     function isSoftwareDebt(item) {
       if (!item || !item.paymentStatus) return false;
+      if ((parsePriceNum(item.price) || 0) <= 0) return false;
       let s = String(item.paymentStatus).trim().toUpperCase();
       let sClean = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       return s.includes('NỢ') || sClean.includes('NO') || sClean.includes('DAI') || sClean.includes('CHUA');
@@ -16721,13 +16722,244 @@
     }
 
     function deleteDebtSoftwareItem(id) {
-      if (confirm('Bạn có chắc muốn xóa khoản nợ phần mềm này không?')) {
-        softwareDatabase = softwareDatabase.filter(x => x.id !== id);
-        saveSoftwareStorage();
-        renderSoftwareTable(softwareDatabase);
-        renderDebtDashboard();
+      if (!confirm('Bạn có chắc muốn xóa khoản nợ phần mềm này không?')) return;
+      const item = softwareDatabase.find(x => String(x.id) === String(id) || x.id == id);
+      softwareDatabase = softwareDatabase.filter(x => String(x.id) !== String(id) && x.id != id);
+      saveSoftwareStorage();
+      if (typeof db !== 'undefined' && db && id) {
+        db.collection('software').doc(String(id)).delete().catch(console.error);
+      }
+      if (item && typeof logActivity === 'function') {
+        logActivity('DELETE', 'phanmem', 'Phần mềm', `Xóa khoản nợ phần mềm: ${item.customer || 'Khách lẻ'} - ${item.device || ''} (Số nợ: ${item.price})`, item, null, id);
+      }
+      if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+      if (typeof renderDebtSoftwareList === 'function') renderDebtSoftwareList();
+      if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+      if (typeof showToast === 'function') showToast("Đã xóa khoản nợ phần mềm thành công!");
+    }
+    window.deleteDebtSoftwareItem = deleteDebtSoftwareItem;
+
+    /* ============================================================
+       QUẢN LÝ CÔNG NỢ PHẦN MỀM: XUẤT EXCEL, NHẬP EXCEL, XÓA ĐÃ CHỌN
+       ============================================================ */
+    function exportDebtSoftwareToExcel() {
+      let list = softwareDatabase.filter(s => isSoftwareDebt(s));
+      const sFilter = debtSubFilters.software || { search: '', range: 'ALL' };
+      if (sFilter.search) {
+        list = list.filter(item => {
+          let cust = (item.customer || '').toLowerCase();
+          let dev = (item.device || '').toLowerCase();
+          return cust.includes(sFilter.search) || dev.includes(sFilter.search);
+        });
+      }
+      if (sFilter.range && sFilter.range !== 'ALL') {
+        list = list.filter(item => checkDebtAmountMatch(item.price, sFilter.range));
+      }
+
+      if (!Array.isArray(list) || list.length === 0) {
+        alert("Không có khoản nợ phần mềm nào để xuất Excel!");
+        return;
+      }
+
+      const headers = ["STT", "Khách Hàng", "Tên Máy / Nội Dung", "Số Nợ", "Phí Dịch Vụ", "Ngày Nợ", "Năm", "Trạng Thái"];
+      const rows = list.map((item, idx) => [
+        idx + 1,
+        item.customer || 'Khách lẻ',
+        item.device || '',
+        item.price || '0',
+        item.cost || '0',
+        item.dayMonth || '',
+        item.year || '2026',
+        item.paymentStatus || 'NỢ DAI VL'
+      ]);
+
+      exportAoaToExcelOrCsv(headers, rows, 'KimChiMobile_CongNo_PhanMem', 'CongNo_PhanMem');
+      if (typeof showToast === 'function') {
+        showToast(`Đã xuất thành công ${list.length} khoản nợ phần mềm ra file Excel!`);
+      } else {
+        alert(`Đã xuất thành công ${list.length} khoản nợ phần mềm ra file Excel!`);
       }
     }
+    window.exportDebtSoftwareToExcel = exportDebtSoftwareToExcel;
+
+    function triggerImportDebtSoftwareExcel() {
+      const fileInput = document.getElementById('debtSoftwareExcelFileInput');
+      if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
+      }
+    }
+    window.triggerImportDebtSoftwareExcel = triggerImportDebtSoftwareExcel;
+
+    function handleImportDebtSoftwareExcelFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          let rows = [];
+          if (typeof XLSX !== 'undefined') {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+            if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+              alert("File Excel không có trang tính nào!");
+              return;
+            }
+            rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
+          } else {
+            const textDecoder = new TextDecoder('utf-8');
+            const lines = textDecoder.decode(e.target.result).split(/\r?\n/).filter(line => line.trim().length > 0);
+            rows = lines.map(line => line.split(/[,;\t]/).map(c => c.replace(/^"|"$/g, '').trim()));
+          }
+
+          if (!rows || rows.length <= 1) {
+            alert("File Excel không có dữ liệu để nhập!");
+            return;
+          }
+
+          let cleanHeader = rows[0].map(h => String(h || '')
+            .toLowerCase()
+            .replace(/đ/g, 'd')
+            .replace(/Đ/g, 'D')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim());
+
+          let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxTime = -1;
+
+          cleanHeader.forEach((col, idx) => {
+            if (col.includes('thoi gian') || col.includes('ngay') || col.includes('date') || col.includes('time')) {
+              colIdxTime = idx;
+            } else if (col.includes('khach') || col.includes('customer') || col === 'tho' || col.includes('ten tho')) {
+              colIdxCustomer = idx;
+            } else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung')) {
+              colIdxDevice = idx;
+            } else if (col.includes('phi') || col.includes('gia nhap') || col.includes('von') || col.includes('cost')) {
+              colIdxCost = idx;
+            } else if (col.includes('so no') || col.includes('no') || col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price')) {
+              colIdxPrice = idx;
+            }
+          });
+
+          if (colIdxCustomer === -1 && colIdxDevice === -1) {
+            colIdxCustomer = 1; colIdxDevice = 2; colIdxPrice = 3; colIdxCost = 4; colIdxTime = 5;
+          }
+
+          let newRecords = [];
+          const currentYear = String(new Date().getFullYear());
+
+          for (let i = 1; i < rows.length; i++) {
+            let row = rows[i];
+            if (!row || row.length === 0 || row.every(c => String(c).trim() === '')) continue;
+
+            let customer = colIdxCustomer !== -1 && row[colIdxCustomer] ? String(row[colIdxCustomer]).trim() : 'Khách lẻ';
+            let device = colIdxDevice !== -1 && row[colIdxDevice] ? String(row[colIdxDevice]).trim() : '';
+
+            if (/tong\s*cong|total/i.test(customer.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) continue;
+
+            let rawPrice = colIdxPrice !== -1 && row[colIdxPrice] !== undefined ? String(row[colIdxPrice]).trim() : '0';
+            let rawCost = colIdxCost !== -1 && row[colIdxCost] !== undefined ? String(row[colIdxCost]).trim() : '0';
+            let rawTime = colIdxTime !== -1 && row[colIdxTime] !== undefined ? row[colIdxTime] : '';
+
+            let numPrice = parsePriceNum(rawPrice) || 0;
+            if (numPrice <= 0) continue; // Bỏ qua đơn số nợ <= 0
+
+            if (!device && !customer) continue;
+            if (!device) device = 'Cài phần mềm';
+
+            let dayMonth = getCurrentDateStr().substring(0, 5);
+            let year = currentYear;
+
+            if (rawTime) {
+              let parsedDt = parseExcelDateTime(rawTime);
+              if (parsedDt && parsedDt.dayMonth) {
+                dayMonth = parsedDt.dayMonth;
+                if (parsedDt.year) year = parsedDt.year;
+              }
+            }
+
+            let numCost = parsePriceNum(rawCost) || 0;
+            let profit = String(numPrice - numCost);
+
+            newRecords.push({
+              id: Date.now() + Math.floor(Math.random() * 100000) + i,
+              customer: toTitleCase(customer),
+              device: toTitleCase(device),
+              price: String(numPrice),
+              cost: String(numCost),
+              profit: profit,
+              dayMonth: dayMonth,
+              year: year,
+              time: '00:00',
+              paymentStatus: 'NỢ DAI VL',
+              selected: false
+            });
+          }
+
+          if (newRecords.length === 0) {
+            alert("Không tìm thấy dòng nợ phần mềm hợp lệ nào (> 0đ) trong file!");
+            return;
+          }
+
+          softwareDatabase = [...newRecords, ...softwareDatabase];
+          saveSoftwareStorage(newRecords);
+          renderSoftwareTable(softwareDatabase);
+          renderDebtSoftwareList();
+          renderDebtDashboard();
+
+          alert(`Đã nhập thành công ${newRecords.length} khoản nợ phần mềm từ file Excel!`);
+        } catch (err) {
+          console.error("Lỗi đọc file Excel nợ phần mềm:", err);
+          alert("Có lỗi xảy ra khi xử lý file Excel: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+    window.handleImportDebtSoftwareExcelFile = handleImportDebtSoftwareExcelFile;
+
+    function deleteSelectedDebtSoftwareItems() {
+      const chks = Array.from(document.querySelectorAll('.chk-debt-software:checked'));
+      if (chks.length === 0) {
+        alert("Vui lòng tick chọn ít nhất một khoản nợ phần mềm cần xóa!");
+        return;
+      }
+
+      if (!confirm(`Bạn có chắc chắn muốn xóa ${chks.length} khoản nợ phần mềm đã chọn không?`)) return;
+
+      const deleteIds = new Set(chks.map(c => String(c.value)));
+      const itemsToDelete = softwareDatabase.filter(s => deleteIds.has(String(s.id)));
+
+      softwareDatabase = softwareDatabase.filter(s => !deleteIds.has(String(s.id)));
+      saveSoftwareStorage();
+
+      if (typeof db !== 'undefined' && db) {
+        itemsToDelete.forEach(it => {
+          if (it && it.id) {
+            db.collection('software').doc(String(it.id)).delete().catch(console.error);
+          }
+        });
+      }
+
+      if (typeof logActivity === 'function') {
+        logActivity('DELETE', 'phanmem', 'Phần mềm', `Xóa hàng loạt ${itemsToDelete.length} khoản nợ phần mềm`, itemsToDelete, null, 'batch');
+      }
+
+      // Reset checkbox master
+      const masterChk = document.getElementById('chkMasterDebtSoftware');
+      if (masterChk) masterChk.checked = false;
+
+      renderSoftwareTable(softwareDatabase);
+      renderDebtSoftwareList();
+      renderDebtDashboard();
+
+      if (typeof showToast === 'function') {
+        showToast(`Đã xóa thành công ${itemsToDelete.length} khoản nợ phần mềm!`);
+      } else {
+        alert(`Đã xóa thành công ${itemsToDelete.length} khoản nợ phần mềm!`);
+      }
+    }
+    window.deleteSelectedDebtSoftwareItems = deleteSelectedDebtSoftwareItems;
 
     function payDebtSoftwareItem(id) {
       const item = softwareDatabase.find(x => x.id === id);

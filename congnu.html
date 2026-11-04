@@ -407,6 +407,7 @@
 
     function isSoftwareDebt(item) {
       if (!item || !item.paymentStatus) return false;
+      if ((parsePriceNum(item.price) || 0) <= 0) return false;
       let s = String(item.paymentStatus).trim().toUpperCase();
       let sClean = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       return s.includes('NỢ') || sClean.includes('NO') || sClean.includes('DAI') || sClean.includes('CHUA');
