@@ -2072,7 +2072,18 @@
             try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
             if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
             if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
-            if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            if (typeof syncCustomerDebtsToCloud === 'function') {
+        if (Array.isArray(itemOrListToSync)) {
+          let cSet = new Set();
+          itemOrListToSync.forEach(it => { if (it && it.customer) cSet.add(it.customer.trim()); });
+          cSet.forEach(c => syncCustomerDebtsToCloud(c));
+        } else if (itemOrListToSync && itemOrListToSync.customer) {
+          syncCustomerDebtsToCloud(itemOrListToSync.customer.trim());
+        } else {
+          syncCustomerDebtsToCloud();
+        }
+      }
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
           }
         }, err => console.error("Lỗi sync sales realtime:", err));
       } catch (err) {
@@ -11614,6 +11625,87 @@
 
     // (DEFAULT_SOFTWARE_DATA & softwareDatabase đã được khởi tạo ở đầu file trước DOMContentLoaded)
 
+    
+    function getCustomerDebtDocKey(customerName) {
+      if (!customerName) return '';
+      try {
+        const bytes = new TextEncoder().encode(customerName.trim());
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return 'kcm_' + btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      } catch (e) {
+        return 'kcm_' + encodeURIComponent(customerName.trim());
+      }
+    }
+    window.getCustomerDebtDocKey = getCustomerDebtDocKey;
+
+    function syncCustomerDebtsToCloud(targetCustomerName) {
+      if (typeof db === 'undefined' || !db) return;
+      try {
+        let customersToSync = [];
+        if (targetCustomerName) {
+          customersToSync.push(targetCustomerName.trim());
+        } else {
+          // Lấy tất cả khách hàng có trong danh sách phần mềm
+          let custSet = new Set();
+          softwareDatabase.forEach(s => {
+            let c = (s.customer || 'Khách lẻ').trim();
+            if (c) custSet.add(c);
+          });
+          customersToSync = Array.from(custSet);
+        }
+
+        customersToSync.forEach(cName => {
+          if (!cName) return;
+          const docKey = getCustomerDebtDocKey(cName);
+          if (!docKey) return;
+
+          // Lọc các đơn thực sự còn nợ của khách hàng này
+          let debts = softwareDatabase.filter(s => {
+            let sCust = (s.customer || 'Khách lẻ').trim().toLowerCase();
+            return sCust === cName.toLowerCase() && isSoftwareDebt(s);
+          });
+
+          // Sắp xếp ngày mới nhất lên đầu
+          debts.sort((a, b) => {
+            let parseDt = (item) => {
+              let dateStr = (item.dayMonth || '') + '-' + (item.year || '2026');
+              let [d, m, y] = dateStr.split('-').map(x => parseInt(x, 10) || 0);
+              return new Date(y, (m || 1) - 1, d || 1).getTime();
+            };
+            return parseDt(b) - parseDt(a);
+          });
+
+          let totalDebt = debts.reduce((sum, item) => sum + (parsePriceNum(item.price) || 0), 0);
+          
+          let debtPayload = {
+            customer: cName,
+            token: docKey,
+            totalDebt: totalDebt,
+            count: debts.length,
+            updatedAt: new Date().toISOString(),
+            debts: debts.map((item, idx) => ({
+              stt: idx + 1,
+              id: String(item.id),
+              device: item.device || 'Đơn phần mềm',
+              price: parsePriceNum(item.price) || 0,
+              date: ((item.dayMonth || '') + (item.year ? ('-' + item.year) : '')).replace(/-/g, '/')
+            }))
+          };
+
+          // Ghi đè trực tiếp tài liệu độc lập của khách hàng này
+          db.collection('customer_debts').doc(docKey).set(debtPayload).catch(err => {
+            console.error("Lỗi đồng bộ customer_debts cho khách " + cName + ":", err);
+          });
+        });
+      } catch (err) {
+        console.error("Lỗi syncCustomerDebtsToCloud:", err);
+      }
+    }
+    window.syncCustomerDebtsToCloud = syncCustomerDebtsToCloud;
+
     function saveSoftwareStorage(itemOrListToSync) {
       if (softwareDatabase.length > 0) localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
       try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
@@ -13358,6 +13450,10 @@
         // Tạo full URL gửi cho khách hàng
         // Chỉ dẫn thẳng tới congnu.html để không bị dính màn hình đăng nhập của index.html
         const customDebtDomain = localStorage.getItem('KIMCHI_CUSTOM_DEBT_DOMAIN') || 'https://thanhtoanno.vercel.app';
+        // Đảm bảo dữ liệu khách hàng được ghi lên cloud ngay lập tức trước khi copy link
+        if (typeof syncCustomerDebtsToCloud === 'function') {
+          syncCustomerDebtsToCloud(customerName);
+        }
         let liveUrl = '';
         if (customDebtDomain) {
           liveUrl = customDebtDomain.replace(/\/+$/, '') + '/congno.html?token=' + token;

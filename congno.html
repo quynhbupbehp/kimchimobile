@@ -514,12 +514,73 @@
       `;
     }
 
-    function startListeningSoftware(targetCustomer) {
+
+    function renderDirectCustomerDebt(data, fallbackCustomerName) {
+      if (!data) return;
+      const custName = data.customer || fallbackCustomerName || 'Quý khách';
+      custNameEl.innerText = custName;
+      document.title = `QUYNH BUP BE - Đối Soát Công Nợ: Đại Gia ${custName}`;
+
+      const debts = Array.isArray(data.debts) ? data.debts : [];
+      const total = (typeof data.totalDebt === 'number') ? data.totalDebt : debts.reduce((s, it) => s + (parsePriceNum(it.price) || 0), 0);
+      
+      custTotalEl.innerText = formatMoney(total) + ' k';
+      debtCountEl.innerText = `${debts.length} đơn`;
+
+      if (debts.length === 0 || total <= 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+      } else {
+        emptyState.style.display = 'none';
+        tbody.innerHTML = debts.map((item, idx) => {
+          let dateStr = (item.date || '-').replace(/-/g, '/');
+          let priceStr = formatMoney(parsePriceNum(item.price));
+          return `
+            <tr>
+              <td style="text-align: center; color: #64748b; font-weight: 700;">${idx + 1}</td>
+              <td>
+                <div class="item-device">${escapeHtml(item.device || 'Đơn phần mềm')}</div>
+              </td>
+              <td class="item-amount">${priceStr}</td>
+              <td style="text-align: center;" class="item-date">${dateStr}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      overlay.style.display = 'none';
+      container.style.display = 'block';
+    }
+
+    function startListeningCustomerDebt(targetCustomer, directDocKey) {
+      const docKey = directDocKey || (token && token.startsWith('kcm_') ? token : null);
+      
+      // ƯU TIÊN 1: Lắng nghe document trực tiếp từ collection 'customer_debts' (Giải pháp 1 tức thì 100%)
+      if (docKey) {
+        let hasDirectData = false;
+        db.collection('customer_debts').doc(docKey).onSnapshot(docSnap => {
+          if (docSnap.exists) {
+            hasDirectData = true;
+            renderDirectCustomerDebt(docSnap.data(), targetCustomer);
+          } else if (!hasDirectData) {
+            // Nếu chưa có doc riêng, fallback lắng nghe bảng software
+            fallbackListenSoftware(targetCustomer);
+          }
+        }, err => {
+          console.warn("Chưa tải được từ customer_debts, chuyển sang software:", err);
+          fallbackListenSoftware(targetCustomer);
+        });
+      } else {
+        fallbackListenSoftware(targetCustomer);
+      }
+    }
+
+    function fallbackListenSoftware(targetCustomer) {
       db.collection('software').onSnapshot(snapshot => {
         let softwareList = [];
         snapshot.forEach(doc => {
           let data = doc.data();
-          data.id = doc.id; // LUÔN dùng Firestore doc ID
+          data.id = doc.id;
           softwareList.push(data);
         });
         renderDebts(targetCustomer, softwareList);
@@ -528,12 +589,13 @@
         showError('Không thể tải dữ liệu công nợ. Vui lòng kiểm tra lại kết nối mạng.');
       });
     }
+  
 
     // 3. Phân tích khách hàng từ URL (Hỗ trợ cả token giải mã trực tiếp và qua Firestore)
     let resolvedCustomer = directCust || decodeCustomerFromToken(token);
 
     if (resolvedCustomer) {
-      startListeningSoftware(resolvedCustomer);
+      startListeningCustomerDebt(resolvedCustomer, token);
     } else if (token) {
       // Thử tìm trong Firestore collection 'debt_shares' nếu là mã random cũ
       db.collection('debt_shares').doc(token).onSnapshot(tokenDoc => {
