@@ -13172,11 +13172,11 @@
         }
 
         // Tạo full URL gửi cho khách hàng
-        // Ưu tiên liên kết qua domain độc lập thanhtoanno nếu có cấu hình hoặc mặc định
+        // Chỉ dẫn thẳng tới congnu.html để không bị dính màn hình đăng nhập của index.html
         const customDebtDomain = localStorage.getItem('KIMCHI_CUSTOM_DEBT_DOMAIN') || 'https://thanhtoanno.vercel.app';
         let liveUrl = '';
         if (customDebtDomain) {
-          liveUrl = customDebtDomain.replace(/\/+$/, '') + '/?token=' + token;
+          liveUrl = customDebtDomain.replace(/\/+$/, '') + '/congnu.html?token=' + token;
         } else {
           const origin = window.location.origin;
           let pathname = window.location.pathname;
