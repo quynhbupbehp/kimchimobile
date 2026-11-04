@@ -13136,11 +13136,12 @@
     }
 
     
-    /* ============================================================
+        /* ============================================================
        TẠO & SAO CHÉP LINK XEM CÔNG NỢ TRỰC TIẾP CHO KHÁCH HÀNG (REAL-TIME LIVE LINK)
        - Token ngẫu nhiên bảo mật 16 ký tự hexa
        - Lưu mapping Token -> Tên khách hàng lên Firestore collection 'debt_shares'
-       - Khách chỉ cần mở link là theo dõi được công nợ real-time từ collection 'software'
+       - Không chặn await set() để chống treo nút khi mạng/Firestore offline
+       - Tự động copy link ngay lập tức và thông báo
        ============================================================ */
     async function copyCustomerDebtLiveLink() {
       const customerName = currentViewingDebtCustomer;
@@ -13150,15 +13151,13 @@
       }
 
       const btn = document.getElementById('btnCopyCustomerDebtLink');
-      const originalText = btn ? btn.innerHTML : '';
+      const originalText = btn ? btn.innerHTML : '🔗 COPY LINK THEO DÕI';
       if (btn) {
         btn.innerHTML = '⏳ Đang tạo link...';
         btn.style.opacity = '0.7';
       }
 
       try {
-        // Sinh token ngẫu nhiên dựa vào tên khách + chuỗi hex để link cố định hoặc tái sử dụng an toàn
-        // Kiểm tra xem đã có token lưu trong localStorage cho khách này chưa
         let tokenMap = {};
         try {
           tokenMap = JSON.parse(localStorage.getItem('KIMCHI_DEBT_SHARE_TOKENS') || '{}');
@@ -13168,7 +13167,6 @@
 
         let token = tokenMap[customerName.trim().toLowerCase()];
         if (!token) {
-          // Tạo token ngẫu nhiên bảo mật 16 ký tự
           const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(8)))
             .map(b => b.toString(16).padStart(2, '0')).join('');
           token = 'kcm_' + randomHex;
@@ -13178,13 +13176,21 @@
           } catch(e) {}
         }
 
-        // Đồng bộ token lên collection 'debt_shares' trên Firestore
+        // Đẩy lên Firestore ngầm (Background Sync), KHÔNG dùng await để tránh treo nút
         if (typeof db !== 'undefined' && db) {
-          await db.collection('debt_shares').doc(token).set({
-            token: token,
-            customer: customerName.trim(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          }, { merge: true });
+          try {
+            db.collection('debt_shares').doc(token).set({
+              token: token,
+              customer: customerName.trim(),
+              updatedAt: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) 
+                ? firebase.firestore.FieldValue.serverTimestamp() 
+                : new Date().toISOString()
+            }, { merge: true }).catch(err => {
+              console.warn("Firestore debt_shares sync warning:", err);
+            });
+          } catch(syncErr) {
+            console.warn("Lỗi gọi db.collection debt_shares:", syncErr);
+          }
         }
 
         // Tạo full URL
@@ -13194,33 +13200,53 @@
         const liveUrl = origin + basePath + 'congnu.html?token=' + token;
 
         // Copy vào Clipboard
+        let copied = false;
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(liveUrl);
-        } else {
+          try {
+            await navigator.clipboard.writeText(liveUrl);
+            copied = true;
+          } catch (clipErr) {
+            console.warn("navigator.clipboard.writeText lỗi, chuyển sang fallback:", clipErr);
+          }
+        }
+        
+        if (!copied) {
           const ta = document.createElement('textarea');
           ta.value = liveUrl;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
           document.body.appendChild(ta);
           ta.select();
           document.execCommand('copy');
           document.body.removeChild(ta);
+          copied = true;
         }
 
         if (btn) {
           btn.innerHTML = '✅ ĐÃ COPY LINK!';
+          btn.style.opacity = '1';
           setTimeout(() => {
             btn.innerHTML = originalText;
-            btn.style.opacity = '1';
-          }, 2500);
+          }, 3000);
         }
 
-        alert('🎉 ĐÃ SAO CHÉP LINK CÔNG NỢ THÀNH CÔNG!\n\nKhách hàng: ' + customerName + '\nLink: ' + liveUrl + '\n\n👉 Bạn chỉ cần dán (Ctrl+V) gửi qua Zalo/tin nhắn cho khách.\n👉 Mỗi khi bạn thêm bớt đơn nợ, màn hình khách sẽ tự động cập nhật ngay lập tức!');
+        // Thông báo Toast & Alert
+        if (typeof showToast === 'function') {
+          showToast("ĐÃ COPY LINK CÔNG NỢ KHÁCH " + customerName.toUpperCase() + "! Mở Zalo dán (Ctrl+V) gửi ngay.", 4000);
+        }
+
+        alert('🎉 ĐÃ SAO CHÉP LINK CÔNG NỢ THÀNH CÔNG!\n\n- Khách hàng: ' + customerName + '\n- Link xem: ' + liveUrl + '\n\n👉 Đã copy vào bộ nhớ tạm. Bạn chỉ cần mở Zalo/tin nhắn và nhấn Ctrl + V (hoặc Dán) để gửi cho khách.\n👉 Khách mở link sẽ thấy bảng đối soát tự động nhảy số khi bạn sửa/thêm/bớt!');
       } catch (err) {
         console.error("Lỗi tạo link công nợ:", err);
         if (btn) {
           btn.innerHTML = originalText;
           btn.style.opacity = '1';
         }
-        showToast("Lỗi khi tạo link công nợ: " + err.message);
+        if (typeof showToast === 'function') {
+          showToast("Lỗi: " + err.message);
+        } else {
+          alert("Lỗi khi tạo link: " + err.message);
+        }
       }
     }
     window.copyCustomerDebtLiveLink = copyCustomerDebtLiveLink;
