@@ -417,10 +417,38 @@
       custNameEl.innerText = customerName;
       document.title = `QUYNH BUP BE - Đối Soát Công Nợ: Đại Gia ${customerName}`;
 
-      const activeDebts = list.filter(item => {
+      // 1. Lọc tất cả đơn của khách hàng này
+      const customerAllRecords = list.filter(item => {
         let cust = (item.customer || 'Khách lẻ').trim().toLowerCase();
-        return cust === customerName.trim().toLowerCase() && isSoftwareDebt(item);
+        return cust === customerName.trim().toLowerCase();
       });
+
+      // 2. Khử trùng lặp hoặc bản ghi cũ: nếu có 2 doc cùng thiết bị + ngày + giá, doc nào có paymentStatus = ĐÃ TRẢ thì ưu tiên xem như đã trả
+      // Nhóm theo signature (device + dayMonth + year)
+      const deduplicatedMap = new Map();
+      customerAllRecords.forEach(item => {
+        // Khóa định danh cho từng máy sửa của khách
+        const devKey = ((item.device || '').trim().toLowerCase()) + '__' + ((item.dayMonth || '').trim()) + '__' + ((item.year || '').trim());
+        if (!deduplicatedMap.has(devKey)) {
+          deduplicatedMap.set(devKey, item);
+        } else {
+          const existing = deduplicatedMap.get(devKey);
+          // Nếu một trong 2 bản ghi là 'ĐÃ TRẢ', ưu tiên bản ghi 'ĐÃ TRẢ'
+          if (!isSoftwareDebt(item) && isSoftwareDebt(existing)) {
+            deduplicatedMap.set(devKey, item); // Ghi đè bằng bản ghi đã trả
+          } else if (isSoftwareDebt(item) && !isSoftwareDebt(existing)) {
+            // Đã có bản ghi đã trả, giữ nguyên
+          } else {
+            // Cả hai cùng trạng thái, lấy doc mới hơn theo id
+            if ((Number(item.id) || 0) > (Number(existing.id) || 0)) {
+              deduplicatedMap.set(devKey, item);
+            }
+          }
+        }
+      });
+
+      // 3. Lọc chỉ lấy các đơn thực sự còn NỢ
+      const activeDebts = Array.from(deduplicatedMap.values()).filter(item => isSoftwareDebt(item));
 
       // Sắp xếp ngày mới nhất lên đầu
       activeDebts.sort((a, b) => {

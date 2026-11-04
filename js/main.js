@@ -2055,6 +2055,7 @@
           let list = [];
           snapshot.forEach(doc => {
             let data = doc.data();
+            data._docId = doc.id;
             if (!data.id) data.id = doc.id;
             list.push(data);
           });
@@ -11618,22 +11619,20 @@
       if (softwareDatabase.length > 0) localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
       try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
       if (typeof db !== 'undefined' && db) {
+        const syncDoc = (item) => {
+          if (!item) return;
+          const docKey = String(item._docId || item.id);
+          if (!docKey) return;
+          db.collection('software').doc(docKey).set(item, { merge: true }).catch(err => {
+            console.error("Lỗi đồng bộ Firestore doc software:", docKey, err);
+          });
+        };
         if (Array.isArray(itemOrListToSync)) {
-          itemOrListToSync.forEach(item => {
-            if (item && item.id) {
-              db.collection('software').doc(String(item.id)).set(item, { merge: true }).catch(console.error);
-            }
-          });
-        } else if (itemOrListToSync && itemOrListToSync.id) {
-          db.collection('software').doc(String(itemOrListToSync.id)).set(itemOrListToSync, { merge: true }).catch(err => {
-            console.error("Lỗi đồng bộ Firestore doc software:", err);
-          });
+          itemOrListToSync.forEach(syncDoc);
+        } else if (itemOrListToSync) {
+          syncDoc(itemOrListToSync);
         } else {
-          softwareDatabase.forEach(item => {
-            if (item && item.id) {
-              db.collection('software').doc(String(item.id)).set(item, { merge: true }).catch(console.error);
-            }
-          });
+          softwareDatabase.forEach(syncDoc);
         }
       }
       if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
