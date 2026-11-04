@@ -388,8 +388,8 @@
     }
 
     function renderDebts(customerName, list) {
-      custNameEl.innerText = customerName;
-      document.title = `QUYNH BUP BE - Đối Soát Công Nợ: ${customerName}`;
+      custNameEl.innerText = 'Đại Gia ' + customerName;
+      document.title = `QUYNH BUP BE - Đối Soát Công Nợ: Đại Gia ${customerName}`;
 
       const activeDebts = list.filter(item => {
         let cust = (item.customer || 'Khách lẻ').trim().toLowerCase();
