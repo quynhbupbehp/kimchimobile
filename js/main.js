@@ -13433,42 +13433,85 @@
       }
 
       try {
-        // Tạo token an toàn bằng mã hóa UTF-8 sang Base64 URL-safe
-        let token = '';
+        // 1. Lọc danh sách đơn nợ thực tế hiện tại của khách hàng này
+        const activeDebts = softwareDatabase.filter(s => {
+          let c = (s.customer || 'Khách lẻ').trim().toLowerCase();
+          return c === customerName.trim().toLowerCase() && isSoftwareDebt(s);
+        });
+
+        // Sắp xếp ngày mới nhất lên đầu
+        activeDebts.sort((a, b) => {
+          let parseDt = (item) => {
+            let dateStr = (item.dayMonth || '') + '-' + (item.year || '2026');
+            let [d, m, y] = dateStr.split('-').map(x => parseInt(x, 10) || 0);
+            return new Date(y, (m || 1) - 1, d || 1).getTime();
+          };
+          return parseDt(b) - parseDt(a);
+        });
+
+        const totalDebt = activeDebts.reduce((sum, item) => sum + (parsePriceNum(item.price) || 0), 0);
+
+        // 2. Đóng gói dữ liệu đối soát nợ siêu nhỏ gọn (GIẢI PHÁP B - URL DATA)
+        const debtPayload = {
+          c: customerName.trim(),
+          t: totalDebt,
+          u: getVietnamDateStr() || '',
+          d: activeDebts.map(item => ({
+            m: item.device || 'Đơn phần mềm',
+            p: parsePriceNum(item.price) || 0,
+            d: ((item.dayMonth || '') + (item.year ? ('/' + item.year) : '')).replace(/-/g, '/')
+          }))
+        };
+
+        // Mã hóa UTF-8 sang Base64 URL-Safe
+        let payloadB64 = '';
         try {
-          const bytes = new TextEncoder().encode(customerName.trim());
+          const jsonStr = JSON.stringify(debtPayload);
+          const bytes = new TextEncoder().encode(jsonStr);
           let binary = '';
           for (let i = 0; i < bytes.length; i++) {
             binary += String.fromCharCode(bytes[i]);
           }
-          const base64 = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-          token = 'kcm_' + base64;
+          payloadB64 = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         } catch (encErr) {
+          console.warn("Lỗi mã hóa payloadB64:", encErr);
+        }
+
+        // Tạo token truyền thống cho trường hợp fallback
+        let token = '';
+        try {
+          const bytes = new TextEncoder().encode(customerName.trim());
+          let binary = '';
+          for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+          token = 'kcm_' + btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        } catch (e) {
           token = 'kcm_' + encodeURIComponent(customerName.trim());
         }
 
-        // Tạo full URL gửi cho khách hàng
-        // Chỉ dẫn thẳng tới congnu.html để không bị dính màn hình đăng nhập của index.html
-        const customDebtDomain = localStorage.getItem('KIMCHI_CUSTOM_DEBT_DOMAIN') || 'https://thanhtoanno.vercel.app';
-        // Đảm bảo dữ liệu khách hàng được ghi lên cloud ngay lập tức trước khi copy link
+        // Tự động đồng bộ lên cloud ngầm để hỗ trợ 2 chiều
         if (typeof syncCustomerDebtsToCloud === 'function') {
           syncCustomerDebtsToCloud(customerName);
         }
-        let liveUrl = '';
+
+        const customDebtDomain = localStorage.getItem('KIMCHI_CUSTOM_DEBT_DOMAIN') || 'https://thanhtoanno.vercel.app';
+        let baseUrl = '';
         if (customDebtDomain) {
-          liveUrl = customDebtDomain.replace(/\/+$/, '') + '/congno.html?token=' + token;
+          baseUrl = customDebtDomain.replace(/\/+$/, '') + '/congno.html';
         } else {
           const origin = window.location.origin;
           let pathname = window.location.pathname;
           let basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
-          liveUrl = origin + basePath + 'congno.html?token=' + token;
+          baseUrl = origin + basePath + 'congno.html';
         }
+
+        // GHÉP DỮ LIỆU ĐỐI SOÁT VÀO HASH #data=... (Hoàn toàn không phụ thuộc Database)
+        let liveUrl = baseUrl + '?token=' + token + (payloadB64 ? ('#d=' + payloadB64) : '');
 
         // Copy vào Clipboard
         let copied = false;
         if (navigator.clipboard && navigator.clipboard.writeText) {
           try {
-            await navigator.clipboard.writeText(liveUrl);
+            navigator.clipboard.writeText(liveUrl);
             copied = true;
           } catch (clipErr) {
             console.warn("navigator.clipboard.writeText lỗi:", clipErr);
@@ -13488,29 +13531,20 @@
         }
 
         if (btn) {
-          btn.innerHTML = '✅ ĐÃ COPY LINK!';
+          btn.innerHTML = '✅ ĐÃ COPY LINK TRỰC TIẾP!';
           btn.style.opacity = '1';
           setTimeout(() => {
             btn.innerHTML = originalText;
-          }, 3000);
+          }, 2500);
         }
 
-        // Thông báo Toast & Alert
-        if (typeof showToast === 'function') {
-          showToast("ĐÃ COPY LINK CÔNG NỢ KHÁCH " + customerName.toUpperCase() + "! Mở Zalo dán (Ctrl+V) gửi ngay.", 4000);
-        }
-
-        alert('🎉 ĐÃ SAO CHÉP LINK CÔNG NỢ THÀNH CÔNG!\n\n- Khách hàng: ' + customerName + '\n- Link xem: ' + liveUrl + '\n\n👉 Đã copy vào bộ nhớ tạm. Bạn chỉ cần mở Zalo/tin nhắn và nhấn Ctrl + V (hoặc Dán) để gửi cho khách.\n👉 Khách mở link sẽ thấy bảng đối soát tự động nhảy số khi bạn sửa/thêm/bớt!');
+        showToast(`Đã sao chép link đối soát công nợ của ${customerName}! (Dữ liệu tức thì: ${activeDebts.length} đơn - ${formatPriceStr(totalDebt)})`);
       } catch (err) {
-        console.error("Lỗi tạo link công nợ:", err);
+        console.error("Lỗi copy link nợ:", err);
+        showToast("Không thể tạo link công nợ: " + err.message);
         if (btn) {
           btn.innerHTML = originalText;
           btn.style.opacity = '1';
-        }
-        if (typeof showToast === 'function') {
-          showToast("Lỗi: " + err.message);
-        } else {
-          alert("Lỗi khi tạo link: " + err.message);
         }
       }
     }

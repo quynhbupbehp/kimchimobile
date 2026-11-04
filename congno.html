@@ -365,6 +365,49 @@
     const db = firebase.firestore();
 
     // 2. Hàm giải mã token an toàn
+    
+    // 2b. GIẢI PHÁP B: Giải mã dữ liệu đối soát nợ trực tiếp từ URL Hash/Query (Không cần Database)
+    function decodePayloadFromUrl() {
+      try {
+        let b64 = '';
+        // Ưu tiên đọc từ hash (#d=... hoặc #data=...)
+        if (window.location.hash) {
+          let hash = window.location.hash.substring(1);
+          let m = hash.match(/(?:d|data)=([^&]+)/);
+          if (m && m[1]) b64 = m[1];
+          else if (!hash.includes('=')) b64 = hash;
+        }
+        // Fallback đọc từ search query (?d=... hoặc ?data=...)
+        if (!b64) {
+          b64 = urlParams.get('d') || urlParams.get('data') || '';
+        }
+        if (!b64) return null;
+
+        let clean = b64.replace(/-/g, '+').replace(/_/g, '/');
+        while (clean.length % 4) clean += '=';
+        let bin = atob(clean);
+        let bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+        let jsonStr = new TextDecoder('utf-8').decode(bytes);
+        let parsed = JSON.parse(jsonStr);
+        if (parsed && (parsed.c || parsed.customer)) {
+          return {
+            customer: parsed.c || parsed.customer,
+            totalDebt: (parsed.t !== undefined) ? parsed.t : (parsed.total || 0),
+            updatedAt: parsed.u || parsed.updatedAt || '',
+            debts: (parsed.d || parsed.debts || []).map((it, idx) => ({
+              stt: idx + 1,
+              device: it.m || it.device || 'Đơn phần mềm',
+              price: it.p !== undefined ? it.p : (it.price || 0),
+              date: it.d || it.date || '-'
+            }))
+          };
+        }
+      } catch (err) {
+        console.warn("Giải mã payload URL thất bại:", err);
+      }
+      return null;
+    }
+  
     function decodeCustomerFromToken(tk) {
       if (!tk) return null;
       try {
@@ -591,12 +634,23 @@
     }
   
 
-    // 3. Phân tích khách hàng từ URL (Hỗ trợ cả token giải mã trực tiếp và qua Firestore)
-    let resolvedCustomer = directCust || decodeCustomerFromToken(token);
+    // 3. ƯU TIÊN 1: GIẢI PHÁP B - Đọc trực tiếp dữ liệu nợ từ URL (Tức thì 100%, không cần Database, không sợ lỗi)
+    const urlPayload = decodePayloadFromUrl();
+    if (urlPayload) {
+      console.log("Đã tải dữ liệu công nợ tức thì từ URL Data:", urlPayload.customer);
+      renderDirectCustomerDebt(urlPayload, urlPayload.customer);
+      // Vẫn lắng nghe ngầm cloud nếu có token để cập nhật 2 chiều
+      let resolvedCustomer = urlPayload.customer || directCust || decodeCustomerFromToken(token);
+      if (resolvedCustomer && typeof startListeningCustomerDebt === 'function') {
+        startListeningCustomerDebt(resolvedCustomer, token);
+      }
+    } else {
+      // ƯU TIÊN 2: Phân tích khách hàng từ URL qua token
+      let resolvedCustomer = directCust || decodeCustomerFromToken(token);
 
-    if (resolvedCustomer) {
-      startListeningCustomerDebt(resolvedCustomer, token);
-    } else if (token) {
+      if (resolvedCustomer) {
+        startListeningCustomerDebt(resolvedCustomer, token);
+      } else if (token) {
       // Thử tìm trong Firestore collection 'debt_shares' nếu là mã random cũ
       db.collection('debt_shares').doc(token).onSnapshot(tokenDoc => {
         if (!tokenDoc.exists) {
