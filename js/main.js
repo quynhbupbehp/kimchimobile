@@ -13455,7 +13455,7 @@
         const debtPayload = {
           c: customerName.trim(),
           t: totalDebt,
-          u: getVietnamDateStr() || '',
+          u: (typeof getVietnamDateStr === 'function' ? getVietnamDateStr() : (typeof getVietnamDate === 'function' ? getVietnamDate().toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN'))),
           d: activeDebts.map(item => ({
             m: item.device || 'Đơn phần mềm',
             p: parsePriceNum(item.price) || 0,
