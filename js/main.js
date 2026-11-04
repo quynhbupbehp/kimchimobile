@@ -12077,25 +12077,141 @@
 
       if (contentDiv && viewModal) {
         const titleSpan = viewModal.querySelector('.ticket-header span');
-        if (titleSpan) titleSpan.innerText = '💻 CHI TIẾT ĐƠN PHẦN MỀM';
+        if (titleSpan) titleSpan.innerHTML = '💻 CHI TIẾT ĐƠN PHẦN MỀM';
+
+        // Đảm bảo ẩn giá trên header nếu có
+        const headerPriceEl = document.getElementById('viewPhoneHeaderPrice');
+        if (headerPriceEl) headerPriceEl.innerText = '';
 
         let isDebt = isSoftwareDebt(item);
         let statusBadge = isDebt
-          ? `<span class="sw-badge-debt" style="cursor: default;">💀 NỢ DAI VL</span>`
-          : `<span class="sw-badge-paid" style="cursor: default;">✔ ĐÃ TRẢ</span>`;
+          ? `<span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #dc2626; border: 1.5px solid #ef4444; color: #ffffff; font-size: 0.95rem; font-weight: 900; padding: 4px 16px; border-radius: 8px; box-shadow: 0 0 12px rgba(239, 68, 68, 0.45); cursor: default;">💀 NỢ DAI VL</span>`
+          : `<span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #059669; border: 1.5px solid #10b981; color: #ffffff; font-size: 0.95rem; font-weight: 900; padding: 4px 16px; border-radius: 8px; box-shadow: 0 0 12px rgba(16, 185, 129, 0.45); cursor: default;">✔ ĐÃ TRẢ</span>`;
 
+        // Format y chang mẫu người dùng gửi
         contentDiv.innerHTML = `
-          <div class="view-info-item"><span class="view-info-label">- Khách hàng / Thợ:</span> <span class="view-info-val" style="color: #f59e0b; font-weight: 800; font-size: 1.05rem;">${escapeHtml(item.customer || 'Khách lẻ')}</span></div>
-          <div class="view-info-item"><span class="view-info-label">- Tên máy / Thiết bị:</span> <span class="view-info-val" style="color: #fff; font-weight: 900; font-size: 1.05rem;">${escapeHtml(item.device || '')}</span></div>
-          <div class="view-info-item"><span class="view-info-label">- Báo giá / Số tiền:</span> <span class="view-info-val" style="color: #f87171; font-weight: 900; font-size: 1.15rem;">${formatPriceStr(item.price)}</span></div>
-          <div class="view-info-item"><span class="view-info-label">- Phí dịch vụ:</span> <span class="view-info-val" style="color: #cbd5e1; font-weight: 700;">${formatPriceStr(item.cost || '0')}</span></div>
-          <div class="view-info-item"><span class="view-info-label">- Lợi nhuận (Lãi):</span> <span class="view-info-val" style="color: var(--green-badge); font-weight: 900; font-size: 1.05rem;">${formatPriceStr(item.profit)}</span></div>
-          <div class="view-info-item"><span class="view-info-label">- Thời gian:</span> <span class="view-info-val" style="color: #ec4899; font-weight: 800;">${(() => {
-            const dt = formatSoftwareItemDateTime(item);
-            return dt.timeStr ? `${dt.dateStr} lúc ${dt.timeStr}` : dt.dateStr;
-          })()}</span></div>
-          <div class="view-info-item"><span class="view-info-label">- Trạng thái TT:</span> <span class="view-info-val">${statusBadge}</span></div>
+          <div style="display: flex; flex-direction: column; gap: 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 1.08rem; color: #ffffff;">
+            <!-- Khách hàng : Tên khách (màu vàng cam) -->
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span style="font-weight: 900; color: #ffffff; white-space: nowrap;">- Khách hàng</span>
+              <span style="font-weight: 900; color: #ffffff;">:</span>
+              <span style="color: #f59e0b; font-weight: 900; font-size: 1.15rem; word-break: break-word;">${escapeHtml(item.customer || 'Khách lẻ')}</span>
+            </div>
+
+            <!-- Tên máy : Tên máy (màu trắng đậm) -->
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span style="font-weight: 900; color: #ffffff; white-space: nowrap;">- Tên máy</span>
+              <span style="font-weight: 900; color: #ffffff; margin-left: 18px;">:</span>
+              <span style="color: #ffffff; font-weight: 900; font-size: 1.15rem; word-break: break-word;">${escapeHtml(item.device || '')}</span>
+            </div>
+
+            <!-- Số tiền: Số tiền (màu đỏ cam) -->
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span style="font-weight: 900; color: #ffffff; white-space: nowrap;">- Số tiền:</span>
+              <span style="color: #f87171; font-weight: 900; font-size: 1.35rem;">${formatPriceStr(item.price)}</span>
+            </div>
+
+            <!-- Phí dịch vụ: Số tiền (màu trắng) -->
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span style="font-weight: 900; color: #ffffff; white-space: nowrap;">- Phí dịch vụ:</span>
+              <span style="color: #ffffff; font-weight: 900; font-size: 1.15rem;">${formatPriceStr(item.cost || '0')}</span>
+            </div>
+
+            <!-- Lợi nhuận : Số tiền (màu xanh lá cây) -->
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span style="font-weight: 900; color: #ffffff; white-space: nowrap;">- Lợi nhuận</span>
+              <span style="font-weight: 900; color: #ffffff;">:</span>
+              <span style="color: #10b981; font-weight: 900; font-size: 1.25rem;">${formatPriceStr(item.profit)}</span>
+            </div>
+
+            <!-- Thời gian: ngày lúc giờ (màu hồng cánh sen) -->
+            <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+              <span style="font-weight: 900; color: #ffffff; white-space: nowrap;">- Thời gian:</span>
+              <span style="color: #ec4899; font-weight: 900; font-size: 1.12rem;">${(() => {
+                const dt = formatSoftwareItemDateTime(item);
+                return dt.timeStr ? `${dt.dateStr} lúc ${dt.timeStr}` : dt.dateStr;
+              })()}</span>
+            </div>
+
+            <!-- Trạng thái TT: BADGE -->
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-weight: 900; color: #ffffff; white-space: nowrap;">- Trạng thái TT:</span>
+              <div>${statusBadge}</div>
+            </div>
+          </div>
         `;
+
+        // Cập nhật 3 nút thao tác phía dưới: Thanh Toán (xanh lá), Sửa (cam), Xóa (đỏ)
+        const btnSell = document.getElementById('viewModalBtnSell');
+        const btnEdit = document.getElementById('viewModalBtnEdit');
+        const btnDel = document.getElementById('viewModalBtnDel');
+        const btnBuyBack = document.getElementById('viewModalBtnBuyBack');
+
+        if (btnBuyBack) btnBuyBack.style.display = 'none';
+
+        if (btnSell) {
+          btnSell.style.display = 'inline-flex';
+          btnSell.innerHTML = '💳 Thanh Toán';
+          btnSell.title = 'Thanh toán công nợ đơn này';
+          btnSell.style.background = '#059669';
+          btnSell.style.borderColor = '#10b981';
+          btnSell.style.color = '#ffffff';
+          btnSell.style.fontWeight = '900';
+          btnSell.style.fontSize = '1.05rem';
+          btnSell.style.borderRadius = '10px';
+
+          btnSell.onclick = function() {
+            if (isDebt) {
+              const oldData = JSON.parse(JSON.stringify(item));
+              item.paymentStatus = 'ĐÃ TRẢ';
+              item.selected = false;
+              saveSoftwareStorage(item);
+              if (typeof logActivity === 'function') {
+                logActivity('EDIT', 'phanmem', 'Phần mềm', `Thanh toán công nợ đơn phần mềm: ${item.customer} - ${item.device} sang ĐÃ TRẢ`, oldData, item, item.id);
+              }
+              renderSoftwareTable(softwareDatabase);
+              if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+              alert(`Đã thanh toán thành công đơn phần mềm cho khách: ${item.customer}!`);
+              closeViewPhoneModal();
+            } else {
+              alert('Đơn này đã được thanh toán rồi!');
+            }
+          };
+        }
+
+        if (btnEdit) {
+          btnEdit.style.display = 'inline-flex';
+          btnEdit.innerHTML = '✏️ Sửa';
+          btnEdit.style.background = '#d97706';
+          btnEdit.style.borderColor = '#f59e0b';
+          btnEdit.style.color = '#ffffff';
+          btnEdit.style.fontWeight = '900';
+          btnEdit.style.fontSize = '1.05rem';
+          btnEdit.style.borderRadius = '10px';
+
+          btnEdit.onclick = function() {
+            closeViewPhoneModal();
+            openSoftwareModal(item.id);
+          };
+        }
+
+        if (btnDel) {
+          btnDel.style.display = 'inline-flex';
+          btnDel.innerHTML = '🗑️ Xóa';
+          btnDel.style.background = '#dc2626';
+          btnDel.style.borderColor = '#ef4444';
+          btnDel.style.color = '#ffffff';
+          btnDel.style.fontWeight = '900';
+          btnDel.style.fontSize = '1.05rem';
+          btnDel.style.borderRadius = '10px';
+
+          btnDel.onclick = function() {
+            closeViewPhoneModal();
+            deleteSoftwareTicket(item.id);
+          };
+        }
+
         viewModal.classList.add('active');
         viewModal.style.display = 'flex';
       } else {
