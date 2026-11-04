@@ -927,7 +927,7 @@
             }
 
             if (brandEl) brandEl.textContent = d.brand || '---';
-            let displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : (d.part || '---');
+            let displayPart = (!d.part || !d.part.trim() || d.part === '---') ? 'BO SẠC' : d.part;
             if (partEl) partEl.textContent = displayPart;
             if (typeEl) typeEl.textContent = d.type || 'ZIN';
             if (colorEl) colorEl.textContent = d.color ? `(${d.color})` : '';
@@ -942,7 +942,40 @@
             if (modalEl) modalEl.classList.add('hidden');
         }
 
-        function renderDeviceNames(nameStr, colorStr, isMobile = false, realIndex = null) {
+        
+        function getBrandBadgeHtml(brand, isMobile = false) {
+            const b = (brand || '').trim().toUpperCase();
+            if (!b) return '';
+
+            // Kích thước và style đồng bộ
+            const sizeClass = isMobile ? 'h-3.5 w-auto max-w-[50px]' : 'h-4 w-auto max-w-[60px]';
+
+            if (b.includes('IPHONE') || b.includes('APPLE')) {
+                return `<span class="inline-flex items-center justify-center text-white mr-1 align-middle shrink-0" title="iPhone"><i class="fa-brands fa-apple ${isMobile ? 'text-xs' : 'text-sm'}"></i></span>`;
+            }
+            if (b.includes('SAMSUNG')) {
+                return `<img src="img/tab_logo_samsung.png" alt="Samsung" class="${sizeClass} rounded-xs object-contain inline-block mr-1 align-middle shrink-0 shadow-2xs" title="Samsung" />`;
+            }
+            if (b.includes('OPPO') || b.includes('REALME')) {
+                return `<img src="img/tab_logo_oppo.png" alt="Oppo" class="${sizeClass} rounded-xs object-contain inline-block mr-1 align-middle shrink-0 shadow-2xs" title="Oppo" />`;
+            }
+            if (b.includes('REDMI') || b.includes('POCO') || b.includes('XIAOMI') || b.includes('MI')) {
+                return `<span class="inline-flex items-center justify-center bg-[#ff6900] text-white rounded-[3px] ${isMobile ? 'w-3.5 h-3.5 text-[9px]' : 'w-4 h-4 text-[10px]'} font-black leading-none mr-1 align-middle shrink-0 shadow-2xs" style="font-family: Arial, sans-serif;" title="Xiaomi">mi</span>`;
+            }
+            if (b.includes('VIVO')) {
+                return `<img src="img/tab_logo_vivo.png" alt="Vivo" class="${sizeClass} rounded-xs object-contain inline-block mr-1 align-middle shrink-0 shadow-2xs" title="Vivo" />`;
+            }
+            if (b.includes('VSMART')) {
+                return `<span class="inline-flex items-center mr-1 align-middle shrink-0" title="Vsmart">
+                    <svg class="${isMobile ? 'w-3 h-3' : 'w-3.5 h-3.5'} text-orange-500 fill-current inline-block" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L4 7v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V7l-8-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z" fill="#f97316"/>
+                    </svg>
+                </span>`;
+            }
+            return '';
+        }
+
+        function renderDeviceNames(nameStr, colorStr, isMobile = false, realIndex = null, brand = '') {
             if (!nameStr) return '';
 
             let colorDotHtml = '';
@@ -967,6 +1000,7 @@
                 return `${separatorHtml}<span class="${colorClass}">${token}</span>`;
             }).join('');
 
+            const brandLogoHtml = getBrandBadgeHtml(brand, isMobile);
             const dblClickAttr = realIndex !== null ? `ondblclick="event.stopPropagation(); showDeviceDetailsModal(${realIndex})"` : '';
             const touchEndAttr = realIndex !== null ? `ontouchend="handleDeviceNameTouch(${realIndex})"` : '';
 
@@ -1108,7 +1142,7 @@
                             localStorage.setItem('local_brands', JSON.stringify(brands));
                         }
                         if (data.categories) {
-                            categories = data.categories.map(c => c === 'BO SẠC' ? 'CÁP SẠC' : c);
+                            categories = data.categories;
                             localStorage.setItem('local_categories', JSON.stringify(categories));
                         }
                         if (data.types) {
@@ -1131,9 +1165,21 @@
                             importOrders = data.importOrders;
                             localStorage.setItem('local_import_orders', JSON.stringify(importOrders));
                         }
+                        let hasEmptyPartFixed = false;
                         devices.forEach(d => {
-                            if (d.part === 'BO SẠC') d.part = 'CÁP SẠC';
+                            if (!d.part || !d.part.trim() || d.part === '---') {
+                                d.part = 'BO SẠC';
+                                hasEmptyPartFixed = true;
+                            }
                         });
+                        // Đảm bảo categories có BO SẠC
+                        if (!categories.includes('BO SẠC')) {
+                            categories.push('BO SẠC');
+                            localStorage.setItem('local_categories', JSON.stringify(categories));
+                        }
+                        if (hasEmptyPartFixed) {
+                            setTimeout(() => { saveAllToCloud(); }, 1000);
+                        }
                     } else if (!hasInitializedRemote) {
                         // Chỉ khởi tạo 1 lần duy nhất nếu doc chưa tồn tại, tuyệt đối không lặp lại
                         hasInitializedRemote = true;
@@ -2045,8 +2091,8 @@
                         const costFormatted = formatMoney(d.cost);
                         const profitVal = parseMoney(d.price) - parseMoney(d.cost);
                         const profitFormatted = formatMoney(profitVal);
-                        const formattedNameHtml = renderDeviceNames(d.name, d.color, false, realIndex);
-                        const displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : d.part;
+                        const formattedNameHtml = renderDeviceNames(d.name, d.color, false, realIndex, d.brand);
+                        const displayPart = (!d.part || !d.part.trim() || d.part === '---') ? 'BO SẠC' : d.part;
 
                         const zeroQtyClass = (qtyVal === 0 ? 'yellow-pulse-row' : 'row-hover');
 
@@ -2151,8 +2197,8 @@
                         const realIndex = devices.indexOf(d);
                         const qtyVal = parseInt(d.qty) || 0;
                         const priceFormatted = formatMoney(d.price);
-                        const formattedNameHtml = renderDeviceNames(d.name, d.color, true, realIndex);
-                        let displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : d.part;
+                        const formattedNameHtml = renderDeviceNames(d.name, d.color, true, realIndex, d.brand);
+                        let displayPart = (!d.part || !d.part.trim() || d.part === '---') ? 'BO SẠC' : d.part;
                         if (displayPart === 'MÀN HÌNH') displayPart = 'MÀN';
 
                         const zeroQtyClassMobile = isOutStockTab ? 'row-hover px-2 rounded-xl' : (qtyVal === 0 ? 'yellow-pulse-row px-2 rounded-xl' : 'row-hover px-2 rounded-xl');
@@ -2860,7 +2906,7 @@
             const d = devices[index];
             if (!d) return;
 
-            const displayPart = (d.part === 'BO SẠC') ? 'CÁP SẠC' : d.part;
+            const displayPart = (!d.part || !d.part.trim() || d.part === '---') ? 'BO SẠC' : d.part;
             const issueName = displayPart + (d.type ? ` (${d.type})` : '');
             const rawPrice = parseMoney(d.price);
             const rawCost = parseMoney(d.cost);
