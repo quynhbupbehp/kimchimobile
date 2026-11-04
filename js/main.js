@@ -11462,12 +11462,18 @@
 
     // (DEFAULT_SOFTWARE_DATA & softwareDatabase đã được khởi tạo ở đầu file trước DOMContentLoaded)
 
-    function saveSoftwareStorage(itemToSync) {
+    function saveSoftwareStorage(itemOrListToSync) {
       if (softwareDatabase.length > 0) localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
       try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
       if (typeof db !== 'undefined' && db) {
-        if (itemToSync && itemToSync.id) {
-          db.collection('software').doc(String(itemToSync.id)).set(itemToSync, { merge: true }).catch(err => {
+        if (Array.isArray(itemOrListToSync)) {
+          itemOrListToSync.forEach(item => {
+            if (item && item.id) {
+              db.collection('software').doc(String(item.id)).set(item, { merge: true }).catch(console.error);
+            }
+          });
+        } else if (itemOrListToSync && itemOrListToSync.id) {
+          db.collection('software').doc(String(itemOrListToSync.id)).set(itemOrListToSync, { merge: true }).catch(err => {
             console.error("Lỗi đồng bộ Firestore doc software:", err);
           });
         } else {
@@ -11819,6 +11825,7 @@
       let devs = getSwDropdownItems('device');
       if (!devs.includes(device)) { devs.unshift(device); saveSwDropdownItems('device', devs); }
 
+      let targetItem = null;
       if (editId) {
         const idx = softwareDatabase.findIndex(x => String(x.id) === String(editId) || x.id == editId);
         if (idx !== -1) {
@@ -11832,6 +11839,7 @@
           softwareDatabase[idx].year = year;
           softwareDatabase[idx].time = time;
           softwareDatabase[idx].paymentStatus = paymentStatus;
+          targetItem = softwareDatabase[idx];
           if (typeof logActivity === 'function') {
             logActivity('EDIT', 'phanmem', 'Phần mềm', `Sửa đơn phần mềm: ${customer} - ${device} (Báo giá: ${price}, Đớp: ${profit})`, oldData, softwareDatabase[idx], softwareDatabase[idx].id);
           }
@@ -11851,6 +11859,7 @@
           selected: false
         };
         softwareDatabase.unshift(newItem);
+        targetItem = newItem;
         if (typeof logActivity === 'function') {
           logActivity('ADD', 'phanmem', 'Phần mềm', `Tạo đơn phần mềm: ${customer} - ${device} (Báo giá: ${price}, Đớp: ${profit})`, null, newItem, newItem.id);
         }
@@ -11878,10 +11887,7 @@
       const statusSelect = document.getElementById('swStatusFilter');
       if (statusSelect) statusSelect.value = 'ALL';
 
-      const savedItemToSync = editId 
-        ? softwareDatabase.find(x => String(x.id) === String(editId) || x.id == editId) 
-        : newItem;
-      saveSoftwareStorage(savedItemToSync);
+      saveSoftwareStorage(targetItem);
       renderSwCustomerFilterOptions();
       closeSoftwareModal();
       renderSoftwareTable(softwareDatabase);
@@ -12855,7 +12861,7 @@
       if (item) {
         if (confirm(`Xác nhận thanh toán nợ máy "${item.device}" cho khách "${item.customer}" - Số tiền: ${formatPriceStr(item.price)}?`)) {
           item.paymentStatus = 'ĐÃ TRẢ';
-          saveSoftwareStorage();
+          saveSoftwareStorage(item);
           renderSoftwareDebtTable();
           renderSoftwareTable(softwareDatabase);
           if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
@@ -12893,7 +12899,7 @@
           d.paymentStatus = 'ĐÃ TRẢ';
           d.selected = false;
         });
-        saveSoftwareStorage();
+        saveSoftwareStorage(debtsToPay);
         let remain = softwareDatabase.filter(s => isSoftwareDebt(s) && (s.customer || 'Khách lẻ').trim().toLowerCase() === currentViewingDebtCustomer.trim().toLowerCase());
         if (remain.length === 0) {
           closeCustomerDebtDetailsModal();
