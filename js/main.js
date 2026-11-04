@@ -11878,11 +11878,21 @@
       document.getElementById('swFeeInput').value = '';
 
       const filterDateEl = document.getElementById('filterSoftwareDateDisplay');
-      if (filterDateEl && filterDateEl.value) {
-        document.getElementById('swFormDate').value = filterDateEl.value;
-      } else {
-        document.getElementById('swFormDate').value = getCurrentDateStr();
+      let defaultDateVal = '';
+      if (filterDateEl) {
+        defaultDateVal = (filterDateEl.value || filterDateEl.innerText || filterDateEl.textContent || '').trim();
       }
+      if (!defaultDateVal || defaultDateVal === '--/--/----' || defaultDateVal.length < 8) {
+        if (typeof swFilterDate !== 'undefined' && swFilterDate instanceof Date && !isNaN(swFilterDate.getTime())) {
+          const dd = String(swFilterDate.getDate()).padStart(2, '0');
+          const mm = String(swFilterDate.getMonth() + 1).padStart(2, '0');
+          const yyyy = swFilterDate.getFullYear();
+          defaultDateVal = dd + '/' + mm + '/' + yyyy;
+        } else {
+          defaultDateVal = getCurrentDateStr();
+        }
+      }
+      document.getElementById('swFormDate').value = defaultDateVal;
 
       const now = getVietnamDate();
       const hIn = document.getElementById('swFormHour');
