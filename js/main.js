@@ -2055,7 +2055,6 @@
           let list = [];
           snapshot.forEach(doc => {
             let data = doc.data();
-            data._docId = doc.id;
             if (!data.id) data.id = doc.id;
             list.push(data);
           });
@@ -2198,7 +2197,7 @@
           let list = [];
           snapshot.forEach(doc => {
             let data = doc.data();
-            if (!data.id) data.id = doc.id;
+            data.id = doc.id; // LUÔN dùng Firestore doc ID — đảm bảo sync đúng document
             list.push(data);
           });
           if (list.length > 0) {
@@ -11621,7 +11620,7 @@
       if (typeof db !== 'undefined' && db) {
         const syncDoc = (item) => {
           if (!item) return;
-          const docKey = String(item._docId || item.id);
+          const docKey = String(item.id);
           if (!docKey) return;
           db.collection('software').doc(docKey).set(item, { merge: true }).catch(err => {
             console.error("Lỗi đồng bộ Firestore doc software:", docKey, err);
@@ -11782,7 +11781,7 @@
     }
 
     function toggleSelectSoftwareItem(id, cb) {
-      const item = softwareDatabase.find(x => x.id === id);
+      const item = softwareDatabase.find(x => String(x.id) === String(id) || x.id == id);
       if (item) {
         item.selected = cb.checked;
       }
@@ -12017,7 +12016,7 @@
         }
       } else {
         const newItem = {
-          id: Date.now() + Math.random(),
+          id: 'sw_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
           customer,
           device,
           price,
@@ -12107,7 +12106,7 @@
       if (!item) return;
 
       let cloned = JSON.parse(JSON.stringify(item));
-      cloned.id = Date.now() + Math.random();
+      cloned.id = 'sw_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
       const now = new Date();
       cloned.time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       cloned.selected = false;
@@ -13003,8 +13002,8 @@
       if (!btn) return;
 
       if (chks.length > 0) {
-        let checkedIds = new Set(chks.map(c => Number(c.dataset.id)));
-        let checkedDebts = softwareDatabase.filter(s => checkedIds.has(s.id));
+        let checkedIds = new Set(chks.map(c => String(c.dataset.id)));
+        let checkedDebts = softwareDatabase.filter(s => checkedIds.has(String(s.id)));
         let checkedSum = checkedDebts.reduce((sum, it) => sum + (parsePriceNum(it.price) || 0), 0);
         btn.innerHTML = `💰 Thanh toán các đơn đã chọn (${chks.length} đơn - ${formatPriceStr(checkedSum)})`;
         btn.style.opacity = '1';
@@ -13060,8 +13059,8 @@
       let debtsToPay = [];
 
       if (chks.length > 0) {
-        let checkedIds = new Set(chks.map(c => Number(c.dataset.id)));
-        debtsToPay = softwareDatabase.filter(s => checkedIds.has(s.id));
+        let checkedIds = new Set(chks.map(c => String(c.dataset.id)));
+        debtsToPay = softwareDatabase.filter(s => checkedIds.has(String(s.id)));
       } else {
         debtsToPay = softwareDatabase.filter(s => isSoftwareDebt(s) && (s.customer || 'Khách lẻ').trim().toLowerCase() === currentViewingDebtCustomer.trim().toLowerCase());
       }
@@ -17239,7 +17238,7 @@
       if (item) {
         if (confirm(`Xác nhận thanh toán nợ cho "${item.customer || 'Khách lẻ'}"\n- Thiết bị: ${item.device || ''}\n- Số tiền nợ: ${formatPriceStr(item.price)}?`)) {
           item.paymentStatus = 'ĐÃ TRẢ';
-          saveSoftwareStorage();
+          saveSoftwareStorage(item);
           if (typeof renderSoftwareDebtTable === 'function') renderSoftwareDebtTable();
           if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
           if (typeof renderDebtDashboard === 'function') renderDebtDashboard();

@@ -405,6 +405,11 @@
       return isNaN(n) ? 0 : n;
     }
 
+        function normalizeCust(s) {
+      if (!s) return '';
+      return String(s).trim().toLowerCase().normalize('NFC').replace(/\s+/g, ' ');
+    }
+
     function isSoftwareDebt(item) {
       if (!item || !item.paymentStatus) return false;
       if ((parsePriceNum(item.price) || 0) <= 0) return false;
@@ -417,10 +422,10 @@
       custNameEl.innerText = customerName;
       document.title = `QUYNH BUP BE - Đối Soát Công Nợ: Đại Gia ${customerName}`;
 
-      // 1. Lọc tất cả đơn của khách hàng này
+      // 1. Lọc tất cả đơn của khách hàng này (chuẩn hóa Unicode NFC & khoảng trắng)
+      const targetNorm = normalizeCust(customerName);
       const customerAllRecords = list.filter(item => {
-        let cust = (item.customer || 'Khách lẻ').trim().toLowerCase();
-        return cust === customerName.trim().toLowerCase();
+        return normalizeCust(item.customer || 'Khách lẻ') === targetNorm;
       });
 
       // 2. Khử trùng lặp hoặc bản ghi cũ: nếu có 2 doc cùng thiết bị + ngày + giá, doc nào có paymentStatus = ĐÃ TRẢ thì ưu tiên xem như đã trả
@@ -514,7 +519,7 @@
         let softwareList = [];
         snapshot.forEach(doc => {
           let data = doc.data();
-          if (!data.id) data.id = doc.id;
+          data.id = doc.id; // LUÔN dùng Firestore doc ID
           softwareList.push(data);
         });
         renderDebts(targetCustomer, softwareList);
