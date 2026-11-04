@@ -379,7 +379,10 @@
         }
         // Fallback đọc từ search query (?d=... hoặc ?data=...)
         if (!b64) {
-          b64 = urlParams.get('d') || urlParams.get('data') || '';
+          try {
+            const params = new URLSearchParams(window.location.search);
+            b64 = params.get('d') || params.get('data') || '';
+          } catch(e) {}
         }
         if (!b64) return null;
 
@@ -595,7 +598,7 @@
       container.style.display = 'block';
     }
 
-    function startListeningCustomerDebt(targetCustomer, directDocKey) {
+    function startListeningCustomerDebt(targetCustomer, directDocKey, isSilent) {
       const docKey = directDocKey || (token && token.startsWith('kcm_') ? token : null);
       
       // ƯU TIÊN 1: Lắng nghe document trực tiếp từ collection 'customer_debts' (Giải pháp 1 tức thì 100%)
@@ -607,7 +610,7 @@
             renderDirectCustomerDebt(docSnap.data(), targetCustomer);
           } else if (!hasDirectData) {
             // Nếu chưa có doc riêng, fallback lắng nghe bảng software
-            fallbackListenSoftware(targetCustomer);
+            if (!isSilent) fallbackListenSoftware(targetCustomer);
           }
         }, err => {
           console.warn("Chưa tải được từ customer_debts, chuyển sang software:", err);
@@ -639,37 +642,48 @@
     if (urlPayload) {
       console.log("Đã tải dữ liệu công nợ tức thì từ URL Data:", urlPayload.customer);
       renderDirectCustomerDebt(urlPayload, urlPayload.customer);
-      // Vẫn lắng nghe ngầm cloud nếu có token để cập nhật 2 chiều
-      let resolvedCustomer = urlPayload.customer || directCust || decodeCustomerFromToken(token);
-      if (resolvedCustomer && typeof startListeningCustomerDebt === 'function') {
-        startListeningCustomerDebt(resolvedCustomer, token);
+      
+      // TẮT NGAY MÀN HÌNH CHỜ (LOADING) ĐỂ HIỂN THỊ BẢNG NỢ TỨC THÌ
+      const ol = document.getElementById('loadingOverlay');
+      const mc = document.getElementById('mainContainer');
+      if (ol) ol.style.display = 'none';
+      if (mc) mc.style.display = 'block';
+
+      // Chạy ngầm kết nối cloud nếu có mạng (không chặn giao diện)
+      try {
+        let resolvedCustomer = urlPayload.customer || directCust || decodeCustomerFromToken(token);
+        if (resolvedCustomer && typeof startListeningCustomerDebt === 'function') {
+          startListeningCustomerDebt(resolvedCustomer, token, true);
+        }
+      } catch(e) {
+        console.warn("Lỗi sync ngầm:", e);
       }
     } else {
       // ƯU TIÊN 2: Phân tích khách hàng từ URL qua token
       let resolvedCustomer = directCust || decodeCustomerFromToken(token);
 
       if (resolvedCustomer) {
-        startListeningCustomerDebt(resolvedCustomer, token);
+        startListeningCustomerDebt(resolvedCustomer, token, false);
       } else if (token) {
-      // Thử tìm trong Firestore collection 'debt_shares' nếu là mã random cũ
-      db.collection('debt_shares').doc(token).onSnapshot(tokenDoc => {
-        if (!tokenDoc.exists) {
-          showError('Đường link công nợ này không tồn tại hoặc đã bị thu hồi.');
-          return;
-        }
-        const shareData = tokenDoc.data();
-        const target = (shareData.customer || '').trim();
-        if (!target) {
-          showError('Dữ liệu khách hàng không hợp lệ.');
-          return;
-        }
-        startListeningSoftware(target);
-      }, err => {
-        console.error("Lỗi tra cứu token Firestore:", err);
-        showError('Không thể kết nối đến máy chủ.');
-      });
-    } else {
-      showError('Thiếu mã bảo mật trên đường link. Vui lòng liên hệ QUYNH BUP BE để nhận lại liên kết chính xác.');
+        db.collection('debt_shares').doc(token).onSnapshot(tokenDoc => {
+          if (!tokenDoc.exists) {
+            showError('Đường link công nợ này không tồn tại hoặc đã bị thu hồi.');
+            return;
+          }
+          const shareData = tokenDoc.data();
+          const target = (shareData.customer || '').trim();
+          if (!target) {
+            showError('Dữ liệu khách hàng không hợp lệ.');
+            return;
+          }
+          startListeningSoftware(target);
+        }, err => {
+          console.error("Lỗi tra cứu token Firestore:", err);
+          showError('Không thể kết nối đến máy chủ.');
+        });
+      } else {
+        showError('Thiếu mã bảo mật trên đường link. Vui lòng liên hệ QUYNH BUP BE để nhận lại liên kết chính xác.');
+      }
     }
   </script>
 </body>
