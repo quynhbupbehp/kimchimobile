@@ -5794,12 +5794,6 @@
             // Chuẩn hóa ngày giờ sang dạng "HH:mm - DD/MM/YYYY"
             let dateTime = formatImportDateTime(rawDate);
 
-            // Kiểm tra xem dòng này có thuộc phạm vi thời gian đang chọn (Ngày/Tháng/Năm/Tất Cả) hay không
-            let itemForCheck = { dateTime: dateTime };
-            if (!isSaleItemMatchingCurrentFilter(itemForCheck)) {
-              // Nếu dòng này không thuộc phạm vi thời gian đang chọn thì bỏ qua
-              continue;
-            }
 
             // Kiểm tra xem đơn hàng này đã tồn tại trong salesDatabase chưa (theo dateTime + name + totalNum)
             let existingItem = salesDatabase.find(s => 
