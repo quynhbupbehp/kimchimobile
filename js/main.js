@@ -3381,6 +3381,22 @@
         return true;
       });
 
+      // Sắp xếp filtered theo thời gian mới nhất lên đầu
+      filtered.sort((a, b) => {
+        let getTs = (dtStr) => {
+          if (!dtStr) return 0;
+          let parts = String(dtStr).split(' - ');
+          if (parts.length >= 2) {
+            let [hh, min] = parts[0].split(':').map(n => parseInt(n, 10) || 0);
+            let [d, m, y] = parts[1].split('/').map(n => parseInt(n, 10) || 0);
+            return new Date(y, m - 1, d, hh, min).getTime();
+          }
+          let t = new Date(dtStr).getTime();
+          return isNaN(t) ? 0 : t;
+        };
+        return getTs(b.dateTime) - getTs(a.dateTime);
+      });
+
       let totalRevenue = 0;
       let totalCost = 0;
       let salesProfit = 0;
@@ -4544,6 +4560,22 @@
         }
 
         return matchTime;
+      });
+
+      // Sắp xếp filtered theo thời gian mới nhất lên đầu
+      filtered.sort((a, b) => {
+        let getTs = (dtStr) => {
+          if (!dtStr) return 0;
+          let parts = String(dtStr).split(' - ');
+          if (parts.length >= 2) {
+            let [hh, min] = parts[0].split(':').map(n => parseInt(n, 10) || 0);
+            let [d, m, y] = parts[1].split('/').map(n => parseInt(n, 10) || 0);
+            return new Date(y, m - 1, d, hh, min).getTime();
+          }
+          let t = new Date(dtStr).getTime();
+          return isNaN(t) ? 0 : t;
+        };
+        return getTs(b.dateTime) - getTs(a.dateTime);
       });
 
       const countEl = document.getElementById('bangaCountText');
