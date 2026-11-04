@@ -11467,11 +11467,13 @@
       try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
       if (typeof db !== 'undefined' && db) {
         if (itemToSync && itemToSync.id) {
-          db.collection('software').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+          db.collection('software').doc(String(itemToSync.id)).set(itemToSync, { merge: true }).catch(err => {
+            console.error("Lỗi đồng bộ Firestore doc software:", err);
+          });
         } else {
           softwareDatabase.forEach(item => {
             if (item && item.id) {
-              db.collection('software').doc(String(item.id)).set(item).catch(console.error);
+              db.collection('software').doc(String(item.id)).set(item, { merge: true }).catch(console.error);
             }
           });
         }
@@ -11876,7 +11878,10 @@
       const statusSelect = document.getElementById('swStatusFilter');
       if (statusSelect) statusSelect.value = 'ALL';
 
-      saveSoftwareStorage();
+      const savedItemToSync = editId 
+        ? softwareDatabase.find(x => String(x.id) === String(editId) || x.id == editId) 
+        : newItem;
+      saveSoftwareStorage(savedItemToSync);
       renderSwCustomerFilterOptions();
       closeSoftwareModal();
       renderSoftwareTable(softwareDatabase);
