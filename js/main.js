@@ -13171,11 +13171,18 @@
           token = 'kcm_' + encodeURIComponent(customerName.trim());
         }
 
-        // Tạo full URL
-        const origin = window.location.origin;
-        let pathname = window.location.pathname;
-        let basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
-        const liveUrl = origin + basePath + 'congnu.html?token=' + token;
+        // Tạo full URL gửi cho khách hàng
+        // Ưu tiên liên kết qua domain độc lập thanhtoanno nếu có cấu hình hoặc mặc định
+        const customDebtDomain = localStorage.getItem('KIMCHI_CUSTOM_DEBT_DOMAIN') || 'https://thanhtoanno.vercel.app';
+        let liveUrl = '';
+        if (customDebtDomain) {
+          liveUrl = customDebtDomain.replace(/\/+$/, '') + '/?token=' + token;
+        } else {
+          const origin = window.location.origin;
+          let pathname = window.location.pathname;
+          let basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+          liveUrl = origin + basePath + 'congnu.html?token=' + token;
+        }
 
         // Copy vào Clipboard
         let copied = false;
