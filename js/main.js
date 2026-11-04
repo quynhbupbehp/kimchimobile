@@ -5906,6 +5906,7 @@
           }
 
           let newRecords = [];
+          let updatedRecords = [];
           let updatedCount = 0;
 
           for (let i = startIndex; i < rows.length; i++) {
@@ -17112,34 +17113,64 @@
 
             let numCost = parsePriceNum(rawCost) || 0;
             let profit = String(numPrice - numCost);
+            let custFormatted = toTitleCase(customer);
+            let devFormatted = toTitleCase(device);
+            let priceStr = String(numPrice);
+            let costStr = String(numCost);
 
-            newRecords.push({
-              id: Date.now() + Math.floor(Math.random() * 100000) + i,
-              customer: toTitleCase(customer),
-              device: toTitleCase(device),
-              price: String(numPrice),
-              cost: String(numCost),
-              profit: profit,
-              dayMonth: dayMonth,
-              year: year,
-              time: '00:00',
-              paymentStatus: 'NỢ DAI VL',
-              selected: false
+            // Kiểm tra trùng lặp để GHI ĐÈ thay vì tạo thêm đơn trùng
+            let existing = softwareDatabase.find(s => {
+              let sameCust = (s.customer || '').toLowerCase().trim() === custFormatted.toLowerCase().trim();
+              let sameDev = (s.device || '').toLowerCase().trim() === devFormatted.toLowerCase().trim();
+              let sameDate = (s.dayMonth === dayMonth && (String(s.year || '2026') === String(year || '2026')));
+              return sameCust && sameDev && sameDate;
             });
+
+            if (existing) {
+              existing.price = priceStr;
+              existing.cost = costStr;
+              existing.profit = profit;
+              existing.paymentStatus = 'NỢ DAI VL';
+              updatedRecords.push(existing);
+            } else {
+              newRecords.push({
+                id: Date.now() + Math.floor(Math.random() * 100000) + i,
+                customer: custFormatted,
+                device: devFormatted,
+                price: priceStr,
+                cost: costStr,
+                profit: profit,
+                dayMonth: dayMonth,
+                year: year,
+                time: '00:00',
+                paymentStatus: 'NỢ DAI VL',
+                selected: false
+              });
+            }
           }
 
-          if (newRecords.length === 0) {
+          if (newRecords.length === 0 && updatedRecords.length === 0) {
             alert("Không tìm thấy dòng nợ phần mềm hợp lệ nào (> 0đ) trong file Excel!");
             return;
           }
 
-          softwareDatabase = [...newRecords, ...softwareDatabase];
-          saveSoftwareStorage(newRecords);
+          if (newRecords.length > 0) {
+            softwareDatabase = [...newRecords, ...softwareDatabase];
+          }
+          saveSoftwareStorage([...newRecords, ...updatedRecords]);
           renderSoftwareTable(softwareDatabase);
           renderDebtSoftwareList();
           renderDebtDashboard();
 
-          alert(`Đã nhập thành công ${newRecords.length} khoản nợ phần mềm từ file Excel vào hệ thống!`);
+          let msg = "Nhập Excel thành công!";
+          if (newRecords.length > 0 && updatedRecords.length > 0) {
+            msg = `Đã thêm mới ${newRecords.length} khoản nợ và cập nhật (ghi đè) ${updatedRecords.length} khoản nợ đã có!`;
+          } else if (newRecords.length > 0) {
+            msg = `Đã nhập thành công ${newRecords.length} khoản nợ phần mềm mới từ file Excel!`;
+          } else {
+            msg = `Đã cập nhật (ghi đè) thành công ${updatedRecords.length} khoản nợ phần mềm đã có từ file Excel!`;
+          }
+          alert(msg);
         } catch (err) {
           console.error("Lỗi đọc file Excel nợ phần mềm:", err);
           alert("Có lỗi xảy ra khi xử lý file Excel: " + err.message);
