@@ -193,6 +193,7 @@
 
         /* ẨN TRÊN GIAO DIỆN MOBILE (< 768px) CHO TAB BÁO GIÁ */
         @media (max-width: 767px) {
+
             #btn-toggle-privacy,
             #privacy-icon,
             button[onclick*="togglePrivacyMode"],
@@ -300,7 +301,8 @@
                                 <span>XÓA TẤT CẢ DỮ LIỆU</span>
                             </button>
                         </div>
-                        <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="handleExcelFileImport(event)">
+                        <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden"
+                            onchange="handleExcelFileImport(event)">
                     </div>
                     <div id="cloud-status" class="hidden"></div>
                     <div id="total-cost-wrapper"
@@ -316,7 +318,8 @@
                 class="bg-[#0b0f19] p-3 md:p-4 rounded-2xl border border-[#151d2f] flex flex-col gap-3 shadow-2xl w-full">
                 <!-- HÀNG 1: TABS HÃNG + BADGE SỐ LK : SỐ TIỀN -->
                 <div class="flex items-center justify-between gap-2 w-full">
-                    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 min-w-0" id="brand-tabs"></div>
+                    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 min-w-0" id="brand-tabs">
+                    </div>
                     <div id="filter-summary-badge"
                         class="bg-amber-400 text-black px-4 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap shadow-lg shadow-amber-500/20 shrink-0 uppercase tracking-wide cursor-default select-none border border-amber-300">
                         0 LK : 0
@@ -380,13 +383,16 @@
                         <button type="button" id="btn-reset-search-text" onclick="clearSearch()"
                             class="bg-red-600 hover:bg-red-500 text-white font-black px-3 py-2 rounded-xl text-xs md:text-sm transition flex items-center gap-1.5 shadow-md shadow-red-600/30 shrink-0 uppercase tracking-wide cursor-pointer border border-red-500"
                             title="Xóa tìm kiếm">
-                            <i class="fa-solid fa-trash-can text-xs"></i><i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            <i class="fa-solid fa-trash-can text-xs"></i><i
+                                class="fa-solid fa-magnifying-glass text-xs"></i>
                         </button>
 
                         <!-- DROPDOWN TÌNH TRẠNG (CÒN HÀNG / HẾT HÀNG / TẤT CẢ) -->
                         <div id="stock-status-wrapper"
                             class="inline-flex items-center bg-[#070b14] border border-[#1e293b] rounded-xl px-3 py-2 text-xs md:text-sm font-black shadow-inner shrink-0">
-                            <span class="text-sky-400 font-black mr-2 whitespace-nowrap leading-none select-none flex items-center">TÌNH TRẠNG</span>
+                            <span
+                                class="text-sky-400 font-black mr-2 whitespace-nowrap leading-none select-none flex items-center">TÌNH
+                                TRẠNG</span>
                             <div class="relative inline-flex items-center">
                                 <select id="stock-status-select" onchange="changeStockStatus(this.value)"
                                     class="bg-transparent text-white font-black focus:outline-none cursor-pointer border-none p-0 pr-4 text-xs md:text-sm leading-none appearance-none m-0">
@@ -394,7 +400,8 @@
                                     <option value="OUT_OF_STOCK" class="bg-[#0b0f19] text-red-400">Hết Hàng</option>
                                     <option value="ALL" class="bg-[#0b0f19] text-sky-400">Tất Cả</option>
                                 </select>
-                                <i class="fa-solid fa-chevron-down text-[10px] text-white pointer-events-none absolute right-0 top-1/2 -translate-y-1/2"></i>
+                                <i
+                                    class="fa-solid fa-chevron-down text-[10px] text-white pointer-events-none absolute right-0 top-1/2 -translate-y-1/2"></i>
                             </div>
                         </div>
                     </div>
@@ -499,7 +506,8 @@
                     <label
                         class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">TÊN
                         MÁY</label>
-                    <input type="text" id="device-name" required placeholder="NHẬP TÊN MÁY (VD: 12 PRO MAX, A12...)" autocomplete="off"
+                    <input type="text" id="device-name" required placeholder="NHẬP TÊN MÁY (VD: 12 PRO MAX, A12...)"
+                        autocomplete="off"
                         class="w-full bg-[#070b14] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-sm font-bold text-white uppercase focus:outline-none focus:border-amber-500 shadow-inner"
                         oninput="onModalNameInputChange(this.value)">
                 </div>
@@ -640,7 +648,8 @@
     <div id="view-device-modal"
         class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden"
         onclick="if (event.target === this) closeViewDeviceModal()">
-        <div class="bg-[#0b0f19] border border-[#1e293b] rounded-2xl w-full max-w-lg p-5 shadow-2xl relative flex flex-col gap-4 text-white">
+        <div
+            class="bg-[#0b0f19] border border-[#1e293b] rounded-2xl w-full max-w-lg p-5 shadow-2xl relative flex flex-col gap-4 text-white">
             <div class="flex items-center justify-between border-b border-[#1e293b] pb-3">
                 <div class="flex items-center gap-2">
                     <span class="w-3 h-3 rounded-full bg-amber-400"></span>
@@ -657,7 +666,8 @@
             <!-- TÊN MÁY ĐẦY ĐỦ TRÌNH BÀY NỔI BẬT KHÔNG BỊ TRUNCATE / CẮT BỚT -->
             <div class="bg-[#070b14] border border-[#1e293b] rounded-xl p-4 flex flex-col gap-2">
                 <span class="text-xs font-bold text-gray-400 uppercase">TÊN MÁY ĐẦY ĐỦ:</span>
-                <div id="view-device-fullname" class="text-base md:text-xl font-black text-white break-words leading-relaxed">
+                <div id="view-device-fullname"
+                    class="text-base md:text-xl font-black text-white break-words leading-relaxed">
                     <!-- Sẽ chèn nội dung đầy đủ -->
                 </div>
             </div>
@@ -799,7 +809,8 @@
         let devices = [];
         let importOrders = JSON.parse(localStorage.getItem('local_import_orders') || '[]');
         let brands = JSON.parse(localStorage.getItem('local_brands') || '["IPHONE", "SAMSUNG", "OPPO - REALME", "REDMI - POCO", "VIVO"]');
-        let categories = JSON.parse(localStorage.getItem('local_categories') || '["MÀN HÌNH", "PIN", "CÁP SẠC", "KÍNH ÉP", "LƯNG", "CÁP NỐI"]');
+        let categories = JSON.parse(localStorage.getItem('local_categories') || '["MÀN HÌNH", "PIN", "BO SẠC", "KÍNH ÉP", "LƯNG", "CÁP NỐI"]');
+        categories = categories.map(c => (c && c.trim().toUpperCase() === "CÁP SẠC") ? "BO SẠC" : c);
         let types = JSON.parse(localStorage.getItem('local_types') || '["ZIN", "GX", "ZIN BÓC MÁY", "ZIN HÃNG", "OLED", "LINH KIỆN"]');
         let brandTypes = JSON.parse(localStorage.getItem('local_brand_types') || '{}');
         let names = JSON.parse(localStorage.getItem('local_names') || '[]');
@@ -942,10 +953,10 @@
             if (modalEl) modalEl.classList.add('hidden');
         }
 
-        
+
         function getBrandBadgeHtml(brand, isMobile = false, nameStr = '') {
             let b = (brand || '').trim().toUpperCase();
-            
+
             // Nếu không có brand hoặc brand là TẤT CẢ / HẾT HÀNG, thử lấy currentBrand hoặc suy đoán từ nameStr
             if (!b || b === 'TẤT CẢ' || b === 'HẾT HÀNG') {
                 if (typeof currentBrand !== 'undefined' && currentBrand && currentBrand !== 'TẤT CẢ' && currentBrand !== 'HẾT HÀNG' && currentBrand !== 'NHẬP HÀNG') {
@@ -973,7 +984,7 @@
             const imgClass = isMobile ? 'h-3.5 w-auto max-w-[50px]' : 'h-4 w-auto max-w-[60px]';
 
             if (b.includes('IPHONE') || b.includes('APPLE')) {
-                return `<span class="inline-flex items-center justify-center text-white mr-1.5 align-middle shrink-0" title="iPhone"><i class="fa-brands fa-apple ${isMobile ? 'text-xs' : 'text-sm'}"></i></span>`;
+                return `<span class="inline-flex items-center justify-center bg-[#ec4899] text-white rounded-[4px] ${isMobile ? 'w-3.5 h-3.5 text-[10px]' : 'w-4 h-4 text-xs'} mr-1.5 align-middle shrink-0 shadow-2xs" title="iPhone"><i class="fa-brands fa-apple leading-none"></i></span>`;
             }
             if (b.includes('SAMSUNG')) {
                 return `<img src="img/tab_logo_samsung.png" alt="Samsung" class="${imgClass} rounded-xs object-contain inline-block mr-1.5 align-middle shrink-0 shadow-2xs" title="Samsung" />`;
@@ -1187,19 +1198,25 @@
                             importOrders = data.importOrders;
                             localStorage.setItem('local_import_orders', JSON.stringify(importOrders));
                         }
-                        let hasEmptyPartFixed = false;
+                        let hasDataFixed = false;
+                        // Chuyển toàn bộ CÁP SẠC thành BO SẠC và điền mục trống
                         devices.forEach(d => {
-                            if (!d.part || !d.part.trim() || d.part === '---') {
+                            if (!d.part || !d.part.trim() || d.part === '---' || d.part.trim().toUpperCase() === 'CÁP SẠC') {
                                 d.part = 'BO SẠC';
-                                hasEmptyPartFixed = true;
+                                hasDataFixed = true;
                             }
                         });
-                        // Đảm bảo categories có BO SẠC
+                        // Cập nhật categories: thay CÁP SẠC bằng BO SẠC
+                        categories = categories.map(c => (c && c.trim().toUpperCase() === 'CÁP SẠC') ? 'BO SẠC' : c);
                         if (!categories.includes('BO SẠC')) {
                             categories.push('BO SẠC');
-                            localStorage.setItem('local_categories', JSON.stringify(categories));
+                            hasDataFixed = true;
                         }
-                        if (hasEmptyPartFixed) {
+                        // Loại bỏ trùng lặp trong categories
+                        categories = [...new Set(categories)];
+                        localStorage.setItem('local_categories', JSON.stringify(categories));
+
+                        if (hasDataFixed) {
                             setTimeout(() => { saveAllToCloud(); }, 1000);
                         }
                     } else if (!hasInitializedRemote) {
@@ -1431,7 +1448,7 @@
                 const btnClass = isSelected
                     ? 'bg-[#2563eb] text-white font-black shadow-lg shadow-blue-600/30 border border-blue-500'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
-                
+
                 // Trên Mobile (< 768px): Thay tên các hãng bằng logo thương hiệu theo yêu cầu
                 const mobileLogo = getBrandMobileLogoHtml(b);
 
@@ -1479,7 +1496,7 @@
                     : ((d.brand || '').trim().toUpperCase() === currentBrand.trim().toUpperCase());
                 if (matchBrand && d.part && d.part.trim()) {
                     let p = d.part.trim().toUpperCase();
-                    if (p === 'BO SẠC') p = 'CÁP SẠC';
+                    if (p === 'CÁP SẠC') p = 'BO SẠC';
                     if (p === 'MÀN') p = 'MÀN HÌNH';
                     brandCategorySet.add(p);
                 }
@@ -1525,7 +1542,7 @@
                 const btnClass = isSelected
                     ? 'bg-[#10b981] text-white font-black shadow-lg shadow-emerald-600/30 border border-emerald-400'
                     : 'bg-[#131b2e] text-gray-400 hover:text-white border border-[#1e293b]';
-                
+
                 // Trên Mobile (< 768px), MÀN HÌNH rút gọn thành MÀN
                 let displayCatName = c;
                 if (c.trim().toUpperCase() === 'MÀN HÌNH') {
@@ -1569,12 +1586,12 @@
                         const matchBrand = (!currentBrand || currentBrand === 'TẤT CẢ' || currentBrand === 'HẾT HÀNG' || currentBrand === 'NHẬP HÀNG')
                             ? true
                             : ((d.brand || '').trim().toUpperCase() === currentBrand.trim().toUpperCase());
-                        
+
                         // Nếu đang chọn 1 loại linh kiện cụ thể (không phải TẤT CẢ), chỉ lấy kiểu có trong linh kiện đó
                         let matchCat = true;
                         if (currentCategory && currentCategory !== 'TẤT CẢ') {
                             let dPart = (d.part || '').trim().toUpperCase();
-                            if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                            if (dPart === 'BO SẠC') dPart = 'BO SẠC';
                             if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
                             let filterCat = currentCategory.trim().toUpperCase();
                             if (filterCat === 'MÀN') filterCat = 'MÀN HÌNH';
@@ -1891,7 +1908,7 @@
                 importOrders.forEach((o, orderIdx) => {
                     const supplier = (o.supplier || '').trim().toUpperCase();
                     let category = (o.category || '').trim().toUpperCase();
-                    if (category === 'BO SẠC') category = 'CÁP SẠC';
+                    if (category === 'CÁP SẠC') category = 'BO SẠC';
 
                     if (selectedSupplier !== 'ALL' && supplier !== selectedSupplier.trim().toUpperCase()) return;
                     if (selectedCat !== 'ALL' && category !== selectedCat.trim().toUpperCase()) return;
@@ -1937,7 +1954,7 @@
 
                     // 3. Lọc theo linh kiện (nếu không phải TẤT CẢ)
                     let dPart = (d.part || '').trim().toUpperCase();
-                    if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                    if (dPart === 'CÁP SẠC') dPart = 'BO SẠC';
                     if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
 
                     let filterCat = (currentCategory || '').trim().toUpperCase();
@@ -2403,7 +2420,7 @@
 
                 // Lọc theo linh kiện đang chọn
                 let dPart = (d.part || '').trim().toUpperCase();
-                if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                if (dPart === 'CÁP SẠC') dPart = 'BO SẠC';
                 if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
 
                 let filterCat = (currentCategory || '').trim().toUpperCase();
@@ -2439,7 +2456,7 @@
                 const info = mapNameData[name];
                 const count = info.count;
                 const partsArr = Array.from(info.parts);
-                
+
                 // Hiển thị nhãn: nếu chỉ có 1 dòng (hoặc 1 loại linh kiện) thì đổi thành tên linh kiện đó (màn, pin, cáp sạc...)
                 let badgeText = `${count} DÒNG`;
                 let targetCategory = '';
@@ -2626,7 +2643,7 @@
             }
 
             let val = document.getElementById(inputId).value.trim().toUpperCase();
-            if (val === 'BO SẠC') val = 'CÁP SẠC';
+            if (val === 'CÁP SẠC') val = 'BO SẠC';
 
             if (action === 'add') {
                 if (!val) { alert(`VUI LÒNG NHẬP TÊN ${labelName}!`); return; }
@@ -2643,7 +2660,7 @@
                 const oldVal = prompt(`NHẬP TÊN MỚI THAY THẾ CHO "${val}":`, val);
                 if (oldVal) {
                     let newVal = oldVal.trim().toUpperCase();
-                    if (newVal === 'BO SẠC') newVal = 'CÁP SẠC';
+                    if (newVal === 'CÁP SẠC') newVal = 'BO SẠC';
                     const idx = listRef.indexOf(val);
                     if (idx !== -1) listRef[idx] = newVal;
                     else listRef.push(newVal);
@@ -2652,7 +2669,7 @@
                         if (entityType === 'suppliers' && o.supplier === val) o.supplier = newVal;
                         if (entityType === 'categories') {
                             let oCat = (o.category || '').toUpperCase();
-                            if (oCat === 'BO SẠC') oCat = 'CÁP SẠC';
+                            if (oCat === 'CÁP SẠC') oCat = 'BO SẠC';
                             if (oCat === val) o.category = newVal;
                         }
                     });
@@ -2660,7 +2677,7 @@
                     if (entityType === 'categories') {
                         devices.forEach(d => {
                             let dPart = (d.part || '').toUpperCase();
-                            if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+                            if (dPart === 'CÁP SẠC') dPart = 'BO SẠC';
                             if (dPart === val) d.part = newVal;
                         });
                     }
@@ -2698,7 +2715,7 @@
             const index = parseInt(document.getElementById('import-index').value);
             const supplier = document.getElementById('import-supplier').value.trim().toUpperCase();
             let category = document.getElementById('import-category').value.trim().toUpperCase();
-            if (category === 'BO SẠC') category = 'CÁP SẠC';
+            if (category === 'CÁP SẠC') category = 'BO SẠC';
 
             const itemInputs = document.querySelectorAll('.item-name-input');
             const items = [];
@@ -2744,7 +2761,7 @@
 
             document.getElementById('import-supplier').value = o.supplier || '';
             let oCat = (o.category || '').toUpperCase();
-            if (oCat === 'BO SẠC') oCat = 'CÁP SẠC';
+            if (oCat === 'CÁP SẠC') oCat = 'BO SẠC';
             document.getElementById('import-category').value = oCat;
 
             const container = document.getElementById('import-items-container');
@@ -2773,7 +2790,7 @@
 
             document.getElementById('import-supplier').value = o.supplier || '';
             let oCat = (o.category || '').toUpperCase();
-            if (oCat === 'BO SẠC') oCat = 'CÁP SẠC';
+            if (oCat === 'CÁP SẠC') oCat = 'BO SẠC';
             document.getElementById('import-category').value = oCat;
 
             const container = document.getElementById('import-items-container');
@@ -2832,7 +2849,7 @@
             const brand = document.getElementById('device-brand').value.trim().toUpperCase();
             const name = document.getElementById('device-name').value.trim().toUpperCase();
             let part = document.getElementById('device-part').value.trim().toUpperCase();
-            if (part === 'BO SẠC') part = 'CÁP SẠC';
+            if (part === 'CÁP SẠC') part = 'BO SẠC';
             const type = document.getElementById('device-type').value.trim().toUpperCase();
             const price = document.getElementById('device-price').value.trim();
             const cost = document.getElementById('device-cost').value.trim();
@@ -2881,7 +2898,7 @@
             updateModalTypeOptions(brandVal, d.type || 'ZIN');
 
             let dPart = (d.part || '').toUpperCase();
-            if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+            if (dPart === 'CÁP SẠC') dPart = 'BO SẠC';
             if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
             const partSelect = document.getElementById('device-part-select');
             if (partSelect) partSelect.value = dPart;
@@ -2911,7 +2928,7 @@
             updateModalTypeOptions(brandVal, d.type || 'ZIN');
 
             let dPart = (d.part || '').toUpperCase();
-            if (dPart === 'BO SẠC') dPart = 'CÁP SẠC';
+            if (dPart === 'CÁP SẠC') dPart = 'BO SẠC';
             if (dPart === 'MÀN') dPart = 'MÀN HÌNH';
             const partSelect = document.getElementById('device-part-select');
             if (partSelect) partSelect.value = dPart;
@@ -3160,7 +3177,7 @@
                                 part = 'MÀN HÌNH';
                                 if (!type) type = rawLoaiLK.replace(/MÀN HÌNH|MAN HINH|MÀN|MAN/i, '').trim().toUpperCase();
                             } else if (upperLK.includes('CÁP SẠC') || upperLK.includes('BO SẠC') || upperLK.includes('CHÂN SẠC') || upperLK.includes('CAP SAC') || upperLK.includes('BO SAC')) {
-                                part = 'CÁP SẠC';
+                                part = 'BO SẠC';
                                 if (!type) type = rawLoaiLK.replace(/CÁP SẠC|BO SẠC|CHÂN SẠC|CAP SAC|BO SAC/i, '').trim().toUpperCase();
                             } else if (upperLK.includes('KÍNH') || upperLK.includes('KINH')) {
                                 part = 'KÍNH ÉP';
@@ -3177,7 +3194,7 @@
                         }
 
                         if (!part) part = 'MÀN HÌNH';
-                        if (part === 'BO SẠC') part = 'CÁP SẠC';
+                        if (part === 'CÁP SẠC') part = 'BO SẠC';
                         if (part === 'MÀN') part = 'MÀN HÌNH';
 
                         type = type.replace(/^[-_\s:()]+|[-_\s:()]+$/g, '').trim().toUpperCase();
