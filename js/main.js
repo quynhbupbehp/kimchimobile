@@ -16879,6 +16879,27 @@
     }
     window.exportDebtSoftwareToExcel = exportDebtSoftwareToExcel;
 
+    function toggleDebtSoftwareTools() {
+      const box = document.getElementById('debtSoftwareToolsBox');
+      const btn = document.getElementById('btnToggleDebtSoftwareTools');
+      if (!box) return;
+      const isHidden = (box.style.display === 'none' || !box.style.display);
+      if (isHidden) {
+        box.style.display = 'inline-flex';
+        if (btn) {
+          btn.style.background = 'rgba(239, 68, 68, 0.4)';
+          btn.style.boxShadow = '0 0 18px rgba(239, 68, 68, 0.9)';
+        }
+      } else {
+        box.style.display = 'none';
+        if (btn) {
+          btn.style.background = 'rgba(239, 68, 68, 0.18)';
+          btn.style.boxShadow = '0 0 12px rgba(239, 68, 68, 0.4)';
+        }
+      }
+    }
+    window.toggleDebtSoftwareTools = toggleDebtSoftwareTools;
+
     function triggerImportDebtSoftwareExcel() {
       const fileInput = document.getElementById('debtSoftwareExcelFileInput');
       if (fileInput) {
@@ -16887,6 +16908,54 @@
       }
     }
     window.triggerImportDebtSoftwareExcel = triggerImportDebtSoftwareExcel;
+
+    // Helper chuẩn hóa ngày từ Excel (chuỗi "YYYY-MM-DD", "DD/MM/YYYY", Date object, hoặc Serial)
+    function parseExcelDateToDMY(raw) {
+      const vnNow = getVietnamDate();
+      const defDay = String(vnNow.getDate()).padStart(2, '0');
+      const defMonth = String(vnNow.getMonth() + 1).padStart(2, '0');
+      const defYear = String(vnNow.getFullYear());
+
+      if (!raw) return { dayMonth: `${defDay}-${defMonth}`, year: defYear };
+
+      if (raw instanceof Date && !isNaN(raw.getTime())) {
+        const d = String(raw.getDate()).padStart(2, '0');
+        const m = String(raw.getMonth() + 1).padStart(2, '0');
+        const y = String(raw.getFullYear());
+        return { dayMonth: `${d}-${m}`, year: y };
+      }
+
+      if (typeof raw === 'number' && !isNaN(raw) && raw > 20000 && raw < 90000) {
+        try {
+          const dObj = new Date(Math.round((raw - 25569) * 86400 * 1000));
+          if (!isNaN(dObj.getTime())) {
+            const d = String(dObj.getDate()).padStart(2, '0');
+            const m = String(dObj.getMonth() + 1).padStart(2, '0');
+            const y = String(dObj.getFullYear());
+            return { dayMonth: `${d}-${m}`, year: y };
+          }
+        } catch(e){}
+      }
+
+      let s = String(raw).trim();
+      let mYMD = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (mYMD) {
+        let y = mYMD[1];
+        let m = mYMD[2].padStart(2, '0');
+        let d = mYMD[3].padStart(2, '0');
+        return { dayMonth: `${d}-${m}`, year: y };
+      }
+
+      let mDMY = s.match(/^(\d{1,2})[-/](\d{1,2})(?:[-/](\d{4}))?/);
+      if (mDMY) {
+        let d = mDMY[1].padStart(2, '0');
+        let m = mDMY[2].padStart(2, '0');
+        let y = mDMY[3] || defYear;
+        return { dayMonth: `${d}-${m}`, year: y };
+      }
+
+      return { dayMonth: `${defDay}-${defMonth}`, year: defYear };
+    }
 
     function handleImportDebtSoftwareExcelFile(event) {
       const file = event.target.files[0];
@@ -16903,7 +16972,12 @@
               alert("File Excel không có trang tính nào!");
               return;
             }
-            rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
+            // Ưu tiên sheet có chứa chữ "công nợ" hoặc sheet đầu tiên
+            let sheetName = workbook.SheetNames[0];
+            const foundDebtSheet = workbook.SheetNames.find(sn => /cong\s*no|so\s*cong\s*no/i.test(sn.normalize('NFD').replace(/[\u0300-\u036f]/g, '')));
+            if (foundDebtSheet) sheetName = foundDebtSheet;
+
+            rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: '' });
           } else {
             const textDecoder = new TextDecoder('utf-8');
             const lines = textDecoder.decode(e.target.result).split(/\r?\n/).filter(line => line.trim().length > 0);
@@ -16926,25 +17000,26 @@
           let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxTime = -1;
 
           cleanHeader.forEach((col, idx) => {
-            if (col.includes('thoi gian') || col.includes('ngay') || col.includes('date') || col.includes('time')) {
+            if (col === 'ngay' || col === 'gio' || col.includes('thoi gian') || col.includes('ngay gio') || col.includes('date') || col.includes('time')) {
               colIdxTime = idx;
-            } else if (col.includes('khach') || col.includes('customer') || col === 'tho' || col.includes('ten tho')) {
+            } else if (col === 'khach' || col.includes('khach hang') || col.includes('customer') || col === 'tho' || col.includes('ten tho')) {
               colIdxCustomer = idx;
-            } else if (col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || col.includes('noi dung')) {
+            } else if (col === 'noi dung' || col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || (col.includes('dich vu') && !col.includes('phi'))) {
               colIdxDevice = idx;
             } else if (col.includes('phi') || col.includes('gia nhap') || col.includes('von') || col.includes('cost')) {
               colIdxCost = idx;
-            } else if (col.includes('so no') || col.includes('no') || col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price')) {
-              colIdxPrice = idx;
+            } else if (col === 'so no' || col.includes('no') || col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price')) {
+              if (colIdxPrice === -1) colIdxPrice = idx;
             }
           });
 
-          if (colIdxCustomer === -1 && colIdxDevice === -1) {
-            colIdxCustomer = 1; colIdxDevice = 2; colIdxPrice = 3; colIdxCost = 4; colIdxTime = 5;
-          }
+          // Fallback vị trí nếu không tìm thấy header
+          if (colIdxCustomer === -1) colIdxCustomer = 0;
+          if (colIdxDevice === -1) colIdxDevice = (rows[0].length >= 3 ? 2 : 1);
+          if (colIdxPrice === -1) colIdxPrice = (rows[0].length >= 4 ? 3 : 2);
+          if (colIdxTime === -1) colIdxTime = (rows[0].length >= 5 ? 4 : -1);
 
           let newRecords = [];
-          const currentYear = String(new Date().getFullYear());
 
           for (let i = 1; i < rows.length; i++) {
             let row = rows[i];
@@ -16953,6 +17028,7 @@
             let customer = colIdxCustomer !== -1 && row[colIdxCustomer] ? String(row[colIdxCustomer]).trim() : 'Khách lẻ';
             let device = colIdxDevice !== -1 && row[colIdxDevice] ? String(row[colIdxDevice]).trim() : '';
 
+            // Bỏ qua dòng TỔNG CỘNG nếu có ở cuối bảng
             if (/tong\s*cong|total/i.test(customer.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) continue;
 
             let rawPrice = colIdxPrice !== -1 && row[colIdxPrice] !== undefined ? String(row[colIdxPrice]).trim() : '0';
@@ -16960,21 +17036,12 @@
             let rawTime = colIdxTime !== -1 && row[colIdxTime] !== undefined ? row[colIdxTime] : '';
 
             let numPrice = parsePriceNum(rawPrice) || 0;
-            if (numPrice <= 0) continue; // Bỏ qua đơn số nợ <= 0
+            if (numPrice <= 0) continue; // Chỉ nhận các đơn có số nợ > 0
 
             if (!device && !customer) continue;
             if (!device) device = 'Cài phần mềm';
 
-            let dayMonth = getCurrentDateStr().substring(0, 5);
-            let year = currentYear;
-
-            if (rawTime) {
-              let parsedDt = parseExcelDateTime(rawTime);
-              if (parsedDt && parsedDt.dayMonth) {
-                dayMonth = parsedDt.dayMonth;
-                if (parsedDt.year) year = parsedDt.year;
-              }
-            }
+            let { dayMonth, year } = parseExcelDateToDMY(rawTime);
 
             let numCost = parsePriceNum(rawCost) || 0;
             let profit = String(numPrice - numCost);
@@ -16995,7 +17062,7 @@
           }
 
           if (newRecords.length === 0) {
-            alert("Không tìm thấy dòng nợ phần mềm hợp lệ nào (> 0đ) trong file!");
+            alert("Không tìm thấy dòng nợ phần mềm hợp lệ nào (> 0đ) trong file Excel!");
             return;
           }
 
@@ -17005,7 +17072,7 @@
           renderDebtSoftwareList();
           renderDebtDashboard();
 
-          alert(`Đã nhập thành công ${newRecords.length} khoản nợ phần mềm từ file Excel!`);
+          alert(`Đã nhập thành công ${newRecords.length} khoản nợ phần mềm từ file Excel vào hệ thống!`);
         } catch (err) {
           console.error("Lỗi đọc file Excel nợ phần mềm:", err);
           alert("Có lỗi xảy ra khi xử lý file Excel: " + err.message);
