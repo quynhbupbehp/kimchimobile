@@ -3862,8 +3862,30 @@
     window.updateSidebarOverallProfits = updateSidebarOverallProfits;
 
     // ==================== BẢNG SỐ LIỆU / BẢNG THEO DÕI DOANH THU TRÊN MOBILE & WEB/DESKTOP ====================
-    let currentMobileStatsMode = 'day'; // Mặc định: 'day' (Ngày), 'month' (Tháng), 'all' (Tất Cả)
+    let currentMobileStatsMode = 'day'; // 'day' (Ngày), 'month' (Tháng), 'all' (Tất Cả)
     window.currentMobileStatsMode = currentMobileStatsMode;
+
+    let mStatsSelectedDate = null;  // Date object riêng cho modal Doanh Thu (Ngày/Tháng/Năm)
+    let mStatsSelectedMonth = null; // { month: 0-11, year: YYYY }
+
+    function initMobileStatsDates() {
+      if (!mStatsSelectedDate || isNaN(mStatsSelectedDate.getTime())) {
+        if (typeof currentSalesDateFilter !== 'undefined' && currentSalesDateFilter instanceof Date && !isNaN(currentSalesDateFilter.getTime())) {
+          mStatsSelectedDate = new Date(currentSalesDateFilter.getTime());
+        } else {
+          const vnNow = getVietnamDate();
+          mStatsSelectedDate = new Date(vnNow.getFullYear(), vnNow.getMonth(), vnNow.getDate());
+        }
+      }
+      if (!mStatsSelectedMonth || typeof mStatsSelectedMonth.month !== 'number') {
+        if (typeof currentSalesMonthFilter !== 'undefined' && currentSalesMonthFilter && typeof currentSalesMonthFilter.month === 'number') {
+          mStatsSelectedMonth = { month: currentSalesMonthFilter.month, year: currentSalesMonthFilter.year };
+        } else {
+          const vnNow = getVietnamDate();
+          mStatsSelectedMonth = { month: vnNow.getMonth(), year: vnNow.getFullYear() };
+        }
+      }
+    }
 
     function setMobileStatsMode(mode) {
       currentMobileStatsMode = mode || 'day';
@@ -3876,20 +3898,94 @@
     }
     window.setMobileStatsMode = setMobileStatsMode;
 
-    function renderMobileRevenueStats() {
-      let targetD, targetM, targetY;
-      if (typeof currentSalesDateFilter !== 'undefined' && currentSalesDateFilter instanceof Date && !isNaN(currentSalesDateFilter)) {
-        targetD = currentSalesDateFilter.getDate();
-        targetM = currentSalesDateFilter.getMonth();
-        targetY = currentSalesDateFilter.getFullYear();
-      } else {
-        const vnNow = getVietnamDate();
-        targetD = vnNow.getDate();
-        targetM = vnNow.getMonth();
-        targetY = vnNow.getFullYear();
+    function changeMobileStatsDate(delta) {
+      initMobileStatsDates();
+      mStatsSelectedDate.setDate(mStatsSelectedDate.getDate() + delta);
+      // Cập nhật cả tháng tương ứng
+      mStatsSelectedMonth = { month: mStatsSelectedDate.getMonth(), year: mStatsSelectedDate.getFullYear() };
+      renderMobileRevenueStats();
+    }
+    window.changeMobileStatsDate = changeMobileStatsDate;
+
+    function changeMobileStatsMonth(delta) {
+      initMobileStatsDates();
+      mStatsSelectedMonth.month += delta;
+      if (mStatsSelectedMonth.month > 11) {
+        mStatsSelectedMonth.month = 0;
+        mStatsSelectedMonth.year++;
+      } else if (mStatsSelectedMonth.month < 0) {
+        mStatsSelectedMonth.month = 11;
+        mStatsSelectedMonth.year--;
       }
+      mStatsSelectedDate = new Date(mStatsSelectedMonth.year, mStatsSelectedMonth.month, 1);
+      renderMobileRevenueStats();
+    }
+    window.changeMobileStatsMonth = changeMobileStatsMonth;
+
+    function openMobileStatsNativeDatePicker() {
+      const picker = document.getElementById('mStatsNativeDatePicker');
+      if (!picker) return;
+      initMobileStatsDates();
+      const y = mStatsSelectedDate.getFullYear();
+      const m = String(mStatsSelectedDate.getMonth() + 1).padStart(2, '0');
+      const d = String(mStatsSelectedDate.getDate()).padStart(2, '0');
+      picker.value = `${y}-${m}-${d}`;
+      if (typeof picker.showPicker === 'function') {
+        try { picker.showPicker(); return; } catch(err){}
+      }
+      picker.click();
+    }
+    window.openMobileStatsNativeDatePicker = openMobileStatsNativeDatePicker;
+
+    function handleMobileStatsNativeDate(dateVal) {
+      if (!dateVal) return;
+      const parts = dateVal.split('-');
+      if (parts.length === 3) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        mStatsSelectedDate = new Date(y, m, d);
+        mStatsSelectedMonth = { month: m, year: y };
+        renderMobileRevenueStats();
+      }
+    }
+    window.handleMobileStatsNativeDate = handleMobileStatsNativeDate;
+
+    function renderMobileRevenueStats() {
+      initMobileStatsDates();
 
       const mode = currentMobileStatsMode || 'day';
+
+      const targetD = mStatsSelectedDate.getDate();
+      const targetM = (mode === 'month') ? mStatsSelectedMonth.month : mStatsSelectedDate.getMonth();
+      const targetY = (mode === 'month') ? mStatsSelectedMonth.year : mStatsSelectedDate.getFullYear();
+
+      const dd = String(targetD).padStart(2, '0');
+      const mm = String(targetM + 1).padStart(2, '0');
+      const yyyy = targetY;
+
+      // Cập nhật nhãn tiêu đề và bộ điều khiển
+      const titleLabelEl = document.getElementById('mStatsCurrentPeriodLabel');
+      const dateNavBox = document.getElementById('mStatsDateNavBox');
+      const dateNavLabel = document.getElementById('mStatsDateNavLabel');
+      const monthNavBox = document.getElementById('mStatsMonthNavBox');
+      const monthNavLabel = document.getElementById('mStatsMonthNavLabel');
+
+      if (mode === 'day') {
+        if (titleLabelEl) titleLabelEl.innerHTML = `📅 Ngày: ${dd}/${mm}/${yyyy}`;
+        if (dateNavBox) dateNavBox.style.display = 'inline-flex';
+        if (dateNavLabel) dateNavLabel.innerText = `${dd}/${mm}/${yyyy}`;
+        if (monthNavBox) monthNavBox.style.display = 'none';
+      } else if (mode === 'month') {
+        if (titleLabelEl) titleLabelEl.innerHTML = `📆 Tháng: ${mm}/${yyyy}`;
+        if (dateNavBox) dateNavBox.style.display = 'none';
+        if (monthNavBox) monthNavBox.style.display = 'inline-flex';
+        if (monthNavLabel) monthNavLabel.innerText = `Tháng ${mm}/${yyyy}`;
+      } else {
+        if (titleLabelEl) titleLabelEl.innerHTML = `📊 Toàn Bộ Thời Gian`;
+        if (dateNavBox) dateNavBox.style.display = 'none';
+        if (monthNavBox) monthNavBox.style.display = 'none';
+      }
 
       function isItemMatchPeriod(dmy) {
         if (!dmy) return false;
@@ -4039,6 +4135,7 @@
     function openMobileRevenueStatsModal() {
       const modal = document.getElementById('mobileRevenueStatsModal');
       if (modal) {
+        initMobileStatsDates();
         renderMobileRevenueStats();
         modal.style.display = 'flex';
       }
