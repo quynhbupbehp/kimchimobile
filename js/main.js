@@ -2218,14 +2218,10 @@
 
     function initFirebaseRealtimeSync() {
       // Tải ngay dữ liệu từ Cloud trực tiếp qua HTTP GET (không đợi websocket snapshot)
-      setTimeout(function() {
-        if (typeof fetchDirectCloudSync === 'function') fetchDirectCloudSync();
-      }, 300);
+      setTimeout(function() { if (typeof fetchDirectCloudSync === 'function') fetchDirectCloudSync(); }, 100);
 
       // Nếu thiết bị này có dữ liệu cục bộ (như máy Web), tự động đẩy lên Cloud Bundle
-      setTimeout(function() {
-        if (typeof autoPushLocalDataToFirestore === 'function') autoPushLocalDataToFirestore();
-      }, 1000);
+      setTimeout(function() { if (typeof autoPushLocalDataToFirestore === 'function') autoPushLocalDataToFirestore(); }, 300);
 
       if (typeof db === 'undefined' || !db) {
         console.warn("Chưa tìm thấy kết nối Firebase Firestore (db)!");
@@ -3011,7 +3007,7 @@
             updatedAt: Date.now()
           }, { merge: true }).catch(e => console.warn('Sync sales bundle notice:', e.code || e));
         } catch(e){}
-      }, 1000);
+      }, 150);
     }
 
     function saveSalesStorage(itemToSync) {
@@ -3045,7 +3041,7 @@
             updatedAt: Date.now()
           }, { merge: true }).catch(e => console.warn('Sync banga bundle notice:', e.code || e));
         } catch(e){}
-      }, 1000);
+      }, 150);
     }
 
     function saveBangaStorage(itemToSync) {
@@ -11903,7 +11899,7 @@
             updatedAt: Date.now()
           }, { merge: true }).catch(e => console.warn('Sync software bundle notice:', e.code || e));
         } catch(e){}
-      }, 1000);
+      }, 150);
     }
 
     function saveSoftwareStorage(itemOrListToSync) {
