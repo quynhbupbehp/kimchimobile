@@ -2043,6 +2043,53 @@
     /* ============================================================
        KẾT NỐI VÀ TỰ ĐỘNG ĐỒNG BỘ CLOUD FIRESTORE TỨC THÌ (REALTIME)
        ============================================================ */
+    
+    function getItemTimestamp(item) {
+      if (!item) return 0;
+      if (item.createdAt) {
+        const t = new Date(item.createdAt).getTime();
+        if (!isNaN(t) && t > 0) return t;
+      }
+      if (item.dateTime) {
+        const parts = String(item.dateTime).split(' - ');
+        if (parts.length >= 2) {
+          const [hh, min] = parts[0].split(':').map(n => parseInt(n, 10) || 0);
+          const [d, m, y] = parts[1].split('/').map(n => parseInt(n, 10) || 0);
+          const t = new Date(y, m - 1, d, hh, min).getTime();
+          if (!isNaN(t) && t > 0) return t;
+        }
+      }
+      if (item.dayMonth) {
+        let y = parseInt(item.year || '2026', 10);
+        let d = 1, m = 1, h = 0, min = 0;
+        const p = String(item.dayMonth).replace(/\//g, '-').split('-');
+        if (p.length === 2) {
+          d = parseInt(p[0], 10) || 1;
+          m = parseInt(p[1], 10) || 1;
+        }
+        if (item.time) {
+          const tp = String(item.time).split(':');
+          if (tp.length >= 2) {
+            h = parseInt(tp[0], 10) || 0;
+            min = parseInt(tp[1], 10) || 0;
+          }
+        }
+        const t = new Date(y, m - 1, d, h, min).getTime();
+        if (!isNaN(t) && t > 0) return t;
+      }
+      if (typeof item.id === 'string' && item.id.startsWith('sw_')) {
+        const parts = item.id.split('_');
+        if (parts[1]) {
+          const ts = parseInt(parts[1], 10);
+          if (!isNaN(ts) && ts > 0) return ts;
+        }
+      }
+      const numId = Number(item.id);
+      if (!isNaN(numId) && numId > 0) return numId;
+      return 0;
+    }
+    window.getItemTimestamp = getItemTimestamp;
+
     function initFirebaseRealtimeSync() {
       if (typeof db === 'undefined' || !db) {
         console.warn("Chưa tìm thấy kết nối Firebase Firestore (db)!");
@@ -2059,7 +2106,7 @@
             list.push(data);
           });
           if (list.length > 0) {
-            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
             list.forEach(item => {
               if (item) {
                 if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
@@ -2089,7 +2136,7 @@
             list.push(data);
           });
           if (list.length > 0) {
-            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
             list.forEach(item => {
               if (item) {
                 if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
@@ -2206,7 +2253,7 @@
               return;
             }
             // Sắp xếp ID lớn nhất / mới nhất lên đầu
-            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
             softwareDatabase = list;
             try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
             if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
@@ -2768,34 +2815,45 @@
     function saveSalesStorage(itemToSync) {
       try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
       if (typeof db !== 'undefined' && db) {
-        if (itemToSync && itemToSync.id) {
-          db.collection('sales').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
-        } else {
-          salesDatabase.forEach(item => {
-            if (item && item.id) {
-              db.collection('sales').doc(String(item.id)).set(item).catch(console.error);
-            }
+        const syncItem = (it) => {
+          if (!it || !it.id) return;
+          const docId = String(it.id);
+          db.collection('sales').doc(docId).set(it, { merge: true }).catch(err => {
+            console.error("Loi dong bo doc sales:", docId, err);
           });
+        };
+        if (Array.isArray(itemToSync)) {
+          itemToSync.forEach(syncItem);
+        } else if (itemToSync) {
+          syncItem(itemToSync);
+        } else {
+          salesDatabase.forEach(syncItem);
+        }
+      }
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+    }  
+
+    function saveBangaStorage(itemToSync) {
+      try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
+      if (typeof db !== 'undefined' && db) {
+        const syncItem = (it) => {
+          if (!it || !it.id) return;
+          const docId = String(it.id);
+          db.collection('banga').doc(docId).set(it, { merge: true }).catch(err => {
+            console.error("Loi dong bo doc banga:", docId, err);
+          });
+        };
+        if (Array.isArray(itemToSync)) {
+          itemToSync.forEach(syncItem);
+        } else if (itemToSync) {
+          syncItem(itemToSync);
+        } else {
+          bangaDatabase.forEach(syncItem);
         }
       }
       if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
 
-    function saveBangaStorage(itemToSync) {
-      try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
-      if (typeof db !== 'undefined' && db) {
-        if (itemToSync && itemToSync.id) {
-          db.collection('banga').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
-        } else {
-          bangaDatabase.forEach(item => {
-            if (item && item.id) {
-              db.collection('banga').doc(String(item.id)).set(item).catch(console.error);
-            }
-          });
-        }
-      }
-      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-    }
 
     let tempCart = [];
 

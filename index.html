@@ -5637,22 +5637,24 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Bật bộ nhớ đệm Offline nhiều tab đồng bộ để giảm tối đa lượt đọc Firestore
-    db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
-      if (err.code === 'failed-precondition') {
-        console.warn('Firestore persistence warning: Multiple tabs open concurrently without multi-tab support');
-      } else if (err.code === 'unimplemented') {
-        console.warn('Firestore persistence warning: Current browser does not support persistence');
+    try {
+      const isMobileDev = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
+      if (!isMobileDev) {
+        db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
+          console.warn('Firestore persistence notice:', err.code || err);
+        });
       }
-    });
+    } catch (e) {
+      console.warn('Firestore persistence bypass:', e);
+    }
   </script>
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261105_1793856707444"></script>
+  <script src="js/seed_data.js?v=1793863117649"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261105_1793856707444"></script>
+  <script src="js/main.js?v=1793863117649"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
