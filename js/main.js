@@ -19834,3 +19834,34 @@
         }
       }, 3000);
     })();
+
+    /* ============================================================
+       POPUP MỞ TRANG KIMCHI MOBILE BANK (BIDV)
+       ============================================================ */
+    function openKimchiBankModal() {
+      const modal = document.getElementById('kimchiBankModal');
+      const frame = document.getElementById('kimchiBankFrame');
+      if (modal && frame) {
+        if (!frame.src || frame.src === '' || frame.src === 'about:blank') {
+          frame.src = 'https://kimchimobile-bank.vercel.app/';
+        }
+        modal.style.display = 'flex';
+      }
+    }
+    window.openKimchiBankModal = openKimchiBankModal;
+
+    function closeKimchiBankModal() {
+      const modal = document.getElementById('kimchiBankModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+    window.closeKimchiBankModal = closeKimchiBankModal;
+
+    function reloadKimchiBankFrame() {
+      const frame = document.getElementById('kimchiBankFrame');
+      if (frame) {
+        frame.src = 'https://kimchimobile-bank.vercel.app/?v=' + Date.now();
+      }
+    }
+    window.reloadKimchiBankFrame = reloadKimchiBankFrame;
