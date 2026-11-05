@@ -395,53 +395,6 @@
     }
     window.formatSoftwareItemDateTime = formatSoftwareItemDateTime;
 
-    function getSoftwareItemTimestamp(item) {
-      if (!item) return 0;
-      if (item.createdAt && typeof item.createdAt === 'number') {
-        return item.createdAt;
-      }
-      const dt = formatSoftwareItemDateTime(item);
-      let y = 2026, m = 1, d = 1, h = 0, min = 0;
-      if (dt && dt.dateStr) {
-        const parts = dt.dateStr.split('/');
-        if (parts.length === 3) {
-          d = parseInt(parts[0], 10) || 1;
-          m = parseInt(parts[1], 10) || 1;
-          y = parseInt(parts[2], 10) || 2026;
-        }
-      }
-      if (dt && dt.timeStr) {
-        const tParts = dt.timeStr.split(':');
-        if (tParts.length >= 2) {
-          h = parseInt(tParts[0], 10) || 0;
-          min = parseInt(tParts[1], 10) || 0;
-        }
-      } else if (item.time) {
-        const tParts = String(item.time).split(':');
-        if (tParts.length >= 2) {
-          h = parseInt(tParts[0], 10) || 0;
-          min = parseInt(tParts[1], 10) || 0;
-        }
-      }
-
-      let timeVal = new Date(y, m - 1, d, h, min, 0).getTime();
-      if (isNaN(timeVal)) timeVal = 0;
-
-      let idNum = 0;
-      if (item.id) {
-        const m = String(item.id).match(/^sw_(\d+)/);
-        if (m) {
-          idNum = Number(m[1]) || 0;
-        } else if (/^\d+$/.test(String(item.id))) {
-          idNum = Number(item.id) || 0;
-        }
-      }
-
-      return timeVal + (idNum % 1000000) / 1000000;
-    }
-    window.getSoftwareItemTimestamp = getSoftwareItemTimestamp;
-
-
     function formatBrandDeviceName(str) {
       if (!str || typeof str !== 'string') return str || '';
       let res = str;
@@ -2252,13 +2205,8 @@
               // Người dùng vừa xóa sạch dữ liệu trên thiết bị này, không ghi đè lại
               return;
             }
-            // Sắp xếp đơn mới nhất lên đầu
-            list.sort((a, b) => {
-              const timeA = getSoftwareItemTimestamp(a);
-              const timeB = getSoftwareItemTimestamp(b);
-              if (timeB !== timeA) return timeB - timeA;
-              return String(b.id || '').localeCompare(String(a.id || ''));
-            });
+            // Sắp xếp ID lớn nhất / mới nhất lên đầu
+            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             softwareDatabase = list;
             try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
             if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
@@ -2285,23 +2233,7 @@
         console.error("Lỗi setup sync software:", err);
       }
 
-      // 8. Đồng bộ sw_quick_links từ Firestore
-      try {
-        db.collection('settings').doc('sw_quick_links').onSnapshot(doc => {
-          if (doc.exists) {
-            const data = doc.data();
-            if (data && typeof data === 'object') {
-              try {
-                localStorage.setItem('sw_quick_links', JSON.stringify(data));
-              } catch (e) {}
-            }
-          }
-        }, err => console.error("Lỗi sync sw_quick_links:", err));
-      } catch (err) {
-        console.error("Lỗi setup sync sw_quick_links:", err);
-      }
-
-      // 9. Đồng bộ Danh sách Hãng Điện Thoại Mới (custom brands)
+      // 8. Đồng bộ Danh sách Hãng Điện Thoại Mới (custom brands)
       try {
         db.collection('settings').doc('custom_brands').onSnapshot(doc => {
           if (doc.exists) {
@@ -12401,39 +12333,21 @@
       try {
         const stored = localStorage.getItem('sw_quick_links');
         if (stored) {
-          const parsed = JSON.parse(stored);
-          return Object.assign({}, DEFAULT_SW_QUICK_LINKS, parsed);
+          return Object.assign({}, DEFAULT_SW_QUICK_LINKS, JSON.parse(stored));
         }
-      } catch (e) {
-        console.error("Lỗi đọc sw_quick_links từ localStorage:", e);
-      }
+      } catch (e) {}
       return Object.assign({}, DEFAULT_SW_QUICK_LINKS);
     }
 
     function saveSwQuickLinks(links) {
       try {
         localStorage.setItem('sw_quick_links', JSON.stringify(links));
-      } catch (e) {
-        console.error("Lỗi lưu sw_quick_links vào localStorage:", e);
-      }
+      } catch (e) {}
       if (typeof db !== 'undefined' && db) {
         try {
-          db.collection('settings').doc('sw_quick_links').set(links).catch(err => {
-            console.error("Lỗi đồng bộ sw_quick_links lên Firestore:", err);
-          });
-        } catch (e) {
-          console.error("Lỗi kết nối Firestore khi lưu sw_quick_links:", e);
-        }
+          db.collection('settings').doc('sw_quick_links').set(links).catch(console.error);
+        } catch (e) {}
       }
-    }
-
-    function getSwQuickLinkTitle(type) {
-      const titles = {
-        tool: 'LINK TOOL',
-        testpoint: 'TESTPOINT',
-        rom: 'LINK ROM'
-      };
-      return titles[type] || 'LINK';
     }
 
     function openSwQuickLink(type) {
@@ -12441,31 +12355,25 @@
       let url = links[type] || DEFAULT_SW_QUICK_LINKS[type];
       if (url) {
         url = url.trim();
-        if (!/^https?:\/\//i.test(url)) {
-          url = 'https://' + url;
-        }
+        if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
         window.open(url, '_blank', 'noopener,noreferrer');
       }
     }
     window.openSwQuickLink = openSwQuickLink;
-    window.openSwUrl = openSwQuickLink; // Giữ alias tương thích
 
     function editSwUrl(type) {
       const links = getSwQuickLinks();
       const currentUrl = links[type] || DEFAULT_SW_QUICK_LINKS[type] || '';
-      const title = getSwQuickLinkTitle(type);
-
-      const newUrl = prompt(`🔗 CHỈNH SỬA ĐƯỜNG LINK ${title}:\nNhập đường link mới (bắt đầu bằng http:// hoặc https://):\n(Bấm Hủy nếu không muốn thay đổi)`, currentUrl);
-
+      const titles = { tool: 'LINK TOOL', testpoint: 'TESTPOINT', rom: 'LINK ROM' };
+      const title = titles[type] || 'LINK';
+      const newUrl = prompt(`🔗 CHỈNH SỬA ĐƯỜNG LINK ${title}:\nNhập link mới (bắt đầu bằng https://):\n(Bấm Hủy nếu không muốn thay đổi)`, currentUrl);
       if (newUrl !== null) {
         let trimmed = newUrl.trim();
-        if (trimmed === '') {
+        if (!trimmed) {
           alert('Đường link không được để trống!');
           return;
         }
-        if (!/^https?:\/\//i.test(trimmed)) {
-          trimmed = 'https://' + trimmed;
-        }
+        if (!/^https?:\/\//i.test(trimmed)) trimmed = 'https://' + trimmed;
         links[type] = trimmed;
         saveSwQuickLinks(links);
         alert(`✅ Đã cập nhật thành công đường link cho ${title}:\n${trimmed}`);
@@ -12473,44 +12381,37 @@
     }
     window.editSwUrl = editSwUrl;
 
-    // Quản lý nhấn giữ (Long-press >= 700ms) để sửa link, còn click / tap nhanh (< 700ms) là MỞ LINK
-    let swLinkPressTimer = null;
-    let swLinkTriggeredLongPress = false;
+    let swLinkTimer = null;
+    let swIsLongPress = false;
 
     function handleSwLinkPressStart(type, event) {
-      swLinkTriggeredLongPress = false;
-      if (swLinkPressTimer) clearTimeout(swLinkPressTimer);
-
-      swLinkPressTimer = setTimeout(() => {
-        swLinkTriggeredLongPress = true;
-        swLinkPressTimer = null;
-        if (navigator.vibrate) {
-          try { navigator.vibrate(60); } catch (e) {}
-        }
+      swIsLongPress = false;
+      if (swLinkTimer) clearTimeout(swLinkTimer);
+      swLinkTimer = setTimeout(() => {
+        swIsLongPress = true;
+        swLinkTimer = null;
+        if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }
         editSwUrl(type);
       }, 700);
     }
     window.handleSwLinkPressStart = handleSwLinkPressStart;
 
     function handleSwLinkPressEnd(type, event) {
-      if (swLinkPressTimer) {
-        clearTimeout(swLinkPressTimer);
-        swLinkPressTimer = null;
+      if (swLinkTimer) {
+        clearTimeout(swLinkTimer);
+        swLinkTimer = null;
       }
     }
     window.handleSwLinkPressEnd = handleSwLinkPressEnd;
 
     function handleSwLinkClick(type, event) {
-      if (swLinkPressTimer) {
-        clearTimeout(swLinkPressTimer);
-        swLinkPressTimer = null;
+      if (swLinkTimer) {
+        clearTimeout(swLinkTimer);
+        swLinkTimer = null;
       }
-      if (swLinkTriggeredLongPress) {
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        swLinkTriggeredLongPress = false;
+      if (swIsLongPress) {
+        if (event) { event.preventDefault(); event.stopPropagation(); }
+        swIsLongPress = false;
         return;
       }
       openSwQuickLink(type);
@@ -12524,7 +12425,12 @@
       }
       const links = getSwQuickLinks();
       const url = links[type] || DEFAULT_SW_QUICK_LINKS[type];
-      const title = getSwQuickLinkTitle(type);
+      const titles = {
+        tool: 'Link Tool',
+        testpoint: 'Link Testpoint',
+        rom: 'Link ROM'
+      };
+      const title = titles[type] || 'Link';
       if (url) {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(url).then(() => {
@@ -12998,15 +12904,9 @@
     }
     window.copySingleSwNote = copySingleSwNote;
 
-    function openSwUrl(target) {
-      if (!target) return;
-      // Nếu truyền vào keyword 'tool', 'testpoint', 'rom' thì mở quick link
-      if (target === 'tool' || target === 'testpoint' || target === 'rom') {
-        openSwQuickLink(target);
-        return;
-      }
-      // Ngược lại mở đường link trực tiếp
-      let finalUrl = String(target).trim();
+    function openSwUrl(url) {
+      if (!url) return;
+      let finalUrl = url.trim();
       if (!/^https?:\/\//i.test(finalUrl)) {
         finalUrl = 'https://' + finalUrl;
       }
@@ -13885,16 +13785,6 @@
         }
 
         return true;
-      });
-
-      // Tự động sắp xếp thời gian tạo mới gần nhất lên đầu tiên
-      filtered.sort((a, b) => {
-        const timeA = getSoftwareItemTimestamp(a);
-        const timeB = getSoftwareItemTimestamp(b);
-        if (timeB !== timeA) {
-          return timeB - timeA;
-        }
-        return String(b.id || '').localeCompare(String(a.id || ''));
       });
 
       let swDebtCount = 0;
@@ -19904,7 +19794,6 @@
       const modal = document.getElementById('kimchiBankModal');
       const frame = document.getElementById('kimchiBankFrame');
       if (modal && frame) {
-        // Tự động tải lại trang mới nhất kèm timestamp để không bị dính cache hoặc màn hình trắng
         frame.src = 'https://kimchimobile-bank.vercel.app/?v=' + Date.now();
         modal.style.display = 'flex';
       }
