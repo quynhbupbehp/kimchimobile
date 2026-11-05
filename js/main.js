@@ -12384,14 +12384,19 @@
       return titles[type] || 'LINK';
     }
 
-    function openSwUrl(type) {
+    function openSwQuickLink(type) {
       const links = getSwQuickLinks();
-      const url = links[type] || DEFAULT_SW_QUICK_LINKS[type];
+      let url = links[type] || DEFAULT_SW_QUICK_LINKS[type];
       if (url) {
-        window.open(url, '_blank');
+        url = url.trim();
+        if (!/^https?:\/\//i.test(url)) {
+          url = 'https://' + url;
+        }
+        window.open(url, '_blank', 'noopener,noreferrer');
       }
     }
-    window.openSwUrl = openSwUrl;
+    window.openSwQuickLink = openSwQuickLink;
+    window.openSwUrl = openSwQuickLink; // Giữ alias tương thích
 
     function editSwUrl(type) {
       const links = getSwQuickLinks();
@@ -12401,10 +12406,13 @@
       const newUrl = prompt(`🔗 CHỈNH SỬA ĐƯỜNG LINK ${title}:\nNhập đường link mới (bắt đầu bằng http:// hoặc https://):\n(Bấm Hủy nếu không muốn thay đổi)`, currentUrl);
 
       if (newUrl !== null) {
-        const trimmed = newUrl.trim();
+        let trimmed = newUrl.trim();
         if (trimmed === '') {
           alert('Đường link không được để trống!');
           return;
+        }
+        if (!/^https?:\/\//i.test(trimmed)) {
+          trimmed = 'https://' + trimmed;
         }
         links[type] = trimmed;
         saveSwQuickLinks(links);
@@ -12413,22 +12421,22 @@
     }
     window.editSwUrl = editSwUrl;
 
-    // Xử lý sự kiện nhấn giữ (Long-press) trên cả Desktop (chuột) và Mobile (cảm ứng)
+    // Quản lý nhấn giữ (Long-press >= 700ms) để sửa link, còn click / tap nhanh (< 700ms) là MỞ LINK
     let swLinkPressTimer = null;
-    let swLinkIsLongPress = false;
+    let swLinkTriggeredLongPress = false;
 
     function handleSwLinkPressStart(type, event) {
-      swLinkIsLongPress = false;
+      swLinkTriggeredLongPress = false;
       if (swLinkPressTimer) clearTimeout(swLinkPressTimer);
 
       swLinkPressTimer = setTimeout(() => {
-        swLinkIsLongPress = true;
-        // Rung nhẹ trên điện thoại nếu được hỗ trợ
+        swLinkTriggeredLongPress = true;
+        swLinkPressTimer = null;
         if (navigator.vibrate) {
-          try { navigator.vibrate(60); } catch(e){}
+          try { navigator.vibrate(60); } catch (e) {}
         }
         editSwUrl(type);
-      }, 650); // Nhấn giữ 650ms để kích hoạt sửa link
+      }, 700);
     }
     window.handleSwLinkPressStart = handleSwLinkPressStart;
 
@@ -12441,15 +12449,19 @@
     window.handleSwLinkPressEnd = handleSwLinkPressEnd;
 
     function handleSwLinkClick(type, event) {
-      if (swLinkIsLongPress) {
+      if (swLinkPressTimer) {
+        clearTimeout(swLinkPressTimer);
+        swLinkPressTimer = null;
+      }
+      if (swLinkTriggeredLongPress) {
         if (event) {
           event.preventDefault();
           event.stopPropagation();
         }
-        swLinkIsLongPress = false;
+        swLinkTriggeredLongPress = false;
         return;
       }
-      openSwUrl(type);
+      openSwQuickLink(type);
     }
     window.handleSwLinkClick = handleSwLinkClick;
 
@@ -12934,9 +12946,15 @@
     }
     window.copySingleSwNote = copySingleSwNote;
 
-    function openSwUrl(url) {
-      if (!url) return;
-      let finalUrl = url.trim();
+    function openSwUrl(target) {
+      if (!target) return;
+      // Nếu truyền vào keyword 'tool', 'testpoint', 'rom' thì mở quick link
+      if (target === 'tool' || target === 'testpoint' || target === 'rom') {
+        openSwQuickLink(target);
+        return;
+      }
+      // Ngược lại mở đường link trực tiếp
+      let finalUrl = String(target).trim();
       if (!/^https?:\/\//i.test(finalUrl)) {
         finalUrl = 'https://' + finalUrl;
       }
