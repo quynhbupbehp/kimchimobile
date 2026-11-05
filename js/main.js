@@ -2101,7 +2101,132 @@
     }
     window.getItemTimestamp = getItemTimestamp;
 
+    // === CƠ CHẾ ĐỒNG BỘ ĐÁM MÂY 2 CHIỀU TỰ ĐỘNG GIỮA WEB VÀ MOBILE ===
+    function autoPushLocalDataToFirestore() {
+      if (typeof db === 'undefined' || !db) return;
+      try {
+        // Chỉ đẩy lên Cloud nếu thiết bị này đang có dữ liệu trong bộ nhớ
+        if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase) && salesDatabase.length > 0) {
+          db.collection('sync_bundles').doc('sales').set({
+            list: salesDatabase,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(function(e) { console.warn('Push sales bundle:', e); });
+
+          // Lưu tối đa 30 đơn mới nhất lên collection lẻ
+          salesDatabase.slice(0, 30).forEach(function(item) {
+            if (item && item.id) {
+              db.collection('sales').doc(String(item.id)).set(item, { merge: true }).catch(function(){});
+            }
+          });
+        }
+
+        if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase) && softwareDatabase.length > 0) {
+          db.collection('sync_bundles').doc('software').set({
+            list: softwareDatabase,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(function(e) { console.warn('Push software bundle:', e); });
+
+          softwareDatabase.slice(0, 30).forEach(function(item) {
+            if (item && item.id) {
+              db.collection('software').doc(String(item.id)).set(item, { merge: true }).catch(function(){});
+            }
+          });
+        }
+
+        if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase) && bangaDatabase.length > 0) {
+          db.collection('sync_bundles').doc('banga').set({
+            list: bangaDatabase,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(function(e) { console.warn('Push banga bundle:', e); });
+
+          bangaDatabase.slice(0, 30).forEach(function(item) {
+            if (item && item.id) {
+              db.collection('banga').doc(String(item.id)).set(item, { merge: true }).catch(function(){});
+            }
+          });
+        }
+      } catch(err) {
+        console.warn('Lỗi autoPushLocalDataToFirestore:', err);
+      }
+    }
+    window.autoPushLocalDataToFirestore = autoPushLocalDataToFirestore;
+
+    // TẢI TRỰC TIẾP TỪ CLOUD (HTTP GET) - KHÔNG CẦN CHỜ SNAPSHOT, GIẢI QUYẾT TRIỆT ĐỂ MOBILE KHÔNG THẤY DỮ LIỆU
+    function fetchDirectCloudSync(showToastMsg) {
+      if (typeof db === 'undefined' || !db) return;
+      try {
+        // 1. Tải Sales Bundle
+        db.collection('sync_bundles').doc('sales').get().then(function(doc) {
+          if (doc && doc.exists) {
+            var data = doc.data();
+            if (data && Array.isArray(data.list) && data.list.length > 0) {
+              var list = data.list;
+              list.sort(function(a, b) { return getItemTimestamp(b) - getItemTimestamp(a); });
+              salesDatabase = list;
+              try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
+              if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+              if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            }
+          }
+        }).catch(function(e) { console.warn('fetchDirectCloudSync sales:', e); });
+
+        // 2. Tải Software Bundle
+        db.collection('sync_bundles').doc('software').get().then(function(doc) {
+          if (doc && doc.exists) {
+            var data = doc.data();
+            if (data && Array.isArray(data.list) && data.list.length > 0) {
+              var isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
+              if (isSoftwareCleared) return;
+              var list = data.list;
+              list.sort(function(a, b) { return getItemTimestamp(b) - getItemTimestamp(a); });
+              softwareDatabase = list;
+              try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
+              if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+              if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+              if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+                renderSoftwareDebtTable();
+              }
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            }
+          }
+        }).catch(function(e) { console.warn('fetchDirectCloudSync software:', e); });
+
+        // 3. Tải Banga Bundle
+        db.collection('sync_bundles').doc('banga').get().then(function(doc) {
+          if (doc && doc.exists) {
+            var data = doc.data();
+            if (data && Array.isArray(data.list) && data.list.length > 0) {
+              var list = data.list;
+              list.sort(function(a, b) { return getItemTimestamp(b) - getItemTimestamp(a); });
+              bangaDatabase = list;
+              try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
+              if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            }
+          }
+        }).catch(function(e) { console.warn('fetchDirectCloudSync banga:', e); });
+
+        if (showToastMsg && typeof showToast === 'function') {
+          showToast('⚡ Đã đồng bộ dữ liệu đám mây mới nhất!');
+        }
+      } catch(e) {
+        console.warn('Lỗi fetchDirectCloudSync:', e);
+      }
+    }
+    window.fetchDirectCloudSync = fetchDirectCloudSync;
+
     function initFirebaseRealtimeSync() {
+      // Tải ngay dữ liệu từ Cloud trực tiếp qua HTTP GET (không đợi websocket snapshot)
+      setTimeout(function() {
+        if (typeof fetchDirectCloudSync === 'function') fetchDirectCloudSync();
+      }, 300);
+
+      // Nếu thiết bị này có dữ liệu cục bộ (như máy Web), tự động đẩy lên Cloud Bundle
+      setTimeout(function() {
+        if (typeof autoPushLocalDataToFirestore === 'function') autoPushLocalDataToFirestore();
+      }, 1000);
+
       if (typeof db === 'undefined' || !db) {
         console.warn("Chưa tìm thấy kết nối Firebase Firestore (db)!");
         return;
