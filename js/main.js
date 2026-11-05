@@ -395,6 +395,57 @@
     }
     window.formatSoftwareItemDateTime = formatSoftwareItemDateTime;
 
+    function getSoftwareItemTimestamp(item) {
+      if (!item) return 0;
+      // 1. Nếu có createdAt kiểu timestamp số
+      if (item.createdAt && typeof item.createdAt === 'number') {
+        return item.createdAt;
+      }
+      // 2. Phân tích dayMonth, year, time
+      const dt = formatSoftwareItemDateTime(item);
+      let y = 2026, m = 1, d = 1, h = 0, min = 0;
+      if (dt && dt.dateStr) {
+        const parts = dt.dateStr.split('/');
+        if (parts.length === 3) {
+          d = parseInt(parts[0], 10) || 1;
+          m = parseInt(parts[1], 10) || 1;
+          y = parseInt(parts[2], 10) || 2026;
+        }
+      }
+      if (dt && dt.timeStr) {
+        const tParts = dt.timeStr.split(':');
+        if (tParts.length >= 2) {
+          h = parseInt(tParts[0], 10) || 0;
+          min = parseInt(tParts[1], 10) || 0;
+        }
+      } else if (item.time) {
+        const tParts = String(item.time).split(':');
+        if (tParts.length >= 2) {
+          h = parseInt(tParts[0], 10) || 0;
+          min = parseInt(tParts[1], 10) || 0;
+        }
+      }
+
+      let timeVal = new Date(y, m - 1, d, h, min, 0).getTime();
+      if (isNaN(timeVal)) timeVal = 0;
+
+      // 3. Nếu ID có chứa timestamp (dạng sw_17938... hoặc timestamp số)
+      let idNum = 0;
+      if (item.id) {
+        const m = String(item.id).match(/^sw_(d+)/);
+        if (m) {
+          idNum = Number(m[1]) || 0;
+        } else if (/^d+$/.test(String(item.id))) {
+          idNum = Number(item.id) || 0;
+        }
+      }
+
+      // Kết hợp để đảm bảo sắp xếp tuyệt đối: ưu tiên ngày giờ, sau đó tới ID tạo mới
+      return timeVal + (idNum % 1000000) / 1000000;
+    }
+    window.getSoftwareItemTimestamp = getSoftwareItemTimestamp;
+
+
     function formatBrandDeviceName(str) {
       if (!str || typeof str !== 'string') return str || '';
       let res = str;
@@ -2059,7 +2110,12 @@
             list.push(data);
           });
           if (list.length > 0) {
-            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            list.sort((a, b) => {
+              const timeA = getSoftwareItemTimestamp(a);
+              const timeB = getSoftwareItemTimestamp(b);
+              if (timeB !== timeA) return timeB - timeA;
+              return String(b.id || '').localeCompare(String(a.id || ''));
+            });
             list.forEach(item => {
               if (item) {
                 if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
@@ -13833,6 +13889,16 @@
         }
 
         return true;
+      });
+
+      // Tự động sắp xếp thời gian tạo mới gần nhất lên đầu tiên
+      filtered.sort((a, b) => {
+        const timeA = getSoftwareItemTimestamp(a);
+        const timeB = getSoftwareItemTimestamp(b);
+        if (timeB !== timeA) {
+          return timeB - timeA;
+        }
+        return String(b.id || '').localeCompare(String(a.id || ''));
       });
 
       let swDebtCount = 0;
