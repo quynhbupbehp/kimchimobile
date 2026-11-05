@@ -32,3 +32,9 @@ Quy tắc này áp dụng vĩnh viễn cho mọi tương tác trong dự án. Ng
 
 ## 4. THỰC THI & BÁO CÁO KẾT QUẢ
 - Làm xong toàn bộ mới thông báo kết quả ngắn gọn, súc tích kèm liên kết file clickable `[filename](file:///...)`.
+
+---
+
+## 5. PHẠM VI DỰ ÁN & MÔI TRƯỜNG ĐƯỢC PHÉP CHỈNH SỬA
+- **CHỈ ĐƯỢC PHÉP CHỈNH SỬA DUY NHẤT DỰ ÁN**: `https://kimchimobile.vercel.app/` (thư mục làm việc: `q:\kimchimobile`, GitHub repo: `quynhbupbehp/kimchimobile.git`).
+- **TUYỆT ĐỐI KHÔNG CHỈNH SỬA**: Dự án `https://kimchimobile-bank.vercel.app/` hoặc bất kỳ dự án / repo nào khác. Mọi thao tác sửa code, cấu hình, dữ liệu chỉ giới hạn 100% trong `kimchimobile`.
