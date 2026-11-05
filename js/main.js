@@ -1923,6 +1923,17 @@
         if (sc) sc.style.display = 'none';
         document.body.classList.remove('login-locked', 'login-active');
         document.documentElement.classList.add('user-is-logged');
+        // Re-render all tables after login so Firebase-loaded data shows up
+        setTimeout(function() {
+          try {
+            if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+            if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+            if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+            if (typeof renderRepairTable === 'function') renderRepairTable(repairDatabase);
+            if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+            if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+          } catch(e) { console.warn('Re-render after login error:', e); }
+        }, 300);
         try {
           sessionStorage.setItem('KIMCHI_AUTH_TOKEN', pass || 'logged');
           sessionStorage.setItem('KIMCHI_LOGGED', 'true');
@@ -2105,8 +2116,7 @@
             if (!data.id) data.id = doc.id;
             list.push(data);
           });
-          if (list.length > 0) {
-            list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+          list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
             list.forEach(item => {
               if (item) {
                 if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
@@ -2120,7 +2130,6 @@
             if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
             if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-          }
         }, err => console.error("Lỗi sync sales realtime:", err));
       } catch (err) {
         console.error("Lỗi setup sync sales:", err);
@@ -2135,8 +2144,7 @@
             if (!data.id) data.id = doc.id;
             list.push(data);
           });
-          if (list.length > 0) {
-            list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+          list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
             list.forEach(item => {
               if (item) {
                 if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
@@ -2149,7 +2157,6 @@
             try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
             if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-          }
         }, err => console.error("Lỗi sync banga realtime:", err));
       } catch (err) {
         console.error("Lỗi setup sync banga:", err);
@@ -12414,7 +12421,17 @@
       if (url) {
         url = url.trim();
         if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-        window.open(url, '_blank', 'noopener,noreferrer');
+        try {
+          const a = document.createElement('a');
+          a.href = url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } catch(e) {
+          window.open(url, '_blank');
+        }
       }
     }
     window.openSwQuickLink = openSwQuickLink;
