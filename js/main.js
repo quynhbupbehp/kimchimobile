@@ -2233,9 +2233,7 @@
         console.error("Lỗi setup sync software:", err);
       }
 
-      // 8. Đồng bộ Danh sách Hãng Điện Thoại Mới (custom brands)
-      try {
-        // Đồng bộ sw_quick_links từ Firestore
+      // 8. Đồng bộ sw_quick_links từ Firestore
       try {
         db.collection('settings').doc('sw_quick_links').onSnapshot(doc => {
           if (doc.exists) {
@@ -2251,7 +2249,9 @@
         console.error("Lỗi setup sync sw_quick_links:", err);
       }
 
-      // db.collection('settings').doc('custom_brands').onSnapshot(doc => {
+      // 9. Đồng bộ Danh sách Hãng Điện Thoại Mới (custom brands)
+      try {
+        db.collection('settings').doc('custom_brands').onSnapshot(doc => {
           if (doc.exists) {
             let data = doc.data();
             if (data && Array.isArray(data.list)) {
