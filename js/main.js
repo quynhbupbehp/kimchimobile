@@ -1988,7 +1988,7 @@
               if (updated !== item.name) { item.name = updated; sChanged = true; }
             }
           });
-          if (sChanged && typeof saveSalesStorage === 'function') saveSalesStorage();
+          if (sChanged) try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
         }
 
         if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
@@ -2003,7 +2003,7 @@
               if (updated !== item.storage) { item.storage = updated; bChanged = true; }
             }
           });
-          if (bChanged && typeof saveBangaStorage === 'function') saveBangaStorage();
+          if (bChanged) try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
         }
 
         if (typeof phoneDatabase !== 'undefined' && Array.isArray(phoneDatabase)) {
@@ -2018,7 +2018,7 @@
               if (updated !== p.name) { p.name = updated; pChanged = true; }
             }
           });
-          if (pChanged && typeof savePhoneStorage === 'function') savePhoneStorage();
+          if (pChanged) try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
         }
 
         if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
@@ -2033,7 +2033,7 @@
               if (updated !== p.name) { p.name = updated; spChanged = true; }
             }
           });
-          if (spChanged) localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+          if (spChanged) try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
         }
 
         if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
@@ -2044,7 +2044,7 @@
               if (updated !== item.device) { item.device = updated; swChanged = true; }
             }
           });
-          if (swChanged && typeof saveSoftwareStorage === 'function') saveSoftwareStorage();
+          if (swChanged) try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
         }
       } catch (e) {
         console.warn("Lỗi migrateStorageUnits:", e);
@@ -2106,6 +2106,62 @@
         console.warn("Chưa tìm thấy kết nối Firebase Firestore (db)!");
         return;
       }
+
+      // === 0. ĐỒNG BỘ SIÊU TỐC QUA SYNC BUNDLES (1 READ DUY NHẤT - TIẾT KIỆM 99.9% QUOTA) ===
+      try {
+        db.collection('sync_bundles').doc('sales').onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (data && Array.isArray(data.list) && data.list.length > 0) {
+              let list = data.list;
+              list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+              salesDatabase = list;
+              try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
+              if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+              if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            }
+          }
+        }, err => console.warn('Bundle sync sales notice:', err.code || err));
+      } catch(e){}
+
+      try {
+        db.collection('sync_bundles').doc('software').onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (data && Array.isArray(data.list) && data.list.length > 0) {
+              const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
+              if (isSoftwareCleared) return;
+              let list = data.list;
+              list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+              softwareDatabase = list;
+              try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
+              if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+              if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+              if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+                renderSoftwareDebtTable();
+              }
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            }
+          }
+        }, err => console.warn('Bundle sync software notice:', err.code || err));
+      } catch(e){}
+
+      try {
+        db.collection('sync_bundles').doc('banga').onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (data && Array.isArray(data.list) && data.list.length > 0) {
+              let list = data.list;
+              list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+              bangaDatabase = list;
+              try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
+              if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            }
+          }
+        }, err => console.warn('Bundle sync banga notice:', err.code || err));
+      } catch(e){}
 
       // 1. Đồng bộ Bán Hàng (sales) thời gian thực
       try {
@@ -2819,6 +2875,20 @@
       });
     } catch(e) {}
 
+    let _salesBundleTimer = null;
+    function syncSalesBundleDebounced() {
+      if (typeof db === 'undefined' || !db) return;
+      clearTimeout(_salesBundleTimer);
+      _salesBundleTimer = setTimeout(() => {
+        try {
+          db.collection('sync_bundles').doc('sales').set({
+            list: salesDatabase,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(e => console.warn('Sync sales bundle notice:', e.code || e));
+        } catch(e){}
+      }, 1000);
+    }
+
     function saveSalesStorage(itemToSync) {
       try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
       if (typeof db !== 'undefined' && db) {
@@ -2833,12 +2903,25 @@
           itemToSync.forEach(syncItem);
         } else if (itemToSync) {
           syncItem(itemToSync);
-        } else {
-          salesDatabase.forEach(syncItem);
         }
+        syncSalesBundleDebounced();
       }
       if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }  
+
+    let _bangaBundleTimer = null;
+    function syncBangaBundleDebounced() {
+      if (typeof db === 'undefined' || !db) return;
+      clearTimeout(_bangaBundleTimer);
+      _bangaBundleTimer = setTimeout(() => {
+        try {
+          db.collection('sync_bundles').doc('banga').set({
+            list: bangaDatabase,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(e => console.warn('Sync banga bundle notice:', e.code || e));
+        } catch(e){}
+      }, 1000);
+    }
 
     function saveBangaStorage(itemToSync) {
       try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
@@ -2854,9 +2937,8 @@
           itemToSync.forEach(syncItem);
         } else if (itemToSync) {
           syncItem(itemToSync);
-        } else {
-          bangaDatabase.forEach(syncItem);
         }
+        syncBangaBundleDebounced();
       }
       if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
@@ -5513,8 +5595,11 @@
         });
       }
 
-      saveSalesStorage();
-      saveBangaStorage();
+      if (targetList === 'Bán Gà') {
+        saveBangaStorage(bangaDatabase[0]);
+      } else {
+        saveSalesStorage(salesDatabase[0]);
+      }
 
       // Đồng bộ ngày xem của tab tương ứng về đúng ngày của đơn vừa tạo để hiển thị ngay lập tức
       let dateParts = dateVal.split('/');
@@ -11682,6 +11767,20 @@
     
     
 
+    let _swBundleTimer = null;
+    function syncSoftwareBundleDebounced() {
+      if (typeof db === 'undefined' || !db) return;
+      clearTimeout(_swBundleTimer);
+      _swBundleTimer = setTimeout(() => {
+        try {
+          db.collection('sync_bundles').doc('software').set({
+            list: softwareDatabase,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(e => console.warn('Sync software bundle notice:', e.code || e));
+        } catch(e){}
+      }, 1000);
+    }
+
     function saveSoftwareStorage(itemOrListToSync) {
       if (softwareDatabase.length > 0) localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
       try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
@@ -11698,9 +11797,8 @@
           itemOrListToSync.forEach(syncDoc);
         } else if (itemOrListToSync) {
           syncDoc(itemOrListToSync);
-        } else {
-          softwareDatabase.forEach(syncDoc);
         }
+        syncSoftwareBundleDebounced();
       }
       if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
