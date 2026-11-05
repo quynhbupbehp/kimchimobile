@@ -397,11 +397,9 @@
 
     function getSoftwareItemTimestamp(item) {
       if (!item) return 0;
-      // 1. Nếu có createdAt kiểu timestamp số
       if (item.createdAt && typeof item.createdAt === 'number') {
         return item.createdAt;
       }
-      // 2. Phân tích dayMonth, year, time
       const dt = formatSoftwareItemDateTime(item);
       let y = 2026, m = 1, d = 1, h = 0, min = 0;
       if (dt && dt.dateStr) {
@@ -429,18 +427,16 @@
       let timeVal = new Date(y, m - 1, d, h, min, 0).getTime();
       if (isNaN(timeVal)) timeVal = 0;
 
-      // 3. Nếu ID có chứa timestamp (dạng sw_17938... hoặc timestamp số)
       let idNum = 0;
       if (item.id) {
-        const m = String(item.id).match(/^sw_(d+)/);
+        const m = String(item.id).match(/^sw_(\d+)/);
         if (m) {
           idNum = Number(m[1]) || 0;
-        } else if (/^d+$/.test(String(item.id))) {
+        } else if (/^\d+$/.test(String(item.id))) {
           idNum = Number(item.id) || 0;
         }
       }
 
-      // Kết hợp để đảm bảo sắp xếp tuyệt đối: ưu tiên ngày giờ, sau đó tới ID tạo mới
       return timeVal + (idNum % 1000000) / 1000000;
     }
     window.getSoftwareItemTimestamp = getSoftwareItemTimestamp;
@@ -2110,12 +2106,7 @@
             list.push(data);
           });
           if (list.length > 0) {
-            list.sort((a, b) => {
-              const timeA = getSoftwareItemTimestamp(a);
-              const timeB = getSoftwareItemTimestamp(b);
-              if (timeB !== timeA) return timeB - timeA;
-              return String(b.id || '').localeCompare(String(a.id || ''));
-            });
+            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
             list.forEach(item => {
               if (item) {
                 if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
@@ -2261,8 +2252,13 @@
               // Người dùng vừa xóa sạch dữ liệu trên thiết bị này, không ghi đè lại
               return;
             }
-            // Sắp xếp ID lớn nhất / mới nhất lên đầu
-            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            // Sắp xếp đơn mới nhất lên đầu
+            list.sort((a, b) => {
+              const timeA = getSoftwareItemTimestamp(a);
+              const timeB = getSoftwareItemTimestamp(b);
+              if (timeB !== timeA) return timeB - timeA;
+              return String(b.id || '').localeCompare(String(a.id || ''));
+            });
             softwareDatabase = list;
             try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
             if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
