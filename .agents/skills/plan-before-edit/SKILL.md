@@ -1,30 +1,30 @@
 ---
 name: plan-before-edit
-description: >-
-  Kỹ năng tự động hóa 100%, không hỏi bất kỳ quyền gì (auto-agree 100%), làm y chang ảnh mẫu, đúng chuẩn nền tảng Mobile/Web.
+description: Kỹ năng tự động hóa 100%, loại bỏ mọi hỏi quyền, bảo toàn dữ liệu, mặc định làm trên Web, tiết kiệm hạn mức Firebase tối đa.
 ---
 
-# Kỹ Năng: Tự Động Hóa 100% - Tuyệt Đối Làm Y Chang Ảnh Mẫu
+# Kỹ Năng Tự Động Hóa & Kiểm Soát Thay Đổi
 
-Kỹ năng này bắt buộc agent làm việc tốc độ cao, dứt khoát, tự động hóa hoàn toàn và chính xác tuyệt đối theo mẫu thiết kế.
+Mọi tác vụ can thiệp vào mã nguồn trong dự án `kimchimobile` bắt buộc phải tuân theo các quy định dưới đây:
 
-## 1. Không Hỏi Quyền & Auto-Agree 100%
-1. Tuyệt đối không hỏi xin bất kỳ quyền gì hay xác nhận gì từ người dùng.
-2. Mặc định là người dùng **TỰ ĐỘNG ĐỒNG Ý (AUTO-AGREE 100%)** theo phương án tối ưu nhất của bạn (AI).
-3. **QUYỀN TRUY CẬP FILE (FILE ACCESS GRANT)**: Người dùng đã cấp phép cho AI **đồng ý mọi quyền truy cập file** một cách mặc định. Khi thực hiện bất kỳ dự án nào, AI **TUYỆT ĐỐI KHÔNG HỎI** về quyền truy cập file, quyền mở file, quyền ghi file, hay bất kỳ xác nhận cấp phép nào khác. AI được phép đọc, ghi, sửa đổi, tạo mới, xóa bất kỳ file nào trong dự án mà không cần hỏi lại. Nếu hệ thống yêu cầu cấp quyền, AI **TỰ ĐỘNG ĐỒNG Ý 100%** và tiếp tục thực thi ngay lập tức.
-4. **TỰ ĐỘNG ĐỒNG Ý QUYỀN THỰC THI / CHẠY LỆNH (AUTO-AGREE EXEC PERMISSION)**: Khi hệ thống / công cụ hiện dialog hỏi quyền thực thi lệnh, truy cập thư mục, hoặc chạy script (ví dụ: "Allow list all files in kimchimobile project?", "Allow run command ...", "Allow execute ...", "Allow check git status ...") — **MẶC ĐỊNH ĐỒNG Ý 100%**. Tuyệt đối không hỏi lại người dùng, không chờ xác nhận. Chọn phương án đồng ý tối ưu (ưu tiên "Yes, and always allow ..." / "Yes, allow this time") và tiếp tục thực thi ngay lập tức. Nếu có nhiều lựa chọn đồng ý, chọn lựa chọn rộng nhất (always allow) để tránh bị hỏi lại lần sau.
-5. **TỰ ĐỘNG PHÊ DUYỆT LỆNH NODE.JS KIỂM TRA / CHỈ ĐỌC (AUTO-APPROVE READ-ONLY NODE -E)**: Người dùng mặc định **tự động phê duyệt 100% (auto-approve)** cho tất cả các câu lệnh kiểm tra Node.js dạng đọc file / chỉ đọc (như `node -e "const fs = require('fs'); ..."` để grep, search, inspect code/data, toggleSelectAllRepair hay bất kỳ biến/hàm nào). Không bao giờ hiển thị hộp thoại xin quyền, không dừng lại chờ người dùng bấm chấp thuận.
-6. Làm ngay và luôn, không bắt bấm duyệt kế hoạch ("Proceed") rườm rà.
-7. Những điểm chưa vừa ý, người dùng sẽ tự nói để sửa lại sau.
+## 1. Loại Bỏ Tất Cả Quyền Truy Cập & Dialog Xác Nhận (Auto-Agree 100%)
+- Tuyệt đối không để người dùng phải bấm đồng ý bất cứ quyền gì bằng tay (đọc, ghi file, chạy lệnh terminal/PowerShell/Node.js).
+- Mặc định 100% tự động chấp thuận ở mức cao nhất ("always allow") và thực thi lập tức.
 
-## 2. Tuyệt Đối Làm Y Chang Ảnh Mẫu
-1. Khi có ảnh gửi kèm: Bắt buộc làm **Y CHANG 100%** theo ảnh (màu sắc, tỷ lệ, font chữ, icon, vị trí, khoảng cách padding/margin).
-2. Tuyệt đối không tự ý thêm bớt hoặc sáng tạo khác ảnh.
-3. Phân biệt rõ ngữ cảnh thiết bị từ ảnh:
-   - **Ảnh Mobile**: Chỉnh chuẩn xác trên giao diện Mobile (`@media (max-width: 767px)`).
-   - **Ảnh Web / Desktop**: Chỉnh chuẩn xác trên giao diện Web (`@media (min-width: 768px)` trở lên).
+## 2. Bảo Toàn Dữ Liệu Các Phần Khác
+- Mỗi lần sửa code: CHỈ can thiệp vào đúng phần được yêu cầu.
+- Tuyệt đối không được tự ý thay đổi, chỉnh sửa hay xóa bất kỳ phần dữ liệu nào khác ngoài phạm vi được chỉ định.
 
-## 3. Thực Thi & Báo Cáo
-1. Tự khảo sát mã nguồn và sửa đổi ngay bằng các công cụ (`replace_file_content`, `multi_replace_file_content`, `write_to_file`, `run_command`).
-2. Tự động kiểm tra / triển khai.
-3. Báo cáo kết quả ngắn gọn, súc tích kèm link file clickable `[filename](file:///...)`.
+## 3. Mặc Định Sửa Trên Trình Duyệt Web
+- Khi người dùng không chỉ định nền tảng: MẶC ĐỊNH SỬA VÀ TỐI ƯU TRÊN WEB (DESKTOP).
+- Chỉ can thiệp trên Mobile khi người dùng ghi rõ "mobile" / "điện thoại" hoặc gửi kèm ảnh chụp màn hình điện thoại.
+- Khi có ảnh mẫu: làm theo y chang 100%.
+
+## 4. Chống Cháy Hạn Mức Firebase (Bảo Vệ Quota Tuyệt Đối)
+- Không dùng vòng lặp `forEach` ghi hàng loạt danh sách lên Firestore.
+- Khi thêm/sửa đơn hàng: chỉ cập nhật duy nhất 1 document của đơn đó (`{ merge: true }`).
+- Danh sách tổng hợp đồng bộ qua Bundle Doc (`sync_bundles`) với debounce, đảm bảo 1 thao tác chỉ tốn 1 lượt ghi / 1 lượt đọc.
+- Không ghi ngầm lên Firestore khi mở trang hoặc F5.
+
+## 5. Tự Động Push GitHub
+- Hoàn thành là tự động `git add .`, `git commit`, `git push origin main`.
