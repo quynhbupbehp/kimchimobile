@@ -762,8 +762,17 @@
           <div class="sw-shortcuts-container"
             style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
             <div class="sw-pill-btn sw-btn-black sw-shortcut-tool"
-              title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
-              <span class="sw-link-text" onclick="openSwUrl('tool')">LINK TOOL</span>
+              title="Bấm để mở web | Nhấn giữ (hoặc chuột phải) để sửa đường link | Bấm ❐ để sao chép">
+              <span class="sw-link-text"
+                onclick="handleSwLinkClick('tool', event)"
+                onmousedown="handleSwLinkPressStart('tool', event)"
+                onmouseup="handleSwLinkPressEnd('tool', event)"
+                onmouseleave="handleSwLinkPressEnd('tool', event)"
+                ontouchstart="handleSwLinkPressStart('tool', event)"
+                ontouchend="handleSwLinkPressEnd('tool', event)"
+                ontouchcancel="handleSwLinkPressEnd('tool', event)"
+                oncontextmenu="event.preventDefault(); editSwUrl('tool');"
+                style="user-select: none; -webkit-user-select: none;">LINK TOOL</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('tool', event)" title="Sao chép link Tool">
                 <svg viewBox="0 0 24 24" class="sw-copy-icon">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -772,8 +781,17 @@
               </button>
             </div>
             <div class="sw-pill-btn sw-btn-black sw-shortcut-testpoint"
-              title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
-              <span class="sw-link-text" onclick="openSwUrl('testpoint')">TESTPOINT</span>
+              title="Bấm để mở web | Nhấn giữ (hoặc chuột phải) để sửa đường link | Bấm ❐ để sao chép">
+              <span class="sw-link-text"
+                onclick="handleSwLinkClick('testpoint', event)"
+                onmousedown="handleSwLinkPressStart('testpoint', event)"
+                onmouseup="handleSwLinkPressEnd('testpoint', event)"
+                onmouseleave="handleSwLinkPressEnd('testpoint', event)"
+                ontouchstart="handleSwLinkPressStart('testpoint', event)"
+                ontouchend="handleSwLinkPressEnd('testpoint', event)"
+                ontouchcancel="handleSwLinkPressEnd('testpoint', event)"
+                oncontextmenu="event.preventDefault(); editSwUrl('testpoint');"
+                style="user-select: none; -webkit-user-select: none;">TESTPOINT</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('testpoint', event)"
                 title="Sao chép link Testpoint">
                 <svg viewBox="0 0 24 24" class="sw-copy-icon">
@@ -783,8 +801,17 @@
               </button>
             </div>
             <div class="sw-pill-btn sw-btn-black sw-shortcut-rom"
-              title="Bấm tên để mở trang web | Bấm ❐ để sao chép link">
-              <span class="sw-link-text" onclick="openSwUrl('rom')">LINK ROM</span>
+              title="Bấm để mở web | Nhấn giữ (hoặc chuột phải) để sửa đường link | Bấm ❐ để sao chép">
+              <span class="sw-link-text"
+                onclick="handleSwLinkClick('rom', event)"
+                onmousedown="handleSwLinkPressStart('rom', event)"
+                onmouseup="handleSwLinkPressEnd('rom', event)"
+                onmouseleave="handleSwLinkPressEnd('rom', event)"
+                ontouchstart="handleSwLinkPressStart('rom', event)"
+                ontouchend="handleSwLinkPressEnd('rom', event)"
+                ontouchcancel="handleSwLinkPressEnd('rom', event)"
+                oncontextmenu="event.preventDefault(); editSwUrl('rom');"
+                style="user-select: none; -webkit-user-select: none;">LINK ROM</span>
               <button type="button" class="sw-copy-btn" onclick="copySwUrl('rom', event)" title="Sao chép link ROM">
                 <svg viewBox="0 0 24 24" class="sw-copy-icon">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />

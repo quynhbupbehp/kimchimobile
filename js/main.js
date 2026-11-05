@@ -2235,7 +2235,23 @@
 
       // 8. Đồng bộ Danh sách Hãng Điện Thoại Mới (custom brands)
       try {
-        db.collection('settings').doc('custom_brands').onSnapshot(doc => {
+        // Đồng bộ sw_quick_links từ Firestore
+      try {
+        db.collection('settings').doc('sw_quick_links').onSnapshot(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            if (data && typeof data === 'object') {
+              try {
+                localStorage.setItem('sw_quick_links', JSON.stringify(data));
+              } catch (e) {}
+            }
+          }
+        }, err => console.error("Lỗi sync sw_quick_links:", err));
+      } catch (err) {
+        console.error("Lỗi setup sync sw_quick_links:", err);
+      }
+
+      // db.collection('settings').doc('custom_brands').onSnapshot(doc => {
           if (doc.exists) {
             let data = doc.data();
             if (data && Array.isArray(data.list)) {
@@ -12323,31 +12339,128 @@
       }
     }
 
-    const SW_QUICK_LINKS = {
+    const DEFAULT_SW_QUICK_LINKS = {
       tool: 'https://quynhbupbehp.github.io/driver/',
       testpoint: 'https://quynhbupbehp2026.github.io/testpoint/',
       rom: 'https://drive.google.com/drive/u/3/my-drive'
     };
 
+    function getSwQuickLinks() {
+      try {
+        const stored = localStorage.getItem('sw_quick_links');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return Object.assign({}, DEFAULT_SW_QUICK_LINKS, parsed);
+        }
+      } catch (e) {
+        console.error("Lỗi đọc sw_quick_links từ localStorage:", e);
+      }
+      return Object.assign({}, DEFAULT_SW_QUICK_LINKS);
+    }
+
+    function saveSwQuickLinks(links) {
+      try {
+        localStorage.setItem('sw_quick_links', JSON.stringify(links));
+      } catch (e) {
+        console.error("Lỗi lưu sw_quick_links vào localStorage:", e);
+      }
+      if (typeof db !== 'undefined' && db) {
+        try {
+          db.collection('settings').doc('sw_quick_links').set(links).catch(err => {
+            console.error("Lỗi đồng bộ sw_quick_links lên Firestore:", err);
+          });
+        } catch (e) {
+          console.error("Lỗi kết nối Firestore khi lưu sw_quick_links:", e);
+        }
+      }
+    }
+
+    function getSwQuickLinkTitle(type) {
+      const titles = {
+        tool: 'LINK TOOL',
+        testpoint: 'TESTPOINT',
+        rom: 'LINK ROM'
+      };
+      return titles[type] || 'LINK';
+    }
+
     function openSwUrl(type) {
-      const url = SW_QUICK_LINKS[type];
+      const links = getSwQuickLinks();
+      const url = links[type] || DEFAULT_SW_QUICK_LINKS[type];
       if (url) {
         window.open(url, '_blank');
       }
     }
+    window.openSwUrl = openSwUrl;
+
+    function editSwUrl(type) {
+      const links = getSwQuickLinks();
+      const currentUrl = links[type] || DEFAULT_SW_QUICK_LINKS[type] || '';
+      const title = getSwQuickLinkTitle(type);
+
+      const newUrl = prompt(`🔗 CHỈNH SỬA ĐƯỜNG LINK ${title}:\nNhập đường link mới (bắt đầu bằng http:// hoặc https://):\n(Bấm Hủy nếu không muốn thay đổi)`, currentUrl);
+
+      if (newUrl !== null) {
+        const trimmed = newUrl.trim();
+        if (trimmed === '') {
+          alert('Đường link không được để trống!');
+          return;
+        }
+        links[type] = trimmed;
+        saveSwQuickLinks(links);
+        alert(`✅ Đã cập nhật thành công đường link cho ${title}:\n${trimmed}`);
+      }
+    }
+    window.editSwUrl = editSwUrl;
+
+    // Xử lý sự kiện nhấn giữ (Long-press) trên cả Desktop (chuột) và Mobile (cảm ứng)
+    let swLinkPressTimer = null;
+    let swLinkIsLongPress = false;
+
+    function handleSwLinkPressStart(type, event) {
+      swLinkIsLongPress = false;
+      if (swLinkPressTimer) clearTimeout(swLinkPressTimer);
+
+      swLinkPressTimer = setTimeout(() => {
+        swLinkIsLongPress = true;
+        // Rung nhẹ trên điện thoại nếu được hỗ trợ
+        if (navigator.vibrate) {
+          try { navigator.vibrate(60); } catch(e){}
+        }
+        editSwUrl(type);
+      }, 650); // Nhấn giữ 650ms để kích hoạt sửa link
+    }
+    window.handleSwLinkPressStart = handleSwLinkPressStart;
+
+    function handleSwLinkPressEnd(type, event) {
+      if (swLinkPressTimer) {
+        clearTimeout(swLinkPressTimer);
+        swLinkPressTimer = null;
+      }
+    }
+    window.handleSwLinkPressEnd = handleSwLinkPressEnd;
+
+    function handleSwLinkClick(type, event) {
+      if (swLinkIsLongPress) {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        swLinkIsLongPress = false;
+        return;
+      }
+      openSwUrl(type);
+    }
+    window.handleSwLinkClick = handleSwLinkClick;
 
     function copySwUrl(type, event) {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
       }
-      const url = SW_QUICK_LINKS[type];
-      const titles = {
-        tool: 'Link Tool',
-        testpoint: 'Link Testpoint',
-        rom: 'Link ROM'
-      };
-      const title = titles[type] || 'Link';
+      const links = getSwQuickLinks();
+      const url = links[type] || DEFAULT_SW_QUICK_LINKS[type];
+      const title = getSwQuickLinkTitle(type);
       if (url) {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(url).then(() => {
@@ -12360,6 +12473,7 @@
         }
       }
     }
+    window.copySwUrl = copySwUrl;
 
     /* ============================================================
        QUẢN LÝ TÀI KHOẢN TOOL / SERVER & GHI CHÚ PHẦN MỀM
