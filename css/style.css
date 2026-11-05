@@ -10267,3 +10267,12 @@
       }
     }
 
+
+
+/* ẨN NÚT BIDV BANK TRÊN GIAO DIỆN MOBILE (< 768px và < 900px) */
+@media (max-width: 768px) {
+  .btn-bank-bidv,
+  .btn-bank-bidv-sw {
+    display: none !important;
+  }
+}

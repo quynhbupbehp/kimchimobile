@@ -19908,9 +19908,8 @@
       const modal = document.getElementById('kimchiBankModal');
       const frame = document.getElementById('kimchiBankFrame');
       if (modal && frame) {
-        if (!frame.src || frame.src === '' || frame.src === 'about:blank') {
-          frame.src = 'https://kimchimobile-bank.vercel.app/';
-        }
+        // Tự động tải lại trang mới nhất kèm timestamp để không bị dính cache hoặc màn hình trắng
+        frame.src = 'https://kimchimobile-bank.vercel.app/?v=' + Date.now();
         modal.style.display = 'flex';
       }
     }
