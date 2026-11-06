@@ -6453,6 +6453,72 @@
     }
     window.exportSoftwareToExcel = exportSoftwareToExcel;
 
+    function removeDuplicateSoftwareItems() {
+      if (!Array.isArray(softwareDatabase) || softwareDatabase.length === 0) {
+        alert("Danh sách phần mềm đang trống!");
+        return;
+      }
+      const seen = new Set();
+      const uniqueList = [];
+      const duplicates = [];
+
+      // Duyệt qua danh sách: lọc trùng theo (ngày + tháng + năm, tên khách, tên máy, giá)
+      softwareDatabase.forEach(item => {
+        if (!item) return;
+        const dateKey = `${item.dayMonth || ''}_${item.year || '2026'}`;
+        const custKey = (item.customer || '').trim().toLowerCase();
+        const devKey = (item.device || '').trim().toLowerCase();
+        const priceKey = String(parsePriceNum(item.price) || 0);
+        const compositeKey = `${dateKey}|${custKey}|${devKey}|${priceKey}`;
+
+        if (!seen.has(compositeKey)) {
+          seen.add(compositeKey);
+          uniqueList.push(item);
+        } else {
+          duplicates.push(item);
+        }
+      });
+
+      if (duplicates.length === 0) {
+        alert("Không phát hiện đơn phần mềm nào bị trùng (cùng ngày, khách, máy và giá)!");
+        return;
+      }
+
+      if (!confirm(`Phát hiện ${duplicates.length} đơn trùng lặp trong cùng ngày (cùng khách, máy, giá).\nBạn có muốn xóa ${duplicates.length} đơn này và chỉ giữ lại duy nhất 1 đơn không?`)) {
+        return;
+      }
+
+      // Xóa các documents trùng lặp trên Firestore
+      if (typeof db !== 'undefined' && db) {
+        duplicates.forEach(item => {
+          if (item && item.id) {
+            db.collection('software').doc(String(item.id)).delete().catch(console.error);
+          }
+        });
+      }
+
+      softwareDatabase = uniqueList;
+      try {
+        localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
+      } catch (e) {}
+
+      if (typeof saveSoftwareStorage === 'function') {
+        saveSoftwareStorage();
+      }
+
+      if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+      if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+      if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+        renderSoftwareDebtTable();
+      }
+      if (typeof renderDebtSoftwareList === 'function') renderDebtSoftwareList();
+      if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+
+      alert(`Đã xóa thành công ${duplicates.length} đơn trùng lặp, giữ lại duy nhất 1 đơn cho mỗi khách - máy - giá trong ngày!`);
+    }
+    window.removeDuplicateSoftwareItems = removeDuplicateSoftwareItems;
+
     function clearAllSoftwareData() {
       let scopeLabel = getCurrentSoftwareScopeLabel();
       let itemsToDelete = softwareDatabase.filter(isSoftwareItemMatchingCurrentFilter);
@@ -6705,34 +6771,56 @@
             let isDebt = (statusClean.includes('no') || statusClean.includes('dai') || statusClean.includes('chua'));
             let paymentStatus = isDebt ? 'NỢ DAI' : 'ĐÃ TRẢ';
 
-            // Kiểm tra trùng lặp
-            let existing = softwareDatabase.find(s => 
+            // Kiểm tra trùng lặp: Nếu trong cùng 1 ngày, tên khách, tên máy và giá như nhau
+            let existingSameRow = softwareDatabase.find(s => 
               (s.customer || '').toLowerCase().trim() === custFormatted.toLowerCase().trim() &&
               (s.device || '').toLowerCase().trim() === devFormatted.toLowerCase().trim() &&
+              (parsePriceNum(s.price) === priceNum) &&
+              s.dayMonth === dayMonthPart &&
+              (String(s.year || '2026') === String(yearPart || '2026'))
+            ) || newRecords.find(s => 
+              (s.customer || '').toLowerCase().trim() === custFormatted.toLowerCase().trim() &&
+              (s.device || '').toLowerCase().trim() === devFormatted.toLowerCase().trim() &&
+              (parsePriceNum(s.price) === priceNum) &&
               s.dayMonth === dayMonthPart &&
               (String(s.year || '2026') === String(yearPart || '2026'))
             );
 
-            if (existing) {
-              existing.price = priceStr;
-              existing.cost = costStr;
-              existing.profit = profitStr;
-              existing.paymentStatus = paymentStatus;
+            if (existingSameRow) {
+              // Đã có 1 đơn y hệt (cùng ngày, khách, máy, giá): giữ nguyên 1 đơn, cập nhật chi phí/trạng thái nếu cần, không tạo thêm bản sao
+              existingSameRow.cost = costStr;
+              existingSameRow.profit = profitStr;
+              existingSameRow.paymentStatus = paymentStatus;
               updatedCount++;
             } else {
-              newRecords.push({
-                id: Date.now() + Math.floor(Math.random() * 100000) + i,
-                customer: custFormatted,
-                device: devFormatted,
-                price: priceStr,
-                cost: costStr,
-                profit: profitStr,
-                dayMonth: dayMonthPart,
-                year: yearPart,
-                time: timePart,
-                paymentStatus: paymentStatus,
-                selected: false
-              });
+              let existingCustDev = softwareDatabase.find(s => 
+                (s.customer || '').toLowerCase().trim() === custFormatted.toLowerCase().trim() &&
+                (s.device || '').toLowerCase().trim() === devFormatted.toLowerCase().trim() &&
+                s.dayMonth === dayMonthPart &&
+                (String(s.year || '2026') === String(yearPart || '2026'))
+              );
+
+              if (existingCustDev) {
+                existingCustDev.price = priceStr;
+                existingCustDev.cost = costStr;
+                existingCustDev.profit = profitStr;
+                existingCustDev.paymentStatus = paymentStatus;
+                updatedCount++;
+              } else {
+                newRecords.push({
+                  id: Date.now() + Math.floor(Math.random() * 100000) + i,
+                  customer: custFormatted,
+                  device: devFormatted,
+                  price: priceStr,
+                  cost: costStr,
+                  profit: profitStr,
+                  dayMonth: dayMonthPart,
+                  year: yearPart,
+                  time: timePart,
+                  paymentStatus: paymentStatus,
+                  selected: false
+                });
+              }
             }
           }
 
