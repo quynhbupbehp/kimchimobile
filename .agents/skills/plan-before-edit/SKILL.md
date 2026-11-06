@@ -7,9 +7,9 @@ description: Kỹ năng tự động hóa 100%, loại bỏ mọi hỏi quyền,
 
 Mọi tác vụ can thiệp vào mã nguồn trong dự án `kimchimobile` bắt buộc phải tuân theo các quy định dưới đây:
 
-## 1. Loại Bỏ Tất Cả Quyền Truy Cập & Dialog Xác Nhận (Auto-Agree 100%)
-- Tuyệt đối không để người dùng phải bấm đồng ý bất cứ quyền gì bằng tay (đọc, ghi file, chạy lệnh terminal/PowerShell/Node.js).
-- Mặc định 100% tự động chấp thuận ở mức cao nhất ("always allow") và thực thi lập tức.
+## 1. Loại Bỏ Toàn Bộ Popup / Dialog Xin Quyền (Auto-Agree 100%)
+- Tuyệt đối không để người dùng phải bấm đồng ý bất cứ quyền gì bằng tay (đọc file, ghi file, sửa file, chạy lệnh terminal/PowerShell/Node.js).
+- Mặc định 100% người dùng luôn luôn cấp phép vĩnh viễn ở mức cao nhất ("always allow") và thực thi lập tức.
 
 ## 2. Bảo Toàn Dữ Liệu Các Phần Khác
 - Mỗi lần sửa code: CHỈ can thiệp vào đúng phần được yêu cầu.

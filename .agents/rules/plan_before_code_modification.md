@@ -3,7 +3,8 @@
 ---
 
 ## 1. NGUYÊN TẮC QUYỀN HẠN: KHÔNG HỎI LẠI - AUTO ĐỒNG Ý 100%
-- Loại bỏ tất cả câu hỏi xin quyền và dialog xác nhận. Người dùng không phải bấm đồng ý bằng tay.
+- Tắt toàn bộ popup, dialog hỏi quyền đọc file, ghi file hay chạy lệnh Node.js/Terminal.
+- Người dùng trao quyền 100% vĩnh viễn, không phải bấm đồng ý bất cứ thao tác nào bằng tay.
 - Mọi thao tác truy cập file (đọc, ghi, sửa, xóa) và chạy lệnh (Terminal, PowerShell, Node.js, Git) đều mặc định auto-agree 100%.
 - Làm ngay lập tức, không bắt bấm "Proceed".
 
