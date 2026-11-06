@@ -17484,10 +17484,26 @@
               alert("File Excel không có trang tính nào!");
               return;
             }
-            // Ưu tiên sheet có chứa chữ "công nợ" hoặc sheet đầu tiên
+
+            // Tìm sheet tốt nhất: ưu tiên sheet có tên chứa "công nợ" hoặc sheet có dữ liệu nhiều nhất
             let sheetName = workbook.SheetNames[0];
-            const foundDebtSheet = workbook.SheetNames.find(sn => /cong\s*no|so\s*cong\s*no/i.test(sn.normalize('NFD').replace(/[\u0300-\u036f]/g, '')));
-            if (foundDebtSheet) sheetName = foundDebtSheet;
+            const foundDebtSheet = workbook.SheetNames.find(sn => /cong\s*no|so\s*cong\s*no|phan\s*mem/i.test(sn.normalize('NFD').replace(/[\u0300-\u036f]/g, '')));
+            if (foundDebtSheet) {
+              sheetName = foundDebtSheet;
+            } else {
+              let maxRowCount = 0;
+              for (const name of workbook.SheetNames) {
+                const sheet = workbook.Sheets[name];
+                if (sheet && sheet['!ref']) {
+                  const range = XLSX.utils.decode_range(sheet['!ref']);
+                  const count = range.e.r - range.s.r + 1;
+                  if (count > maxRowCount) {
+                    maxRowCount = count;
+                    sheetName = name;
+                  }
+                }
+              }
+            }
 
             rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: '' });
           } else {
@@ -17496,64 +17512,123 @@
             rows = lines.map(line => line.split(/[,;\t]/).map(c => c.replace(/^"|"$/g, '').trim()));
           }
 
-          if (!rows || rows.length <= 1) {
+          if (!rows || rows.length === 0) {
             alert("File Excel không có dữ liệu để nhập!");
             return;
           }
 
-          let cleanHeader = rows[0].map(h => String(h || '')
-            .toLowerCase()
-            .replace(/đ/g, 'd')
-            .replace(/Đ/g, 'D')
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .trim());
+          // Quét tìm dòng header thực sự trong tối đa 10 dòng đầu
+          let headerRowIndex = 0;
+          let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxTime = -1, colIdxYear = -1;
 
-          let colIdxCustomer = -1, colIdxDevice = -1, colIdxPrice = -1, colIdxCost = -1, colIdxTime = -1;
+          for (let r = 0; r < Math.min(10, rows.length); r++) {
+            let rowH = rows[r];
+            if (!Array.isArray(rowH) || rowH.length === 0) continue;
 
-          cleanHeader.forEach((col, idx) => {
-            if (col === 'ngay' || col === 'gio' || col.includes('thoi gian') || col.includes('ngay gio') || col.includes('date') || col.includes('time')) {
-              colIdxTime = idx;
-            } else if (col === 'khach' || col.includes('khach hang') || col.includes('customer') || col === 'tho' || col.includes('ten tho')) {
-              colIdxCustomer = idx;
-            } else if (col === 'noi dung' || col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || (col.includes('dich vu') && !col.includes('phi'))) {
-              colIdxDevice = idx;
-            } else if (col.includes('phi') || col.includes('gia nhap') || col.includes('von') || col.includes('cost')) {
-              colIdxCost = idx;
-            } else if (col === 'so no' || col.includes('no') || col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price')) {
-              if (colIdxPrice === -1) colIdxPrice = idx;
+            let cleanCols = rowH.map(h => String(h || '')
+              .toLowerCase()
+              .replace(/đ/g, 'd')
+              .replace(/Đ/g, 'D')
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .trim());
+
+            let cCust = -1, cDev = -1, cPrice = -1, cCost = -1, cTime = -1, cYear = -1;
+
+            cleanCols.forEach((col, idx) => {
+              if (col === 'nam' || col === 'year') {
+                cYear = idx;
+              } else if (col === 'ngay' || col === 'gio' || col === 'ngay no' || col.includes('thoi gian') || col.includes('ngay gio') || col.includes('date') || col.includes('time')) {
+                cTime = idx;
+              } else if (col === 'khach' || col.includes('khach hang') || col.includes('customer') || col === 'tho' || col.includes('ten tho')) {
+                cCust = idx;
+              } else if (col === 'noi dung' || col.includes('thiet bi') || col.includes('phan mem') || col.includes('device') || col.includes('ten may') || (col.includes('dich vu') && !col.includes('phi'))) {
+                cDev = idx;
+              } else if (col.includes('phi') || col.includes('gia nhap') || col.includes('von') || col.includes('cost')) {
+                cCost = idx;
+              } else if (col === 'so no' || col.includes('no') || col.includes('bao gia') || col.includes('gia ban') || col.includes('tien') || col.includes('price')) {
+                if (cPrice === -1) cPrice = idx;
+              }
+            });
+
+            // Nếu tìm thấy ít nhất 2 cột đặc trưng (khách/máy/tiền/nợ/ngày) thì đây chính là dòng Header
+            let foundCount = (cCust !== -1 ? 1 : 0) + (cDev !== -1 ? 1 : 0) + (cPrice !== -1 ? 1 : 0) + (cTime !== -1 ? 1 : 0);
+            if (foundCount >= 2) {
+              headerRowIndex = r;
+              colIdxCustomer = cCust;
+              colIdxDevice = cDev;
+              colIdxPrice = cPrice;
+              colIdxCost = cCost;
+              colIdxTime = cTime;
+              colIdxYear = cYear;
+              break;
             }
-          });
+          }
 
-          // Fallback vị trí nếu không tìm thấy header
-          if (colIdxCustomer === -1) colIdxCustomer = 0;
-          if (colIdxDevice === -1) colIdxDevice = (rows[0].length >= 3 ? 2 : 1);
-          if (colIdxPrice === -1) colIdxPrice = (rows[0].length >= 4 ? 3 : 2);
-          if (colIdxTime === -1) colIdxTime = (rows[0].length >= 5 ? 4 : -1);
+          // Fallback vị trí nếu file không có header chuẩn hoặc header ở định dạng cột chuẩn xuất ra:
+          // STT: 0, Khách: 1, Tên máy: 2, Số nợ: 3, Phí DV: 4, Ngày nợ: 5, Năm: 6
+          let firstDataRow = rows[headerRowIndex] || [];
+          if (colIdxCustomer === -1) {
+            colIdxCustomer = firstDataRow.length >= 2 ? 1 : 0;
+          }
+          if (colIdxDevice === -1) {
+            colIdxDevice = firstDataRow.length >= 3 ? 2 : (firstDataRow.length >= 2 ? 1 : -1);
+          }
+          if (colIdxPrice === -1) {
+            colIdxPrice = firstDataRow.length >= 4 ? 3 : (firstDataRow.length >= 3 ? 2 : 1);
+          }
+          if (colIdxCost === -1 && firstDataRow.length >= 5) {
+            colIdxCost = 4;
+          }
+          if (colIdxTime === -1 && firstDataRow.length >= 6) {
+            colIdxTime = 5;
+          }
+          if (colIdxYear === -1 && firstDataRow.length >= 7) {
+            colIdxYear = 6;
+          }
 
           let newRecords = [];
+          let updatedRecords = [];
 
-          for (let i = 1; i < rows.length; i++) {
+          for (let i = headerRowIndex + 1; i < rows.length; i++) {
             let row = rows[i];
             if (!row || row.length === 0 || row.every(c => String(c).trim() === '')) continue;
 
-            let customer = colIdxCustomer !== -1 && row[colIdxCustomer] ? String(row[colIdxCustomer]).trim() : 'Khách lẻ';
-            let device = colIdxDevice !== -1 && row[colIdxDevice] ? String(row[colIdxDevice]).trim() : '';
+            let customer = colIdxCustomer !== -1 && row[colIdxCustomer] !== undefined ? String(row[colIdxCustomer]).trim() : 'Khách lẻ';
+            let device = colIdxDevice !== -1 && row[colIdxDevice] !== undefined ? String(row[colIdxDevice]).trim() : '';
 
             // Bỏ qua dòng TỔNG CỘNG nếu có ở cuối bảng
-            if (/tong\s*cong|total/i.test(customer.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) continue;
+            let normCust = customer.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            let normDev = device.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            if (normCust.includes('tong cong') || normCust.includes('total') || normDev.includes('tong cong') || normDev.includes('total')) continue;
 
             let rawPrice = colIdxPrice !== -1 && row[colIdxPrice] !== undefined ? String(row[colIdxPrice]).trim() : '0';
             let rawCost = colIdxCost !== -1 && row[colIdxCost] !== undefined ? String(row[colIdxCost]).trim() : '0';
             let rawTime = colIdxTime !== -1 && row[colIdxTime] !== undefined ? row[colIdxTime] : '';
+            let rawYear = colIdxYear !== -1 && row[colIdxYear] !== undefined ? String(row[colIdxYear]).trim() : '';
 
             let numPrice = parsePriceNum(rawPrice) || 0;
+            // Nếu cột nợ không ra số, thử tìm trong toàn bộ dòng xem có ô nào là số tiền hợp lệ (> 1000)
+            if (numPrice <= 0) {
+              for (let c = 0; c < row.length; c++) {
+                if (c === colIdxCustomer || c === colIdxDevice || c === colIdxTime || c === colIdxYear) continue;
+                let testVal = parsePriceNum(row[c]) || 0;
+                if (testVal > 0) {
+                  numPrice = testVal;
+                  break;
+                }
+              }
+            }
+
             if (numPrice <= 0) continue; // Chỉ nhận các đơn có số nợ > 0
 
             if (!device && !customer) continue;
             if (!device) device = 'Cài phần mềm';
 
             let { dayMonth, year } = parseExcelDateToDMY(rawTime);
+            if (rawYear && /^\d{4}$/.test(rawYear)) {
+              year = rawYear;
+            }
 
             let numCost = parsePriceNum(rawCost) || 0;
             let profit = String(numPrice - numCost);
