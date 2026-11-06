@@ -1487,6 +1487,41 @@
     }
 
     /* NÚT CHUYỂN ĐỔI CHẾ ĐỘ XEM HÀNG NGANG (ICON CỜ VN) */
+    
+    /* NÚT CHUYỂN ĐỔI CHẾ ĐỘ XEM MÁY CHƯA XỬ LÝ (TAB BÁN MÁY) */
+    .btn-filter-chuaxuly {
+      height: 38px;
+      box-sizing: border-box;
+      background: #0f172a;
+      border: 1.5px solid #334155;
+      border-radius: 8px;
+      color: #94a3b8;
+      font-weight: 800;
+      font-size: 0.88rem;
+      letter-spacing: 0.5px;
+      padding: 0 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-filter-chuaxuly:hover {
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+      transform: translateY(-1px);
+    }
+    .btn-filter-chuaxuly.active {
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%) !important;
+      border-color: #38bdf8 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.5) !important;
+    }
+
     .btn-view-mode-toggle {
       height: 38px;
       width: 44px;

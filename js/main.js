@@ -8474,6 +8474,29 @@
     } catch(e) {}
     let currentBrandFilter = "ALL";
     let currentPriceFilter = "ALL";
+    let currentPhoneStatusFilter = "CON_HANG"; // "CON_HANG" (mặc định) hoặc "CHUA_XU_LY"
+
+    function togglePhoneChuaXuLyMode() {
+      currentPhoneStatusFilter = (currentPhoneStatusFilter === 'CHUA_XU_LY') ? 'CON_HANG' : 'CHUA_XU_LY';
+      updateChuaXuLyBtnUI();
+      renderPhoneGrid();
+    }
+    window.togglePhoneChuaXuLyMode = togglePhoneChuaXuLyMode;
+
+    function updateChuaXuLyBtnUI() {
+      const btn = document.getElementById('btnPhoneChuaXuLyToggle');
+      if (!btn) return;
+      if (currentPhoneStatusFilter === 'CHUA_XU_LY') {
+        btn.classList.add('active');
+        btn.innerText = 'ĐANG XEM: CHƯA XỬ LÝ';
+        btn.title = 'Bấm để quay về danh sách máy Còn Hàng';
+      } else {
+        btn.classList.remove('active');
+        btn.innerText = 'CHƯA XỬ LÝ';
+        btn.title = 'Bấm để xem danh sách máy Chưa Xử Lý / Main Xác';
+      }
+    }
+    window.updateChuaXuLyBtnUI = updateChuaXuLyBtnUI;
     let soldPhoneViewMode = 'year'; // Lọc theo : Ngày , Tháng , Năm , Tất Cả , mặc định chọn theo Năm
     let currentSoldPhoneDateFilter = getVietnamDate();
     let currentSoldPhoneMonthFilter = { month: currentSoldPhoneDateFilter.getMonth(), year: currentSoldPhoneDateFilter.getFullYear() };
@@ -8884,6 +8907,9 @@
         }
       }
 
+      if (status === 'Chưa Xử Lý') {
+        currentPhoneStatusFilter = 'CHUA_XU_LY';
+      }
       savePhoneStorage();
       closePhoneModal();
       renderPhoneGrid();
@@ -10512,10 +10538,13 @@
     function renderPhoneGrid() {
       const container = document.getElementById('phoneGridContainer');
       updatePhoneViewModeBtn();
+      if (typeof updateChuaXuLyBtnUI === 'function') updateChuaXuLyBtnUI();
       const rawSearch = document.getElementById('phoneSearchInput').value.trim();
       const normSearch = normalizeQuery(rawSearch);
 
-      let filtered = phoneDatabase;
+      let filtered = (typeof currentPhoneStatusFilter !== 'undefined' && currentPhoneStatusFilter === 'CHUA_XU_LY')
+        ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
+        : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
       if (currentBrandFilter !== 'ALL') {
         const cbf = (currentBrandFilter || '').toUpperCase().trim();
         filtered = filtered.filter(p => {
