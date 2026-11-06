@@ -244,7 +244,11 @@
           swDateDisp.innerText = curTodayStr;
         }
 
-        if (typeof renderSoftwareTable === 'function') {
+        // Đồng bộ chế độ hiển thị đã lưu (hoặc mặc định 'day')
+        const savedSwMode = localStorage.getItem('KIMCHI_PHANMEM_VIEW_MODE') || 'day';
+        if (typeof setSoftwareMode === 'function') {
+          setSoftwareMode(savedSwMode);
+        } else if (typeof renderSoftwareTable === 'function') {
           renderSoftwareTable(typeof softwareDatabase !== 'undefined' ? softwareDatabase : []);
         }
         if (isDebt && typeof renderSoftwareDebtTable === 'function') {
@@ -1778,6 +1782,16 @@
       if (swMonthDisp) swMonthDisp.innerText = monthStr;
       const swYearDisp = document.getElementById('filterSoftwareYearDisplay');
       if (swYearDisp) swYearDisp.innerText = String(yyyy);
+      const savedSwModeEarly = localStorage.getItem('KIMCHI_PHANMEM_VIEW_MODE') || 'day';
+      swViewMode = savedSwModeEarly;
+      const swModeSelect = document.getElementById('swModeSelect');
+      if (swModeSelect) swModeSelect.value = savedSwModeEarly;
+      const swDayBox = document.getElementById('swDateFilterBox');
+      if (swDayBox) swDayBox.style.display = savedSwModeEarly === 'day' ? 'inline-flex' : 'none';
+      const swMonthBox = document.getElementById('swMonthFilterBox');
+      if (swMonthBox) swMonthBox.style.display = savedSwModeEarly === 'month' ? 'inline-flex' : 'none';
+      const swYearBox = document.getElementById('swYearFilterBox');
+      if (swYearBox) swYearBox.style.display = savedSwModeEarly === 'year' ? 'inline-flex' : 'none';
 
       // 4. Tab SỬA CHỮA
       repairFilterDate = new Date(yyyy, vnNow.getMonth(), vnNow.getDate());
@@ -6473,6 +6487,7 @@
           localStorage.setItem('KIMCHI_PHANMEM_CLEARED', 'true');
         }
         try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
+        if (typeof saveSoftwareStorage === 'function') saveSoftwareStorage();
 
         if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
         if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
@@ -6731,7 +6746,7 @@
           if (newRecords.length > 0 || updatedCount > 0) {
             if (newRecords.length > 0) softwareDatabase = [...newRecords, ...softwareDatabase];
             localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
-            saveSoftwareStorage();
+            saveSoftwareStorage([...newRecords]);
             if (typeof setSoftwareMode === 'function') setSoftwareMode('all');
             else if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
             if (typeof renderDebtSoftwareList === 'function') renderDebtSoftwareList();
@@ -12033,12 +12048,13 @@
       }
     }
 
-    let swViewMode = 'day';
+    let swViewMode = localStorage.getItem('KIMCHI_PHANMEM_VIEW_MODE') || 'day';
     let currentSoftwareMonthFilter = { month: swFilterDate.getMonth(), year: swFilterDate.getFullYear() };
     let currentSoftwareYearFilter = swFilterDate ? swFilterDate.getFullYear() : 2026;
 
     function setSoftwareMode(mode) {
       swViewMode = mode;
+      try { localStorage.setItem('KIMCHI_PHANMEM_VIEW_MODE', mode); } catch(e){}
       const selMode = document.getElementById('swModeSelect');
       if (selMode) selMode.value = mode;
       const btnDay = document.getElementById('swModeDayBtn');
