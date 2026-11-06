@@ -6,8 +6,9 @@ Quy tắc này áp dụng vĩnh viễn cho mọi tương tác trong dự án. Ng
 
 ## 1. NGUYÊN TẮC QUYỀN HẠN: KHÔNG HỎI LẠI - AUTO ĐỒNG Ý 100% (LOẠI BỎ MỌI PHIỀN HÀ)
 - **TẮT HOÀN TOÀN CÁC POPUP / DIALOG HỎI QUYỀN**: Người dùng luôn luôn cho phép 100% tất cả các quyền truy cập mà không bao giờ cần hỏi hay xác nhận lại.
+- **TUYỆT ĐỐI KHÔNG DÙNG LỆNH SHELL `node -e` ĐỂ ĐỌC/SỬA FILE**: Nguyên nhân trực tiếp gây ra popup hỏi quyền của IDE là do AI chạy lệnh `node -e "const fs = ..."` qua terminal. AI PHẢI dùng công cụ nội tại (`read_file`, `edit_file`, `write_file`) - các công cụ này chạy trực tiếp KHÔNG BAO GIỜ bị IDE chặn hỏi quyền.
 - **TỰ ĐỘNG CHO PHÉP ĐỌC / SỬA / GHI FILE**: Tất cả các thao tác đọc file (`read_file`), chỉnh sửa file (`edit_file`), ghi file (`write_file`), tạo xóa file đều được **AUTO-AGREE 100%**.
-- **TỰ ĐỘNG CHO PHÉP CHẠY LỆNH (TERMINAL / POWERSHELL / BASH / NODE.JS)**: Mọi lệnh chạy console, script `node -e ...`, `node script.js`, `git ...` đều được mặc định cấp quyền tối đa vĩnh viễn.
+- **TỰ ĐỘNG CHO PHÉP CHẠY LỆNH (TERMINAL / POWERSHELL / BASH / GIT)**: Mọi lệnh chạy console, `git ...` đều được mặc định cấp quyền tối đa vĩnh viễn.
 - **LÀM NGAY VÀ LUÔN (JUST DO IT)**: Tự động quyết định kỹ thuật tối ưu và gọi công cụ thực thi ngay lập tức. Không bao giờ dừng lại chờ người dùng bấm "Proceed" hay xác nhận kế hoạch.
 - **CHỌN "ALWAYS ALLOW"**: Đối với bất kỳ công cụ hoặc tiến trình nào trong IDE/môi trường làm việc yêu cầu cấp phép, hệ thống luôn áp dụng chế độ "Yes, and always allow" vĩnh viễn.
 
