@@ -17904,23 +17904,92 @@
       if (sourceType === 'banhang' || sourceType === 'banmay') {
         salesDatabase = salesDatabase.filter(s => String(s.id) !== String(sourceId) && s.id != sourceId);
         saveSalesStorage();
-        renderSalesTable(salesDatabase);
+        if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
         if (imei && typeof soldPhoneDatabase !== 'undefined') {
           soldPhoneDatabase = soldPhoneDatabase.filter(p => !p.imei || String(p.imei).trim() !== String(imei).trim());
           savePhoneStorage();
-          renderSoldPhoneTable();
+          if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
-      } else if (sourceType === 'suachua') {
+      } else if (sourceType === 'suachua' || sourceType === 'repair') {
         repairDatabase = repairDatabase.filter(r => String(r.id) !== String(sourceId) && r.id != sourceId);
         saveRepairDb();
-        renderRepairTable();
+        if (typeof renderRepairTable === 'function') renderRepairTable();
       } else if (sourceType === 'banga') {
         bangaDatabase = bangaDatabase.filter(b => String(b.id) !== String(sourceId) && b.id != sourceId);
         saveBangaStorage();
-        renderBangaTable(bangaDatabase);
+        if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+      } else if (sourceType === 'banmay_phone') {
+        if (typeof soldPhoneDatabase !== 'undefined') {
+          soldPhoneDatabase = soldPhoneDatabase.filter(p => String(p.id) !== String(sourceId) && p.id != sourceId && (!imei || !p.imei || String(p.imei).trim() !== String(imei).trim()));
+          savePhoneStorage();
+          if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+        }
       }
+      renderDebtCustomerList();
       renderDebtDashboard();
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+      if (typeof showToast === 'function') {
+        showToast('Đã xóa khoản nợ khách hàng thành công!');
+      } else {
+        alert('Đã xóa khoản nợ khách hàng thành công!');
+      }
     }
+    window.deleteDebtCustomerItem = deleteDebtCustomerItem;
+
+    function deleteSelectedDebtCustomerItems() {
+      const chks = Array.from(document.querySelectorAll('.chk-debt-customer:checked'));
+      if (chks.length === 0) {
+        alert("Vui lòng tick chọn ít nhất một khoản nợ khách hàng cần xóa!");
+        return;
+      }
+
+      if (!confirm(`Bạn có chắc chắn muốn xóa ${chks.length} khoản nợ khách hàng đã chọn không?`)) return;
+
+      chks.forEach(c => {
+        let sType = c.dataset.sourceType;
+        let sId = c.dataset.sourceId;
+        let imei = c.dataset.imei;
+
+        if (sType === 'banhang' || sType === 'banmay') {
+          salesDatabase = salesDatabase.filter(s => String(s.id) !== String(sId) && s.id != sId);
+          if (imei && typeof soldPhoneDatabase !== 'undefined') {
+            soldPhoneDatabase = soldPhoneDatabase.filter(p => !p.imei || String(p.imei).trim() !== String(imei).trim());
+          }
+        } else if (sType === 'suachua' || sType === 'repair') {
+          repairDatabase = repairDatabase.filter(r => String(r.id) !== String(sId) && r.id != sId);
+        } else if (sType === 'banga') {
+          bangaDatabase = bangaDatabase.filter(b => String(b.id) !== String(sId) && b.id != sId);
+        } else if (sType === 'banmay_phone') {
+          if (typeof soldPhoneDatabase !== 'undefined') {
+            soldPhoneDatabase = soldPhoneDatabase.filter(p => String(p.id) !== String(sId) && p.id != sId && (!imei || !p.imei || String(p.imei).trim() !== String(imei).trim()));
+          }
+        }
+      });
+
+      saveSalesStorage();
+      saveRepairDb();
+      saveBangaStorage();
+      savePhoneStorage();
+
+      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+      if (typeof renderRepairTable === 'function') renderRepairTable();
+      if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+      if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+
+      const masterChk = document.getElementById('chkMasterDebtCustomer');
+      if (masterChk) masterChk.checked = false;
+
+      renderDebtCustomerList();
+      renderDebtDashboard();
+      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+
+      if (typeof showToast === 'function') {
+        showToast(`Đã xóa thành công ${chks.length} khoản nợ khách hàng!`);
+      } else {
+        alert(`Đã xóa thành công ${chks.length} khoản nợ khách hàng!`);
+      }
+    }
+    window.deleteSelectedDebtCustomerItems = deleteSelectedDebtCustomerItems;
 
     // XỬ LÝ THANH TOÁN CHO KHÁCH HÀNG NỢ ĐA NGUỒN
     function payCustomerDebtItem(sourceType, sourceId, imei, skipRerender) {
