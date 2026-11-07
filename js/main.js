@@ -244,8 +244,8 @@
           swDateDisp.innerText = curTodayStr;
         }
 
-        // Đồng bộ chế độ hiển thị đã lưu (hoặc mặc định 'day')
-        const savedSwMode = localStorage.getItem('KIMCHI_PHANMEM_VIEW_MODE') || 'day';
+        // Đồng bộ chế độ hiển thị đã lưu (hoặc mặc định 'month' nếu chưa lưu)
+        const savedSwMode = localStorage.getItem('KIMCHI_PHANMEM_VIEW_MODE') || 'month';
         if (typeof setSoftwareMode === 'function') {
           setSoftwareMode(savedSwMode);
         } else if (typeof renderSoftwareTable === 'function') {
@@ -1782,7 +1782,7 @@
       if (swMonthDisp) swMonthDisp.innerText = monthStr;
       const swYearDisp = document.getElementById('filterSoftwareYearDisplay');
       if (swYearDisp) swYearDisp.innerText = String(yyyy);
-      const savedSwModeEarly = localStorage.getItem('KIMCHI_PHANMEM_VIEW_MODE') || 'day';
+      const savedSwModeEarly = localStorage.getItem('KIMCHI_PHANMEM_VIEW_MODE') || 'month';
       swViewMode = savedSwModeEarly;
       const swModeSelect = document.getElementById('swModeSelect');
       if (swModeSelect) swModeSelect.value = savedSwModeEarly;
@@ -2367,6 +2367,7 @@
             if (!data.id) data.id = doc.id;
             // Bỏ qua các doc cũ được tạo trước thời điểm làm mới kho gần nhất
             if (resetTs && data.createdAt && new Date(data.createdAt).getTime() < resetTs) return;
+            if (resetTs && !data.createdAt && Number(data.id) < resetTs) return;
             list.push(data);
           });
           if (list.length > 0) {
@@ -2393,6 +2394,7 @@
             let data = doc.data();
             if (!data.id) data.id = doc.id;
             if (resetSoldTs && data.createdAt && new Date(data.createdAt).getTime() < resetSoldTs) return;
+            if (resetSoldTs && !data.createdAt && Number(data.id) < resetSoldTs) return;
             list.push(data);
           });
           if (list.length > 0) {
@@ -2628,10 +2630,20 @@
     try {
       const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
       const stored = localStorage.getItem('KIMCHI_PHANMEM_DB');
-      if (isSoftwareCleared) {
+      const seedResetV = localStorage.getItem('KIMCHI_PHANMEM_RESET_V1');
+      if (!seedResetV && Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
+        // Tự động nạp lại đầy đủ 1415 đơn phần mềm chuẩn xác
+        softwareDatabase = JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA));
+        localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
+        localStorage.setItem('KIMCHI_PHANMEM_RESET_V1', 'done');
+        localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
+      } else if (isSoftwareCleared) {
         softwareDatabase = [];
       } else if (stored !== null) {
         softwareDatabase = JSON.parse(stored) || [];
+      } else if (Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
+        softwareDatabase = JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA));
+        localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
       } else {
         softwareDatabase = DEFAULT_SOFTWARE_DATA;
         localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
@@ -8727,7 +8739,15 @@
     let phoneDatabase = [];
     try {
       const pRaw = localStorage.getItem('KIMCHI_PHONE_DB');
-      if (pRaw) {
+      const pResetV = localStorage.getItem('KIMCHI_PHONE_RESET_V1');
+      if (!pResetV && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+        // Tự động nạp chuẩn xác đúng 168 máy từ danh sách chuẩn
+        phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+        localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
+        localStorage.setItem('KIMCHI_PHONE_RESET_V1', 'done');
+        localStorage.setItem('KIMCHI_PHONE_RESET_TS', String(Date.now()));
+        localStorage.removeItem('KIMCHI_PHONE_CLEARED');
+      } else if (pRaw) {
         phoneDatabase = JSON.parse(pRaw) || [];
       } else if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
         phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
@@ -8737,7 +8757,15 @@
     let soldPhoneDatabase = [];
     try {
       const spRaw = localStorage.getItem('KIMCHI_SOLD_PHONE_DB');
-      if (spRaw) {
+      const spResetV = localStorage.getItem('KIMCHI_SOLD_RESET_V1');
+      if (!spResetV && Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
+        // Tự động nạp chuẩn xác đúng 97 máy đã bán từ danh sách chuẩn
+        soldPhoneDatabase = JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
+        localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+        localStorage.setItem('KIMCHI_SOLD_RESET_V1', 'done');
+        localStorage.setItem('KIMCHI_SOLD_PHONE_RESET_TS', String(Date.now()));
+        localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
+      } else if (spRaw) {
         soldPhoneDatabase = JSON.parse(spRaw) || [];
       } else if (Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
         soldPhoneDatabase = JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
@@ -8772,7 +8800,7 @@
     let currentSoldPhoneDateFilter = getVietnamDate();
     let currentSoldPhoneMonthFilter = { month: currentSoldPhoneDateFilter.getMonth(), year: currentSoldPhoneDateFilter.getFullYear() };
     let currentSoldPhoneYearFilter = currentSoldPhoneDateFilter.getFullYear();
-    let currentSoldPhoneWarrantyFilter = "CON"; // lọc theo Bảo Hành : Mặc định là Còn BH , Hết BH , Tất Cả
+    let currentSoldPhoneWarrantyFilter = "ALL"; // lọc theo Bảo Hành : Mặc định Tất Cả để hiển thị đủ 100% 97 máy (hoặc Còn BH, Hết BH)
     let currentSoldPhoneBrandFilter = "ALL"; // lọc theo hãng : các hãng đã bán , mặc định chọn Tất Cả
     let isSoldPhonePricesHidden = false; // nút ẩn là ẩn toàn bộ giá và doanh thu
 
@@ -12246,7 +12274,7 @@
       }
     }
 
-    let swViewMode = localStorage.getItem('KIMCHI_PHANMEM_VIEW_MODE') || 'day';
+    let swViewMode = localStorage.getItem('KIMCHI_PHANMEM_VIEW_MODE') || 'month';
     let currentSoftwareMonthFilter = { month: swFilterDate.getMonth(), year: swFilterDate.getFullYear() };
     let currentSoftwareYearFilter = swFilterDate ? swFilterDate.getFullYear() : 2026;
 
