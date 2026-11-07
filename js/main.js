@@ -2356,10 +2356,17 @@
       // 3. Đồng bộ Kho Bán Máy (phones) thời gian thực
       try {
         db.collection('phones').onSnapshot(snapshot => {
+          // Nếu người dùng vừa làm mới kho hoặc xóa sạch trên máy này thì không nạp đè dữ liệu cũ
+          const isPhoneCleared = localStorage.getItem('KIMCHI_PHONE_CLEARED') === 'true';
+          const resetTs = parseInt(localStorage.getItem('KIMCHI_PHONE_RESET_TS') || '0', 10);
+          if (isPhoneCleared) return;
+
           let list = [];
           snapshot.forEach(doc => {
             let data = doc.data();
             if (!data.id) data.id = doc.id;
+            // Bỏ qua các doc cũ được tạo trước thời điểm làm mới kho gần nhất
+            if (resetTs && data.createdAt && new Date(data.createdAt).getTime() < resetTs) return;
             list.push(data);
           });
           if (list.length > 0) {
@@ -2377,10 +2384,15 @@
       // 4. Đồng bộ Bảo Hành (sold_phones) thời gian thực
       try {
         db.collection('sold_phones').onSnapshot(snapshot => {
+          const isSoldCleared = localStorage.getItem('KIMCHI_SOLD_PHONE_CLEARED') === 'true';
+          const resetSoldTs = parseInt(localStorage.getItem('KIMCHI_SOLD_PHONE_RESET_TS') || '0', 10);
+          if (isSoldCleared) return;
+
           let list = [];
           snapshot.forEach(doc => {
             let data = doc.data();
             if (!data.id) data.id = doc.id;
+            if (resetSoldTs && data.createdAt && new Date(data.createdAt).getTime() < resetSoldTs) return;
             list.push(data);
           });
           if (list.length > 0) {
@@ -7411,6 +7423,10 @@
             phoneDatabase = [];
             soldPhoneDatabase = [];
             mainXacDatabase = [];
+            try {
+              localStorage.setItem('KIMCHI_PHONE_RESET_TS', String(Date.now()));
+              localStorage.removeItem('KIMCHI_PHONE_CLEARED');
+            } catch(e) {}
           }
 
           let countPhone = 0, countSold = 0, countMainXac = 0;
@@ -8206,12 +8222,18 @@
 
             try {
               localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+              localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
             } catch (e) {}
+
+            // Tự động chuyển chế độ xem sang "Tất Cả" và bộ lọc bảo hành sang "Tất Cả" để hiển thị đầy đủ 100% 97 máy
+            currentSoldPhoneWarrantyFilter = 'ALL';
+            const warSelect = document.getElementById('soldPhoneWarrantyFilter');
+            if (warSelect) warSelect.value = 'ALL';
 
             if (typeof setSoldPhoneMode === 'function') setSoldPhoneMode('all');
             else if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
 
-            alert(`Đã nhập thành công ${newRecords.length} máy Bảo Hành mới và cập nhật ${updatedCount} máy!`);
+            alert(`🎉 ĐÃ NHẬP THÀNH CÔNG ${newRecords.length} MÁY BẢO HÀNH (Cập nhật ${updatedCount} máy)!\n\n(Hệ thống đã tự động chuyển sang chế độ xem Tất Cả để hiển thị đủ toàn bộ máy đã bán)`);
           } else {
             alert("Không tìm thấy dữ liệu Bảo Hành hợp lệ trong file!");
           }
