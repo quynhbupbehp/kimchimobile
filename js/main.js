@@ -806,13 +806,7 @@
 
     function formatPinByBrand(rawVal, brand = null, phoneName = null) {
       if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '') {
-        let isIp = false;
-        if (brand || phoneName) {
-          isIp = isPhoneBrandIphone(brand, phoneName);
-        } else if (typeof currentBrandFilter !== 'undefined') {
-          isIp = (currentBrandFilter === 'IPHONE');
-        }
-        return isIp ? '100%' : '5.000 mAh';
+        return '';
       }
 
       let str = String(rawVal).trim();
@@ -9119,8 +9113,8 @@
         }
       } else {
         const isIp = (currentBrandFilter === 'IPHONE');
-        document.getElementById('mPinPct').value = isIp ? '100%' : (currentBrandFilter !== 'ALL' ? '5.000 mAh' : '');
-        document.getElementById('mPinPct').placeholder = isIp ? '100%' : '5.000 mAh';
+        document.getElementById('mPinPct').value = isIp ? '100%' : '';
+        document.getElementById('mPinPct').placeholder = '';
       }
 
       document.getElementById('phoneModal').classList.add('active');
