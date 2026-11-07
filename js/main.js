@@ -9171,6 +9171,7 @@
           p.status = status;
           p.note = note;
           p.date = dateIn;
+          p.updatedAt = Date.now();
           if (typeof logActivity === 'function') {
             logActivity('EDIT', 'banmay', 'Bán máy', `Sửa thông tin máy: ${brand} ${name} (${imei || 'Không IMEI'}) - Giá: ${priceOut}`, oldData, p, p.id);
           }
@@ -9191,7 +9192,9 @@
           priceIn: priceIn || '0',
           status: status || 'Còn Hàng',
           note,
-          date: dateIn || getCurrentDateStr()
+          date: dateIn || getCurrentDateStr(),
+          createdAt: Date.now(),
+          updatedAt: Date.now()
         };
         phoneDatabase.unshift(newItem);
         if (typeof logActivity === 'function') {
@@ -11006,6 +11009,13 @@
           let bDiff = Math.abs(bMods.length - queryMods.length);
           return aDiff - bDiff;
         });
+      } else {
+        // Sắp xếp theo thứ tự thêm mới hoặc sửa thông tin gần nhất lên đầu
+        filtered.sort((a, b) => {
+          let tB = Number(b.updatedAt) || Number(b.createdAt) || Number(b.id) || 0;
+          let tA = Number(a.updatedAt) || Number(a.createdAt) || Number(a.id) || 0;
+          return tB - tA;
+        });
       }
 
       // Cập nhật thống kê góc phải trên cùng (Nền vàng chữ trắng)
@@ -11543,6 +11553,16 @@
         }
 
         return true;
+      });
+
+      // Sắp xếp danh sách máy đã bán theo thứ tự ngày bán gần đây nhất lên đầu (mới bán nhất lên trước)
+      filtered.sort((a, b) => {
+        let da = parseSoldPhoneDate(a);
+        let db = parseSoldPhoneDate(b);
+        let ta = da ? new Date(da.y, da.m, da.d).getTime() : (Number(a.id) || 0);
+        let tb = db ? new Date(db.y, db.m, db.d).getTime() : (Number(b.id) || 0);
+        if (tb !== ta) return tb - ta;
+        return (Number(b.id) || 0) - (Number(a.id) || 0);
       });
 
       // Thống kê Doanh thu & Lợi nhuận

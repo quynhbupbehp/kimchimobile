@@ -14,9 +14,10 @@ Quy tắc này áp dụng vĩnh viễn cho mọi tương tác trong dự án. Ng
 
 ---
 
-## 2. NGUYÊN TẮC TOÀN VẸN DỮ LIỆU: TUYỆT ĐỐI KHÔNG TỰ Ý THAY ĐỔI PHẦN KHÁC
-- **CHỈ SỬA ĐÚNG PHẠM VI YÊU CẦU**: Mỗi lần sửa code, chỉ can thiệp chính xác vào chức năng / khu vực mà người dùng yêu cầu.
-- **NGHIÊM CẤM TỰ Ý ĐỔI DỮ LIỆU KHÁC**: Tuyệt đối không được tự ý sửa đổi, xóa bỏ, migrate ngầm, hay làm xáo trộn cấu trúc / nội dung dữ liệu của các tab khác (Bán Hàng, Bán Gà, Kho Máy, Sửa Chữa, Phần Mềm, Bảo Hành, Công Nợ, Báo Giá...).
+## 2. NGUYÊN TẮC TOÀN VẸN DỮ LIỆU: TUYỆT ĐỐI KHÔNG TỰ Ý CHỈNH SỬA, THÊM BỚT, XÓA BỎ DỮ LIỆU ĐÃ THÊM Ở CÁC TAB
+- **BẢO TỒN VĨNH VIỄN TOÀN BỘ DỮ LIỆU ĐÃ CÓ**: Tuyệt đối KHÔNG ĐƯỢC TỰ Ý CHỈNH SỬA, THÊM BỚT, XÓA BỎ bất kỳ dòng hay phần dữ liệu nào đã thêm ở tất cả các tab (Bán Máy, Bảo Hành, Phần Mềm, Bán Hàng, Bán Gà, Sửa Chữa, Công Nợ, Báo Giá...).
+- **CHỈ SỬA ĐÚNG PHẠM VI YÊU CẦU**: Mỗi lần sửa code, chỉ can thiệp chính xác vào chức năng / giao diện / khu vực mà người dùng yêu cầu.
+- **NGHIÊM CẤM TỰ Ý ĐỔI DỮ LIỆU KHÁC**: Tuyệt đối không được tự ý sửa đổi, xóa bỏ, reset, nạp đè ngầm, hay làm xáo trộn cấu trúc / nội dung dữ liệu của người dùng.
 - **BẢO LƯU 100% CODE VÀ LOGIC HIỆN CÓ**: Giữ nguyên toàn bộ logic hoạt động, hàm tính toán, định dạng tiền tệ, sự kiện click/touch của các phần không liên quan.
 
 ---
