@@ -7392,6 +7392,20 @@
             return s;
           };
 
+          // Hàm kiểm tra IMEI ảo / placeholder / bị che giấu
+          const isDummyImei = (val) => {
+            if (!val) return true;
+            let s = String(val).trim();
+            if (!s || s === '-' || s === '--' || s === '---') return true;
+            // Chỉ toàn dấu chấm, sao, gạch ngang hoặc số 0 lặp lại
+            if (/^[\.\*\-_]+$/.test(s)) return true;
+            if (/^0+$/.test(s)) return true;
+            // Các định dạng dummy như: "....", "....1", ".....", "1055" nếu ngắn < 4 ký tự hoặc bắt đầu bằng dấu chấm
+            if (s.startsWith('.') || s.startsWith('*')) return true;
+            return false;
+          };
+
+          // Chế độ nhập kho: Mặc định LÀM MỚI KHO theo file Excel để số lượng chuẩn khớp 100% với file
           let isReset = confirm("Bạn có muốn LÀM MỚI KHO THEO FILE EXCEL không?\n\n• Bấm OK: Làm mới kho chuẩn theo đúng file Excel (khuyên dùng để ra đúng 168 máy còn hàng)\n• Bấm Cancel: Giữ máy cũ và chỉ gộp thêm máy mới");
           if (isReset) {
             phoneDatabase = [];
@@ -7467,38 +7481,91 @@
                 color: color,
                 imei: imei,
                 price: priceStr,
+                total: priceStr,
                 priceIn: priceInStr,
+                profit: formatPriceStr(parsePriceNum(priceStr) - parsePriceNum(priceInStr)),
                 condition: condition,
                 pinStatus: pinStatus,
                 pin: pin,
                 origin: origin,
                 date: rawDate,
+                dateTime: soldDateVal,
                 soldDate: soldDateVal,
                 customer: 'Khách Lẻ',
                 warranty: '1 Tháng',
                 status: 'Đã bán',
+                method: 'Tiền mặt',
+                paymentMethod: 'Tiền mặt',
                 note: note
               };
 
-              let existingSold = imei ? soldPhoneDatabase.find(p => p.imei && String(p.imei).trim().toLowerCase() === imei.toLowerCase()) : null;
+              let existingSold = null;
+              if (imei && !isDummyImei(imei)) {
+                existingSold = soldPhoneDatabase.find(p => p.imei && String(p.imei).trim().toLowerCase() === imei.toLowerCase());
+              } else {
+                existingSold = soldPhoneDatabase.find(p => 
+                  p.name.toLowerCase() === name.toLowerCase() && 
+                  p.color.toLowerCase() === color.toLowerCase() && 
+                  p.storage === storage &&
+                  (p.soldDate === soldDateVal || p.dateTime === soldDateVal)
+                );
+              }
+
               if (existingSold) {
                 Object.assign(existingSold, soldItem, { id: existingSold.id });
               } else {
                 soldPhoneDatabase.unshift(soldItem);
               }
               // Dọn dẹp máy khỏi 2 kho còn lại nếu có
-              if (imei) {
+              if (imei && !isDummyImei(imei)) {
                 phoneDatabase = phoneDatabase.filter(p => !p.imei || String(p.imei).trim().toLowerCase() !== imei.toLowerCase());
                 mainXacDatabase = mainXacDatabase.filter(p => !p.imei || String(p.imei).trim().toLowerCase() !== imei.toLowerCase());
               }
               countSold++;
             } else if (cleanSt.includes('chua xu ly') || cleanSt.includes('xac') || cleanSt.includes('main')) {
-              // 2. Phân luồng vào MAIN - XÁC (mainXacDatabase)
+              // 2. Phân luồng vào CHƯA XỬ LÝ (lưu thẳng trong phoneDatabase với status = 'Chưa Xử Lý' để hiện ngay ở ô CHƯA XỬ LÝ của tab Bán Máy)
               let mxStatus = cleanSt.includes('xac') ? 'Máy Xác' : 'Chưa Xử Lý';
+              let phoneItem = {
+                id: Date.now() + Math.random(),
+                brand: brand,
+                name: name,
+                storage: storage,
+                color: color,
+                imei: imei,
+                price: priceStr,
+                priceIn: priceInStr,
+                condition: condition,
+                pinStatus: pinStatus,
+                pin: pin,
+                origin: origin,
+                date: rawDate,
+                status: mxStatus,
+                note: note
+              };
+
+              let existingPhone = null;
+              if (imei && !isDummyImei(imei)) {
+                existingPhone = phoneDatabase.find(p => p.imei && String(p.imei).trim().toLowerCase() === imei.toLowerCase());
+              } else {
+                existingPhone = phoneDatabase.find(p => 
+                  p.name.toLowerCase() === name.toLowerCase() && 
+                  p.color.toLowerCase() === color.toLowerCase() && 
+                  p.storage === storage &&
+                  (p.status === mxStatus || p.status === 'Chưa Xử Lý')
+                );
+              }
+
+              if (existingPhone) {
+                Object.assign(existingPhone, phoneItem, { id: existingPhone.id });
+              } else {
+                phoneDatabase.push(phoneItem);
+              }
+
+              // Đồng thời đồng bộ vào mainXacDatabase để xem ở tab Main - Xác nếu cần
               let mxStorage = storage ? (storage.startsWith('(') ? storage : `(${storage})`) : '';
               let mxName = (brand && brand !== 'IPHONE' && !name.toUpperCase().startsWith(brand.toUpperCase())) ? `${brand} ${name}` : name;
               let mxItem = {
-                id: Date.now() + Math.random(),
+                id: phoneItem.id,
                 brand: brand,
                 name: mxName,
                 imei: imei,
@@ -7514,21 +7581,20 @@
                 note: note,
                 date: rawDate
               };
-
-              let existingMx = imei ? mainXacDatabase.find(p => p.imei && String(p.imei).trim().toLowerCase() === imei.toLowerCase()) : null;
+              let existingMx = imei && !isDummyImei(imei) ? mainXacDatabase.find(p => p.imei && String(p.imei).trim().toLowerCase() === imei.toLowerCase()) : null;
               if (existingMx) {
                 Object.assign(existingMx, mxItem, { id: existingMx.id });
               } else {
                 mainXacDatabase.unshift(mxItem);
               }
-              // Dọn dẹp máy khỏi 2 kho còn lại nếu có
-              if (imei) {
-                phoneDatabase = phoneDatabase.filter(p => !p.imei || String(p.imei).trim().toLowerCase() !== imei.toLowerCase());
+
+              // Dọn dẹp máy khỏi kho Bảo Hành nếu có
+              if (imei && !isDummyImei(imei)) {
                 soldPhoneDatabase = soldPhoneDatabase.filter(p => !p.imei || String(p.imei).trim().toLowerCase() !== imei.toLowerCase());
               }
               countMainXac++;
             } else {
-              // 3. Phân luồng vào BÁN MÁY (phoneDatabase)
+              // 3. Phân luồng vào BÁN MÁY (CÒN HÀNG)
               let phoneItem = {
                 id: Date.now() + Math.random(),
                 brand: brand,
@@ -7547,10 +7613,17 @@
                 note: note
               };
 
-              let existingPhone = phoneDatabase.find(p => 
-                (imei && p.imei && String(p.imei).trim().toLowerCase() === imei.toLowerCase()) ||
-                (!imei && p.name.toLowerCase() === name.toLowerCase() && p.color.toLowerCase() === color.toLowerCase() && p.storage === storage)
-              );
+              let existingPhone = null;
+              if (imei && !isDummyImei(imei)) {
+                existingPhone = phoneDatabase.find(p => p.imei && String(p.imei).trim().toLowerCase() === imei.toLowerCase());
+              } else {
+                existingPhone = phoneDatabase.find(p => 
+                  p.name.toLowerCase() === name.toLowerCase() && 
+                  p.color.toLowerCase() === color.toLowerCase() && 
+                  p.storage === storage &&
+                  p.status === 'Còn Hàng'
+                );
+              }
 
               if (existingPhone) {
                 Object.assign(existingPhone, phoneItem, { id: existingPhone.id });
@@ -7558,7 +7631,7 @@
                 phoneDatabase.push(phoneItem);
               }
               // Dọn dẹp máy khỏi 2 kho còn lại nếu có
-              if (imei) {
+              if (imei && !isDummyImei(imei)) {
                 soldPhoneDatabase = soldPhoneDatabase.filter(p => !p.imei || String(p.imei).trim().toLowerCase() !== imei.toLowerCase());
                 mainXacDatabase = mainXacDatabase.filter(p => !p.imei || String(p.imei).trim().toLowerCase() !== imei.toLowerCase());
               }
@@ -8008,7 +8081,7 @@
           }
 
           let cleanHeader = rows[0].map(h => String(h || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim());
-          let colIdxBrand = -1, colIdxName = -1, colIdxStorage = -1, colIdxColor = -1, colIdxImei = -1, colIdxPrice = -1, colIdxPriceIn = -1, colIdxProfit = -1, colIdxMethod = -1, colIdxDate = -1, colIdxCustomer = -1, colIdxWarranty = -1, colIdxGift = -1, colIdxNote = -1;
+          let colIdxBrand = -1, colIdxName = -1, colIdxStorage = -1, colIdxColor = -1, colIdxImei = -1, colIdxPrice = -1, colIdxPriceIn = -1, colIdxProfit = -1, colIdxMethod = -1, colIdxDate = -1, colIdxCustomer = -1, colIdxWarranty = -1, colIdxGift = -1, colIdxNote = -1, colIdxStatus = -1;
 
           cleanHeader.forEach((col, idx) => {
             if (col === 'hang' || col === 'brand' || (col.includes('hang') && !col.includes('cua hang') && !col.includes('con hang'))) colIdxBrand = idx;
@@ -8020,7 +8093,10 @@
             else if (col.includes('gia nhap') || col.includes('von') || col.includes('price in')) colIdxPriceIn = idx;
             else if (col.includes('lai') || col.includes('loi nhuan')) colIdxProfit = idx;
             else if (col.includes('hinh thuc') || col.includes('thanh toan') || col.includes('method')) colIdxMethod = idx;
-            else if (col.includes('gio') || col.includes('ngay') || col.includes('date') || col.includes('time')) colIdxDate = idx;
+            else if (col.includes('trang thai') || col.includes('status')) colIdxStatus = idx;
+            else if (col.includes('ngay ban') || col.includes('sold date') || col.includes('gio') || col.includes('ngay') || col.includes('date') || col.includes('time')) {
+              if (colIdxDate === -1 || col.includes('ban')) colIdxDate = idx;
+            }
             else if (col.includes('khach') || col.includes('customer')) colIdxCustomer = idx;
             else if (col.includes('bao hanh') || col.includes('warranty')) colIdxWarranty = idx;
             else if (col.includes('qua tang') || col.includes('gift') || col.includes('phu kien')) colIdxGift = idx;
@@ -8028,8 +8104,19 @@
           });
 
           if (colIdxName === -1 && colIdxImei === -1) {
-            colIdxBrand = 0; colIdxName = 1; colIdxStorage = 2; colIdxColor = 3; colIdxImei = 4; colIdxPrice = 5; colIdxPriceIn = 6; colIdxProfit = 7; colIdxMethod = 8; colIdxDate = 9; colIdxCustomer = 10;
+            colIdxBrand = 1; colIdxName = 2; colIdxImei = 3; colIdxColor = 4; colIdxStorage = 5;
+            colIdxPriceIn = 11; colIdxPrice = 12; colIdxStatus = 13; colIdxDate = 15; colIdxWarranty = 16; colIdxNote = 17;
           }
+
+          const isDummyImei = (val) => {
+            if (!val) return true;
+            let s = String(val).trim();
+            if (!s || s === '-' || s === '--' || s === '---') return true;
+            if (/^[\.\*\-_]+$/.test(s)) return true;
+            if (/^0+$/.test(s)) return true;
+            if (s.startsWith('.') || s.startsWith('*')) return true;
+            return false;
+          };
 
           let newRecords = [];
           let updatedCount = 0;
@@ -8065,17 +8152,18 @@
             let method = normalizePaymentMethod(rawMethod);
             let dateTime = formatImportDateTime(rawDate);
 
-            // Kiểm tra xem máy Bảo Hành này có khớp với phạm vi thời gian đang chọn hay không
-            let checkItem = { dateTime: dateTime };
-            if (!isSoldPhoneItemMatchingCurrentFilter(checkItem)) {
-              continue;
+            // Kiểm tra trùng lặp: Nếu có IMEI chuẩn, so sánh theo IMEI. Nếu là IMEI ảo/placeholder hoặc không có IMEI, so sánh tên máy + màu + dung lượng + ngày bán
+            let existing = null;
+            if (imei && !isDummyImei(imei)) {
+              existing = soldPhoneDatabase.find(p => p.imei && String(p.imei).toLowerCase().trim() === imei.toLowerCase());
+            } else {
+              existing = soldPhoneDatabase.find(p => 
+                p.name.toLowerCase() === name.toLowerCase() && 
+                (p.color || '').toLowerCase() === color.toLowerCase() &&
+                (p.storage || '') === storage &&
+                (p.dateTime === dateTime || p.soldDate === dateTime || p.date === dateTime)
+              );
             }
-
-            // Kiểm tra trùng lặp
-            let existing = soldPhoneDatabase.find(p => 
-              (imei && p.imei && String(p.imei).toLowerCase().trim() === imei.toLowerCase()) ||
-              (p.name.toLowerCase() === name.toLowerCase() && (p.dateTime === dateTime || p.date === dateTime) && !imei)
-            );
 
             if (existing) {
               existing.price = priceStr;
