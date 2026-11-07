@@ -2931,8 +2931,8 @@
     .sw-btn-hide:hover { color: #fff; background: #1e293b; }
 
     .sw-btn-create-new {
-      background: #eab308 !important;
-      border: none !important;
+      background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important;
+      border: 1px solid #f472b6 !important;
       color: #ffffff !important;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
       padding: 0 10px !important;
@@ -2952,8 +2952,8 @@
       height: 14px !important;
     }
     .sw-btn-create-new:hover {
-      background: #ca8a04 !important;
-      box-shadow: 0 5px 14px rgba(234, 179, 8, 0.55);
+      background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%) !important;
+      box-shadow: 0 5px 16px rgba(244, 63, 94, 0.6);
       transform: translateY(-1px);
     }
 
