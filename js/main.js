@@ -9571,10 +9571,11 @@
     window.editPhone = editPhone;
 
     function deletePhone(id) {
-      const p = phoneDatabase.find(item => item.id === id);
-      const confirmWord = prompt("⚠️ CẢNH BÁO: Thao tác này sẽ xóa vĩnh viễn máy này khỏi kho!\n\nNhập chữ \"yes\" để xác nhận xóa:");
+      const p = phoneDatabase.find(item => String(item.id) === String(id) || item.id == id);
+      const confirmWord = prompt("⚠️ CẢNH BÁO: Thao tác này sẽ xóa vĩnh viễn máy này khỏi kho!\n\nNhập chữ \"ok\" hoặc \"yes\" để xác nhận xóa:");
       if (confirmWord !== null) {
-        if (confirmWord.trim().toLowerCase() === "yes") {
+        const clean = confirmWord.trim().toLowerCase();
+        if (clean === "yes" || clean === "ok" || clean === "đồng ý" || clean === "dong y") {
           phoneDatabase = phoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);
           savePhoneStorage();
           if (typeof db !== 'undefined' && db && id) {
@@ -9586,10 +9587,11 @@
           renderPhoneGrid();
           alert("Đã xóa máy khỏi kho thành công!");
         } else {
-          alert("Xác nhận không đúng! Bạn cần gõ đúng chữ \"yes\" để xóa máy khỏi kho.");
+          alert("Xác nhận không đúng! Bạn cần gõ \"ok\" hoặc \"yes\" để xác nhận xóa máy.");
         }
       }
     }
+    window.deletePhone = deletePhone;
 
     function duplicatePhone(id) {
       const p = phoneDatabase.find(item => item.id === id);
@@ -11077,7 +11079,8 @@
                 <th style="text-align: center;">MÀU SẮC</th>
                 <th style="text-align: center;">THÔNG TIN PIN</th>
                 <th style="text-align: right;">GIÁ NHẬP</th>
-                <th style="text-align: right; padding-right: 18px;">LÃI</th>
+                <th style="text-align: right;">LÃI</th>
+                <th style="text-align: center; padding-right: 18px;">THAO TÁC</th>
               </tr>
             </thead>
             <tbody>
@@ -11179,8 +11182,24 @@
                     <td style="text-align: right; font-weight: 700; color: #94a3b8; font-size: 1.07rem;">
                       ${escapeHtml(formattedCost)}
                     </td>
-                    <td style="text-align: right; font-weight: 800; color: #f59e0b; font-size: 1.07rem; padding-right: 18px;">
+                    <td style="text-align: right; font-weight: 800; color: #f59e0b; font-size: 1.07rem;">
                       ${escapeHtml(formattedProfit)}
+                    </td>
+                    <td style="text-align: center; padding-right: 18px;" onclick="event.stopPropagation()">
+                      <div class="action-btn-group" style="justify-content: center;">
+                        <button type="button" class="action-btn-icon action-btn-view" onclick="viewPhone('${p.id}')" title="Xem chi tiết máy">
+                          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                        <button type="button" class="action-btn-icon action-btn-sell" onclick="openSellPhoneModal('${p.id}')" title="Bán máy này">
+                          <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                        </button>
+                        <button type="button" class="action-btn-icon action-btn-edit" onclick="openPhoneModal('${p.id}')" title="Sửa thông tin máy">
+                          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        </button>
+                        <button type="button" class="action-btn-icon action-btn-del" onclick="deletePhone('${p.id}')" title="Xóa máy">
+                          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 `;

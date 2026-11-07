@@ -2537,6 +2537,20 @@
     }
     .action-btn-view:hover svg { stroke: #ffffff; }
 
+    /* NÚT BÁN - XANH LÁ HOẶC VÀNG */
+    .action-btn-sell {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.28);
+    }
+    .action-btn-sell svg { stroke: #10b981; }
+    .action-btn-sell:hover {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: rgba(16, 185, 129, 0.55);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .action-btn-sell:hover svg { stroke: #34d399; }
+
     /* NÚT CHECK / HOÀN THÀNH - VÀNG / TÍM */
     .action-btn-done {
       background: rgba(245, 158, 11, 0.12);
