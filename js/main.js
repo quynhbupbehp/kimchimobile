@@ -833,6 +833,26 @@
     }
     window.formatPinByBrand = formatPinByBrand;
 
+    function formatPinDisplayCompact(rawVal) {
+      if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '') {
+        return '';
+      }
+      let str = String(rawVal).trim();
+      let digits = str.replace(/[^\d]/g, '');
+      if (!digits) return str;
+      let num = parseInt(digits, 10);
+      if (num >= 101 || /mah/i.test(str)) {
+        let kVal = num / 1000;
+        if (kVal === Math.floor(kVal)) {
+          return `${Math.floor(kVal)}K`;
+        } else {
+          return `${kVal.toFixed(1).replace(/\.0$/, '')}K`;
+        }
+      }
+      return `${num}`;
+    }
+    window.formatPinDisplayCompact = formatPinDisplayCompact;
+
     function formatBatteryString(rawVal, brand = null, phoneName = null) {
       return formatPinByBrand(rawVal, brand, phoneName);
     }
@@ -9110,7 +9130,7 @@
       document.getElementById('mDateVal').value = getCurrentDateStr();
 
       if (editId) {
-        const p = phoneDatabase.find(item => item.id === editId);
+        const p = phoneDatabase.find(item => String(item.id) === String(editId) || item.id == editId);
         if (p) {
           document.getElementById('phoneModalTitle').innerText = "Sửa Thông Tin Máy";
           document.getElementById('mEditId').value = p.id;
@@ -9136,6 +9156,7 @@
 
       document.getElementById('phoneModal').classList.add('active');
     }
+    window.openPhoneModal = openPhoneModal;
 
     function closePhoneModal() {
       document.getElementById('phoneModal').classList.remove('active');
@@ -9612,7 +9633,7 @@
     let currentSellingPhone = null;
 
     function openSellPhoneModal(id) {
-      const p = phoneDatabase.find(item => item.id === id);
+      const p = phoneDatabase.find(item => String(item.id) === String(id) || item.id == id);
       if (!p) return;
 
       currentSellingPhone = p;
@@ -9657,6 +9678,7 @@
       checkGiftsEntered();
       document.getElementById('sellPhoneModal').classList.add('active');
     }
+    window.openSellPhoneModal = openSellPhoneModal;
 
     function closeSellPhoneModal() {
       document.getElementById('sellPhoneModal').classList.remove('active');
@@ -11156,7 +11178,10 @@
                   <tr class="phone-table-row" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
                     <td style="text-align: left; padding-left: 18px;">
                       <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;">
-                        <span style="font-weight: 900; color: #10b981; font-size: 1.6rem;">${escapeHtml(pName)}</span>
+                        <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px;">
+                          ${escapeHtml(pName)}
+                          ${getColorDotHtml(p.color, 16)}
+                        </span>
                         ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.5rem; letter-spacing: 0.5px;">${escapeHtml(p.imei)}</span>` : ''}
                       </div>
                       <div style="font-size: 1.08rem; color: #94a3b8; margin-top: 3px; display: flex; align-items: center; gap: 6px;">
@@ -11215,7 +11240,7 @@
           let storageDisplay = rawStorage.replace(/\s*g+b$/i, '').replace(/\s*g$/i, '').trim();
 
           let displayPinStatus = p.pinStatus || 'Pin Thay';
-          let displayPinPct = formatPinByBrand(p.pin, p.brand, p.name);
+          let displayPinPct = formatPinDisplayCompact(p.pin);
           let displayOrigin = p.origin || 'VN/A';
           let displayCondition = p.condition || 'Zin Đẹp 99%';
           let dotColor = getHexColor(p.color);
@@ -11700,7 +11725,7 @@
           let storageDisplay = rawStorage.replace(/\s*g+b$/i, '').replace(/\s*g$/i, '').trim();
 
           let displayPinStatus = p.pinStatus || 'Pin Zin';
-          let displayPinPct = formatPinByBrand(p.pin, p.brand, p.name);
+          let displayPinPct = formatPinDisplayCompact(p.pin);
           let displayOrigin = p.origin || 'VN/A';
           let displayCondition = p.condition || 'Zin Đẹp 99%';
           let formattedPrice = isSoldPhonePricesHidden ? '*****' : (formatPriceStr(p.price || p.total) || '0');

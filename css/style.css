@@ -1834,6 +1834,8 @@
       flex: 0 0 auto;
       margin-left: 6px;
       text-align: right;
+      color: #facc15 !important;
+      font-weight: 800 !important;
     }
 
     .phone-spec-col:last-child {
@@ -8186,6 +8188,9 @@
         #btnPhoneExcelToggle, #phoneExcelActionsBox {
           display: none !important;
         }
+        #btnPhoneChuaXuLyToggle {
+          display: none !important;
+        }
         .banmay-top-bar {
           display: flex !important;
           align-items: center !important;
@@ -8434,6 +8439,10 @@
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
+        }
+        .phone-spec-col.col-pin-pct {
+          color: #facc15 !important;
+          font-weight: 800 !important;
         }
 
         /* === TAB 4: BẢO HÀNH MOBILE (< 768PX): ÉP BUỘC DOANH THU VÀ LÃI CÙNG 1 HÀNG, TÌM KIẾM VÀ ĐÃ BÁN CÙNG 1 HÀNG NHƯ ẢNH === */
