@@ -12366,19 +12366,31 @@
       document.getElementById('swPriceInput').value = '';
       document.getElementById('swFeeInput').value = '';
 
-      const filterDateEl = document.getElementById('filterSoftwareDateDisplay');
       let defaultDateVal = '';
-      if (filterDateEl) {
-        defaultDateVal = (filterDateEl.value || filterDateEl.innerText || filterDateEl.textContent || '').trim();
-      }
-      if (!defaultDateVal || defaultDateVal === '--/--/----' || defaultDateVal.length < 8) {
-        if (typeof swFilterDate !== 'undefined' && swFilterDate instanceof Date && !isNaN(swFilterDate.getTime())) {
-          const dd = String(swFilterDate.getDate()).padStart(2, '0');
-          const mm = String(swFilterDate.getMonth() + 1).padStart(2, '0');
-          const yyyy = swFilterDate.getFullYear();
-          defaultDateVal = dd + '/' + mm + '/' + yyyy;
-        } else {
-          defaultDateVal = getCurrentDateStr();
+      if (typeof swViewMode !== 'undefined' && swViewMode === 'month') {
+        const vnNow = getVietnamDate();
+        let targetMonth = (typeof currentSoftwareMonthFilter !== 'undefined' && currentSoftwareMonthFilter) ? currentSoftwareMonthFilter.month : vnNow.getMonth();
+        let targetYear = (typeof currentSoftwareMonthFilter !== 'undefined' && currentSoftwareMonthFilter) ? currentSoftwareMonthFilter.year : vnNow.getFullYear();
+        let dayToUse = (typeof swFilterDate !== 'undefined' && swFilterDate instanceof Date && !isNaN(swFilterDate.getTime())) ? swFilterDate.getDate() : vnNow.getDate();
+        const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+        if (dayToUse > daysInTargetMonth) dayToUse = daysInTargetMonth;
+        const dd = String(dayToUse).padStart(2, '0');
+        const mm = String(targetMonth + 1).padStart(2, '0');
+        defaultDateVal = `${dd}/${mm}/${targetYear}`;
+      } else {
+        const filterDateEl = document.getElementById('filterSoftwareDateDisplay');
+        if (filterDateEl) {
+          defaultDateVal = (filterDateEl.value || filterDateEl.innerText || filterDateEl.textContent || '').trim();
+        }
+        if (!defaultDateVal || defaultDateVal === '--/--/----' || defaultDateVal.length < 8) {
+          if (typeof swFilterDate !== 'undefined' && swFilterDate instanceof Date && !isNaN(swFilterDate.getTime())) {
+            const dd = String(swFilterDate.getDate()).padStart(2, '0');
+            const mm = String(swFilterDate.getMonth() + 1).padStart(2, '0');
+            const yyyy = swFilterDate.getFullYear();
+            defaultDateVal = dd + '/' + mm + '/' + yyyy;
+          } else {
+            defaultDateVal = getCurrentDateStr();
+          }
         }
       }
       document.getElementById('swFormDate').value = defaultDateVal;
@@ -12739,11 +12751,27 @@
     let swHideDebtColumns = false;
 
     function updateSoftwareProfits() {
-      const now = swFilterDate || new Date();
-      const dd = String(now.getDate()).padStart(2, '0');
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const yyyy = String(now.getFullYear());
-      const targetDayMonth = `${dd}-${mm}`;
+      let targetMonth, targetYear;
+      if (typeof swViewMode !== 'undefined' && swViewMode === 'month') {
+        if (typeof currentSoftwareMonthFilter !== 'undefined' && currentSoftwareMonthFilter) {
+          targetMonth = currentSoftwareMonthFilter.month;
+          targetYear = currentSoftwareMonthFilter.year;
+        }
+      }
+      if (targetMonth === undefined || targetYear === undefined) {
+        const dRef = (typeof swFilterDate !== 'undefined' && swFilterDate instanceof Date && !isNaN(swFilterDate.getTime())) ? swFilterDate : new Date();
+        targetMonth = dRef.getMonth();
+        targetYear = dRef.getFullYear();
+      }
+
+      const dDayRef = (typeof swFilterDate !== 'undefined' && swFilterDate instanceof Date && !isNaN(swFilterDate.getTime())) ? swFilterDate : new Date();
+      const dd = String(dDayRef.getDate()).padStart(2, '0');
+      const mmDay = String(dDayRef.getMonth() + 1).padStart(2, '0');
+      const yyyyDay = String(dDayRef.getFullYear());
+      const targetDayMonth = `${dd}-${mmDay}`;
+
+      const targetMonthStr = String(targetMonth + 1).padStart(2, '0');
+      const targetYearStr = String(targetYear);
 
       let dayProfit = 0;
       let monthProfit = 0;
@@ -12753,18 +12781,18 @@
       softwareDatabase.forEach(item => {
         let p = parsePriceNum(item.profit) || 0;
         let rev = parsePriceNum(item.price) || 0;
-        let itemYear = item.year || '2026';
+        let itemYear = String(item.year || '2026');
         let itemParts = (item.dayMonth || '').split('-');
         let itemMonth = itemParts.length === 2 ? itemParts[1] : '';
 
         // Lãi & Doanh thu ngày
-        if (item.dayMonth === targetDayMonth && itemYear === yyyy) {
+        if (item.dayMonth === targetDayMonth && itemYear === yyyyDay) {
           dayProfit += p;
           dayRevenue += rev;
         }
 
-        // Lãi & Doanh thu tháng
-        if (itemMonth === mm && itemYear === yyyy) {
+        // Lãi & Doanh thu tháng (theo tháng đang chọn trên bộ lọc)
+        if (itemMonth === targetMonthStr && itemYear === targetYearStr) {
           monthProfit += p;
           monthRevenue += rev;
         }
