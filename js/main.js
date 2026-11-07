@@ -661,6 +661,9 @@
       // 3. Tổ hợp màu Vàng hồng / Rose Gold (trước vàng và hồng đơn lẻ)
       if (c.includes('rose gold') || c.includes('vang hong') || raw.includes('vàng hồng') || c.includes('hong vang') || c.includes('rose')) return '#f472b6';
 
+      // 3.1. Màu Cam San Hô / Coral (iPhone XR, v.v. - Tông cam san hô chuẩn #ff6f61)
+      if (c.includes('cam san ho') || raw.includes('cam san hô') || c.includes('san ho') || raw.includes('san hô') || c.includes('coral')) return '#ff6f61';
+
       // 4. Tông Xanh lá / Xanh rêu / Xanh mint / Xanh lục
       if (c.includes('xanh la') || raw.includes('xanh lá') || c.includes('green') || c.includes('reu') || raw.includes('rêu') || c.includes('luc') || raw.includes('lục') || c.includes('mint') || c.includes('alpine') || c.includes('olive') || c.includes('emerald') || c.includes('bo doi')) return '#10b981';
 
@@ -702,21 +705,51 @@
       let raw = String(colorName).trim().toLowerCase();
       let c = normalizeColorStr(colorName);
 
-      // 1. Kiểm tra màu Trắng (ƯU TIÊN HÀNG ĐẦU: nền trắng sáng rõ, viền mạ bạc nổi bật)
+      // 1. Kiểm tra màu Trắng (ƯU TIÊN HÀNG ĐẦU: nền trắng tinh khiết, viền mạ bạc nổi bật)
+      // Dùng SVG vector để trình duyệt dark mode không bao giờ đảo màu trắng thành đen
       let isWhite = c.includes('trang') || raw.includes('trắng') || c.includes('white') || c.includes('starlight');
       if (isWhite) {
-        return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; border-radius: 50% !important; box-sizing: border-box !important; background: #ffffff !important; background-color: #ffffff !important; display: inline-block !important; flex-shrink: 0 !important; border: 2px solid #cbd5e1 !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.95), inset 0 0 2px rgba(0, 0, 0, 0.15) !important;" title="Màu: ${escapeHtml(colorName || 'Trắng')}"></span>`;
+        return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; max-width: ${sizePx}px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; vertical-align: middle !important;" title="Màu: ${escapeHtml(colorName || 'Trắng')}">
+          <svg viewBox="0 0 24 24" width="${sizePx}" height="${sizePx}" style="display: block; width: 100%; height: 100%; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.95));">
+            <circle cx="12" cy="12" r="10" fill="#ffffff" stroke="#94a3b8" stroke-width="2.5"></circle>
+          </svg>
+        </span>`;
       }
 
-      // 2. Kiểm tra màu Đen (Đá Onyx ánh kim viền trắng bạc sáng)
+      // 2. Kiểm tra màu Cam San Hô / Coral
+      let isCoral = c.includes('cam san ho') || raw.includes('cam san hô') || c.includes('san ho') || raw.includes('san hô') || c.includes('coral');
+      if (isCoral) {
+        return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; max-width: ${sizePx}px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; vertical-align: middle !important;" title="Màu: ${escapeHtml(colorName || 'Cam San Hô')}">
+          <svg viewBox="0 0 24 24" width="${sizePx}" height="${sizePx}" style="display: block; width: 100%; height: 100%; filter: drop-shadow(0 0 6px rgba(255, 111, 97, 0.8));">
+            <circle cx="12" cy="12" r="10" fill="#ff6f61" stroke="rgba(255, 255, 255, 0.7)" stroke-width="1.8"></circle>
+          </svg>
+        </span>`;
+      }
+
+      // 3. Kiểm tra màu Đen (Đá Onyx ánh kim viền trắng bạc sáng)
       let isBlack = c.includes('den') || raw.includes('đen') || c.includes('black') || c.includes('midnight') || c.includes('jet black');
       if (isBlack) {
-        return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; border-radius: 50% !important; box-sizing: border-box !important; background: radial-gradient(circle at 35% 35%, #475569 0%, #1e293b 45%, #000000 100%) !important; display: inline-block !important; flex-shrink: 0 !important; border: 2px solid #ffffff !important; box-shadow: 0 0 8px rgba(255, 255, 255, 0.85), inset 0 0 4px rgba(255, 255, 255, 0.4) !important;" title="Màu: ${escapeHtml(colorName || 'Đen')}"></span>`;
+        return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; max-width: ${sizePx}px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; vertical-align: middle !important;" title="Màu: ${escapeHtml(colorName || 'Đen')}">
+          <svg viewBox="0 0 24 24" width="${sizePx}" height="${sizePx}" style="display: block; width: 100%; height: 100%; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.85));">
+            <defs>
+              <radialGradient id="dotBlackGrad" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#475569" />
+                <stop offset="45%" stop-color="#1e293b" />
+                <stop offset="100%" stop-color="#000000" />
+              </radialGradient>
+            </defs>
+            <circle cx="12" cy="12" r="10" fill="url(#dotBlackGrad)" stroke="#ffffff" stroke-width="2.2"></circle>
+          </svg>
+        </span>`;
       }
 
-      // 3. Các màu sắc khác theo mã hex
+      // 4. Các màu sắc khác theo mã hex
       let hex = getHexColor(colorName);
-      return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; border-radius: 50% !important; box-sizing: border-box !important; background-color: ${hex} !important; background: ${hex} !important; display: inline-block !important; flex-shrink: 0 !important; border: 1.5px solid rgba(255, 255, 255, 0.5) !important; box-shadow: 0 0 8px ${hex}cc !important;" title="Màu: ${escapeHtml(colorName || 'Mặc định')}"></span>`;
+      return `<span style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; max-width: ${sizePx}px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; vertical-align: middle !important;" title="Màu: ${escapeHtml(colorName || 'Mặc định')}">
+        <svg viewBox="0 0 24 24" width="${sizePx}" height="${sizePx}" style="display: block; width: 100%; height: 100%; filter: drop-shadow(0 0 6px ${hex}aa);">
+          <circle cx="12" cy="12" r="10" fill="${hex}" stroke="rgba(255, 255, 255, 0.6)" stroke-width="1.8"></circle>
+        </svg>
+      </span>`;
     }
 
     function isPhoneBrandIphone(brand, phoneName) {
