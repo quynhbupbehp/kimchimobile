@@ -9112,8 +9112,7 @@
           calcModalProfit();
         }
       } else {
-        const isIp = (currentBrandFilter === 'IPHONE');
-        document.getElementById('mPinPct').value = isIp ? '100%' : '';
+        document.getElementById('mPinPct').value = '';
         document.getElementById('mPinPct').placeholder = '';
       }
 
