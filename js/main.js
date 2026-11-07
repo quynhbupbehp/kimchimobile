@@ -2096,6 +2096,24 @@
         const t = new Date(y, m - 1, d, h, min).getTime();
         if (!isNaN(t) && t > 0) return t;
       }
+      if (item.dateFormatted) {
+        let d = 1, m = 1, y = 2026, hh = 0, min = 0;
+        const dp = String(item.dateFormatted).replace(/-/g, '/').split('/');
+        if (dp.length === 3) {
+          d = parseInt(dp[0], 10) || 1;
+          m = parseInt(dp[1], 10) || 1;
+          y = parseInt(dp[2], 10) || 2026;
+        }
+        if (item.timeFormatted) {
+          const tp = String(item.timeFormatted).split(':');
+          if (tp.length >= 2) {
+            hh = parseInt(tp[0], 10) || 0;
+            min = parseInt(tp[1], 10) || 0;
+          }
+        }
+        const t = new Date(y, m - 1, d, hh, min).getTime();
+        if (!isNaN(t) && t > 0) return t;
+      }
       if (typeof item.id === 'string' && item.id.startsWith('sw_')) {
         const parts = item.id.split('_');
         if (parts[1]) {
@@ -2432,7 +2450,7 @@
             list.push(data);
           });
           if (list.length > 0) {
-            list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+            list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
             repairDatabase = list;
             try { localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase)); } catch(e){}
             if (typeof renderRepairTable === 'function') renderRepairTable();
@@ -15966,6 +15984,9 @@
 
         return true;
       });
+
+      // Sắp xếp danh sách sửa chữa theo thời gian gần đây nhất lên đầu (mới nhất lên trước)
+      filtered.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
 
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2.5rem; color: #64748b; font-weight: 700;">Không có đơn sửa chữa nào phù hợp.</td></tr>`;
