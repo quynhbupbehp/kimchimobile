@@ -1786,6 +1786,27 @@
       return `${dd}/${mm}/${yyyy}`;
     }
 
+    function formatSoldDateToVN(raw) {
+      if (!raw) return '';
+      let s = String(raw).trim();
+      if (s.includes(' - ')) {
+        const parts = s.split(' - ');
+        s = parts[parts.length - 1].trim();
+      }
+      if (s.includes(' ')) {
+        s = s.split(' ')[0].trim();
+      }
+      const mIso = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
+      if (mIso) {
+        return String(mIso[3]).padStart(2, '0') + '/' + String(mIso[2]).padStart(2, '0') + '/' + mIso[1];
+      }
+      const mVn = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+      if (mVn) {
+        return String(mVn[1]).padStart(2, '0') + '/' + String(mVn[2]).padStart(2, '0') + '/' + mVn[3];
+      }
+      return s;
+    }
+
     function initAllTabsToVietnamToday() {
       const vnNow = getVietnamDate();
       const dd = String(vnNow.getDate()).padStart(2, '0');
@@ -8617,6 +8638,10 @@
       document.getElementById('editSaleId').value = item.id;
       document.getElementById('editSaleType').value = 'sales';
       document.getElementById('editSaleModalTitle').innerText = 'Sửa đơn bán hàng';
+      const dtLabel = document.getElementById('editSaleDateTimeLabel');
+      if (dtLabel) dtLabel.innerText = 'Ngày - Giờ bán';
+      const dtInput = document.getElementById('editSaleDateTime');
+      if (dtInput) dtInput.placeholder = '08:22 - 23/10/2026';
       document.getElementById('editSaleName').value = item.name || '';
       document.getElementById('editSalePriceOut').value = item.total || '';
       document.getElementById('editSalePriceIn').value = item.priceIn || '';
@@ -8646,6 +8671,10 @@
       document.getElementById('editSaleId').value = item.id;
       document.getElementById('editSaleType').value = 'banga';
       document.getElementById('editSaleModalTitle').innerText = 'Sửa đơn bán gà';
+      const dtLabel = document.getElementById('editSaleDateTimeLabel');
+      if (dtLabel) dtLabel.innerText = 'Ngày - Giờ bán';
+      const dtInput = document.getElementById('editSaleDateTime');
+      if (dtInput) dtInput.placeholder = '08:22 - 23/10/2026';
       document.getElementById('editSaleName').value = item.name || '';
       document.getElementById('editSalePriceOut').value = item.total || '';
       document.getElementById('editSalePriceIn').value = item.priceIn || '';
@@ -8776,8 +8805,11 @@
           item.profit = formattedProfit;
           item.method = method;
           if (dateTime) {
-            item.dateTime = dateTime;
-            item.soldDateTime = dateTime;
+            let formattedDateVal = formatSoldDateToVN(dateTime) || dateTime;
+            item.dateTime = formattedDateVal;
+            item.soldDateTime = formattedDateVal;
+            item.soldDate = formattedDateVal;
+            item.date = formattedDateVal;
           }
           const conditionInput = document.getElementById('editSaleCondition');
           if (conditionInput && conditionInput.value.trim()) {
@@ -10207,6 +10239,10 @@
       document.getElementById('editSaleId').value = item.id;
       document.getElementById('editSaleType').value = 'soldPhone';
       document.getElementById('editSaleModalTitle').innerText = 'Sửa thông tin máy đã bán';
+      const dtLabel = document.getElementById('editSaleDateTimeLabel');
+      if (dtLabel) dtLabel.innerText = 'Ngày Bán';
+      const dtInput = document.getElementById('editSaleDateTime');
+      if (dtInput) dtInput.placeholder = '10/08/2026';
       
       let cleanStorage = (item.storage || '').replace(/[()]/g, '');
       let defaultName = `${item.brand ? item.brand + ' - ' : ''}${item.name || ''} ${cleanStorage ? cleanStorage : ''}`.trim();
@@ -10214,7 +10250,8 @@
       document.getElementById('editSalePriceOut').value = item.price || item.total || '';
       document.getElementById('editSalePriceIn').value = item.priceIn || '';
       document.getElementById('editSaleMethod').value = item.method || 'Tiền Mặt';
-      document.getElementById('editSaleDateTime').value = item.dateTime || item.soldDateTime || (item.soldDate ? `${getCurrentTimeStr()} - ${item.soldDate}` : item.date || '');
+      let rawSoldDate = item.soldDate || item.date || item.dateTime || item.soldDateTime || '';
+      document.getElementById('editSaleDateTime').value = formatSoldDateToVN(rawSoldDate) || getCurrentDateStr();
 
       const conditionRow = document.getElementById('editSaleConditionRow');
       const conditionInput = document.getElementById('editSaleCondition');
