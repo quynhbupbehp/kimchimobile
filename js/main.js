@@ -2203,51 +2203,8 @@
 
     // === CƠ CHẾ ĐỒNG BỘ ĐÁM MÂY 2 CHIỀU TỰ ĐỘNG GIỮA WEB VÀ MOBILE ===
     function autoPushLocalDataToFirestore() {
-      if (typeof db === 'undefined' || !db) return;
-      try {
-        // Chỉ đẩy lên Cloud nếu thiết bị này đang có dữ liệu trong bộ nhớ
-        if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase) && salesDatabase.length > 0) {
-          db.collection('sync_bundles').doc('sales').set({
-            list: salesDatabase,
-            updatedAt: Date.now()
-          }, { merge: true }).catch(function(e) { console.warn('Push sales bundle:', e); });
-
-          // Lưu tối đa 30 đơn mới nhất lên collection lẻ
-          salesDatabase.slice(0, 30).forEach(function(item) {
-            if (item && item.id) {
-              db.collection('sales').doc(String(item.id)).set(item, { merge: true }).catch(function(){});
-            }
-          });
-        }
-
-        if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase) && softwareDatabase.length > 0) {
-          db.collection('sync_bundles').doc('software').set({
-            list: softwareDatabase,
-            updatedAt: Date.now()
-          }, { merge: true }).catch(function(e) { console.warn('Push software bundle:', e); });
-
-          softwareDatabase.slice(0, 30).forEach(function(item) {
-            if (item && item.id) {
-              db.collection('software').doc(String(item.id)).set(item, { merge: true }).catch(function(){});
-            }
-          });
-        }
-
-        if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase) && bangaDatabase.length > 0) {
-          db.collection('sync_bundles').doc('banga').set({
-            list: bangaDatabase,
-            updatedAt: Date.now()
-          }, { merge: true }).catch(function(e) { console.warn('Push banga bundle:', e); });
-
-          bangaDatabase.slice(0, 30).forEach(function(item) {
-            if (item && item.id) {
-              db.collection('banga').doc(String(item.id)).set(item, { merge: true }).catch(function(){});
-            }
-          });
-        }
-      } catch(err) {
-        console.warn('Lỗi autoPushLocalDataToFirestore:', err);
-      }
+      // Tuân thủ AGENTS.md Rule 6: Không ghi hàng loạt lên Firestore khi khởi động để chống cháy quota
+      return;
     }
     window.autoPushLocalDataToFirestore = autoPushLocalDataToFirestore;
 
@@ -2715,17 +2672,69 @@
     ];
 
     // Helper hợp nhất dữ liệu Phần Mềm với danh sách Seed chuẩn (Bảo toàn 100% 1415 đơn gốc + đơn tạo mới)
+    function recoverPhanMemFromActivityLogs(targetList) {
+      if (!Array.isArray(targetList)) targetList = [];
+      try {
+        const rawLog = localStorage.getItem('KIMCHI_ACTIVITY_LOG');
+        if (!rawLog) return targetList;
+        const logs = JSON.parse(rawLog);
+        if (!Array.isArray(logs) || logs.length === 0) return targetList;
+
+        const idMap = new Map();
+        targetList.forEach(item => {
+          if (item && item.id) idMap.set(String(item.id), item);
+        });
+
+        // Duyệt nhật ký từ cũ đến mới để cập nhật trạng thái mới nhất
+        const reversedLogs = [...logs].reverse();
+        reversedLogs.forEach(l => {
+          if (!l || l.module !== 'phanmem') return;
+          const targetId = l.targetId || (l.newData && l.newData.id) || (l.oldData && l.oldData.id);
+          if (!targetId) return;
+          const strId = String(targetId);
+
+          if (l.action === 'ADD' && l.newData) {
+            if (!idMap.has(strId)) {
+              idMap.set(strId, JSON.parse(JSON.stringify(l.newData)));
+            }
+          } else if (l.action === 'EDIT' && (l.newData || l.oldData)) {
+            const editData = l.newData || l.oldData;
+            if (idMap.has(strId)) {
+              Object.assign(idMap.get(strId), JSON.parse(JSON.stringify(editData)));
+            } else {
+              idMap.set(strId, JSON.parse(JSON.stringify(editData)));
+            }
+          }
+        });
+
+        const merged = Array.from(idMap.values());
+        if (typeof getItemTimestamp === 'function') {
+          merged.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+        }
+        return merged;
+      } catch (e) {
+        console.warn('Lỗi recoverPhanMemFromActivityLogs:', e);
+        return targetList;
+      }
+    }
+    window.recoverPhanMemFromActivityLogs = recoverPhanMemFromActivityLogs;
+
+    // Helper hợp nhất dữ liệu Phần Mềm với danh sách Seed chuẩn + khôi phục đơn từ Nhật Ký
     function mergeWithSeedSoftware(list) {
-      if (!Array.isArray(window.SEED_SOFTWARE_DATA) || window.SEED_SOFTWARE_DATA.length === 0) {
-        return Array.isArray(list) ? list : [];
+      let combined = Array.isArray(list) ? [...list] : [];
+      if (Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
+        const seeds = window.SEED_SOFTWARE_DATA;
+        const existIdSet = new Set(combined.map(s => String(s.id)));
+        seeds.forEach(s => {
+          if (s && s.id && !existIdSet.has(String(s.id))) {
+            combined.push(s);
+            existIdSet.add(String(s.id));
+          }
+        });
       }
-      const seeds = window.SEED_SOFTWARE_DATA;
-      if (!Array.isArray(list) || list.length === 0) {
-        return JSON.parse(JSON.stringify(seeds));
-      }
-      const seedIdSet = new Set(seeds.map(s => String(s.id)));
-      const customItems = list.filter(item => item && item.id && !seedIdSet.has(String(item.id)));
-      return [...customItems, ...JSON.parse(JSON.stringify(seeds))];
+      // Khôi phục tất cả các đơn người dùng đã tạo trong nhật ký hoạt động
+      combined = recoverPhanMemFromActivityLogs(combined);
+      return combined;
     }
     window.mergeWithSeedSoftware = mergeWithSeedSoftware;
 
@@ -9079,11 +9088,7 @@
         if (itemToSync && itemToSync.id) {
           db.collection('phones').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
         } else {
-          phoneDatabase.forEach(item => {
-            if (item && item.id) {
-              db.collection('phones').doc(String(item.id)).set(item).catch(console.error);
-            }
-          });
+          // AGENTS.md Rule 6: Chi luu local hoac dong bo don le de chong chay quota Firestore
         }
       }
     }
@@ -9094,11 +9099,7 @@
         if (itemToSync && itemToSync.id) {
           db.collection('sold_phones').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
         } else {
-          soldPhoneDatabase.forEach(item => {
-            if (item && item.id) {
-              db.collection('sold_phones').doc(String(item.id)).set(item).catch(console.error);
-            }
-          });
+          // AGENTS.md Rule 6: Chi luu local hoac dong bo don le de chong chay quota Firestore
         }
       }
     }
@@ -16008,11 +16009,7 @@
         if (itemToSync && itemToSync.id) {
           db.collection('repairs').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
         } else {
-          repairDatabase.forEach(item => {
-            if (item && item.id) {
-              db.collection('repairs').doc(String(item.id)).set(item).catch(console.error);
-            }
-          });
+          // AGENTS.md Rule 6: Chi luu local hoac dong bo don le de chong chay quota Firestore
         }
       }
       if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
@@ -19073,116 +19070,92 @@
       const { action, module, oldData, newData, targetId } = log;
 
       try {
+        let targetList = null;
+        let saveFn = null;
+        let renderFn = null;
+
+        if (module === 'banhang') {
+          targetList = salesDatabase;
+          saveFn = saveSalesStorage;
+          renderFn = () => renderSalesTable(salesDatabase);
+        } else if (module === 'banga') {
+          targetList = bangaDatabase;
+          saveFn = saveBangaStorage;
+          renderFn = () => renderBangaTable(bangaDatabase);
+        } else if (module === 'suachua') {
+          targetList = repairDatabase;
+          saveFn = saveRepairDb;
+          renderFn = renderRepairTable;
+        } else if (module === 'phanmem') {
+          targetList = softwareDatabase;
+          saveFn = saveSoftwareStorage;
+          renderFn = () => renderSoftwareTable(softwareDatabase);
+        } else if (module === 'banmay') {
+          targetList = phoneDatabase;
+          saveFn = savePhoneStorage;
+          renderFn = renderPhoneGrid;
+        } else if (module === 'congno_other') {
+          targetList = otherDebtDatabase;
+          saveFn = saveOtherDebtDb;
+          renderFn = () => { if (typeof renderDebtOtherList === 'function') renderDebtOtherList(); renderDebtDashboard(); };
+        } else if (module === 'congno_mine') {
+          targetList = myDebtDatabase;
+          saveFn = saveMyDebtDb;
+          renderFn = () => { if (typeof renderMyDebtTable === 'function') renderMyDebtTable(); renderDebtDashboard(); };
+        } else if (module === 'baohanh') {
+          targetList = soldPhoneDatabase;
+          saveFn = () => localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+          renderFn = () => { if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable(); };
+        } else if (module === 'linhkien') {
+          targetList = partsDatabase;
+          saveFn = () => { if (typeof savePartsStorage === 'function') savePartsStorage(); };
+          renderFn = () => { if (typeof renderPartsTable === 'function') renderPartsTable(); };
+        }
+
         if (action === 'DELETE') {
-          if (!oldData) {
+          const itemToRestore = oldData || newData;
+          if (!itemToRestore) {
             alert('Không có dữ liệu gốc để khôi phục!');
             return;
           }
-          if (module === 'banhang') {
-            salesDatabase.unshift(JSON.parse(JSON.stringify(oldData)));
-            saveSalesStorage();
-            renderSalesTable(salesDatabase);
-          } else if (module === 'banga') {
-            bangaDatabase.unshift(JSON.parse(JSON.stringify(oldData)));
-            saveBangaStorage();
-            renderBangaTable(bangaDatabase);
-          } else if (module === 'suachua') {
-            repairDatabase.unshift(JSON.parse(JSON.stringify(oldData)));
-            saveRepairDb();
-            renderRepairTable();
-          } else if (module === 'phanmem') {
-            softwareDatabase.unshift(JSON.parse(JSON.stringify(oldData)));
-            saveSoftwareStorage();
-            renderSoftwareTable(softwareDatabase);
-          } else if (module === 'banmay') {
-            phoneDatabase.unshift(JSON.parse(JSON.stringify(oldData)));
-            savePhoneStorage();
-            renderPhoneGrid();
-          } else if (module === 'congno_other') {
-            otherDebtDatabase.unshift(JSON.parse(JSON.stringify(oldData)));
-            saveOtherDebtDb();
-            if (typeof renderDebtOtherList === 'function') renderDebtOtherList();
-            renderDebtDashboard();
-          } else if (module === 'congno_mine') {
-            myDebtDatabase.unshift(JSON.parse(JSON.stringify(oldData)));
-            saveMyDebtDb();
-            if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
-            renderDebtDashboard();
-          } else if (module === 'baohanh') {
-            soldPhoneDatabase.unshift(JSON.parse(JSON.stringify(oldData)));
-            localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
-            if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-          } else if (module === 'linhkien') {
-            partsDatabase.unshift(JSON.parse(JSON.stringify(oldData)));
-            if (typeof savePartsStorage === 'function') savePartsStorage();
-            if (typeof renderPartsTable === 'function') renderPartsTable();
+          if (targetList) {
+            const exists = targetList.some(x => String(x.id) === String(itemToRestore.id || targetId));
+            if (!exists) {
+              targetList.unshift(JSON.parse(JSON.stringify(itemToRestore)));
+            }
+            if (saveFn) saveFn(itemToRestore);
+            if (renderFn) renderFn();
           }
         } else if (action === 'ADD') {
-          if (module === 'banhang') {
-            salesDatabase = salesDatabase.filter(x => String(x.id) !== String(targetId));
-            saveSalesStorage();
-            renderSalesTable(salesDatabase);
-          } else if (module === 'banga') {
-            bangaDatabase = bangaDatabase.filter(x => String(x.id) !== String(targetId));
-            saveBangaStorage();
-            renderBangaTable(bangaDatabase);
-          } else if (module === 'suachua') {
-            repairDatabase = repairDatabase.filter(x => String(x.id) !== String(targetId));
-            saveRepairDb();
-            renderRepairTable();
-          } else if (module === 'phanmem') {
-            softwareDatabase = softwareDatabase.filter(x => String(x.id) !== String(targetId));
-            saveSoftwareStorage();
-            renderSoftwareTable(softwareDatabase);
-          } else if (module === 'banmay') {
-            phoneDatabase = phoneDatabase.filter(x => String(x.id) !== String(targetId));
-            savePhoneStorage();
-            renderPhoneGrid();
-          } else if (module === 'congno_other') {
-            otherDebtDatabase = otherDebtDatabase.filter(x => String(x.id) !== String(targetId));
-            saveOtherDebtDb();
-            if (typeof renderDebtOtherList === 'function') renderDebtOtherList();
-            renderDebtDashboard();
-          } else if (module === 'congno_mine') {
-            myDebtDatabase = myDebtDatabase.filter(x => String(x.id) !== String(targetId));
-            saveMyDebtDb();
-            if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
-            renderDebtDashboard();
-          } else if (module === 'baohanh') {
-            soldPhoneDatabase = soldPhoneDatabase.filter(x => String(x.id) !== String(targetId));
-            localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
-            if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-          } else if (module === 'linhkien') {
-            partsDatabase = partsDatabase.filter(x => String(x.id) !== String(targetId));
-            if (typeof savePartsStorage === 'function') savePartsStorage();
-            if (typeof renderPartsTable === 'function') renderPartsTable();
-          }
-        } else if (action === 'EDIT') {
-          if (!oldData) {
-            alert('Không tìm thấy dữ liệu cũ trước khi sửa để hoàn tác!');
+          const itemToRestore = newData || oldData;
+          if (!itemToRestore) {
+            alert('Không tìm thấy dữ liệu đơn hàng đã tạo để khôi phục!');
             return;
           }
-          let targetList = null;
-          let saveFn = null;
-          let renderFn = null;
-          if (module === 'banhang') { targetList = salesDatabase; saveFn = saveSalesStorage; renderFn = () => renderSalesTable(salesDatabase); }
-          else if (module === 'banga') { targetList = bangaDatabase; saveFn = saveBangaStorage; renderFn = () => renderBangaTable(bangaDatabase); }
-          else if (module === 'suachua') { targetList = repairDatabase; saveFn = saveRepairDb; renderFn = renderRepairTable; }
-          else if (module === 'phanmem') { targetList = softwareDatabase; saveFn = saveSoftwareStorage; renderFn = () => renderSoftwareTable(softwareDatabase); }
-          else if (module === 'banmay') { targetList = phoneDatabase; saveFn = savePhoneStorage; renderFn = renderPhoneGrid; }
-          else if (module === 'congno_other') { targetList = otherDebtDatabase; saveFn = saveOtherDebtDb; renderFn = () => { if (typeof renderDebtOtherList === 'function') renderDebtOtherList(); renderDebtDashboard(); }; }
-          else if (module === 'congno_mine') { targetList = myDebtDatabase; saveFn = saveMyDebtDb; renderFn = () => { if (typeof renderMyDebtTable === 'function') renderMyDebtTable(); renderDebtDashboard(); }; }
-          else if (module === 'baohanh') { targetList = soldPhoneDatabase; saveFn = () => localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); renderFn = () => { if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable(); }; }
-          else if (module === 'linhkien') { targetList = partsDatabase; saveFn = savePartsStorage; renderFn = () => { if (typeof renderPartsTable === 'function') renderPartsTable(); }; }
-
           if (targetList) {
-            const idx = targetList.findIndex(x => String(x.id) === String(targetId));
-            if (idx !== -1) {
-              targetList[idx] = JSON.parse(JSON.stringify(oldData));
+            const idx = targetList.findIndex(x => String(x.id) === String(targetId || itemToRestore.id));
+            if (idx === -1) {
+              targetList.unshift(JSON.parse(JSON.stringify(itemToRestore)));
             } else {
-              targetList.unshift(JSON.parse(JSON.stringify(oldData)));
+              targetList[idx] = JSON.parse(JSON.stringify(itemToRestore));
             }
-            if (saveFn) saveFn();
+            if (saveFn) saveFn(itemToRestore);
+            if (renderFn) renderFn();
+          }
+        } else if (action === 'EDIT') {
+          const itemToApply = oldData || newData;
+          if (!itemToApply) {
+            alert('Không tìm thấy dữ liệu trước khi sửa để hoàn tác!');
+            return;
+          }
+          if (targetList) {
+            const idx = targetList.findIndex(x => String(x.id) === String(targetId || itemToApply.id));
+            if (idx !== -1) {
+              targetList[idx] = JSON.parse(JSON.stringify(itemToApply));
+            } else {
+              targetList.unshift(JSON.parse(JSON.stringify(itemToApply)));
+            }
+            if (saveFn) saveFn(itemToApply);
             if (renderFn) renderFn();
           }
         }
@@ -19191,7 +19164,7 @@
         log.restoredTime = (typeof getCurrentTimeStr === 'function' ? getCurrentTimeStr() : '') + ' - ' + (typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : '');
         saveActivityLogDb();
         renderActivityLogTable();
-        alert(`Đã khôi phục thành công!`);
+        alert('Đã khôi phục thành công vào danh sách!');
       } catch (err) {
         console.error(err);
         alert('Có lỗi xảy ra khi khôi phục: ' + err.message);
@@ -19651,11 +19624,7 @@
         if (itemToSync && itemToSync.id) {
           db.collection('mainxac').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
         } else {
-          mainXacDatabase.forEach(item => {
-            if (item && item.id) {
-              db.collection('mainxac').doc(String(item.id)).set(item).catch(console.error);
-            }
-          });
+          // AGENTS.md Rule 6: Chi luu local hoac dong bo don le de chong chay quota Firestore
         }
       }
     }
