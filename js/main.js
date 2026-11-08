@@ -265,7 +265,8 @@
         if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
       }
       if (tabName === 'baohanh') {
-        if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+        if (typeof renderSoldPhoneTable === 'function') if (typeof autoSyncPhonesToWarranty === "function") autoSyncPhonesToWarranty();
+      renderSoldPhoneTable();
       }
       if (tabName === 'suachua') {
         if (typeof renderRepairTable === 'function') renderRepairTable();
@@ -9247,6 +9248,98 @@
         soldPhoneDatabase = JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
       }
     } catch(e) {}
+    
+    // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
+    function autoSyncPhonesToWarranty() {
+      try {
+        if (!Array.isArray(soldPhoneDatabase)) soldPhoneDatabase = [];
+        let changed = false;
+
+        const checkAndAdd = (rec, source) => {
+          if (!rec || !rec.name) return;
+          const nameStr = String(rec.name).trim();
+          const imeiStr = rec.imei ? String(rec.imei).trim() : '';
+
+          // Nhận diện nếu là bán máy (chứa A17, iPhone, Samsung, Oppo, Redmi, Poco, Vivo...) hoặc có IMEI hoặc accessory === 'Bán Máy'
+          const isPhoneItem = /A17|iPhone|iPad|Samsung|Galaxy|Oppo|Xiaomi|Redmi|Poco|Realme|Vivo/i.test(nameStr) ||
+                              (rec.accessory && /bán máy/i.test(String(rec.accessory))) ||
+                              (imeiStr && imeiStr.length >= 3);
+          if (!isPhoneItem) return;
+
+          // Kiểm tra xem trong Sổ Bảo Hành đã có máy này chưa (theo IMEI hoặc theo Name + Ngày)
+          const exists = soldPhoneDatabase.some(sp => {
+            if (imeiStr && sp.imei && String(sp.imei).trim().toLowerCase() === imeiStr.toLowerCase()) return true;
+            if (String(sp.id) === String(rec.id)) return true;
+            const spDate = sp.soldDate || sp.date || sp.dateTime || '';
+            const recDate = rec.dateTime || rec.date || '';
+            if (sp.name && sp.name.trim().toLowerCase() === nameStr.toLowerCase() && spDate && recDate && (spDate.includes(recDate) || recDate.includes(spDate))) {
+              return true;
+            }
+            return false;
+          });
+
+          if (!exists) {
+            let detectedBrand = rec.brand || 'SAMSUNG';
+            if (/iphone|ipad|apple/i.test(nameStr)) detectedBrand = 'IPHONE';
+            else if (/samsung|galaxy/i.test(nameStr)) detectedBrand = 'SAMSUNG';
+            else if (/oppo/i.test(nameStr)) detectedBrand = 'OPPO';
+            else if (/xiaomi|redmi|poco/i.test(nameStr)) detectedBrand = 'XIAOMI';
+            else if (/realme/i.test(nameStr)) detectedBrand = 'REALME';
+            else if (/vivo/i.test(nameStr)) detectedBrand = 'VIVO';
+
+            let rawDate = rec.dateTime || rec.date || (typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : '');
+            let datePart = rawDate;
+            if (datePart.includes(' - ')) {
+              let p = datePart.split(' - ');
+              datePart = p.length > 1 ? p[1].trim() : p[0].trim();
+            }
+
+            let newSold = {
+              id: rec.id || (Date.now() + Math.random()),
+              brand: detectedBrand,
+              name: rec.phoneName || nameStr,
+              storage: rec.storage || '',
+              color: rec.color || '',
+              imei: imeiStr || '',
+              condition: rec.condition || 'Zin Đẹp 99%',
+              price: rec.total || rec.price || '0',
+              total: rec.total || rec.price || '0',
+              priceIn: rec.priceIn || '0',
+              profit: rec.profit || '0',
+              status: 'Đã Bán',
+              customer: rec.customer || 'Khách Lẻ',
+              warranty: rec.warranty || '12 Tháng',
+              method: rec.method || rec.paymentMethod || 'Tiền mặt',
+              soldDate: datePart,
+              date: datePart,
+              dateTime: rawDate,
+              soldDateTime: rawDate,
+              targetList: source,
+              note: 'Tự động đồng bộ từ ' + source
+            };
+
+            soldPhoneDatabase.unshift(newSold);
+            changed = true;
+          }
+        };
+
+        if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
+          bangaDatabase.forEach(r => checkAndAdd(r, 'Bán Gà'));
+        }
+        if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+          salesDatabase.forEach(r => checkAndAdd(r, 'Bán Hàng'));
+        }
+
+        if (changed) {
+          try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
+          if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+        }
+      } catch (err) {
+        console.warn('Lỗi autoSyncPhonesToWarranty:', err);
+      }
+    }
+    window.autoSyncPhonesToWarranty = autoSyncPhonesToWarranty;
+
     let currentBrandFilter = "ALL";
     let currentPriceFilter = "ALL";
     let currentPhoneStatusFilter = "CON_HANG"; // "CON_HANG" (mặc định) hoặc "CHUA_XU_LY"
@@ -10541,7 +10634,7 @@
       };
 
       soldPhoneDatabase.unshift(soldItem);
-      savePhoneStorage();
+      saveSoldPhoneStorage(soldItem);
 
       // 2. LƯU VÀO BÁN HÀNG HOẶC BÁN GÀ THEO LỰA CHỌN
       let prefixBrand = (detectedBrand === '❤️❤️❤️' || detectedBrand === 'MÁY NGOÀI' || !detectedBrand) ? '❤️❤️❤️ - ' : `${detectedBrand} - `;
