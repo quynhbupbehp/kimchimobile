@@ -1,30 +1,40 @@
-# Quy Tắc Bắt Buộc: Auto-Agree 100%, Giữ Vững Dữ Liệu & Tiết Kiệm Firebase
+# Quy Tắc Bắt Buộc: Quyền Hạn, Bảo Toàn Dữ Liệu, Giao Diện & Đồng Bộ Web - Mobile
 
 ---
 
-## 1. NGUYÊN TẮC QUYỀN HẠN: KHÔNG HỎI LẠI - AUTO ĐỒNG Ý 100%
-- Tắt toàn bộ popup, dialog hỏi quyền đọc file, ghi file hay chạy lệnh Node.js/Terminal.
-- Người dùng trao quyền 100% vĩnh viễn, không phải bấm đồng ý bất cứ thao tác nào bằng tay.
-- TUYỆT ĐỐI KHÔNG CHẠY LỆNH `node -e` TRÊN TERMINAL ĐỂ ĐỌC/GHI FILE: Luôn dùng công cụ gốc `read_file`, `edit_file`, `write_file` để không bao giờ bị IDE bật popup hỏi quyền xác nhận.
-- Mọi thao tác truy cập file (đọc, ghi, sửa, xóa) và chạy lệnh (Terminal, PowerShell, Git) đều mặc định auto-agree 100%.
-- Làm ngay lập tức, không bắt bấm "Proceed".
+## 1. NGUYÊN TẮC HỎI Ý KIẾN & THỐNG NHẤT PHƯƠNG PHÁP TRƯỚC KHI BẮT ĐẦU
+- Khi người dùng hỏi hoặc yêu cầu xử lý vấn đề: Luôn đưa ra các phương pháp/giải pháp kỹ thuật cụ thể rõ ràng để người dùng lựa chọn trước.
+- Chỉ khi người dùng chọn phương pháp mới bắt đầu thực thi code.
 
 ---
 
-## 2. NGUYÊN TẮC TOÀN VẸN DỮ LIỆU
-- Mỗi lần sửa code: Tuyệt đối không tự ý thay đổi hay xóa bỏ các phần dữ liệu khác khi không được yêu cầu.
-- Giữ nguyên cấu trúc, logic và dữ liệu của tất cả các module không liên quan.
+## 2. NGUYÊN TẮC QUYỀN HẠN: KHÔNG HỎI LẠI - MẶC ĐỊNH CẤP QUYỀN 100%
+- Tuyệt đối không được phép hỏi quyền truy cập bất cứ thứ gì. Mặc định người dùng luôn luôn cấp toàn bộ quyền truy cập 100% vĩnh viễn ở mức cao nhất.
+- Luôn dùng các công cụ nội tại (`read_file`, `edit_file`, `write_file`) và lệnh shell bình thường mà không để phát sinh popup xác nhận quyền trong môi trường IDE.
 
 ---
 
-## 3. MẶC ĐỊNH SỬA TRÊN TRÌNH DUYỆT WEB (DESKTOP)
-- Mặc định khi không nói gì: Thực hiện và tối ưu 100% trên giao diện Web (Desktop).
-- Chỉ can thiệp trên Mobile khi người dùng nói rõ "trên mobile" / "điện thoại" hoặc có hình ảnh chụp từ màn hình điện thoại.
-- Khi có ảnh mẫu: làm theo y chang 100% từ màu sắc, kích thước, icon, bố cục.
+## 3. NGUYÊN TẮC BẢO TOÀN GIAO DIỆN & DỮ LIỆU ĐÃ TẠO
+- Tuyệt đối KHÔNG ĐƯỢC TỰ Ý THAY ĐỔI GIAO DIỆN, bố cục của bất kỳ tab hay phần nào khi chưa có yêu cầu trực tiếp.
+- Tuyệt đối KHÔNG ĐƯỢC TỰ Ý SỬA, THÊM BỚT, XÓA DỮ LIỆU ĐÃ TẠO ở tất cả các tab (Bán Máy, Bảo Hành, Phần Mềm, Bán Hàng, Bán Gà, Sửa Chữa, Công Nợ, Báo Giá...).
+- Nghiêm cấm tự ý reset, xóa bỏ hoặc ghi đè dữ liệu.
 
 ---
 
-## 4. BẢO VỆ HẠN MỨC FIREBASE (CHỐNG CHÁY QUOTA 100%)
+## 4. NGUYÊN TẮC TÁCH BIỆT WEB & MOBILE KHI THÊM/SỬA CHỨC NĂNG
+- Khi thêm một chức năng mới: Nếu người dùng không nói rõ "trên mobile", TUYỆT ĐỐI KHÔNG ĐƯỢC THÊM VÀO MOBILE.
+- Sửa trên Web TUYỆT ĐỐI KHÔNG ĐƯỢC ẢNH HƯỞNG ĐẾN MOBILE. Mọi thay đổi về CSS, giao diện, logic trên Web (Desktop) phải được cô lập độc lập, bảo đảm không làm biến dạng, xô lệch hoặc phát sinh lỗi trên giao diện Mobile.
+- Chỉ can thiệp vào giao diện Mobile khi người dùng ghi rõ "trên mobile" / "trên điện thoại" hoặc gửi ảnh chụp từ màn hình điện thoại (khi có ảnh mẫu, làm theo y chang 100%).
+
+---
+
+## 5. NGUYÊN TẮC ĐỒNG BỘ DỮ LIỆU REALTIME GIỮA MOBILE & WEB
+- Đảm bảo khi thao tác tạo đơn mới, sửa thông tin, hoặc xóa đơn trên Mobile đều cập nhật ngay lập tức dữ liệu như trên Web và ngược lại.
+- Dữ liệu giữa Web và Mobile phải luôn đồng nhất tức thì.
+
+---
+
+## 6. BẢO VỆ HẠN MỨC FIREBASE (CHỐNG CHÁY QUOTA 100%)
 - Tuyệt đối không lặp `forEach` ghi hàng loạt documents lên Firestore.
 - Khi thêm/sửa đơn hàng: chỉ gửi đúng 1 document của đơn đó (`single-doc update`).
 - Đồng bộ danh sách tổng hợp qua 1 document bundle duy nhất có debounce (1 lần lưu = 1 write).
@@ -32,5 +42,5 @@
 
 ---
 
-## 5. TỰ ĐỘNG COMMIT & PUSH GITHUB
+## 7. TỰ ĐỘNG COMMIT & PUSH GITHUB
 - Hoàn thành là tự động `git add .`, `git commit -m "..."`, `git push origin main` ngay lập tức.
