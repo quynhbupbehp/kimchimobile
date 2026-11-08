@@ -765,15 +765,84 @@
       let b = String(brand || '').toUpperCase().trim();
       let n = String(phoneName || '').toUpperCase().trim();
       if (b === 'MÁY NGOÀI' || b === '❤️❤️❤️' || n.startsWith('❤️❤️❤️') || n.startsWith('MÁY NGOÀI')) return 'KHAC';
-      if (b === 'IPHONE' || b === 'IPAD' || b.includes('APPLE') || isPhoneBrandIphone(b, n)) return 'IPHONE';
-      if (/^(?:\d{1,2}|X|XS|XR|SE)\b/i.test(n) || n.includes('PRO MAX') || n.includes('PLUS') || n.includes('IPHONE') || n.includes('IPAD')) return 'IPHONE';
+      if (b === 'IPAD' || n.includes('IPAD')) return 'IPAD';
+      if (b === 'IPHONE' || b.includes('APPLE') || isPhoneBrandIphone(b, n)) return 'IPHONE';
+      if (/^(?:\d{1,2}|X|XS|XR|SE)\b/i.test(n) || n.includes('PRO MAX') || n.includes('PLUS') || n.includes('IPHONE')) return 'IPHONE';
       if (b.includes('SAMSUNG') || n.includes('SAMSUNG') || /^(?:GALAXY|NOTE\s*\d+|Z\s*FLIP|Z\s*FOLD)\b/i.test(n) || /^(?:A\d+|S\d+|M\d+)\b/i.test(n)) return 'SAMSUNG';
-      if (b.includes('XIAOMI') || b.includes('REDMI') || b.includes('POCO') || n.includes('REDMI') || n.includes('XIAOMI') || n.includes('POCO') || /^MI\b/i.test(n)) return 'REDMI';
-      if (b.includes('OPPO') || b.includes('REALME') || n.includes('OPPO') || n.includes('REALME') || n.includes('RENO') || /^A\d+[XS]?\b/i.test(n) || /^F\d+\b/i.test(n) || /^C\d+\b/i.test(n)) return 'OPPO';
+      if (b.includes('POCO') || n.includes('POCO')) return 'POCO';
+      if (b.includes('REDMI') || n.includes('REDMI') || b.includes('XIAOMI') || n.includes('XIAOMI') || /^MI\b/i.test(n)) return 'REDMI';
+      if (b.includes('REALME') || n.includes('REALME') || /^C\d+\b/i.test(n)) return 'REALME';
+      if (b.includes('OPPO') || n.includes('OPPO') || n.includes('RENO') || /^A\d+[XS]?\b/i.test(n) || /^F\d+\b/i.test(n)) return 'OPPO';
       if (b.includes('VIVO') || n.includes('VIVO') || n.includes('IQOO') || /^Y\d+\b/i.test(n)) return 'VIVO';
       if (/^\d+/i.test(n)) return 'IPHONE';
       return b || 'KHAC';
     }
+    window.detectPhoneBrand = detectPhoneBrand;
+
+    // Badge chữ thương hiệu tab Bảo Hành theo yêu cầu chính xác 100%:
+    // - IPHONE, IPAD: nền đen chữ trắng
+    // - OPPO: nền xanh lá chữ trắng
+    // - VIVO: nền xanh dương chữ vàng
+    // - SAMSUNG: nền xanh dương chữ trắng
+    // - REALME: nền vàng chữ đen
+    // - REDMI: nền đỏ chữ trắng
+    // - POCO: nền vàng chữ đỏ
+    function getPhoneBrandBadgeHtml(brand, phoneName) {
+      let b = String(brand || '').toUpperCase().trim();
+      let n = String(phoneName || '').toUpperCase().trim();
+      if (b === 'MÁY NGOÀI' || b === '❤️❤️❤️' || n.startsWith('❤️❤️❤️') || n.startsWith('MÁY NGOÀI')) {
+        return '<span style="color: #ef4444; font-size: 1.25rem; letter-spacing: 1px; margin-right: 5px;">❤️❤️❤️</span>';
+      }
+      let detected = detectPhoneBrand(brand, phoneName);
+      let text = detected;
+      let bg = '#000000';
+      let color = '#ffffff';
+      let border = 'none';
+
+      if (detected === 'IPHONE') {
+        text = 'IPHONE';
+        bg = '#000000';
+        color = '#ffffff';
+        border = '1px solid #475569';
+      } else if (detected === 'IPAD') {
+        text = 'IPAD';
+        bg = '#000000';
+        color = '#ffffff';
+        border = '1px solid #475569';
+      } else if (detected === 'OPPO') {
+        text = 'OPPO';
+        bg = '#059669'; // xanh lá
+        color = '#ffffff'; // chữ trắng
+      } else if (detected === 'VIVO') {
+        text = 'VIVO';
+        bg = '#1d4ed8'; // xanh dương
+        color = '#facc15'; // chữ vàng
+      } else if (detected === 'SAMSUNG') {
+        text = 'SAMSUNG';
+        bg = '#1e40af'; // xanh dương
+        color = '#ffffff'; // chữ trắng
+      } else if (detected === 'REALME') {
+        text = 'REALME';
+        bg = '#eab308'; // nền vàng
+        color = '#000000'; // chữ đen
+      } else if (detected === 'REDMI') {
+        text = 'REDMI';
+        bg = '#dc2626'; // nền đỏ
+        color = '#ffffff'; // chữ trắng
+      } else if (detected === 'POCO') {
+        text = 'POCO';
+        bg = '#facc15'; // nền vàng
+        color = '#dc2626'; // chữ đỏ
+      } else {
+        text = detected || 'KHÁC';
+        bg = '#334155';
+        color = '#ffffff';
+      }
+
+      let borderStyle = border !== 'none' ? `border: ${border};` : '';
+      return `<span class="brand-text-badge" style="display: inline-block; background: ${bg}; color: ${color}; font-weight: 900; font-size: 0.95rem; padding: 2px 8px; border-radius: 5px; letter-spacing: 0.5px; vertical-align: middle; margin-right: 6px; line-height: 1.25; ${borderStyle}">${escapeHtml(text)}</span>`;
+    }
+    window.getPhoneBrandBadgeHtml = getPhoneBrandBadgeHtml;
     window.detectPhoneBrand = detectPhoneBrand;
 
     function getPhoneBrandLogoHtml(brand, phoneName, sizePx = 26) {
@@ -11174,6 +11243,18 @@
         const cbf = (currentBrandFilter || '').toUpperCase().trim();
         pool = pool.filter(p => {
           const pb = (p.brand || '').toUpperCase().trim();
+          if (cbf === 'OPPO') {
+            return pb === 'OPPO' || (pb.includes('OPPO') && !pb.includes('REALME'));
+          }
+          if (cbf === 'REALME') {
+            return pb === 'REALME' || pb.includes('REALME');
+          }
+          if (cbf === 'REDMI') {
+            return pb === 'REDMI' || (pb === 'XIAOMI' && !pb.includes('POCO')) || (pb.includes('REDMI') && !pb.includes('POCO'));
+          }
+          if (cbf === 'POCO') {
+            return pb === 'POCO' || pb.includes('POCO');
+          }
           if (cbf === 'OPPO & REALME' || cbf === 'OPPO - REALME') {
             return pb === 'OPPO' || pb === 'REALME' || pb.includes('OPPO') || pb.includes('REALME');
           }
@@ -11423,6 +11504,18 @@
         const cbf = (currentBrandFilter || '').toUpperCase().trim();
         filtered = filtered.filter(p => {
           const pb = (p.brand || '').toUpperCase().trim();
+          if (cbf === 'OPPO') {
+            return pb === 'OPPO' || (pb.includes('OPPO') && !pb.includes('REALME'));
+          }
+          if (cbf === 'REALME') {
+            return pb === 'REALME' || pb.includes('REALME');
+          }
+          if (cbf === 'REDMI') {
+            return pb === 'REDMI' || (pb === 'XIAOMI' && !pb.includes('POCO')) || (pb.includes('REDMI') && !pb.includes('POCO'));
+          }
+          if (cbf === 'POCO') {
+            return pb === 'POCO' || pb.includes('POCO');
+          }
           if (cbf === 'OPPO & REALME' || cbf === 'OPPO - REALME') {
             return pb === 'OPPO' || pb === 'REALME' || pb.includes('OPPO') || pb.includes('REALME');
           }
@@ -12338,12 +12431,9 @@
           cleanNamePart = cleanNamePart.replace(bReg, '');
         }
 
-        let brandLogoHtml = '';
+        let brandLogoHtml = getPhoneBrandBadgeHtml(p.brand, p.name);
         if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️' || cleanNamePart.startsWith('❤️❤️❤️') || cleanNamePart.startsWith('MÁY NGOÀI')) {
-          brandLogoHtml = '<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px; margin-right: 4px;">❤️❤️❤️</span>';
           cleanNamePart = cleanNamePart.replace(/^❤️❤️❤️\s*[-–—:]*\s*/i, '').replace(/^MÁY NGOÀI\s*[-–—:]*\s*/i, '');
-        } else {
-          brandLogoHtml = getPhoneBrandLogoHtml(p.brand, p.name, 25);
         }
 
         cleanNamePart = formatBrandDeviceName(cleanNamePart);
