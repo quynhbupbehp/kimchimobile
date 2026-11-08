@@ -11110,8 +11110,9 @@
       // Cập nhật thống kê góc phải trên cùng (Nền vàng chữ trắng)
       let invCount = filtered.length;
       let invSum = 0;
+      let isChuaXuLyMode = (typeof currentPhoneStatusFilter !== 'undefined' && currentPhoneStatusFilter === 'CHUA_XU_LY');
       filtered.forEach(p => {
-        let pVal = parsePriceNum(p.price);
+        let pVal = parsePriceNum(isChuaXuLyMode ? p.priceIn : p.price);
         if (pVal >= 100000) pVal = Math.round(pVal / 1000);
         invSum += pVal;
       });
@@ -11144,11 +11145,11 @@
               <tr>
                 <th style="text-align: left; padding-left: 18px;">TÊN MÁY</th>
                 <th style="text-align: center;">DUNG LƯỢNG</th>
-                <th style="text-align: center;">GIÁ BÁN</th>
+                <th style="text-align: center;">${isChuaXuLyMode ? 'GIÁ NHẬP' : 'GIÁ BÁN'}</th>
                 <th style="text-align: center;">MÀU SẮC</th>
                 <th style="text-align: center;">THÔNG TIN PIN</th>
-                <th style="text-align: right;">GIÁ NHẬP</th>
-                <th style="text-align: right;">LÃI</th>
+                ${isChuaXuLyMode ? '' : '<th style="text-align: right;">GIÁ NHẬP</th>'}
+                ${isChuaXuLyMode ? '' : '<th style="text-align: right;">LÃI</th>'}
                 <th style="text-align: center; padding-right: 18px;">THAO TÁC</th>
               </tr>
             </thead>
@@ -11195,7 +11196,7 @@
                 if (cVal >= 100000) cVal = Math.round(cVal / 1000);
                 let profitVal = (pVal && cVal) ? (pVal - cVal) : (pVal || 0);
 
-                let formattedPrice = isPhonePricesHidden ? '*****' : formatNumberDisplay(p.price);
+                let formattedPrice = isPhonePricesHidden ? '*****' : formatNumberDisplay(isChuaXuLyMode ? (p.priceIn || '0') : p.price);
                 let formattedCost = isPhonePricesHidden ? '*****' : formatNumberDisplay(p.priceIn);
                 let formattedProfit = isPhonePricesHidden ? '*****' : formatNumberDisplay(profitVal);
 
@@ -11225,9 +11226,9 @@
                   <tr class="phone-table-row" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
                     <td style="text-align: left; padding-left: 18px;">
                       <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;">
-                        <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px;">
+                        <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 10px;">
                           ${escapeHtml(pName)}
-                          ${getColorDotHtml(p.color, 16)}
+                          ${getColorDotHtml(p.color, 32)}
                         </span>
                         ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.5rem; letter-spacing: 0.5px;">${escapeHtml(p.imei)}</span>` : ''}
                       </div>
@@ -11239,24 +11240,26 @@
                     <td style="text-align: center; font-weight: 900; color: #ffffff; font-size: 1.28rem;">
                       ${escapeHtml(storageWithGB || '—')}
                     </td>
-                    <td style="text-align: center; font-weight: 900; color: #10b981; font-size: 1.7rem;">
+                    <td style="text-align: center; font-weight: 900; color: ${isChuaXuLyMode ? '#38bdf8' : '#10b981'}; font-size: 1.7rem;">
                       ${escapeHtml(formattedPrice)}
                     </td>
                     <td style="text-align: center; color: #cbd5e1; font-weight: 700; font-size: 1.07rem;">
-                      <span style="display: inline-flex; align-items: center; gap: 8px; justify-content: center;">
-                        ${getColorDotHtml(p.color, 19)}
+                      <span style="display: inline-flex; align-items: center; gap: 10px; justify-content: center;">
+                        ${getColorDotHtml(p.color, 38)}
                         <span>${escapeHtml(p.color || 'Mặc định')}</span>
                       </span>
                     </td>
                     <td style="text-align: center; font-size: 1.2rem; white-space: nowrap;">
                       ${pinInfoHtml}
                     </td>
+                    ${isChuaXuLyMode ? '' : `
                     <td style="text-align: right; font-weight: 700; color: #94a3b8; font-size: 1.07rem;">
                       ${escapeHtml(formattedCost)}
                     </td>
                     <td style="text-align: right; font-weight: 800; color: #f59e0b; font-size: 1.07rem;">
                       ${escapeHtml(formattedProfit)}
                     </td>
+                    `}
                     <td style="text-align: center; padding-right: 18px;" onclick="event.stopPropagation()">
                       <div class="action-btn-group" style="justify-content: center;">
                         <button type="button" class="action-btn-icon action-btn-view" onclick="viewPhone('${p.id}')" title="Xem chi tiết máy">
@@ -11317,6 +11320,10 @@
             displayName = displayName.replace(/pro\s*max/gi, 'PRM');
           }
 
+          let isChuaXuLyMode = (typeof currentPhoneStatusFilter !== 'undefined' && currentPhoneStatusFilter === 'CHUA_XU_LY');
+          let displayPriceCard = (isDesktop && isChuaXuLyMode) ? (p.priceIn || '0') : p.price;
+          let desktopDotSize = isDesktop ? 45 : 25;
+
           return `
             <div class="phone-card" ondblclick="viewPhone('${p.id}')" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
@@ -11324,11 +11331,11 @@
                 <div class="phone-header-left">
                   ${logoHtml}
                   <span class="phone-card-name">${escapeHtml(displayName)}</span>
-                  ${getColorDotHtml(p.color, 25)}
+                  ${getColorDotHtml(p.color, desktopDotSize)}
                   ${storageDisplay ? `<span class="phone-card-storage">${escapeHtml(storageDisplay)}</span>` : ''}
                 </div>
                 <div class="phone-header-center">
-                  <span class="phone-card-price">${isPhonePricesHidden ? '*****' : (formatPriceStr(p.price) || '0')}</span>
+                  <span class="phone-card-price" style="${(isDesktop && isChuaXuLyMode) ? 'color: #38bdf8;' : ''}">${isPhonePricesHidden ? '*****' : (formatPriceStr(displayPriceCard) || '0')}</span>
                 </div>
                 <div class="phone-header-right">
                   <span class="phone-card-imei">${escapeHtml(p.imei)}</span>
