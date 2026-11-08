@@ -11226,9 +11226,9 @@
                   <tr class="phone-table-row" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
                     <td style="text-align: left; padding-left: 18px;">
                       <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;">
-                        <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px;">
                           ${escapeHtml(pName)}
-                          ${getColorDotHtml(p.color, 32)}
+                          ${getColorDotHtml(p.color, 26)}
                         </span>
                         ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.5rem; letter-spacing: 0.5px;">${escapeHtml(p.imei)}</span>` : ''}
                       </div>
@@ -11244,8 +11244,8 @@
                       ${escapeHtml(formattedPrice)}
                     </td>
                     <td style="text-align: center; color: #cbd5e1; font-weight: 700; font-size: 1.07rem;">
-                      <span style="display: inline-flex; align-items: center; gap: 10px; justify-content: center;">
-                        ${getColorDotHtml(p.color, 38)}
+                      <span style="display: inline-flex; align-items: center; gap: 8px; justify-content: center;">
+                        ${getColorDotHtml(p.color, 30)}
                         <span>${escapeHtml(p.color || 'Mặc định')}</span>
                       </span>
                     </td>
@@ -11322,7 +11322,7 @@
 
           let isChuaXuLyMode = (typeof currentPhoneStatusFilter !== 'undefined' && currentPhoneStatusFilter === 'CHUA_XU_LY');
           let displayPriceCard = (isDesktop && isChuaXuLyMode) ? (p.priceIn || '0') : p.price;
-          let desktopDotSize = isDesktop ? 45 : 25;
+          let desktopDotSize = isDesktop ? 36 : 25;
 
           return `
             <div class="phone-card" ondblclick="viewPhone('${p.id}')" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
@@ -11791,7 +11791,7 @@
               <div class="phone-card-header">
                 <div class="phone-header-left">
                   <span class="phone-card-name">${escapeHtml(brandAndName)}</span>
-                  ${getColorDotHtml(p.color, 20)}
+                  ${getColorDotHtml(p.color, 24)}
                   ${storageDisplay ? `<span class="phone-card-storage">${escapeHtml(storageDisplay)}</span>` : ''}
                 </div>
                 <div class="phone-header-center">
@@ -11833,7 +11833,7 @@
         }
         brandNamePart = formatBrandDeviceName(brandNamePart);
         let cleanStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
-        let dotHtml = getColorDotHtml(p.color, 25);
+        let dotHtml = getColorDotHtml(p.color, 30);
         let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.04rem;">${cleanStorage}</span>` : '';
         let imeiPart = p.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.14rem; padding: 2px 6px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${p.imei}</span>` : '';
 
@@ -20083,7 +20083,7 @@
         brandNamePart = formatBrandDeviceName(brandNamePart);
 
         let cleanStorage = formatStorageDisplay((item.storage || '').replace(/[()]/g, ''));
-        let dotHtml = getColorDotHtml(item.color || 'Đen', 28);
+        let dotHtml = getColorDotHtml(item.color || 'Đen', 34);
         let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.16rem;">${cleanStorage}</span>` : '';
         let imeiPart = item.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.27rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${item.imei}</span>` : '';
 
