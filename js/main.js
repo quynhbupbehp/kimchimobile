@@ -761,71 +761,62 @@
       return false;
     }
 
-    function getPhoneBrandLogoHtml(brand, phoneName, sizePx = 25) {
+    function detectPhoneBrand(brand, phoneName) {
       let b = String(brand || '').toUpperCase().trim();
       let n = String(phoneName || '').toUpperCase().trim();
-      let logoSrc = '';
-      let altText = b || 'Logo';
+      if (b === 'MÁY NGOÀI' || b === '❤️❤️❤️' || n.startsWith('❤️❤️❤️') || n.startsWith('MÁY NGOÀI')) return 'KHAC';
+      if (b === 'IPHONE' || b === 'IPAD' || b.includes('APPLE') || isPhoneBrandIphone(b, n)) return 'IPHONE';
+      if (/^(?:\d{1,2}|X|XS|XR|SE)\b/i.test(n) || n.includes('PRO MAX') || n.includes('PLUS') || n.includes('IPHONE') || n.includes('IPAD')) return 'IPHONE';
+      if (b.includes('SAMSUNG') || n.includes('SAMSUNG') || /^(?:GALAXY|NOTE\s*\d+|Z\s*FLIP|Z\s*FOLD)\b/i.test(n) || /^(?:A\d+|S\d+|M\d+)\b/i.test(n)) return 'SAMSUNG';
+      if (b.includes('XIAOMI') || b.includes('REDMI') || b.includes('POCO') || n.includes('REDMI') || n.includes('XIAOMI') || n.includes('POCO') || /^MI\b/i.test(n)) return 'REDMI';
+      if (b.includes('OPPO') || b.includes('REALME') || n.includes('OPPO') || n.includes('REALME') || n.includes('RENO') || /^A\d+[XS]?\b/i.test(n) || /^F\d+\b/i.test(n) || /^C\d+\b/i.test(n)) return 'OPPO';
+      if (b.includes('VIVO') || n.includes('VIVO') || n.includes('IQOO') || /^Y\d+\b/i.test(n)) return 'VIVO';
+      if (/^\d+/i.test(n)) return 'IPHONE';
+      return b || 'KHAC';
+    }
+    window.detectPhoneBrand = detectPhoneBrand;
 
-      // 1. Nhận diện Apple / iPhone
-      if (
-        b === 'IPHONE' || b === 'IPAD' || b.includes('APPLE') ||
-        isPhoneBrandIphone(b, n) ||
-        /^(?:\d{1,2}|X|XS|XR|SE)\b/i.test(n) ||
-        n.includes('PRO MAX') || n.includes('PLUS') || n.includes('IPHONE') || n.includes('IPAD') ||
-        /^\d+/i.test(n)
-      ) {
-        logoSrc = 'img/logo_apple.jpg';
+    function getPhoneBrandLogoHtml(brand, phoneName, sizePx = 26) {
+      let b = String(brand || '').toUpperCase().trim();
+      let n = String(phoneName || '').toUpperCase().trim();
+      if (b === 'MÁY NGOÀI' || b === '❤️❤️❤️' || n.startsWith('❤️❤️❤️') || n.startsWith('MÁY NGOÀI')) {
+        return '';
+      }
+      let detected = detectPhoneBrand(brand, phoneName);
+      let logoSrc = '';
+      let altText = detected;
+      let isWide = false;
+
+      if (detected === 'IPHONE' || detected === 'IPAD' || detected === 'APPLE') {
+        logoSrc = 'img/brand_apple.png';
         altText = 'Apple';
-      }
-      // 2. Nhận diện Samsung
-      else if (
-        b.includes('SAMSUNG') || n.includes('SAMSUNG') ||
-        /^(?:GALAXY|NOTE\s*\d+|Z\s*FLIP|Z\s*FOLD)\b/i.test(n) ||
-        /^(?:A\d+|S\d+|M\d+)\b/i.test(n)
-      ) {
-        logoSrc = 'img/logo_samsung.jpg';
+        isWide = false;
+      } else if (detected === 'SAMSUNG') {
+        logoSrc = 'img/brand_samsung.png';
         altText = 'Samsung';
-      }
-      // 3. Nhận diện Xiaomi / Redmi / Poco
-      else if (
-        b.includes('XIAOMI') || b.includes('REDMI') || b.includes('POCO') ||
-        n.includes('REDMI') || n.includes('XIAOMI') || n.includes('POCO') ||
-        /^MI\b/i.test(n)
-      ) {
-        logoSrc = 'img/logo_xiaomi.jpg';
-        altText = 'Xiaomi';
-      }
-      // 4. Nhận diện Oppo
-      else if (
-        b.includes('OPPO') || n.includes('OPPO') || n.includes('RENO') ||
-        /^A\d+[XS]?\b/i.test(n) || /^F\d+\b/i.test(n)
-      ) {
-        logoSrc = 'img/logo_oppo.jpg';
-        altText = 'Oppo';
-      }
-      // 5. Nhận diện Vivo
-      else if (
-        b.includes('VIVO') || n.includes('VIVO') || n.includes('IQOO') ||
-        /^Y\d+\b/i.test(n)
-      ) {
+        isWide = true;
+      } else if (detected === 'REDMI' || detected === 'XIAOMI' || detected === 'POCO') {
+        logoSrc = 'img/brand_redmi_poco.jpg';
+        altText = 'Redmi / POCO';
+        isWide = true;
+      } else if (detected === 'OPPO' || detected === 'REALME') {
+        logoSrc = 'img/brand_oppo_realme.jpg';
+        altText = 'Oppo / Realme';
+        isWide = true;
+      } else if (detected === 'VIVO') {
         logoSrc = 'img/logo_vivo.jpg';
         altText = 'Vivo';
-      }
-      // 6. Nhận diện Realme
-      else if (
-        b.includes('REALME') || n.includes('REALME') ||
-        /^C\d+\b/i.test(n)
-      ) {
-        logoSrc = 'img/logo_realme.jpg';
-        altText = 'Realme';
+        isWide = false;
       } else {
-        logoSrc = 'img/logo_apple.jpg';
+        logoSrc = 'img/brand_apple.png';
         altText = 'Apple';
+        isWide = false;
       }
 
       if (!logoSrc) return '';
-      return `<img src="${logoSrc}" alt="${altText}" class="phone-brand-logo" style="width: ${sizePx}px !important; height: ${sizePx}px !important; min-width: ${sizePx}px !important; border-radius: 6px !important; object-fit: cover !important; display: inline-block !important; flex-shrink: 0 !important; vertical-align: middle !important; margin-right: 4px !important;" />`;
+      let styleWidth = isWide ? (sizePx * 2.6) + 'px' : sizePx + 'px';
+      let styleHeight = sizePx + 'px';
+      return `<img src="${logoSrc}" alt="${altText}" class="phone-brand-logo" style="width: ${styleWidth} !important; height: ${styleHeight} !important; max-height: ${styleHeight} !important; border-radius: 4px !important; object-fit: contain !important; display: inline-block !important; flex-shrink: 0 !important; vertical-align: middle !important; margin-right: 6px !important; background: rgba(255,255,255,0.08); padding: 1px;" />`;
     }
     window.getPhoneBrandLogoHtml = getPhoneBrandLogoHtml;
 
@@ -9279,13 +9270,8 @@
           });
 
           if (!exists) {
-            let detectedBrand = rec.brand || 'SAMSUNG';
-            if (/iphone|ipad|apple/i.test(nameStr)) detectedBrand = 'IPHONE';
-            else if (/samsung|galaxy/i.test(nameStr)) detectedBrand = 'SAMSUNG';
-            else if (/oppo/i.test(nameStr)) detectedBrand = 'OPPO';
-            else if (/xiaomi|redmi|poco/i.test(nameStr)) detectedBrand = 'XIAOMI';
-            else if (/realme/i.test(nameStr)) detectedBrand = 'REALME';
-            else if (/vivo/i.test(nameStr)) detectedBrand = 'VIVO';
+            let detectedBrand = detectPhoneBrand(rec.brand, nameStr);
+            if (detectedBrand === 'KHAC') detectedBrand = rec.brand || 'IPHONE';
 
             let rawDate = rec.dateTime || rec.date || (typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : '');
             let datePart = rawDate;
@@ -12118,7 +12104,25 @@
       renderSoldPhoneTable();
     }
 
+    
+    // Tự động chuẩn hóa hãng cho các máy bán trong soldPhoneDatabase
+    function fixSoldPhoneBrands() {
+      if (!Array.isArray(soldPhoneDatabase)) return;
+      let changed = false;
+      soldPhoneDatabase.forEach(p => {
+        let det = detectPhoneBrand(p.brand, p.name);
+        if ((det === 'IPHONE' || det === 'IPAD') && p.brand && p.brand.toUpperCase() === 'SAMSUNG') {
+          p.brand = 'IPHONE';
+          changed = true;
+        }
+      });
+      if (changed) {
+        try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
+      }
+    }
+
     function renderSoldPhoneTable() {
+      fixSoldPhoneBrands();
       const tbody = document.getElementById('soldPhoneTableBody');
       const searchInput = document.getElementById('soldPhoneSearchInput');
       const keyword = (searchInput ? searchInput.value.trim().toLowerCase() : '');
@@ -12319,23 +12323,30 @@
       }
 
       tbody.innerHTML = filtered.map(p => {
+        let detected = (typeof detectPhoneBrand === 'function') ? detectPhoneBrand(p.brand, p.name) : (p.brand || '');
+        if ((detected === 'IPHONE' || detected === 'IPAD') && p.brand && p.brand.toUpperCase() === 'SAMSUNG') {
+          p.brand = 'IPHONE';
+        }
         let brandDisplay = (p.brand || '').trim();
         let pName = formatBrandDeviceName(p.name || '');
-        let brandNamePart = pName;
+        let cleanNamePart = pName;
 
+        // Loại bỏ tên hãng ở đầu tên máy để tránh trùng lặp trước khi gắn logo
+        cleanNamePart = cleanNamePart.replace(/^(?:SAMSUNG|IPHONE|IPAD|OPPO|REALME|XIAOMI|REDMI|POCO|VIVO)\s*[-–—:]*\s*/i, '');
         if (brandDisplay && brandDisplay !== 'MÁY NGOÀI' && brandDisplay !== '❤️❤️❤️') {
-          let cleanBrand = brandDisplay.toUpperCase();
-          let cleanNameUpper = brandNamePart.toUpperCase();
-          if (!cleanNameUpper.startsWith(cleanBrand)) {
-            brandNamePart = `${brandDisplay} - ${brandNamePart}`;
-          }
-        } else if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️') {
-          let cleanNameUpper = brandNamePart.toUpperCase();
-          if (!cleanNameUpper.startsWith('❤️❤️❤️') && !cleanNameUpper.startsWith('MÁY NGOÀI')) {
-            brandNamePart = `<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px;">❤️❤️❤️</span> - ${brandNamePart}`;
-          }
+          const bReg = new RegExp('^' + brandDisplay.replace(/[.*+?^$\{}()|[\]\\]/g, '\\$&') + '\\s*[-–—:]*\\s*', 'i');
+          cleanNamePart = cleanNamePart.replace(bReg, '');
         }
-        brandNamePart = formatBrandDeviceName(brandNamePart);
+
+        let brandLogoHtml = '';
+        if (brandDisplay === 'MÁY NGOÀI' || brandDisplay === '❤️❤️❤️' || cleanNamePart.startsWith('❤️❤️❤️') || cleanNamePart.startsWith('MÁY NGOÀI')) {
+          brandLogoHtml = '<span style="color: #ef4444; font-size: 1.27rem; letter-spacing: 1px; margin-right: 4px;">❤️❤️❤️</span>';
+          cleanNamePart = cleanNamePart.replace(/^❤️❤️❤️\s*[-–—:]*\s*/i, '').replace(/^MÁY NGOÀI\s*[-–—:]*\s*/i, '');
+        } else {
+          brandLogoHtml = getPhoneBrandLogoHtml(p.brand, p.name, 25);
+        }
+
+        cleanNamePart = formatBrandDeviceName(cleanNamePart);
         let cleanStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
         let dotHtml = getColorDotHtml(p.color, 30);
         let storagePart = cleanStorage ? `<span style="color: #eab308; font-weight: 700; font-size: 1.04rem;">${cleanStorage}</span>` : '';
@@ -12343,7 +12354,8 @@
 
         let nameHtml = `
           <div style="display: inline-flex; align-items: center; justify-content: flex-start; gap: 7px; flex-wrap: nowrap; white-space: nowrap;">
-            <span style="font-size: 1.20rem; font-weight: 800; white-space: nowrap;">${brandNamePart}</span>
+            ${brandLogoHtml}
+            <span style="font-size: 1.20rem; font-weight: 800; white-space: nowrap;">${cleanNamePart}</span>
             ${dotHtml}
             ${storagePart}
             ${imeiPart}
