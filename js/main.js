@@ -2459,11 +2459,12 @@
           if (list.length > 0) {
             // Sắp xếp ID giảm dần (máy mới thêm luôn ở đầu bảng trên cả Mobile và Web)
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
-            phoneDatabase = list;
+            // Hợp nhất list từ Firebase với danh sách seed để không bị mất 188 máy gốc
+            phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(list) : list;
             try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
             if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
-          } else if ((!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-            phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+          } else if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+            phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
             try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
             if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
           }
@@ -8849,28 +8850,36 @@
       renderBangaTable(bangaDatabase);
     }
 
+    // Helper hợp nhất kho Bán Máy với dữ liệu Seed chuẩn (Bảo tồn 100% máy người dùng tự tạo/nhập thêm)
+    function mergeWithSeedPhones(list) {
+      if (!Array.isArray(window.SEED_PHONES_DATA) || window.SEED_PHONES_DATA.length === 0) {
+        return Array.isArray(list) ? list : [];
+      }
+      const seeds = window.SEED_PHONES_DATA;
+      if (!Array.isArray(list) || list.length === 0) {
+        return JSON.parse(JSON.stringify(seeds));
+      }
+      const seedIdSet = new Set(seeds.map(s => String(s.id)));
+      const customItems = list.filter(item => item && item.id && !seedIdSet.has(String(item.id)));
+      return [...customItems, ...JSON.parse(JSON.stringify(seeds))];
+    }
+    window.mergeWithSeedPhones = mergeWithSeedPhones;
+
     // Dữ liệu Kho Bán Máy & Bảo Hành: Khởi tạo an toàn kèm đồng bộ Firebase Firestore
     let phoneDatabase = [];
     try {
       const pRaw = localStorage.getItem('KIMCHI_PHONE_DB');
-      const pResetV = localStorage.getItem('KIMCHI_PHONE_RESET_V3');
-      if (!pResetV || !pRaw || pRaw === '[]' || pRaw === 'null') {
-        if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-          // Tự động nạp chuẩn xác đúng 188 máy (168 máy bán + 20 máy chưa xử lý) chuẩn từ 3 file Excel
-          phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-          localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
-          localStorage.setItem('KIMCHI_PHONE_RESET_V3', 'done');
-          localStorage.removeItem('KIMCHI_PHONE_CLEARED');
-        } else if (pRaw && pRaw !== '[]' && pRaw !== 'null') {
-          phoneDatabase = JSON.parse(pRaw) || [];
-        }
-      } else if (pRaw) {
-        phoneDatabase = JSON.parse(pRaw) || [];
+      let currentLocalList = [];
+      if (pRaw) {
+        try { currentLocalList = JSON.parse(pRaw) || []; } catch(e) { currentLocalList = []; }
       }
-      if ((!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-        phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-        try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch (e) { }
-      }
+      // Luôn hợp nhất bảo đảm có đầy đủ 188 máy chuẩn + máy người dùng tạo thêm (vd: Bịa Ra)
+      phoneDatabase = mergeWithSeedPhones(currentLocalList);
+      try {
+        localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
+        localStorage.setItem('KIMCHI_PHONE_RESET_V3', 'done');
+        localStorage.removeItem('KIMCHI_PHONE_CLEARED');
+      } catch(e) {}
     } catch(e) {}
 
     let soldPhoneDatabase = [];
@@ -10972,9 +10981,12 @@
       const rawSearch = document.getElementById('phoneSearchInput') ? document.getElementById('phoneSearchInput').value.trim() : '';
       const normSearch = normalizeQuery(rawSearch);
 
-      if ((!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-        phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-        try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch (e) { }
+      // Đảm bảo phoneDatabase luôn được hợp nhất cùng 188 máy gốc, không bao giờ bị thiếu dữ liệu
+      if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+        if (!Array.isArray(phoneDatabase) || phoneDatabase.length < window.SEED_PHONES_DATA.length) {
+          phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+          try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch (e) { }
+        }
       }
 
       if (typeof currentPhoneStatusFilter === 'undefined' || !currentPhoneStatusFilter) {
