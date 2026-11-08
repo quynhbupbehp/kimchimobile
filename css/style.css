@@ -7776,37 +7776,52 @@
         /* === TAB 2: PHẦN MỀM MOBILE (< 768PX) - CHUẨN Y CHANG ẢNH MẪU 100% === */
         #tab-phanmem .sw-top-header-bar {
           display: grid !important;
-          grid-template-columns: 1fr 1fr !important;
+          grid-template-columns: 1fr !important;
           gap: 8px !important;
           width: 100% !important;
           margin-bottom: 8px !important;
         }
-        /* HÀNG 1: DOANH THU & LÃI CÙNG 1 HÀNG */
+        /* HÀNG 1: ẨN DOANH THU TRÊN MOBILE, CHỈ HIỂN THỊ THẺ LÃI THÁNG & NGÀY */
         #tab-phanmem .sw-top-header-bar > div:first-child {
-          grid-column: 1 / 2 !important;
-          grid-row: 1 !important;
-          width: 100% !important;
-          margin: 0 !important;
-          display: flex !important;
+          display: none !important;
+        }
+        #swRevenueBadge {
+          display: none !important;
         }
         #tab-phanmem .sw-top-header-bar > div:last-child {
-          grid-column: 2 / 3 !important;
+          grid-column: 1 / -1 !important;
           grid-row: 1 !important;
           width: 100% !important;
           margin: 0 !important;
           display: flex !important;
         }
-        #swRevenueBadge,
         #tab-phanmem .sw-top-header-bar > div:last-child > .sw-stat-pill {
           width: 100% !important;
           height: 42px !important;
-          justify-content: center !important;
+          justify-content: space-between !important;
           box-sizing: border-box !important;
-          padding: 0 10px !important;
+          padding: 0 16px !important;
           margin: 0 !important;
           background: #000000 !important;
           border: 1.5px solid #334155 !important;
           border-radius: 9px !important;
+        }
+        #tab-phanmem #swProfitBadge #swMonthProfitText {
+          font-size: 1.15rem !important;
+          color: #ef4444 !important;
+          font-weight: 900 !important;
+        }
+        #tab-phanmem #swProfitBadge #swProfitEmojiIcon {
+          width: 22px !important;
+          height: 22px !important;
+          object-fit: contain !important;
+          flex-shrink: 0 !important;
+        }
+        /* GIẢM KÍCH CỠ CHỮ LÃI NGÀY 20% TRÊN MOBILE (1.15rem -> 0.92rem) */
+        #tab-phanmem #swProfitBadge #swDayProfitText {
+          font-size: 0.92rem !important;
+          color: #ffffff !important;
+          font-weight: 900 !important;
         }
         #btnSwExcelToggle, #swExcelActionsBox {
           display: none !important;
