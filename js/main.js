@@ -10737,42 +10737,250 @@
     }
 
     function editSoldPhone(id) {
-      let item = soldPhoneDatabase.find(s => String(s.id) === String(id) || s.id == id);
-      if (!item) {
+      openEditSoldPhoneModal(id);
+    }
+let currentEditingSoldPhone = null;
+
+    function openEditSoldPhoneModal(id) {
+      const p = soldPhoneDatabase.find(item => String(item.id) === String(id) || item.id == id);
+      if (!p) {
         alert("Không tìm thấy dữ liệu máy đã bán này!");
         return;
       }
-      document.getElementById('editSaleId').value = item.id;
-      document.getElementById('editSaleType').value = 'soldPhone';
-      document.getElementById('editSaleModalTitle').innerText = 'Sửa thông tin máy đã bán';
-      const dtLabel = document.getElementById('editSaleDateTimeLabel');
-      if (dtLabel) dtLabel.innerText = 'Ngày Bán';
-      const dtInput = document.getElementById('editSaleDateTime');
-      if (dtInput) dtInput.placeholder = '10/08/2026';
-      
-      let cleanStorage = (item.storage || '').replace(/[()]/g, '');
-      let defaultName = `${item.brand ? item.brand + ' - ' : ''}${item.name || ''} ${cleanStorage ? cleanStorage : ''}`.trim();
-      document.getElementById('editSaleName').value = defaultName;
-      document.getElementById('editSalePriceOut').value = item.price || item.total || '';
-      document.getElementById('editSalePriceIn').value = item.priceIn || '';
-      document.getElementById('editSaleMethod').value = item.method || 'Tiền Mặt';
-      let rawSoldDate = item.soldDate || item.date || item.dateTime || item.soldDateTime || '';
-      document.getElementById('editSaleDateTime').value = formatSoldDateToVN(rawSoldDate) || getCurrentDateStr();
+      currentEditingSoldPhone = p;
 
-      const conditionRow = document.getElementById('editSaleConditionRow');
-      const conditionInput = document.getElementById('editSaleCondition');
-      if (conditionRow && conditionInput) {
-        conditionRow.style.display = 'block';
-        conditionInput.value = item.condition || '';
+      document.getElementById('editSoldPhoneId').value = p.id;
+      let cleanStorage = (p.storage || '').replace(/[()]/g, '');
+      let brandStr = p.brand || '';
+      let nameStr = p.name || '';
+      document.getElementById('editSoldPhoneSummaryTitle').innerText = `${brandStr ? brandStr + ' - ' : ''}${nameStr} ${cleanStorage ? '(' + cleanStorage + ')' : ''}`.trim();
+      document.getElementById('editSoldPhoneSummaryImei').innerText = p.imei || 'Chưa có';
+
+      let dotColor = (typeof getHexColor === 'function') ? getHexColor(p.color) : '#6b7280';
+      let summaryDot = document.getElementById('editSoldPhoneSummaryDot');
+      if (summaryDot) {
+        summaryDot.style.backgroundColor = dotColor;
+        summaryDot.style.boxShadow = `0 0 8px ${dotColor}66`;
       }
-      
-      const modal = document.getElementById('editSaleModal');
+
+      let pinVal = (typeof formatPinByBrand === 'function') ? formatPinByBrand(p.pin, p.brand, p.name) : (p.pin || 'Pin Zin');
+      document.getElementById('editSoldPhoneSummaryDetails').innerText = `${p.condition || 'Zin Đẹp 99%'} - Pin : ${pinVal} - QG: ${p.origin || 'VN/A'} - Giá Nhập : ${p.priceIn || '0'}`;
+
+      // 1. Tên Khách Hàng
+      document.getElementById('editSoldCustomerName').value = p.customer || 'Khách Lẻ';
+
+      // 2. Giá Bán Thực Tế
+      let priceVal = p.price || p.total || '';
+      document.getElementById('editSoldPriceOut').value = formatPriceStr(parsePriceNum(priceVal)) || priceVal;
+
+      // 3. Lưu Vào
+      let targetListVal = p.targetList || 'Bán Hàng';
+      const targetSelect = document.getElementById('editSoldTargetList');
+      if (targetSelect) {
+        targetSelect.value = (targetListVal === 'Bán Gà' || targetListVal === 'banga') ? 'Bán Gà' : 'Bán Hàng';
+      }
+
+      // 4. Thanh Toán
+      let methodVal = p.method || p.paymentMethod || 'Tiền Mặt';
+      const paySelect = document.getElementById('editSoldPaymentMethod');
+      if (paySelect) {
+        paySelect.value = (methodVal === 'Chuyển Khoản' || methodVal === 'CK') ? 'Chuyển Khoản' : 'Tiền Mặt';
+      }
+
+      // 5. Gói Bảo Hành
+      let warrantyVal = p.warranty || '3 Tháng';
+      const wSelect = document.getElementById('editSoldWarranty');
+      if (wSelect) {
+        let found = false;
+        for (let opt of wSelect.options) {
+          if (opt.value.toLowerCase().includes(warrantyVal.toLowerCase()) || warrantyVal.toLowerCase().includes(opt.value.toLowerCase())) {
+            wSelect.value = opt.value;
+            found = true;
+            break;
+          }
+        }
+        if (!found) wSelect.value = '3 Tháng';
+      }
+
+      // 6. Phụ kiện tặng kèm
+      let gSacVal = p.giftSac || '';
+      let gOpVal = p.giftOp || '';
+      let gClucVal = p.giftCluc || '';
+      let gKhacVal = p.giftKhac || '';
+
+      if (!gSacVal && !gOpVal && !gClucVal && !gKhacVal && p.giftStr) {
+        let mSac = p.giftStr.match(/Sạc:\s*([^,\]]+)/i);
+        let mOp = p.giftStr.match(/Ốp:\s*([^,\]]+)/i);
+        let mCluc = p.giftStr.match(/C\.Lực:\s*([^,\]]+)/i);
+        let mKhac = p.giftStr.match(/Khác:\s*([^,\]]+)/i);
+        if (mSac) gSacVal = mSac[1].trim();
+        if (mOp) gOpVal = mOp[1].trim();
+        if (mCluc) gClucVal = mCluc[1].trim();
+        if (mKhac) gKhacVal = mKhac[1].trim();
+      }
+
+      document.getElementById('editSoldGiftSac').value = gSacVal;
+      document.getElementById('editSoldGiftOp').value = gOpVal;
+      document.getElementById('editSoldGiftCluc').value = gClucVal;
+      document.getElementById('editSoldGiftKhac').value = gKhacVal;
+
+      // 7. Ngày Bán
+      let rawDate = p.soldDate || p.date || p.dateTime || p.soldDateTime || '';
+      document.getElementById('editSoldDateVal').value = formatSoldDateToVN(rawDate) || getCurrentDateStr();
+
+      calcEditSoldProfit();
+
+      const modal = document.getElementById('editSoldPhoneModal');
       if (modal) {
-        modal.style.zIndex = '100000';
-        modal.classList.add('active');
         modal.style.display = 'flex';
+        modal.classList.add('active');
       }
     }
+    window.openEditSoldPhoneModal = openEditSoldPhoneModal;
+
+    function closeEditSoldPhoneModal() {
+      const modal = document.getElementById('editSoldPhoneModal');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+      }
+    }
+    window.closeEditSoldPhoneModal = closeEditSoldPhoneModal;
+
+    function adjustEditSoldDate(deltaDays) {
+      const input = document.getElementById('editSoldDateVal');
+      if (!input) return;
+      let curStr = input.value.trim() || getCurrentDateStr();
+      let parts = curStr.split('/');
+      if (parts.length === 3) {
+        let d = parseInt(parts[0], 10);
+        let m = parseInt(parts[1], 10) - 1;
+        let y = parseInt(parts[2], 10);
+        let dt = new Date(y, m, d);
+        dt.setDate(dt.getDate() + deltaDays);
+        let dd = String(dt.getDate()).padStart(2, '0');
+        let mm = String(dt.getMonth() + 1).padStart(2, '0');
+        let yyyy = dt.getFullYear();
+        input.value = `${dd}/${mm}/${yyyy}`;
+      }
+    }
+    window.adjustEditSoldDate = adjustEditSoldDate;
+
+    function calcEditSoldProfit() {
+      if (!currentEditingSoldPhone) return;
+      let priceInput = document.getElementById('editSoldPriceOut');
+      let priceValStr = priceInput.value.trim() || currentEditingSoldPhone.price || '0';
+      let priceOutNum = parsePriceNum(priceValStr);
+      let priceInNum = parsePriceNum(currentEditingSoldPhone.priceIn);
+
+      let gSac = parsePriceNum(document.getElementById('editSoldGiftSac').value);
+      let gOp = parsePriceNum(document.getElementById('editSoldGiftOp').value);
+      let gCluc = parsePriceNum(document.getElementById('editSoldGiftCluc').value);
+      let gKhac = parsePriceNum(document.getElementById('editSoldGiftKhac').value);
+      let totalGiftMoney = gSac + gOp + gCluc + gKhac;
+
+      document.getElementById('editSoldTotalGiftMoney').value = totalGiftMoney > 0 ? formatPriceStr(totalGiftMoney) : '0';
+
+      let profit = priceOutNum - priceInNum - totalGiftMoney;
+      let profitFormatted = (profit < 0 ? '-' : '') + formatPriceStr(Math.abs(profit));
+      document.getElementById('editSoldProfitVal').value = profitFormatted;
+    }
+    window.calcEditSoldProfit = calcEditSoldProfit;
+
+    function saveEditedSoldPhone(e) {
+      e.preventDefault();
+      const id = document.getElementById('editSoldPhoneId').value;
+      const item = soldPhoneDatabase.find(s => String(s.id) === String(id) || s.id == id);
+      if (!item) {
+        alert('Không tìm thấy máy trong danh sách đã bán!');
+        return;
+      }
+
+      const oldData = JSON.parse(JSON.stringify(item));
+      const customer = toTitleCase(document.getElementById('editSoldCustomerName').value.trim()) || 'Khách Lẻ';
+      const priceOutStr = document.getElementById('editSoldPriceOut').value.trim();
+      const targetList = document.getElementById('editSoldTargetList').value;
+      const paymentMethod = document.getElementById('editSoldPaymentMethod').value;
+      const warranty = document.getElementById('editSoldWarranty').value;
+      const dateVal = document.getElementById('editSoldDateVal').value.trim() || getCurrentDateStr();
+
+      const gSac = document.getElementById('editSoldGiftSac').value.trim();
+      const gOp = document.getElementById('editSoldGiftOp').value.trim();
+      const gCluc = document.getElementById('editSoldGiftCluc').value.trim();
+      const gKhac = document.getElementById('editSoldGiftKhac').value.trim();
+
+      let gifts = [];
+      if (gSac) gifts.push(`Sạc: ${gSac}`);
+      if (gOp) gifts.push(`Ốp: ${gOp}`);
+      if (gCluc) gifts.push(`C.Lực: ${gCluc}`);
+      if (gKhac) gifts.push(`Khác: ${gKhac}`);
+      let giftStr = gifts.length > 0 ? ` [Quà Tặng: ${gifts.join(', ')}]` : '';
+
+      let priceOutNum = parsePriceNum(priceOutStr);
+      let priceInNum = parsePriceNum(item.priceIn);
+      let totalGiftMoney = parsePriceNum(document.getElementById('editSoldTotalGiftMoney').value);
+      let profitNum = priceOutNum - priceInNum - totalGiftMoney;
+
+      const formattedTotal = formatPriceStr(priceOutNum);
+      const formattedProfit = (profitNum < 0 ? '-' : '') + formatPriceStr(Math.abs(profitNum));
+
+      // Cập nhật thông tin máy trong soldPhoneDatabase
+      item.customer = customer;
+      item.price = formattedTotal;
+      item.total = formattedTotal;
+      item.profit = formattedProfit;
+      item.targetList = targetList;
+      item.method = paymentMethod;
+      item.paymentMethod = paymentMethod;
+      item.warranty = warranty;
+      item.soldDate = dateVal;
+      item.date = dateVal;
+      item.dateTime = dateVal;
+      item.soldDateTime = dateVal;
+      item.giftSac = gSac;
+      item.giftOp = gOp;
+      item.giftCluc = gCluc;
+      item.giftKhac = gKhac;
+      item.giftStr = giftStr;
+      item.totalGiftMoney = totalGiftMoney;
+
+      // Đồng bộ thông tin sang danh mục Bán Hàng / Bán Gà tương ứng nếu có
+      let imeiLower = (item.imei || '').trim().toLowerCase();
+      const syncToSaleList = (list, saveFn, renderFn) => {
+        let saleItem = list.find(s => {
+          if (String(s.id) === String(item.id)) return true;
+          if (imeiLower && s.name && s.name.toLowerCase().includes(imeiLower)) return true;
+          return false;
+        });
+        if (saleItem) {
+          saleItem.customer = customer;
+          saleItem.total = formattedTotal;
+          saleItem.method = paymentMethod;
+          saleItem.profit = formattedProfit;
+          saleItem.warranty = warranty;
+          saleItem.dateTime = dateVal;
+          if (saveFn) saveFn();
+          if (renderFn) renderFn(list);
+        }
+      };
+
+      if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+        syncToSaleList(salesDatabase, saveSalesStorage, renderSalesTable);
+      }
+      if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
+        syncToSaleList(bangaDatabase, saveBangaStorage, renderBangaTable);
+      }
+
+      if (typeof logActivity === 'function') {
+        logActivity('EDIT', 'baohanh', 'Bảo hành', `Sửa thông tin máy đã bán: ${item.brand || ''} ${item.name || ''} (${item.imei || ''})`, oldData, item, item.id);
+      }
+
+      saveSoldPhoneStorage(item);
+      renderSoldPhoneTable();
+      closeEditSoldPhoneModal();
+      alert('Đã cập nhật thông tin máy đã bán thành công!');
+    }
+    window.saveEditedSoldPhone = saveEditedSoldPhone;
 
     function cloneSoldPhone(id) {
       const p = soldPhoneDatabase.find(item => String(item.id) === String(id) || item.id == id);
