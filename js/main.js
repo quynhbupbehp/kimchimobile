@@ -2280,7 +2280,7 @@
               if (isSoftwareCleared) return;
               var list = data.list;
               list.sort(function(a, b) { return getItemTimestamp(b) - getItemTimestamp(a); });
-              softwareDatabase = list;
+              softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(list) : list;
               try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
               if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
               if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
@@ -2355,7 +2355,7 @@
               if (isSoftwareCleared) return;
               let list = data.list;
               list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
-              softwareDatabase = list;
+              softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(list) : list;
               try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
               if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
               if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
@@ -2557,7 +2557,7 @@
             }
             // Sắp xếp ID lớn nhất / mới nhất lên đầu
             list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
-            softwareDatabase = list;
+            softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(list) : list;
             try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
             if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
             if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
@@ -2565,18 +2565,15 @@
               renderSoftwareDebtTable();
             }
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-          } else {
-            // Khi Firestore đã xóa hết hoặc trống
-            if (isSoftwareCleared || softwareDatabase.length === 0) {
-              softwareDatabase = [];
-              try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
-              if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-              if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
-              if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
-                renderSoftwareDebtTable();
-              }
-              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+          } else if (!isSoftwareCleared && Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
+            softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(softwareDatabase) : JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA));
+            try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
+            if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+            if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
+            if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
+              renderSoftwareDebtTable();
             }
+            if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
           }
         }, err => console.error("Lỗi sync software realtime:", err));
       } catch (err) {
@@ -2717,30 +2714,41 @@
       { id: 10, customer: "Quang Trung HY", device: "A06", price: "100", cost: "0", profit: "100", dayMonth: "22-10", year: "2026", time: "15:20", paymentStatus: "NỢ DAI", selected: false }
     ];
 
+    // Helper hợp nhất dữ liệu Phần Mềm với danh sách Seed chuẩn (Bảo toàn 100% 1415 đơn gốc + đơn tạo mới)
+    function mergeWithSeedSoftware(list) {
+      if (!Array.isArray(window.SEED_SOFTWARE_DATA) || window.SEED_SOFTWARE_DATA.length === 0) {
+        return Array.isArray(list) ? list : [];
+      }
+      const seeds = window.SEED_SOFTWARE_DATA;
+      if (!Array.isArray(list) || list.length === 0) {
+        return JSON.parse(JSON.stringify(seeds));
+      }
+      const seedIdSet = new Set(seeds.map(s => String(s.id)));
+      const customItems = list.filter(item => item && item.id && !seedIdSet.has(String(item.id)));
+      return [...customItems, ...JSON.parse(JSON.stringify(seeds))];
+    }
+    window.mergeWithSeedSoftware = mergeWithSeedSoftware;
+
     let softwareDatabase = [];
     try {
       const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
       const stored = localStorage.getItem('KIMCHI_PHANMEM_DB');
-      const seedResetV = localStorage.getItem('KIMCHI_PHANMEM_RESET_V1');
-      if (!seedResetV && Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
-        // Tự động nạp lại đầy đủ 1415 đơn phần mềm chuẩn xác
-        softwareDatabase = JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA));
-        localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
-        localStorage.setItem('KIMCHI_PHANMEM_RESET_V1', 'done');
-        localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
-      } else if (isSoftwareCleared) {
+      let currentLocalSw = [];
+      if (stored) {
+        try { currentLocalSw = JSON.parse(stored) || []; } catch(e) { currentLocalSw = []; }
+      }
+      if (isSoftwareCleared) {
         softwareDatabase = [];
-      } else if (stored !== null) {
-        softwareDatabase = JSON.parse(stored) || [];
-      } else if (Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
-        softwareDatabase = JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA));
-        localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
       } else {
-        softwareDatabase = DEFAULT_SOFTWARE_DATA;
-        localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
+        softwareDatabase = mergeWithSeedSoftware(currentLocalSw);
+        try {
+          localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase));
+          localStorage.setItem('KIMCHI_PHANMEM_RESET_V1', 'done');
+          localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
+        } catch(e) {}
       }
     } catch (e) {
-      softwareDatabase = [];
+      softwareDatabase = (typeof window.SEED_SOFTWARE_DATA !== 'undefined' && Array.isArray(window.SEED_SOFTWARE_DATA)) ? JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA)) : DEFAULT_SOFTWARE_DATA;
     }
 
     // Dữ liệu Bán Hàng & Bán Gà: Khởi tạo an toàn kèm đồng bộ Firebase Firestore
@@ -14610,6 +14618,13 @@
     }
 
     function renderSoftwareTable(database) {
+      if (!Array.isArray(database) || database.length === 0) {
+        if (Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
+          database = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(softwareDatabase) : JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA));
+          softwareDatabase = database;
+          try { localStorage.setItem('KIMCHI_PHANMEM_DB', JSON.stringify(softwareDatabase)); } catch(e){}
+        }
+      }
       updateSoftwareProfits();
 
       const tbody = document.getElementById('softwareTableBody');
