@@ -17902,7 +17902,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       // Đảm bảo danh sách tên máy trong mục tạo đơn phần mềm chỉ để lại duy nhất "Đã Thanh Toán"
       try {
-        localStorage.setItem('KIMCHI_SW_OPT_DEVICES', JSON.stringify(["Đã Thanh Toán"]));
+        let existingDevices = localStorage.getItem('KIMCHI_SW_OPT_DEVICES');
+        if (!existingDevices) {
+          localStorage.setItem('KIMCHI_SW_OPT_DEVICES', JSON.stringify(["Đã Thanh Toán"]));
+        }
       } catch(e){}
       renderSwDatalists();
       renderSwCustomerFilterOptions();
