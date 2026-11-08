@@ -9138,21 +9138,82 @@
     }
 
     // Helper hợp nhất kho Bán Máy với dữ liệu Seed chuẩn (Bảo tồn 100% máy người dùng tự tạo/nhập thêm)
+        // =========================================================
+    // QUẢN LÝ DANH SÁCH MÁY ĐÃ BÁN (CHỐNG TỰ NẠP LẠI VÀO KHO KHI F5)
+    // =========================================================
+    function getSoldPhoneIds() {
+      try {
+        const raw = localStorage.getItem('KIMCHI_SOLD_OUT_IDS');
+        const set = raw ? new Set(JSON.parse(raw)) : new Set();
+        // Bổ sung các ID và IMEI đang có trong soldPhoneDatabase
+        if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
+          soldPhoneDatabase.forEach(sp => {
+            if (sp && sp.id) set.add(String(sp.id));
+            if (sp && sp.imei) set.add('imei_' + String(sp.imei).trim());
+          });
+        }
+        return set;
+      } catch(e) {
+        return new Set();
+      }
+    }
+
+    function recordSoldPhoneId(id, imei) {
+      try {
+        const raw = localStorage.getItem('KIMCHI_SOLD_OUT_IDS');
+        const list = raw ? JSON.parse(raw) : [];
+        if (id && !list.includes(String(id))) list.push(String(id));
+        if (imei && !list.includes('imei_' + String(imei).trim())) list.push('imei_' + String(imei).trim());
+        localStorage.setItem('KIMCHI_SOLD_OUT_IDS', JSON.stringify(list));
+      } catch(e) {}
+    }
+
+    function removeSoldPhoneId(id, imei) {
+      try {
+        const raw = localStorage.getItem('KIMCHI_SOLD_OUT_IDS');
+        if (!raw) return;
+        let list = JSON.parse(raw);
+        if (id) list = list.filter(x => x !== String(id));
+        if (imei) list = list.filter(x => x !== ('imei_' + String(imei).trim()));
+        localStorage.setItem('KIMCHI_SOLD_OUT_IDS', JSON.stringify(list));
+      } catch(e) {}
+    }
+    window.recordSoldPhoneId = recordSoldPhoneId;
+    window.removeSoldPhoneId = removeSoldPhoneId;
+
     function mergeWithSeedPhones(list) {
-      if (!Array.isArray(window.SEED_PHONES_DATA) || window.SEED_PHONES_DATA.length === 0) {
-        return Array.isArray(list) ? list : [];
+      const soldIds = getSoldPhoneIds();
+      // Lọc danh sách hiện tại loại bỏ các máy đã bán
+      let combined = Array.isArray(list) ? list.filter(item => {
+        if (!item) return false;
+        if (item.id && soldIds.has(String(item.id))) return false;
+        if (item.imei && soldIds.has('imei_' + String(item.imei).trim())) return false;
+        return true;
+      }) : [];
+
+      if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+        const seeds = window.SEED_PHONES_DATA;
+        const existIdSet = new Set(combined.map(s => String(s.id)));
+        const existImeiSet = new Set(combined.filter(s => s.imei).map(s => String(s.imei).trim()));
+
+        seeds.forEach(s => {
+          if (!s || !s.id) return;
+          const sId = String(s.id);
+          const sImei = s.imei ? String(s.imei).trim() : '';
+
+          // Tuyệt đối không nạp lại nếu máy này đã bán
+          if (soldIds.has(sId) || (sImei && soldIds.has('imei_' + sImei))) return;
+          if (existIdSet.has(sId) || (sImei && existImeiSet.has(sImei))) return;
+
+          combined.push(s);
+          existIdSet.add(sId);
+          if (sImei) existImeiSet.add(sImei);
+        });
       }
-      const seeds = window.SEED_PHONES_DATA;
-      if (!Array.isArray(list) || list.length === 0) {
-        return JSON.parse(JSON.stringify(seeds));
-      }
-      const seedIdSet = new Set(seeds.map(s => String(s.id)));
-      const customItems = list.filter(item => item && item.id && !seedIdSet.has(String(item.id)));
-      return [...customItems, ...JSON.parse(JSON.stringify(seeds))];
+      return combined;
     }
     window.mergeWithSeedPhones = mergeWithSeedPhones;
 
-    // Dữ liệu Kho Bán Máy & Bảo Hành: Khởi tạo an toàn kèm đồng bộ Firebase Firestore
     let phoneDatabase = [];
     try {
       const pRaw = localStorage.getItem('KIMCHI_PHONE_DB');
@@ -10250,7 +10311,9 @@
         logActivity('ADD', 'baohanh', 'Bảo hành', `Thêm máy vào sổ bảo hành: ${displayName} - Khách: ${customerName}`, null, soldItem, soldItem.id);
       }
 
+      recordSoldPhoneId(soldItem.id, soldItem.imei);
       savePhoneStorage();
+      saveSoldPhoneStorage(soldItem);
       closeSellPhoneModal();
 
       renderPhoneGrid();
@@ -10813,6 +10876,7 @@
       let newCostNum = buyBackPriceNum;
 
       // Xóa khỏi soldPhoneDatabase
+      removeSoldPhoneId(p.id, p.imei);
       soldPhoneDatabase = soldPhoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);
 
       // Tạo object hoàn kho về phoneDatabase (Mục Bán Máy)
