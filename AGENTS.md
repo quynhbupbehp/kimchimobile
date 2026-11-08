@@ -33,16 +33,18 @@ Quy tắc này áp dụng vĩnh viễn cho mọi tương tác trong dự án `ki
 ---
 
 ## 5. NGUYÊN TẮC ĐỒNG BỘ DỮ LIỆU TỨC THÌ (REALTIME) GIỮA MOBILE & WEB
-- **ĐỒNG BỘ 100% NGAY LẬP TỨC**: Đảm bảo khi tạo đơn mới, sửa thông tin, hoặc xóa đơn trên Mobile đều phải cập nhật dữ liệu ngay lập tức như trên Web và ngược lại.
-- Cơ chế lưu trữ (`localStorage`, Firebase Firestore, State mảng dữ liệu) phải được kích hoạt gọi hàm render lại bảng/giao diện trên cả 2 nền tảng để dữ liệu luôn luôn khớp nhau tức thì mà không cần tải lại trang.
+- **ĐỒNG BỘ 100% NGAY LẬP TỨC**: Đảm bảo khi tạo đơn mới, sửa thông tin, hoặc xóa đơn trên Mobile đều phải cập nhật dữ liệu ngay lập tức như trên Web và ngược lại mà không cần tải lại trang.
+- Cơ chế lưu trữ (`localStorage`, Firebase Firestore, State mảng dữ liệu) phải được kích hoạt gọi hàm render lại bảng/giao diện trên cả 2 nền tảng để dữ liệu luôn luôn khớp nhau tức thì.
 
 ---
 
-## 6. NGUYÊN TẮC BẢO VỆ HẠN MỨC FIREBASE (CHỐNG CHÁY QUOTA 100%)
+## 6. NGUYÊN TẮC BẢO VỆ HẠN MỨC FIREBASE & CHỐNG BÃO ĐỌC GHI (CHỐNG CHÁY QUOTA 100%)
+- **TUYỆT ĐỐI KHÔNG LÀM LỖI GÂY BÃO ĐỌC GHI**: Trong quá trình sửa code, tuyệt đối không được viết bất kỳ đoạn code nào gây đọc ghi dồn dập, bão request, nhập xuất file liên tục làm quá tải Firestore.
 - **NGHIÊM CẤM GHI HÀNG LOẠT (NO BATCH WRITE LOOPS)**: Tuyệt đối không dùng vòng lặp (`forEach`, `for...`) để ghi hàng loạt danh sách lên Firestore.
 - **CHỈ ĐỒNG BỘ ĐÚNG ITEM THAY ĐỔI (SINGLE-DOC UPDATE)**: Khi tạo mới hoặc sửa 1 đơn, chỉ gửi đúng 1 document của đơn đó (`db.collection(...).doc(id).set(item, { merge: true })`).
 - **DÙNG CƠ CHẾ BUNDLE SYNC CÓ DEBOUNCE**: Khi cần đồng bộ danh sách tổng hợp, gom vào 1 document duy nhất (`sync_bundles/sales`, `software`, `banga`) kèm `debounce >= 1000ms`. 1 lần lưu = đúng 1 write.
 - **KHÔNG GỌI SYNC FIREBASE KHI KHỞI ĐỘNG TRANG**: Tuyệt đối không gọi các hàm ghi Firestore trong `DOMContentLoaded`, `migrate...` hay khi người dùng vừa F5 / mở app.
+- **TỰ ĐỘNG CẢNH BÁO TRÊN MOBILE KHI HẾT HẠN MỨC ĐỌC GHI (QUOTA EXCEEDED)**: Bắt lỗi `resource-exhausted` / `quota exceeded` từ Firebase. Khi phát hiện trên Mobile, phải hiển thị cảnh báo rõ ràng cho người dùng biết tình trạng Firebase tạm hết lượt hôm nay và an tâm dữ liệu vẫn được lưu an toàn 100% trên máy.
 
 ---
 

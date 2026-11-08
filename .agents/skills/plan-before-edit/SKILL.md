@@ -27,11 +27,13 @@ Mọi tác vụ can thiệp vào mã nguồn trong dự án `kimchimobile` bắt
 ## 5. Đồng Bộ Dữ Liệu Realtime Giữa Mobile & Web
 - Đảm bảo khi thao tác tạo đơn mới, sửa thông tin, hoặc xóa đơn trên Mobile đều cập nhật ngay lập tức dữ liệu như trên Web và ngược lại.
 
-## 6. Chống Cháy Hạn Mức Firebase (Bảo Vệ Quota Tuyệt Đối)
+## 6. Chống Bão Đọc Ghi & Bảo Vệ Hạn Mức Firebase (Chống Cháy Quota Tuyệt Đối)
+- Tuyệt đối không làm lỗi gây bão đọc ghi, không ghi đọc dồn dập, không nhập xuất file liên tục làm quá tải Firestore.
 - Không dùng vòng lặp `forEach` ghi hàng loạt danh sách lên Firestore.
 - Khi thêm/sửa đơn: chỉ gửi đúng 1 document của đơn đó (`{ merge: true }`).
 - Danh sách tổng hợp đồng bộ qua Bundle Doc (`sync_bundles`) với debounce >= 1000ms.
 - Không ghi ngầm lên Firestore khi mở trang hoặc F5.
+- Tự động cảnh báo trên mobile khi hết hạn mức đọc ghi (`resource-exhausted` / `quota exceeded`), đồng thời bảo đảm dữ liệu trên máy vẫn được lưu an toàn 100%.
 
 ## 7. Tự Động Push GitHub
 - Hoàn thành là tự động `git add .`, `git commit`, `git push origin main`.

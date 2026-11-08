@@ -2273,6 +2273,28 @@
     }
     window.fetchDirectCloudSync = fetchDirectCloudSync;
 
+    // HÀM BẮT LỖI QUOTA VÀ CẢNH BÁO TRÊN MOBILE (AGENTS.md Rule 6)
+    let _lastQuotaWarnTs = 0;
+    function notifyFirebaseQuotaExceeded(err) {
+      const errStr = (err && (err.code || err.message || String(err))) || '';
+      const isQuota = /resource-exhausted|quota|exceeded/i.test(errStr);
+      if (!isQuota) return;
+
+      const now = Date.now();
+      if (now - _lastQuotaWarnTs < 60000) return; // Chỉ cảnh báo 1 lần mỗi 60 giây để không gây phiền
+      _lastQuotaWarnTs = now;
+
+      console.warn("⚠️ Cảnh báo: Firebase Firestore đã hết hạn mức đọc/ghi hôm nay (resource-exhausted).");
+
+      // Cảnh báo trực tiếp trên Mobile
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        if (typeof showToast === 'function') {
+          showToast("⚠️ Firebase hết hạn ngạch đọc/ghi hôm nay!\nDữ liệu vẫn được lưu an toàn 100% trên điện thoại.", 5000);
+        }
+      }
+    }
+    window.notifyFirebaseQuotaExceeded = notifyFirebaseQuotaExceeded;
+
     function initFirebaseRealtimeSync() {
       // Tải ngay dữ liệu từ Cloud trực tiếp qua HTTP GET (không đợi websocket snapshot)
       setTimeout(function() { if (typeof fetchDirectCloudSync === 'function') fetchDirectCloudSync(); }, 100);
