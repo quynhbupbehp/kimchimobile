@@ -2894,8 +2894,20 @@
   <!-- MODAL THÊM / SỬA MÁY MỚI -->
   <div class="modal-overlay" id="phoneModal">
     <div class="modal-ticket-box" style="max-width: 644px;">
-      <div class="ticket-header">
+      <div class="ticket-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
         <span id="phoneModalTitle">Thêm Thông Tin Máy Mới</span>
+        <div id="phoneModalBrandWrap" style="display: inline-flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 8px;">
+          <select id="mBrandSelect" class="ticket-input" style="height: 32px; padding: 2px 10px; font-weight: 800; font-size: 0.95rem; background: #0f172a; color: #38bdf8; border: 1.5px solid #38bdf8; border-radius: 6px; cursor: pointer; text-transform: uppercase;">
+            <option value="IPHONE">IPHONE</option>
+            <option value="SAMSUNG">SAMSUNG</option>
+            <option value="OPPO">OPPO</option>
+            <option value="REALME">REALME</option>
+            <option value="REDMI">REDMI</option>
+            <option value="POCO">POCO</option>
+            <option value="VIVO">VIVO</option>
+            <option value="IPAD">IPAD</option>
+          </select>
+        </div>
         <button type="button" onclick="closePhoneModal()"
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
@@ -3646,8 +3658,20 @@
   <!-- MODAL SỬA THÔNG TIN MÁY ĐÃ BÁN (CHUẨN 100% NHƯ XÁC NHẬN BÁN MÁY) -->
   <div class="modal-overlay" id="editSoldPhoneModal" style="display: none; z-index: 100000;" onclick="if(event.target === this) closeEditSoldPhoneModal()">
     <div class="modal-ticket-box capitalize-ui" style="max-width: 580px; padding: 1.25rem 1.5rem;" onclick="event.stopPropagation()">
-      <div class="ticket-header" style="border-bottom: none; margin-bottom: 0.8rem; padding-bottom: 0;">
+      <div class="ticket-header" style="border-bottom: none; margin-bottom: 0.8rem; padding-bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
         <span style="color: #38bdf8; font-weight: 900; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.5px;">Sửa Thông Tin Máy Đã Bán</span>
+        <div id="editSoldBrandWrap" style="display: inline-flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 8px;">
+          <select id="editSoldBrandSelect" class="ticket-input" style="height: 32px; padding: 2px 10px; font-weight: 800; font-size: 0.95rem; background: #0f172a; color: #38bdf8; border: 1.5px solid #38bdf8; border-radius: 6px; cursor: pointer; text-transform: uppercase;">
+            <option value="IPHONE">IPHONE</option>
+            <option value="SAMSUNG">SAMSUNG</option>
+            <option value="OPPO">OPPO</option>
+            <option value="REALME">REALME</option>
+            <option value="REDMI">REDMI</option>
+            <option value="POCO">POCO</option>
+            <option value="VIVO">VIVO</option>
+            <option value="IPAD">IPAD</option>
+          </select>
+        </div>
         <button type="button" onclick="closeEditSoldPhoneModal()"
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>

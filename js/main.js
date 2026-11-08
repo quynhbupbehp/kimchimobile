@@ -2465,6 +2465,21 @@
           }
         }).catch(function(e) { console.warn('fetchDirectCloudSync banga:', e); });
 
+        // 4. Tải Sold Phones (Bảo Hành) Bundle
+        db.collection('sync_bundles').doc('sold_phones').get().then(function(doc) {
+          if (doc && doc.exists) {
+            var data = doc.data();
+            if (data && Array.isArray(data.list) && data.list.length > 0) {
+              var isSoldCleared = localStorage.getItem('KIMCHI_SOLD_PHONE_CLEARED') === 'true';
+              if (isSoldCleared) return;
+              var list = data.list;
+              soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(list) : list;
+              try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
+              if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+            }
+          }
+        }).catch(function(e) { console.warn('fetchDirectCloudSync sold_phones:', e); });
+
         if (showToastMsg && typeof showToast === 'function') {
           showToast('⚡ Đã đồng bộ dữ liệu đám mây mới nhất!');
         }
@@ -2562,6 +2577,22 @@
             }
           }
         }, err => console.warn('Bundle sync banga notice:', err.code || err));
+      } catch(e){}
+
+      try {
+        db.collection('sync_bundles').doc('sold_phones').onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (data && Array.isArray(data.list) && data.list.length > 0) {
+              const isSoldCleared = localStorage.getItem('KIMCHI_SOLD_PHONE_CLEARED') === 'true';
+              if (isSoldCleared) return;
+              let list = data.list;
+              soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(list) : list;
+              try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
+              if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+            }
+          }
+        }, err => console.warn('Bundle sync sold_phones notice:', err.code || err));
       } catch(e){}
 
       // 1. Đồng bộ Bán Hàng (sales) thời gian thực
@@ -2670,7 +2701,12 @@
           });
           if (list.length > 0) {
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
-            soldPhoneDatabase = list;
+            // Hợp nhất list từ Firebase với danh sách seed để không bị mất 96 máy gốc
+            soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(list) : list;
+            try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
+            if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+          } else if (Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
+            soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(soldPhoneDatabase) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
             try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
             if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
           }
@@ -8958,6 +8994,62 @@
         alert("Không tìm thấy dữ liệu đơn bán gà này!");
         return;
       }
+
+      // Kiểm tra nếu là MÁY ĐÃ BÁN: mở popup Sửa Thông Tin Máy Đã Bán (#editSoldPhoneModal)
+      // Nếu là PHỤ KIỆN / KHÁC: mở popup Sửa Đơn Bán Hàng (#editSaleModal)
+      const details = typeof getBangaPhoneDetails === 'function' ? getBangaPhoneDetails(item) : {};
+      const isPhone = details.isPhone || item.accessory === 'Bán Máy' || item.accessory === 'Máy';
+
+      if (isPhone && typeof openEditSoldPhoneModal === 'function') {
+        let soldItem = (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase))
+          ? soldPhoneDatabase.find(sp => {
+              if (String(sp.id) === String(item.id)) return true;
+              if (details.imei && sp.imei && String(sp.imei).trim().toLowerCase() === String(details.imei).trim().toLowerCase()) return true;
+              return false;
+            })
+          : null;
+
+        if (soldItem) {
+          openEditSoldPhoneModal(soldItem.id);
+          return;
+        }
+
+        // Nếu chưa có trong soldPhoneDatabase, tự động tạo tạm đối tượng máy đã bán và mở popup chuẩn
+        let tempSoldPhone = {
+          id: item.id,
+          brand: details.brand || detectPhoneBrand(item.brand, item.name),
+          name: details.phoneName || item.phoneName || item.name || '',
+          storage: details.storage || item.storage || '',
+          color: details.color || item.color || '',
+          imei: details.imei || item.imei || '',
+          condition: details.condition || item.condition || 'Zin Đẹp 99%',
+          pinStatus: details.pinStatus || item.pinStatus || 'Pin Zin',
+          pin: details.pin || item.pin || '100%',
+          origin: details.origin || item.origin || 'VN/A',
+          price: item.total || item.price || '0',
+          total: item.total || item.price || '0',
+          priceIn: item.priceIn || '0',
+          profit: item.profit || '0',
+          customer: item.customer || 'Khách Lẻ',
+          warranty: details.warranty || item.warranty || '3 Tháng',
+          method: item.method || 'Tiền mặt',
+          paymentMethod: item.method || 'Tiền mặt',
+          soldDate: item.dateTime || getCurrentDateStr(),
+          date: item.dateTime || getCurrentDateStr(),
+          dateTime: item.dateTime || getCurrentDateStr(),
+          soldDateTime: item.dateTime || getCurrentDateStr(),
+          targetList: 'Bán Gà',
+          giftStr: item.giftStr || '',
+          totalGiftMoney: item.totalGiftMoney || 0
+        };
+
+        if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
+          soldPhoneDatabase.unshift(tempSoldPhone);
+        }
+        openEditSoldPhoneModal(tempSoldPhone.id);
+        return;
+      }
+
       document.getElementById('editSaleId').value = item.id;
       document.getElementById('editSaleType').value = 'banga';
       document.getElementById('editSaleModalTitle').innerText = 'Sửa đơn bán gà';
@@ -8974,7 +9066,6 @@
       const statusBangaEl = document.getElementById('editSalePaymentStatus');
       if (statusBangaEl) statusBangaEl.value = item.paymentStatus || 'Đã Trả';
 
-      const details = typeof getBangaPhoneDetails === 'function' ? getBangaPhoneDetails(item) : {};
       const conditionRow = document.getElementById('editSaleConditionRow');
       const conditionInput = document.getElementById('editSaleCondition');
       if (conditionRow && conditionInput) {
@@ -9242,6 +9333,51 @@
     window.recordSoldPhoneId = recordSoldPhoneId;
     window.removeSoldPhoneId = removeSoldPhoneId;
 
+    function getDeletedSoldPhoneIds() {
+      try {
+        const raw = localStorage.getItem('KIMCHI_SOLD_PHONE_DELETED_IDS');
+        return raw ? new Set(JSON.parse(raw)) : new Set();
+      } catch(e) {
+        return new Set();
+      }
+    }
+
+    function recordDeletedSoldPhoneId(id, imei) {
+      try {
+        const set = getDeletedSoldPhoneIds();
+        if (id) set.add(String(id));
+        if (imei) set.add('imei_' + String(imei).trim().toLowerCase());
+        localStorage.setItem('KIMCHI_SOLD_PHONE_DELETED_IDS', JSON.stringify(Array.from(set)));
+      } catch(e) {}
+    }
+    window.recordDeletedSoldPhoneId = recordDeletedSoldPhoneId;
+
+    function mergeWithSeedSoldPhones(list) {
+      const deletedIds = getDeletedSoldPhoneIds();
+      let combined = Array.isArray(list) ? list.filter(item => {
+        if (!item) return false;
+        if (item.id && deletedIds.has(String(item.id))) return false;
+        return true;
+      }) : [];
+
+      if (Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
+        const existIdSet = new Set(combined.map(s => String(s.id)));
+
+        window.SEED_SOLD_DATA.forEach(seed => {
+          if (!seed || !seed.id) return;
+          const sId = String(seed.id);
+
+          if (deletedIds.has(sId)) return;
+          if (existIdSet.has(sId)) return;
+
+          combined.push(seed);
+          existIdSet.add(sId);
+        });
+      }
+      return combined;
+    }
+    window.mergeWithSeedSoldPhones = mergeWithSeedSoldPhones;
+
     function mergeWithSeedPhones(list) {
       const soldIds = getSoldPhoneIds();
       // Lọc danh sách hiện tại loại bỏ các máy đã bán
@@ -9294,19 +9430,16 @@
     let soldPhoneDatabase = [];
     try {
       const spRaw = localStorage.getItem('KIMCHI_SOLD_PHONE_DB');
-      const spResetV = localStorage.getItem('KIMCHI_SOLD_RESET_V2');
-      if (!spResetV && Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
-        // Tự động nạp chuẩn xác đúng 96 máy đã bán từ file Bảo Hành.xlsx
-        soldPhoneDatabase = JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
-        localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
-        localStorage.setItem('KIMCHI_SOLD_RESET_V2', 'done');
-        localStorage.setItem('KIMCHI_SOLD_PHONE_RESET_TS', String(Date.now()));
-        localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
-      } else if (spRaw) {
-        soldPhoneDatabase = JSON.parse(spRaw) || [];
-      } else if (Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
-        soldPhoneDatabase = JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
+      let currentLocalSoldList = [];
+      if (spRaw) {
+        try { currentLocalSoldList = JSON.parse(spRaw) || []; } catch(e) { currentLocalSoldList = []; }
       }
+      // Luôn hợp nhất bảo đảm có đầy đủ 96 máy chuẩn từ file Excel + các đơn người dùng tạo thêm (vd: Bịa Ra)
+      soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(currentLocalSoldList) : currentLocalSoldList;
+      try {
+        localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+        localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
+      } catch(e) {}
     } catch(e) {}
     
     // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
@@ -9695,6 +9828,11 @@
       renderAllDropdowns();
       document.getElementById('mEditId').value = '';
       document.getElementById('phoneModalTitle').innerText = "Thêm Thông Tin Máy Mới";
+      const brandSelect = document.getElementById('mBrandSelect');
+      if (brandSelect) {
+        let defaultBrand = (currentBrandFilter && currentBrandFilter !== 'ALL') ? currentBrandFilter.toUpperCase() : 'IPHONE';
+        brandSelect.value = defaultBrand;
+      }
       document.getElementById('mName').value = '';
       document.getElementById('mImei').value = '';
       document.getElementById('mColor').value = '';
@@ -9721,6 +9859,18 @@
         if (p) {
           document.getElementById('phoneModalTitle').innerText = "Sửa Thông Tin Máy";
           document.getElementById('mEditId').value = p.id;
+          const brandSelect = document.getElementById('mBrandSelect');
+          if (brandSelect) {
+            let curBrand = (p.brand || (typeof detectPhoneBrand === 'function' ? detectPhoneBrand(p.brand, p.name) : 'IPHONE')).toUpperCase().trim();
+            let hasOpt = Array.from(brandSelect.options).some(o => o.value === curBrand);
+            if (!hasOpt && curBrand) {
+              let opt = document.createElement('option');
+              opt.value = curBrand;
+              opt.innerText = curBrand;
+              brandSelect.appendChild(opt);
+            }
+            brandSelect.value = curBrand || 'IPHONE';
+          }
           document.getElementById('mName').value = p.name || '';
           document.getElementById('mColor').value = p.color || '';
           document.getElementById('mImei').value = p.imei || '';
@@ -9752,8 +9902,9 @@
     function saveNewPhone(e) {
       e.preventDefault();
       const editId = document.getElementById('mEditId').value;
+      const brandSelectVal = document.getElementById('mBrandSelect') ? document.getElementById('mBrandSelect').value : '';
       const existingP = editId ? phoneDatabase.find(x => x.id == editId) : null;
-      let resolvedBrand = existingP ? (existingP.brand || (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter)) : (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter);
+      let resolvedBrand = brandSelectVal || (existingP ? (existingP.brand || (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter)) : (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter));
       if (resolvedBrand === 'OPPO & REALME' || resolvedBrand === 'OPPO - REALME') {
         resolvedBrand = /realme/i.test(document.getElementById('mName').value) ? 'REALME' : 'OPPO';
       } else if (resolvedBrand === 'REDMI & POCO' || resolvedBrand === 'REDMI - POCO') {
@@ -10759,6 +10910,19 @@ let currentEditingSoldPhone = null;
       document.getElementById('editSoldPhoneSummaryTitle').innerText = `${brandStr ? brandStr + ' - ' : ''}${nameStr} ${cleanStorage ? '(' + cleanStorage + ')' : ''}`.trim();
       document.getElementById('editSoldPhoneSummaryImei').innerText = p.imei || 'Chưa có';
 
+      const brandSelect = document.getElementById('editSoldBrandSelect');
+      if (brandSelect) {
+        let curBrand = (p.brand || (typeof detectPhoneBrand === 'function' ? detectPhoneBrand(p.brand, p.name) : 'IPHONE')).toUpperCase().trim();
+        let hasOpt = Array.from(brandSelect.options).some(o => o.value === curBrand);
+        if (!hasOpt && curBrand) {
+          let opt = document.createElement('option');
+          opt.value = curBrand;
+          opt.innerText = curBrand;
+          brandSelect.appendChild(opt);
+        }
+        brandSelect.value = curBrand || 'IPHONE';
+      }
+
       let dotColor = (typeof getHexColor === 'function') ? getHexColor(p.color) : '#6b7280';
       let summaryDot = document.getElementById('editSoldPhoneSummaryDot');
       if (summaryDot) {
@@ -10928,6 +11092,8 @@ let currentEditingSoldPhone = null;
       const formattedProfit = (profitNum < 0 ? '-' : '') + formatPriceStr(Math.abs(profitNum));
 
       // Cập nhật thông tin máy trong soldPhoneDatabase
+      const brandVal = document.getElementById('editSoldBrandSelect') ? document.getElementById('editSoldBrandSelect').value : '';
+      if (brandVal) item.brand = brandVal;
       item.customer = customer;
       item.price = formattedTotal;
       item.total = formattedTotal;
@@ -11302,6 +11468,9 @@ let currentEditingSoldPhone = null;
         return;
       }
 
+      if (typeof recordDeletedSoldPhoneId === 'function') {
+        recordDeletedSoldPhoneId(p.id, p.imei);
+      }
       soldPhoneDatabase = soldPhoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);
       saveSoldPhoneStorage();
       if (typeof db !== 'undefined' && db && id) {
