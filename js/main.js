@@ -8929,6 +8929,66 @@
       }
     }
 
+    
+    // HÀM ĐIỀU CHỈNH NGÀY BÁN TRONG MODAL SỬA THÔNG TIN MÁY ĐÃ BÁN (+ - ngày & lịch)
+    function adjustEditSaleDate(deltaDays) {
+      const input = document.getElementById('editSaleDateTime');
+      if (!input) return;
+      let curVal = input.value.trim();
+      let d = new Date();
+      if (curVal) {
+        let p = curVal.split('/');
+        if (p.length === 3) {
+          let day = parseInt(p[0], 10);
+          let mon = parseInt(p[1], 10) - 1;
+          let year = parseInt(p[2], 10);
+          if (!isNaN(day) && !isNaN(mon) && !isNaN(year)) {
+            d = new Date(year, mon, day);
+          }
+        }
+      }
+      d.setDate(d.getDate() + deltaDays);
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      input.value = `${dd}/${mm}/${yyyy}`;
+    }
+    window.adjustEditSaleDate = adjustEditSaleDate;
+
+    function openNativeDatePickerForEditSale() {
+      const picker = document.getElementById('nativeDatePicker_editSale');
+      if (!picker) return;
+      const input = document.getElementById('editSaleDateTime');
+      if (input && input.value.trim()) {
+        let p = input.value.trim().split('/');
+        if (p.length === 3) {
+          let yyyy = p[2];
+          let mm = String(p[1]).padStart(2, '0');
+          let dd = String(p[0]).padStart(2, '0');
+          picker.value = `${yyyy}-${mm}-${dd}`;
+        }
+      }
+      if (typeof picker.showPicker === 'function') {
+        picker.showPicker();
+      } else {
+        picker.click();
+      }
+    }
+    window.openNativeDatePickerForEditSale = openNativeDatePickerForEditSale;
+
+    function handleNativeDateChangeForEditSale(val) {
+      if (!val) return;
+      const parts = val.split('-');
+      if (parts.length === 3) {
+        const dd = parts[2];
+        const mm = parts[1];
+        const yyyy = parts[0];
+        const input = document.getElementById('editSaleDateTime');
+        if (input) input.value = `${dd}/${mm}/${yyyy}`;
+      }
+    }
+    window.handleNativeDateChangeForEditSale = handleNativeDateChangeForEditSale;
+
     function closeEditSaleModal() {
       const modal = document.getElementById('editSaleModal');
       if (modal) {
@@ -9741,9 +9801,7 @@
         statusRow = `<div class="view-info-item"><span class="view-info-label">- Trạng thái:</span> <span class="view-info-val" style="color: #ef4444; font-weight: 800;">Đã bán (Còn Cái Nịt)</span></div>`;
       } else {
         dateRow = `<div class="view-info-item"><span class="view-info-label">- Ngày nhập:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.date || getCurrentDateStr()}</span></div>`;
-        warrantyRows = `
-          <div class="view-info-item"><span class="view-info-label">- Bảo hành:</span> <span class="view-info-val" style="color: #38bdf8; font-weight: 800;">${toTitleCase(p.warranty || '3 Tháng')}</span></div>
-        `;
+        warrantyRows = '';
         let statusDisplay = (p.status || (isExternal ? 'Đã Bán (❤️)' : 'Còn Hàng'))
           .replace(/ngoài kho/gi, '<span style="color: #ef4444;">❤️</span>')
           .replace(/máy ngoài/gi, '<span style="color: #ef4444;">❤️</span>');
@@ -9822,9 +9880,9 @@
         </div>
         <div class="view-info-item"><span class="view-info-label">- Tình trạng :</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.condition || 'Zin Đẹp'}</span></div>
         <div class="view-info-item"><span class="view-info-label">- Thông Tin Pin :</span> <span class="view-info-val" style="color: #ffffff; font-weight: 800;">${pinType} : ${pinVal}</span></div>
-        <div class="view-info-item"><span class="view-info-label">- Lãi Dự Kiến :</span> <span class="view-info-val" style="color: #facc15; font-weight: 900;">${expectedProfitStr}</span></div>
+        <div class="view-info-item"><span class="view-info-label">- Lãi :</span> <span class="view-info-val" style="color: #facc15; font-weight: 900;">${expectedProfitStr}</span></div>
+        <div class="view-info-item"><span class="view-info-label">- PK Đã Tặng =</span> <span class="view-info-val" style="color: #f59e0b; font-weight: 800;">${formatNumberDisplay(giftTotal)} ${giftDetailStr ? `<span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600; margin-left: 6px;">(${giftDetailStr})</span>` : ''}</span></div>
         ${statusRow}
-        ${isSold && giftTotal > 0 ? giftRowHtml : ''}
         ${warrantyRows}
         ${isSold && p.customer && p.customer !== 'Khách lẻ' ? `<div class="view-info-item"><span class="view-info-label">- Khách hàng:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${p.customer}</span></div>` : ''}
         <div class="view-info-item"><span class="view-info-label">- Ghi chú:</span> <span class="view-info-val" style="font-weight: 800; color: #ffffff;">${noteDisplay}</span></div>
