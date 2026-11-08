@@ -7339,13 +7339,13 @@
             else if (col.includes('imei') || col.includes('seri')) {
               colIdxImei = idx;
             }
-            // Dung lượng pin / % Pin / mAh
-            else if (col.includes('dung luong pin') || col.includes('phan tram pin') || col.includes('% pin') || col === '%' || col.includes('battery capacity') || col.includes('mah')) {
-              colIdxPin = idx;
-            }
-            // Trạng thái pin / Loại pin / Cột "pin"
-            else if (col === 'pin' || col.includes('loai pin') || col.includes('trang thai pin') || col.includes('tinh trang pin') || col.includes('battery status')) {
+            // Trạng thái pin / Tình trạng pin / Loại pin
+            else if (col.includes('trang thai pin') || col.includes('tinh trang pin') || col.includes('loai pin') || col.includes('battery status')) {
               colIdxPinStatus = idx;
+            }
+            // Dung lượng pin / Cột "pin" / % Pin / mAh
+            else if (col === 'pin' || col.includes('dung luong pin') || col.includes('phan tram pin') || col.includes('% pin') || col === '%' || col.includes('battery capacity') || col.includes('mah')) {
+              colIdxPin = idx;
             }
             // Giá bán (loại trừ giá nhập, vốn)
             else if (col.includes('gia ban') || col.includes('gia le') || (col.includes('gia') && !col.includes('nhap') && !col.includes('von')) || col.includes('price out')) {
@@ -8814,6 +8814,11 @@
         localStorage.removeItem('KIMCHI_PHONE_CLEARED');
       } else if (pRaw) {
         phoneDatabase = JSON.parse(pRaw) || [];
+        // Tự động bổ sung pin & pinStatus nếu dữ liệu cũ còn thiếu
+        phoneDatabase.forEach(p => {
+          if (!p.pin && (p.battery || p.batteryCap)) p.pin = p.battery || p.batteryCap;
+          if (!p.pinStatus) p.pinStatus = 'Pin Zin';
+        });
       } else if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
         phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
       }
@@ -8832,6 +8837,11 @@
         localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
       } else if (spRaw) {
         soldPhoneDatabase = JSON.parse(spRaw) || [];
+        // Tự động bổ sung pin & pinStatus nếu dữ liệu cũ còn thiếu
+        soldPhoneDatabase.forEach(s => {
+          if (!s.pin && (s.battery || s.batteryCap)) s.pin = s.battery || s.batteryCap;
+          if (!s.pinStatus) s.pinStatus = 'Pin Zin';
+        });
       } else if (Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
         soldPhoneDatabase = JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
       }
@@ -9307,8 +9317,9 @@
                      soldPhoneDatabase.some(item => String(item.id) === String(p.id) || item.id == p.id) ||
                      Boolean(p.soldDate || p.soldDateTime || (p.dateTime && p.customer) || (p.status && p.status.toLowerCase().includes('bán')));
 
-      let pinType = p.pinStatus || 'Pin Zin';
-      let pinVal = formatPinByBrand(p.pin, p.brand, p.name);
+      let matchedStock = (p.imei && phoneDatabase && phoneDatabase.find(x => x.imei && String(x.imei).trim().toLowerCase() === String(p.imei).trim().toLowerCase())) || null;
+      let pinType = p.pinStatus || (matchedStock && matchedStock.pinStatus) || 'Pin Zin';
+      let pinVal = formatPinByBrand(p.pin || (matchedStock && (matchedStock.pin || matchedStock.battery || matchedStock.batteryCap)) || p.battery || p.batteryCap, p.brand, p.name);
       let originVal = p.origin || 'VN/A';
       let pinOriginStr = `${pinType} : ${pinVal} - ${originVal}`;
 
@@ -11151,8 +11162,8 @@
                   }
                 }
 
-                let displayPinStatus = p.pinStatus || 'Pin Thay';
-                let displayPinPct = formatPinByBrand(p.pin, p.brand, p.name);
+                let displayPinStatus = p.pinStatus || 'Pin Zin';
+                let displayPinPct = formatPinByBrand(p.pin || p.battery || p.batteryCap, p.brand, p.name);
                 let displayOrigin = p.origin || 'VN/A';
                 let displayCondition = p.condition || 'Zin Đẹp 99%';
                 let dotColor = getHexColor(p.color);
@@ -11272,8 +11283,8 @@
           let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
           let storageDisplay = rawStorage.replace(/\s*g+b$/i, '').replace(/\s*g$/i, '').trim();
 
-          let displayPinStatus = p.pinStatus || 'Pin Thay';
-          let displayPinPct = formatPinDisplayCompact(p.pin);
+          let displayPinStatus = p.pinStatus || 'Pin Zin';
+          let displayPinPct = (p.pin || p.battery || p.batteryCap || '').trim();
           let displayOrigin = p.origin || 'VN/A';
           let displayCondition = p.condition || 'Zin Đẹp 99%';
           let dotColor = getHexColor(p.color);
@@ -11757,8 +11768,9 @@
           let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
           let storageDisplay = rawStorage.replace(/\s*g+b$/i, '').replace(/\s*g$/i, '').trim();
 
-          let displayPinStatus = p.pinStatus || 'Pin Zin';
-          let displayPinPct = formatPinDisplayCompact(p.pin);
+          let matchedStockPhone = (p.imei && phoneDatabase && phoneDatabase.find(x => x.imei && String(x.imei).trim().toLowerCase() === String(p.imei).trim().toLowerCase())) || null;
+          let displayPinStatus = p.pinStatus || (matchedStockPhone && matchedStockPhone.pinStatus) || 'Pin Zin';
+          let displayPinPct = (p.pin || (matchedStockPhone && (matchedStockPhone.pin || matchedStockPhone.battery || matchedStockPhone.batteryCap)) || p.battery || p.batteryCap || '').trim();
           let displayOrigin = p.origin || 'VN/A';
           let displayCondition = p.condition || 'Zin Đẹp 99%';
           let formattedPrice = isSoldPhonePricesHidden ? '*****' : (formatPriceStr(p.price || p.total) || '0');
