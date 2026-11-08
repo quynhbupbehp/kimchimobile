@@ -688,6 +688,11 @@
               <img src="img/logo_bidv.jpg" alt="BIDV"
                 style="width: 100%; height: 100%; object-fit: cover; display: block;">
             </button>
+            <button type="button" onclick="manualSyncAllToFirestore()" id="btnSyncAllCloud"
+              title="Đồng bộ toàn bộ dữ liệu tất cả các tab lên Cloud Firebase"
+              style="height: 32px; padding: 0 10px; background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%); border: 1.5px solid #38bdf8; border-radius: 8px; color: #ffffff; font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4); flex-shrink: 0; white-space: nowrap; transition: transform 0.1s;">
+              <span>☁️</span> <span>Đồng bộ</span>
+            </button>
             <button id="btnSalesToggleHide" class="btn-action-sales" onclick="toggleSalesSensitive()"
               style="height: 32px; padding: 0 14px; font-size: 0.92rem; font-weight: 900; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">👁
               Ẩn</button>
@@ -5771,7 +5776,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261108_214600"></script>
+  <script src="js/main.js?v=20261108_215800"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

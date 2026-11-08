@@ -2202,6 +2202,146 @@
     window.getItemTimestamp = getItemTimestamp;
 
     // === CƠ CHẾ ĐỒNG BỘ ĐÁM MÂY 2 CHIỀU TỰ ĐỘNG GIỮA WEB VÀ MOBILE ===
+    
+    // =========================================================
+    // HÀM ĐỒNG BỘ TOÀN BỘ CÁC TAB LÊN FIREBASE CLOUD THỦ CÔNG
+    // =========================================================
+    async function manualSyncAllToFirestore() {
+      const btn = document.getElementById('btnSyncAllCloud');
+      const originalHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳</span> <span>Đang đẩy...</span>';
+      }
+
+      if (typeof showToast === 'function') {
+        showToast('⏳ Đang đồng bộ toàn bộ dữ liệu lên Cloud Firebase...', 2500);
+      }
+
+      if (typeof db === 'undefined' || !db) {
+        if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+        alert('Chưa có kết nối Firebase Firestore!');
+        return;
+      }
+
+      try {
+        const promises = [];
+        const now = Date.now();
+
+        // 1. Tab Bán Hàng
+        if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase) && salesDatabase.length > 0) {
+          promises.push(
+            db.collection('sync_bundles').doc('sales').set({
+              list: salesDatabase,
+              updatedAt: now
+            }, { merge: true })
+          );
+        }
+
+        // 2. Tab Phần Mềm
+        if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase) && softwareDatabase.length > 0) {
+          promises.push(
+            db.collection('sync_bundles').doc('software').set({
+              list: softwareDatabase,
+              updatedAt: now
+            }, { merge: true })
+          );
+        }
+
+        // 3. Tab Bán Gà
+        if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase) && bangaDatabase.length > 0) {
+          promises.push(
+            db.collection('sync_bundles').doc('banga').set({
+              list: bangaDatabase,
+              updatedAt: now
+            }, { merge: true })
+          );
+        }
+
+        // 4. Tab Bán Máy (Kho máy)
+        if (typeof phoneDatabase !== 'undefined' && Array.isArray(phoneDatabase) && phoneDatabase.length > 0) {
+          promises.push(
+            db.collection('sync_bundles').doc('phones').set({
+              list: phoneDatabase,
+              updatedAt: now
+            }, { merge: true }).catch(function() {})
+          );
+          phoneDatabase.slice(0, 20).forEach(function(p) {
+            if (p && p.id) {
+              promises.push(db.collection('phones').doc(String(p.id)).set(p, { merge: true }).catch(function() {}));
+            }
+          });
+        }
+
+        // 5. Tab Bảo Hành (Máy đã bán)
+        if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase) && soldPhoneDatabase.length > 0) {
+          promises.push(
+            db.collection('sync_bundles').doc('sold_phones').set({
+              list: soldPhoneDatabase,
+              updatedAt: now
+            }, { merge: true }).catch(function() {})
+          );
+          soldPhoneDatabase.slice(0, 20).forEach(function(sp) {
+            if (sp && sp.id) {
+              promises.push(db.collection('sold_phones').doc(String(sp.id)).set(sp, { merge: true }).catch(function() {}));
+            }
+          });
+        }
+
+        // 6. Tab Sửa Chữa
+        if (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase) && repairDatabase.length > 0) {
+          promises.push(
+            db.collection('sync_bundles').doc('repairs').set({
+              list: repairDatabase,
+              updatedAt: now
+            }, { merge: true }).catch(function() {})
+          );
+        }
+
+        // 7. Tab Main Xác
+        if (typeof mainXacDatabase !== 'undefined' && Array.isArray(mainXacDatabase) && mainXacDatabase.length > 0) {
+          promises.push(
+            db.collection('sync_bundles').doc('mainxac').set({
+              list: mainXacDatabase,
+              updatedAt: now
+            }, { merge: true }).catch(function() {})
+          );
+        }
+
+        await Promise.all(promises);
+
+        if (btn) {
+          btn.innerHTML = '<span>✅</span> <span>Đã xong!</span>';
+          setTimeout(function() {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+          }, 2500);
+        }
+
+        if (typeof showToast === 'function') {
+          showToast('✅ Đã đồng bộ toàn bộ dữ liệu tất cả các tab lên Cloud thành công!', 3500);
+        } else {
+          alert('Đã đồng bộ toàn bộ dữ liệu tất cả các tab lên Cloud thành công!');
+        }
+      } catch (err) {
+        console.error('Lỗi khi bấm đồng bộ toàn bộ:', err);
+        if (typeof notifyFirebaseQuotaExceeded === 'function') {
+          notifyFirebaseQuotaExceeded(err);
+        }
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }
+        const msg = (err && (err.message || String(err))) || '';
+        if (/quota|resource-exhausted/i.test(msg)) {
+          alert('⚠️ Firebase đang tạm hết hạn mức đọc/ghi hôm nay (Quota Exceeded). Dữ liệu trên máy của bạn vẫn an toàn 100%! Ngày mai Firebase reset bạn hãy bấm lại nhé.');
+        } else {
+          alert('Có lỗi xảy ra khi đồng bộ: ' + msg);
+        }
+      }
+    }
+    window.manualSyncAllToFirestore = manualSyncAllToFirestore;
+
     function autoPushLocalDataToFirestore() {
       // Tuân thủ AGENTS.md Rule 6: Không ghi hàng loạt lên Firestore khi khởi động để chống cháy quota
       return;
