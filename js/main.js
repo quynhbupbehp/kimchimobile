@@ -2211,7 +2211,7 @@
       const originalHtml = btn ? btn.innerHTML : '';
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span>⏳</span> <span>Đang đẩy...</span>';
+        btn.innerHTML = '⏳';
       }
 
       if (typeof showToast === 'function') {
@@ -2311,7 +2311,7 @@
         await Promise.all(promises);
 
         if (btn) {
-          btn.innerHTML = '<span>✅</span> <span>Đã xong!</span>';
+          btn.innerHTML = '✅';
           setTimeout(function() {
             btn.disabled = false;
             btn.innerHTML = originalHtml;
