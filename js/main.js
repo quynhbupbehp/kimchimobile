@@ -9467,7 +9467,10 @@
       const currentVal = select.value || currentSoldPhoneBrandFilter || 'ALL';
       const brandsSet = new Set();
       soldPhoneDatabase.forEach(p => {
-        if (p.brand && p.brand.trim() && p.brand.trim() !== '❤️❤️❤️' && p.brand.trim() !== 'MÁY NGOÀI') {
+        let det = (typeof detectPhoneBrand === 'function') ? detectPhoneBrand(p.brand, p.name) : (p.brand || '').trim().toUpperCase();
+        if (det && det !== 'KHAC' && det !== '❤️❤️❤️' && det !== 'MÁY NGOÀI') {
+          brandsSet.add(det.toUpperCase());
+        } else if (p.brand && p.brand.trim() && p.brand.trim() !== '❤️❤️❤️' && p.brand.trim() !== 'MÁY NGOÀI') {
           brandsSet.add(p.brand.trim().toUpperCase());
         }
       });
@@ -12446,10 +12449,14 @@ let currentEditingSoldPhone = null;
           if (!fullStr.includes(keyword)) return false;
         }
 
-        // 2. Lọc theo Hãng: Các hãng đã bán, mặc định là Tất Cả
+        // 2. Lọc theo Hãng: Các hãng đã bán, mặc định là Tất Cả (nhận diện chuẩn 100%)
         if (currentSoldPhoneBrandFilter && currentSoldPhoneBrandFilter !== 'ALL') {
+          let cFilter = currentSoldPhoneBrandFilter.toUpperCase().trim();
           let pBrand = (p.brand || '').trim().toUpperCase();
-          if (pBrand !== currentSoldPhoneBrandFilter.toUpperCase()) return false;
+          let pDet = (typeof detectPhoneBrand === 'function') ? detectPhoneBrand(p.brand, p.name).toUpperCase() : pBrand;
+          let match = (pBrand === cFilter || pDet === cFilter);
+          if (cFilter === 'IPHONE' && (pBrand === 'IPAD' || pDet === 'IPAD')) match = true;
+          if (!match) return false;
         }
 
         // 3. Lọc theo Trạng thái Bảo Hành: Còn Bảo Hành / Hết Bảo Hành / Tất Cả
