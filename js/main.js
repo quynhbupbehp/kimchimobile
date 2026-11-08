@@ -4397,12 +4397,12 @@
       const monthNavLabel = document.getElementById('mStatsMonthNavLabel');
 
       if (mode === 'day') {
-        if (titleLabelEl) titleLabelEl.innerHTML = `📅 Ngày: ${dd}/${mm}/${yyyy}`;
+        if (titleLabelEl) titleLabelEl.innerHTML = `Ngày: ${dd}/${mm}/${yyyy}`;
         if (dateNavBox) dateNavBox.style.display = 'inline-flex';
         if (dateNavLabel) dateNavLabel.innerText = `${dd}/${mm}/${yyyy}`;
         if (monthNavBox) monthNavBox.style.display = 'none';
       } else if (mode === 'month') {
-        if (titleLabelEl) titleLabelEl.innerHTML = `📆 Tháng: ${mm}/${yyyy}`;
+        if (titleLabelEl) titleLabelEl.innerHTML = `Tháng: ${mm}/${yyyy}`;
         if (dateNavBox) dateNavBox.style.display = 'none';
         if (monthNavBox) monthNavBox.style.display = 'inline-flex';
         if (monthNavLabel) monthNavLabel.innerText = `Tháng ${mm}/${yyyy}`;
