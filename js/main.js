@@ -2462,6 +2462,10 @@
             phoneDatabase = list;
             try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
             if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
+          } else if ((!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+            phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+            try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
+            if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
           }
         }, err => console.error("Lỗi sync phones:", err));
       } catch (err) {
@@ -8849,14 +8853,17 @@
     let phoneDatabase = [];
     try {
       const pRaw = localStorage.getItem('KIMCHI_PHONE_DB');
-      const pResetV = localStorage.getItem('KIMCHI_PHONE_RESET_V2');
-      if (!pResetV && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-        // Tự động nạp chuẩn xác đúng 188 máy (168 máy bán + 20 máy chưa xử lý) chuẩn từ 3 file Excel
-        phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-        localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
-        localStorage.setItem('KIMCHI_PHONE_RESET_V2', 'done');
-        localStorage.setItem('KIMCHI_PHONE_RESET_TS', String(Date.now()));
-        localStorage.removeItem('KIMCHI_PHONE_CLEARED');
+      const pResetV = localStorage.getItem('KIMCHI_PHONE_RESET_V3');
+      if (!pResetV || !pRaw || pRaw === '[]' || pRaw === 'null') {
+        if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+          // Tự động nạp chuẩn xác đúng 188 máy (168 máy bán + 20 máy chưa xử lý) chuẩn từ 3 file Excel
+          phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+          localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
+          localStorage.setItem('KIMCHI_PHONE_RESET_V3', 'done');
+          localStorage.removeItem('KIMCHI_PHONE_CLEARED');
+        } else if (pRaw && pRaw !== '[]' && pRaw !== 'null') {
+          phoneDatabase = JSON.parse(pRaw) || [];
+        }
       } else if (pRaw) {
         phoneDatabase = JSON.parse(pRaw) || [];
       }
@@ -10970,7 +10977,14 @@
         try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch (e) { }
       }
 
-      let filtered = (typeof currentPhoneStatusFilter !== 'undefined' && currentPhoneStatusFilter === 'CHUA_XU_LY')
+      if (typeof currentPhoneStatusFilter === 'undefined' || !currentPhoneStatusFilter) {
+        currentPhoneStatusFilter = 'CON_HANG';
+      }
+      if (typeof currentBrandFilter === 'undefined' || !currentBrandFilter) {
+        currentBrandFilter = 'ALL';
+      }
+
+      let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
         ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
         : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
       if (currentBrandFilter !== 'ALL') {
