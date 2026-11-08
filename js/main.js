@@ -2694,6 +2694,42 @@
     ];
 
     // Helper hợp nhất dữ liệu Phần Mềm với danh sách Seed chuẩn (Bảo toàn 100% 1415 đơn gốc + đơn tạo mới)
+        // =========================================================
+    // QUẢN LÝ DANH SÁCH ĐƠN PHẦN MỀM ĐÃ XÓA (BẢO VỆ CHỐNG TỰ NẠP LẠI KHI F5)
+    // =========================================================
+    function getDeletedSoftwareIds() {
+      try {
+        const raw = localStorage.getItem('KIMCHI_PHANMEM_DELETED_IDS');
+        return raw ? new Set(JSON.parse(raw)) : new Set();
+      } catch(e) {
+        return new Set();
+      }
+    }
+
+    function recordDeletedSoftwareId(id) {
+      if (!id) return;
+      try {
+        const set = getDeletedSoftwareIds();
+        if (Array.isArray(id)) {
+          id.forEach(i => set.add(String(i)));
+        } else {
+          set.add(String(id));
+        }
+        localStorage.setItem('KIMCHI_PHANMEM_DELETED_IDS', JSON.stringify(Array.from(set)));
+      } catch(e) {}
+    }
+
+    function removeDeletedSoftwareId(id) {
+      if (!id) return;
+      try {
+        const set = getDeletedSoftwareIds();
+        set.delete(String(id));
+        localStorage.setItem('KIMCHI_PHANMEM_DELETED_IDS', JSON.stringify(Array.from(set)));
+      } catch(e) {}
+    }
+    window.recordDeletedSoftwareId = recordDeletedSoftwareId;
+    window.removeDeletedSoftwareId = removeDeletedSoftwareId;
+
     function recoverPhanMemFromActivityLogs(targetList) {
       if (!Array.isArray(targetList)) targetList = [];
       try {
@@ -2702,9 +2738,12 @@
         const logs = JSON.parse(rawLog);
         if (!Array.isArray(logs) || logs.length === 0) return targetList;
 
+        const deletedIds = getDeletedSoftwareIds();
         const idMap = new Map();
         targetList.forEach(item => {
-          if (item && item.id) idMap.set(String(item.id), item);
+          if (item && item.id && !deletedIds.has(String(item.id))) {
+            idMap.set(String(item.id), item);
+          }
         });
 
         // Duyệt nhật ký từ cũ đến mới để cập nhật trạng thái mới nhất
@@ -2714,6 +2753,9 @@
           const targetId = l.targetId || (l.newData && l.newData.id) || (l.oldData && l.oldData.id);
           if (!targetId) return;
           const strId = String(targetId);
+
+          // BỎ QUA nếu người dùng đã xóa đơn này
+          if (deletedIds.has(strId)) return;
 
           if (l.action === 'ADD' && l.newData) {
             if (!idMap.has(strId)) {
@@ -2741,20 +2783,22 @@
     }
     window.recoverPhanMemFromActivityLogs = recoverPhanMemFromActivityLogs;
 
-    // Helper hợp nhất dữ liệu Phần Mềm với danh sách Seed chuẩn + khôi phục đơn từ Nhật Ký
+    // Helper hợp nhất dữ liệu Phần Mềm với danh sách Seed chuẩn (Loại bỏ các đơn đã bị xóa)
     function mergeWithSeedSoftware(list) {
-      let combined = Array.isArray(list) ? [...list] : [];
+      const deletedIds = getDeletedSoftwareIds();
+      let combined = Array.isArray(list) ? list.filter(item => item && item.id && !deletedIds.has(String(item.id))) : [];
+
       if (Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
         const seeds = window.SEED_SOFTWARE_DATA;
         const existIdSet = new Set(combined.map(s => String(s.id)));
         seeds.forEach(s => {
-          if (s && s.id && !existIdSet.has(String(s.id))) {
+          if (s && s.id && !existIdSet.has(String(s.id)) && !deletedIds.has(String(s.id))) {
             combined.push(s);
             existIdSet.add(String(s.id));
           }
         });
       }
-      // Khôi phục tất cả các đơn người dùng đã tạo trong nhật ký hoạt động
+      // Khôi phục tất cả các đơn người dùng đã tạo trong nhật ký hoạt động (trừ các đơn đã xóa)
       combined = recoverPhanMemFromActivityLogs(combined);
       return combined;
     }
@@ -6702,6 +6746,7 @@
         }
 
         // Cập nhật lại softwareDatabase: chỉ giữ lại các mục không thuộc phạm vi xóa
+        recordDeletedSoftwareId(Array.from(deleteIds));
         softwareDatabase = softwareDatabase.filter(it => !deleteIds.has(String(it.id)));
         if (softwareDatabase.length === 0) {
           localStorage.setItem('KIMCHI_PHANMEM_CLEARED', 'true');
@@ -13118,6 +13163,7 @@
       let confirmText = prompt("Bạn có chắc chắn muốn xóa đơn phần mềm này không?\nNhập 'yes' để xác nhận xóa:");
       if (confirmText && confirmText.trim().toLowerCase() === 'yes') {
         const item = softwareDatabase.find(x => String(x.id) === String(id) || x.id == id);
+        recordDeletedSoftwareId(id);
         softwareDatabase = softwareDatabase.filter(x => String(x.id) !== String(id) && x.id != id);
         saveSoftwareStorage();
         if (typeof db !== 'undefined' && db && id) {
@@ -17919,6 +17965,7 @@
     function deleteDebtSoftwareItem(id) {
       if (!confirm('Bạn có chắc muốn xóa khoản nợ phần mềm này không?')) return;
       const item = softwareDatabase.find(x => String(x.id) === String(id) || x.id == id);
+      recordDeletedSoftwareId(id);
       softwareDatabase = softwareDatabase.filter(x => String(x.id) !== String(id) && x.id != id);
       saveSoftwareStorage();
       if (typeof db !== 'undefined' && db && id) {
@@ -18311,6 +18358,7 @@
       const deleteIds = new Set(chks.map(c => String(c.value)));
       const itemsToDelete = softwareDatabase.filter(s => deleteIds.has(String(s.id)));
 
+      recordDeletedSoftwareId(Array.from(deleteIds));
       softwareDatabase = softwareDatabase.filter(s => !deleteIds.has(String(s.id)));
       saveSoftwareStorage();
 
@@ -19145,6 +19193,7 @@
             if (!exists) {
               targetList.unshift(JSON.parse(JSON.stringify(itemToRestore)));
             }
+            if (module === 'phanmem' && itemToRestore && itemToRestore.id) removeDeletedSoftwareId(itemToRestore.id);
             if (saveFn) saveFn(itemToRestore);
             if (renderFn) renderFn();
           }
