@@ -1578,7 +1578,7 @@
       font-weight: 800;
       font-size: 0.97rem;
       letter-spacing: 0.5px;
-      padding: 13px 15px;
+      padding: 11px 8px;
       border-bottom: 2px solid #1e293b;
       text-transform: uppercase;
       user-select: none;
@@ -1599,8 +1599,27 @@
     }
 
     .phone-horizontal-table td {
-      padding: 11px 15px;
+      padding: 10px 8px;
       vertical-align: middle;
+    }
+
+    .phone-horizontal-table td:last-child {
+      padding-right: 12px;
+      white-space: nowrap;
+    }
+
+    .phone-horizontal-table .action-btn-group {
+      gap: 4px;
+    }
+
+    .phone-horizontal-table .action-btn-icon {
+      width: 29px;
+      height: 29px;
+    }
+
+    .phone-horizontal-table .action-btn-icon svg {
+      width: 15px;
+      height: 15px;
     }
 
     .badge-fcn {

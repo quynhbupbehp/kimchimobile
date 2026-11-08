@@ -11143,14 +11143,14 @@
           <table class="phone-horizontal-table">
             <thead>
               <tr>
-                <th style="text-align: left; padding-left: 18px;">TÊN MÁY</th>
+                <th style="text-align: left; padding-left: 12px; max-width: 280px;">TÊN MÁY</th>
                 <th style="text-align: center;">DUNG LƯỢNG</th>
                 <th style="text-align: center;">${isChuaXuLyMode ? 'GIÁ NHẬP' : 'GIÁ BÁN'}</th>
                 <th style="text-align: center;">MÀU SẮC</th>
                 <th style="text-align: center;">THÔNG TIN PIN</th>
                 ${isChuaXuLyMode ? '' : '<th style="text-align: right;">GIÁ NHẬP</th>'}
                 ${isChuaXuLyMode ? '' : '<th style="text-align: right;">LÃI</th>'}
-                <th style="text-align: center; padding-right: 18px;">THAO TÁC</th>
+                <th style="text-align: center; padding-right: 12px;">THAO TÁC</th>
               </tr>
             </thead>
             <tbody>
@@ -11224,7 +11224,7 @@
 
                 return `
                   <tr class="phone-table-row" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
-                    <td style="text-align: left; padding-left: 18px;">
+                    <td style="text-align: left; padding-left: 12px; max-width: 280px;">
                       <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;">
                         <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px;">
                           ${escapeHtml(pName)}
@@ -11260,7 +11260,7 @@
                       ${escapeHtml(formattedProfit)}
                     </td>
                     `}
-                    <td style="text-align: center; padding-right: 18px;" onclick="event.stopPropagation()">
+                    <td style="text-align: center; padding-right: 12px;" onclick="event.stopPropagation()">
                       <div class="action-btn-group" style="justify-content: center;">
                         <button type="button" class="action-btn-icon action-btn-view" onclick="viewPhone('${p.id}')" title="Xem chi tiết máy">
                           <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>

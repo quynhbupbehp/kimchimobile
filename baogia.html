@@ -870,7 +870,7 @@
         function getColorStyle(colorName, isMobile = false) {
             if (!colorName) return '';
             const c = colorName.trim().toUpperCase();
-            const sizeClass = isMobile ? 'w-4 h-4' : 'w-5 h-5';
+            const sizeClass = isMobile ? 'w-[19px] h-[19px]' : 'w-6 h-6';
 
             if (c.includes('ĐEN') || c.includes('BLACK')) {
                 return `<span class="inline-block ${sizeClass} rounded-full ml-1.5 mr-1 shrink-0 align-middle shadow-md" style="background-color: #000000; border: 2px solid #ffffff;" title="MÀU: ${colorName}"></span>`;
