@@ -831,10 +831,18 @@
     /* ============================================================
        ĐỒNG BỘ CHIỀU CAO 36PX TOÀN BỘ CÁC Ô TRÊN HÀNG 1 TAB BÁN HÀNG
        ============================================================ */
-    #tab-banhang #salesRevenueBadge,
-    #tab-banhang #salesProfitBadge {
+    #tab-banhang #salesRevenueBadge {
       height: 36px !important;
       padding: 0 14px !important;
+      box-sizing: border-box !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 8px !important;
+    }
+    #tab-banhang #salesProfitBadge {
+      height: 40px !important;
+      padding: 0 16px !important;
       box-sizing: border-box !important;
       display: inline-flex !important;
       align-items: center !important;
