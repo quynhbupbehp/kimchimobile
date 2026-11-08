@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261108_123423">
+  <link rel="stylesheet" href="css/style.css?v=20261108_124122">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -5506,9 +5506,10 @@
         font-weight: 900;
         border: 1px solid #1e3a5f;
         padding: 10px 4px;
-        font-size: 1.15rem;
+        font-size: 1.02rem;
         text-transform: uppercase;
-        letter-spacing: 0.3px;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
       }
 
       #mobileRevenueStatsModal .stats-modal-inner table td {
@@ -5600,7 +5601,7 @@
           THEO DÕI DOANH THU
         </h2>
         <div id="mStatsCurrentPeriodLabel"
-          style="margin-top: 6px; font-size: 0.85rem; font-weight: 800; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+          style="margin-top: 6px; font-size: 0.94rem; font-weight: 800; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
           Ngày: 04/11/2026
         </div>
       </div>
@@ -5663,33 +5664,33 @@
       <!-- HÀNG ĐIỀU KHIỂN DƯỚI CÙNG (FOOTER): TẤT CẢ NẰM TRÊN 1 HÀNG DUY NHẤT -->
       <div class="stats-footer-controls"
         style="padding: 0 14px 16px 14px; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; box-sizing: border-box; width: 100%;">
-        <!-- Ô LỌC THEO NGÀY/THÁNG: GIẢM CỠ CHỮ 10% (0.67rem), CHIỀU RỘNG 84px HIỂN THỊ TRỌN VẸN CHỮ THÁNG/TẤT CẢ KHÔNG BỊ LẤP -->
+        <!-- Ô LỌC THEO NGÀY/THÁNG: CÂN ĐỐI 84px, CHỮ RÕ RÀNG (0.75rem), CHIỀU CAO 34px -->
         <div style="position: relative; display: inline-flex; align-items: center; height: 34px; max-height: 34px; min-height: 34px; flex: 0 0 84px; min-width: 84px; box-sizing: border-box;">
           <select id="mStatsPeriodSelect" onchange="setMobileStatsMode(this.value)"
-            style="appearance: none; -webkit-appearance: none; background: #0284c7; border: 1.5px solid #38bdf8; color: #ffffff; height: 34px; max-height: 34px; min-height: 34px; line-height: 31px; width: 100%; padding: 0 15px 0 5px; border-radius: 6px; font-size: 0.67rem; font-weight: 900; cursor: pointer; outline: none; text-transform: uppercase; box-sizing: border-box; text-overflow: clip; white-space: nowrap; overflow: visible; text-align: center; margin: 0; letter-spacing: 0;">
+            style="appearance: none; -webkit-appearance: none; background: #0284c7; border: 1.5px solid #38bdf8; color: #ffffff; height: 34px; max-height: 34px; min-height: 34px; line-height: 31px; width: 100%; padding: 0 16px 0 6px; border-radius: 6px; font-size: 0.75rem; font-weight: 900; cursor: pointer; outline: none; text-transform: uppercase; box-sizing: border-box; text-overflow: clip; white-space: nowrap; overflow: visible; text-align: center; margin: 0; letter-spacing: 0.2px;">
             <option value="day" selected style="background: #0f172a; color: #ffffff;">NGÀY</option>
             <option value="month" style="background: #0f172a; color: #ffffff;">THÁNG</option>
             <option value="all" style="background: #0f172a; color: #ffffff;">TẤT CẢ</option>
           </select>
           <span
-            style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #ffffff; font-size: 0.58rem; font-weight: 900; line-height: 1;">▼</span>
+            style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #ffffff; font-size: 0.6rem; font-weight: 900; line-height: 1;">▼</span>
         </div>
 
-        <!-- BỘ ĐIỀU HƯỚNG NGÀY: CHIỀU CAO KHÓA CHUẨN 34px BẰNG NHAU -->
+        <!-- BỘ ĐIỀU HƯỚNG NGÀY: CHIẾM TOÀN BỘ KHOẢNG GIỮA, CÂN XỨNG VÀ THOÁNG MẮT -->
         <div id="mStatsDateNavBox"
-          style="display: inline-flex; align-items: center; justify-content: space-between; gap: 2px; background: rgba(5, 150, 105, 0.12); border: 1.5px solid #10b981; border-radius: 6px; padding: 0 3px; height: 34px; max-height: 34px; min-height: 34px; flex: 1 1 auto; min-width: 0; box-sizing: border-box;">
-          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsDate(-1)" title="Lùi 1 ngày" style="flex: 0 0 20px; width: 20px; height: 26px;">
+          style="display: inline-flex; align-items: center; justify-content: space-between; gap: 4px; background: rgba(5, 150, 105, 0.12); border: 1.5px solid #10b981; border-radius: 6px; padding: 0 4px; height: 34px; max-height: 34px; min-height: 34px; flex: 1 1 auto; min-width: 0; box-sizing: border-box;">
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsDate(-1)" title="Lùi 1 ngày" style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
-              style="width: 13px; height: 13px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
+              style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
           <span id="mStatsDateNavLabel" onclick="openMobileStatsNativeDatePicker()"
-            style="color: #ffffff; font-weight: 900; font-size: 0.82rem; padding: 0 1px; cursor: pointer; user-select: none; letter-spacing: 0; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;"
+            style="color: #ffffff; font-weight: 900; font-size: 0.88rem; padding: 0 2px; cursor: pointer; user-select: none; letter-spacing: 0.3px; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;"
             title="Bấm để mở lịch chọn ngày">04/11/2026</span>
-          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsDate(1)" title="Tiến 1 ngày" style="flex: 0 0 20px; width: 20px; height: 26px;">
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsDate(1)" title="Tiến 1 ngày" style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
-              style="width: 13px; height: 13px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
+              style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M9 18l6-6-6-6" />
             </svg>
           </button>
@@ -5698,30 +5699,30 @@
             onchange="handleMobileStatsNativeDate(this.value)">
         </div>
 
-        <!-- BỘ CHỌN THÁNG (KHI CHỌN CHẾ ĐỘ THÁNG): CHIỀU CAO KHÓA CHUẨN 34px BẰNG NHAU -->
+        <!-- BỘ CHỌN THÁNG (KHI CHỌN CHẾ ĐỘ THÁNG): CHIẾM TOÀN BỘ KHOẢNG GIỮA -->
         <div id="mStatsMonthNavBox"
-          style="display: none; align-items: center; justify-content: space-between; gap: 2px; background: rgba(5, 150, 105, 0.12); border: 1.5px solid #10b981; border-radius: 6px; padding: 0 3px; height: 34px; max-height: 34px; min-height: 34px; flex: 1 1 auto; min-width: 0; box-sizing: border-box;">
+          style="display: none; align-items: center; justify-content: space-between; gap: 4px; background: rgba(5, 150, 105, 0.12); border: 1.5px solid #10b981; border-radius: 6px; padding: 0 4px; height: 34px; max-height: 34px; min-height: 34px; flex: 1 1 auto; min-width: 0; box-sizing: border-box;">
           <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsMonth(-1)"
-            title="Lùi 1 tháng" style="flex: 0 0 20px; width: 20px; height: 26px;">
+            title="Lùi 1 tháng" style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
-              style="width: 13px; height: 13px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
+              style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
           <span id="mStatsMonthNavLabel"
-            style="color: #ffffff; font-weight: 900; font-size: 0.82rem; padding: 0 1px; user-select: none; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;">Tháng 11/2026</span>
+            style="color: #ffffff; font-weight: 900; font-size: 0.88rem; padding: 0 2px; user-select: none; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;">Tháng 11/2026</span>
           <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsMonth(1)"
-            title="Tiến 1 tháng" style="flex: 0 0 20px; width: 20px; height: 26px;">
+            title="Tiến 1 tháng" style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
-              style="width: 13px; height: 13px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
+              style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M9 18l6-6-6-6" />
             </svg>
           </button>
         </div>
 
-        <!-- CỤM BÊN PHẢI NGOÀI CÙNG: NÚT ĐÓNG CHIỀU CAO KHÓA CHUẨN 34px BẰNG NHAU -->
+        <!-- CỤM BÊN PHẢI NGOÀI CÙNG: NÚT ĐÓNG CÂN ĐỐI 84px BẰNG Ô LỌC, CHỮ 0.85rem RÕ RÀNG -->
         <button type="button" class="stats-close-btn" onclick="closeMobileRevenueStatsModal()"
-          style="margin-left: auto; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; text-align: center; line-height: 34px; background: #ef4444; border: 1.5px solid #ef4444; color: #ffffff; height: 34px; max-height: 34px; min-height: 34px; min-width: 64px; padding: 0 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.1s; box-shadow: 0 2px 8px rgba(239,68,68,0.3); box-sizing: border-box; margin: 0;">
+          style="flex: 0 0 84px; width: 84px; min-width: 84px; display: inline-flex; align-items: center; justify-content: center; text-align: center; line-height: 34px; background: #ef4444; border: 1.5px solid #ef4444; color: #ffffff; height: 34px; max-height: 34px; min-height: 34px; padding: 0; border-radius: 6px; font-size: 0.85rem; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.1s; box-shadow: 0 2px 8px rgba(239,68,68,0.3); box-sizing: border-box; margin: 0;">
           <span style="display: inline-block; line-height: 1; text-align: center;">ĐÓNG</span>
         </button>
       </div>
@@ -5767,10 +5768,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261108_123423"></script>
+  <script src="js/seed_data.js?v=20261108_124122"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261108_123423"></script>
+  <script src="js/main.js?v=20261108_124122"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
