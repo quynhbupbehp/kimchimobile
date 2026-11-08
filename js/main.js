@@ -7419,30 +7419,43 @@
           };
 
           const cleanOriginCode = (str) => {
-            if (!str) return 'VN/A';
+            if (!str || str === '?' || str === 'null') return 'VN/A';
             let s = String(str).trim();
             s = s.replace(/\(.*?\)/g, '').trim();
             let lower = s.toLowerCase().replace(/[\/\s]/g, '');
-            if (lower === 'vna') return 'VN/A';
-            if (lower === 'lla') return 'LL/A';
-            if (lower === 'zaa') return 'ZA/A';
-            if (lower === 'kha') return 'KH/A';
-            if (lower === 'cha') return 'CH/A';
-            if (lower === 'ja') return 'J/A';
-            if (lower === 'ea') return 'E/A';
+            if (lower.startsWith('vna')) return 'VN/A';
+            if (lower.startsWith('lla')) return 'LL/A';
+            if (lower.startsWith('zaa')) return 'ZA/A';
+            if (lower.startsWith('kha')) return 'KH/A';
+            if (lower.startsWith('cha')) return 'CH/A';
+            if (lower.startsWith('ja')) return 'J/A';
+            if (lower.startsWith('ea')) return 'E/A';
+            if (lower.startsWith('zda')) return 'ZD/A';
+            if (lower.startsWith('taa')) return 'TA/A';
+            if (lower.startsWith('xa')) return 'X/A';
+            if (lower.startsWith('vca')) return 'VC/A';
+            if (lower.startsWith('zpa')) return 'ZP/A';
             let match = s.match(/^[A-Za-z0-9]+\/[A-Za-z0-9]+/);
             if (match) return match[0].toUpperCase();
             return s.toUpperCase() || 'VN/A';
           };
 
           const cleanPinStatus = (status) => {
-            if (!status) return 'Pin Zin';
+            if (!status || status === '?' || status === 'null') return 'Pin Zin';
             let s = String(status).trim();
             let lower = s.toLowerCase();
             if (lower === 'zin') return 'Pin Zin';
             if (lower === 'moi' || lower === 'mới') return 'Pin Mới';
             if (lower === 'dung ok' || lower === 'dùng ok' || lower === 'ok') return 'Pin Dùng OK';
             if (lower === 'thay') return 'Pin Thay';
+            if (lower === 'dung luong cao' || lower === 'dlc') return 'Pin Dung Lượng Cao';
+            if (lower === 'dlc nap xa' || lower === 'dlc nạp xả') return 'Pin DLC Nạp Xả';
+            if (lower === 'dlc chua nap xa' || lower === 'dlc chưa nạp xả') return 'Pin DLC Chưa Nạp Xả';
+            if (lower === 'nap xa' || lower === 'nạp xả') return 'Pin Nạp Xả';
+            if (lower === 'l.kien 0 xac dinh' || lower === 'l.kiện 0 xác định') return 'Pin L.Kiện 0 Xác Định';
+            if (lower === 'chuan doan dlc' || lower === 'chuẩn đoán dlc') return 'Pin Chuẩn Đoán DLC';
+            if (lower === 'ao' || lower === 'ảo') return 'Pin Ảo';
+            if (lower === 'heo' || lower === 'hẹo') return 'Pin Hẹo';
             if (!lower.startsWith('pin') && !lower.includes('pin')) {
               return 'Pin ' + toTitleCase(s);
             }
@@ -8804,21 +8817,16 @@
     let phoneDatabase = [];
     try {
       const pRaw = localStorage.getItem('KIMCHI_PHONE_DB');
-      const pResetV = localStorage.getItem('KIMCHI_PHONE_RESET_V1');
+      const pResetV = localStorage.getItem('KIMCHI_PHONE_RESET_V2');
       if (!pResetV && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-        // Tự động nạp chuẩn xác đúng 168 máy từ danh sách chuẩn
+        // Tự động nạp chuẩn xác đúng 188 máy (168 máy bán + 20 máy chưa xử lý) chuẩn từ 3 file Excel
         phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
         localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
-        localStorage.setItem('KIMCHI_PHONE_RESET_V1', 'done');
+        localStorage.setItem('KIMCHI_PHONE_RESET_V2', 'done');
         localStorage.setItem('KIMCHI_PHONE_RESET_TS', String(Date.now()));
         localStorage.removeItem('KIMCHI_PHONE_CLEARED');
       } else if (pRaw) {
         phoneDatabase = JSON.parse(pRaw) || [];
-        // Tự động bổ sung pin & pinStatus nếu dữ liệu cũ còn thiếu
-        phoneDatabase.forEach(p => {
-          if (!p.pin && (p.battery || p.batteryCap)) p.pin = p.battery || p.batteryCap;
-          if (!p.pinStatus) p.pinStatus = 'Pin Zin';
-        });
       } else if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
         phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
       }
@@ -8827,21 +8835,16 @@
     let soldPhoneDatabase = [];
     try {
       const spRaw = localStorage.getItem('KIMCHI_SOLD_PHONE_DB');
-      const spResetV = localStorage.getItem('KIMCHI_SOLD_RESET_V1');
+      const spResetV = localStorage.getItem('KIMCHI_SOLD_RESET_V2');
       if (!spResetV && Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
-        // Tự động nạp chuẩn xác đúng 97 máy đã bán từ danh sách chuẩn
+        // Tự động nạp chuẩn xác đúng 96 máy đã bán từ file Bảo Hành.xlsx
         soldPhoneDatabase = JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
         localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
-        localStorage.setItem('KIMCHI_SOLD_RESET_V1', 'done');
+        localStorage.setItem('KIMCHI_SOLD_RESET_V2', 'done');
         localStorage.setItem('KIMCHI_SOLD_PHONE_RESET_TS', String(Date.now()));
         localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
       } else if (spRaw) {
         soldPhoneDatabase = JSON.parse(spRaw) || [];
-        // Tự động bổ sung pin & pinStatus nếu dữ liệu cũ còn thiếu
-        soldPhoneDatabase.forEach(s => {
-          if (!s.pin && (s.battery || s.batteryCap)) s.pin = s.battery || s.batteryCap;
-          if (!s.pinStatus) s.pinStatus = 'Pin Zin';
-        });
       } else if (Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
         soldPhoneDatabase = JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
       }
