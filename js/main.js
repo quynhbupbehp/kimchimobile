@@ -8859,8 +8859,10 @@
         localStorage.removeItem('KIMCHI_PHONE_CLEARED');
       } else if (pRaw) {
         phoneDatabase = JSON.parse(pRaw) || [];
-      } else if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+      }
+      if ((!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
         phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+        try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch (e) { }
       }
     } catch(e) {}
 
@@ -10960,8 +10962,13 @@
       const container = document.getElementById('phoneGridContainer');
       updatePhoneViewModeBtn();
       if (typeof updateChuaXuLyBtnUI === 'function') updateChuaXuLyBtnUI();
-      const rawSearch = document.getElementById('phoneSearchInput').value.trim();
+      const rawSearch = document.getElementById('phoneSearchInput') ? document.getElementById('phoneSearchInput').value.trim() : '';
       const normSearch = normalizeQuery(rawSearch);
+
+      if ((!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+        phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+        try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch (e) { }
+      }
 
       let filtered = (typeof currentPhoneStatusFilter !== 'undefined' && currentPhoneStatusFilter === 'CHUA_XU_LY')
         ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
