@@ -11861,7 +11861,28 @@
         let method = p.method || p.paymentMethod || 'Tiền Mặt';
         let methodColor = (method === 'Chuyển Khoản' || method === 'CK') ? '#38bdf8' : '#10b981';
 
-        let dateDisplay = p.dateTime || p.soldDateTime || (p.soldDate ? `${getCurrentTimeStr()} - ${p.soldDate}` : p.date || getCurrentDateStr());
+        let rawSoldDate = p.soldDate || p.date || p.dateTime || p.soldDateTime || '';
+        function formatSoldDateToVN(raw) {
+          if (!raw) return '';
+          let s = String(raw).trim();
+          if (s.includes(' - ')) {
+            const parts = s.split(' - ');
+            s = parts[parts.length - 1].trim();
+          }
+          if (s.includes(' ')) {
+            s = s.split(' ')[0].trim();
+          }
+          const mIso = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
+          if (mIso) {
+            return String(mIso[3]).padStart(2, '0') + '/' + String(mIso[2]).padStart(2, '0') + '/' + mIso[1];
+          }
+          const mVn = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+          if (mVn) {
+            return String(mVn[1]).padStart(2, '0') + '/' + String(mVn[2]).padStart(2, '0') + '/' + mVn[3];
+          }
+          return s;
+        }
+        let dateDisplay = formatSoldDateToVN(rawSoldDate) || getCurrentDateStr();
 
         return `
           <tr ondblclick="viewPhone('${p.id}', true)" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết máy">
