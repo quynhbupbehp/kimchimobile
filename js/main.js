@@ -8904,7 +8904,10 @@
           if (conditionInput && conditionInput.value.trim()) {
             item.condition = conditionInput.value.trim();
           }
-          savePhoneStorage();
+          if (typeof logActivity === 'function') {
+            logActivity('EDIT', 'baohanh', 'Bảo hành', 'Sửa thông tin máy đã bán: ' + (item.brand || '') + ' ' + (item.name || ''), null, item, item.id);
+          }
+          saveSoldPhoneStorage(item);
           renderSoldPhoneTable();
         }
       }
