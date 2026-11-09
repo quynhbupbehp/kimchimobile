@@ -14598,6 +14598,110 @@ function handleSalesInvoiceClick(e) {
 window.handleSalesInvoiceClick = handleSalesInvoiceClick;
 
 /* ============================================================
+   SỔ TAY GHI CHÚ BÁN HÀNG (POPUP BẢNG GHI CHÚ TIỆN LỢI)
+   ============================================================ */
+function getSalesNotePadContent() {
+  try {
+    let stored = localStorage.getItem('KIMCHI_SALES_NOTEPAD');
+    if (stored && typeof stored === 'string') return stored;
+  } catch (e) { }
+  return '';
+}
+
+function saveSalesNotePad(showAlert = false) {
+  const ta = document.getElementById('salesNotePadTextarea');
+  const val = ta ? ta.value : '';
+  try {
+    localStorage.setItem('KIMCHI_SALES_NOTEPAD', val);
+  } catch (e) { }
+  if (typeof db !== 'undefined' && db) {
+    try {
+      db.collection('settings').doc('sales_notepad').set({
+        content: val,
+        updatedAt: Date.now()
+      }).catch(console.error);
+    } catch (e) { }
+  }
+  const statusEl = document.getElementById('salesNotePadStatusText');
+  if (statusEl) {
+    statusEl.innerText = '✓ Đã lưu thành công!';
+    statusEl.style.color = '#10b981';
+    setTimeout(() => {
+      if (statusEl) {
+        statusEl.innerText = '✓ Tự động lưu';
+        statusEl.style.color = '#10b981';
+      }
+    }, 2500);
+  }
+  if (showAlert) {
+    alert('✅ Đã lưu sổ tay ghi chú bán hàng thành công!');
+  }
+}
+window.saveSalesNotePad = saveSalesNotePad;
+
+function autoSaveSalesNotePad() {
+  saveSalesNotePad(false);
+}
+window.autoSaveSalesNotePad = autoSaveSalesNotePad;
+
+function openSalesNotePadModal() {
+  const modal = document.getElementById('salesNotePadModal');
+  const ta = document.getElementById('salesNotePadTextarea');
+  if (ta) {
+    ta.value = getSalesNotePadContent();
+  }
+  if (modal) {
+    modal.style.zIndex = '100000';
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+  }
+  if (ta) {
+    setTimeout(() => { ta.focus(); }, 100);
+  }
+}
+window.openSalesNotePadModal = openSalesNotePadModal;
+
+function closeSalesNotePadModal() {
+  autoSaveSalesNotePad();
+  const modal = document.getElementById('salesNotePadModal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+}
+window.closeSalesNotePadModal = closeSalesNotePadModal;
+
+function clearSalesNotePad() {
+  const ta = document.getElementById('salesNotePadTextarea');
+  if (!ta || !ta.value.trim()) return;
+  if (confirm('⚠️ Bạn có chắc chắn muốn xóa toàn bộ nội dung trong sổ tay ghi chú không?')) {
+    ta.value = '';
+    saveSalesNotePad(false);
+    ta.focus();
+  }
+}
+window.clearSalesNotePad = clearSalesNotePad;
+
+// Lắng nghe đồng bộ Firestore realtime cho sổ tay ghi chú bán hàng
+try {
+  if (typeof db !== 'undefined' && db) {
+    db.collection('settings').doc('sales_notepad').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const d = doc.data();
+        if (d && typeof d.content === 'string') {
+          try { localStorage.setItem('KIMCHI_SALES_NOTEPAD', d.content); } catch (e) { }
+          const modal = document.getElementById('salesNotePadModal');
+          const ta = document.getElementById('salesNotePadTextarea');
+          if (ta && (!modal || modal.style.display === 'none')) {
+            ta.value = d.content;
+          }
+        }
+      }
+    }, err => console.warn('Sync sales_notepad notice:', err.code || err));
+  }
+} catch (e) { }
+
+/* ============================================================
    QUẢN LÝ TÀI KHOẢN TOOL / SERVER & GHI CHÚ PHẦN MỀM
    ============================================================ */
 const DEFAULT_SW_ACCOUNTS = [
