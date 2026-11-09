@@ -12081,7 +12081,25 @@ function updatePhoneViewModeBtn() {
 }
 window.updatePhoneViewModeBtn = updatePhoneViewModeBtn;
 
+// Tự động chuẩn hóa trạng thái và hãng cho các máy trong kho Bán Máy
+function fixPhoneDatabaseStatus() {
+  if (!Array.isArray(phoneDatabase)) return;
+  let changed = false;
+  phoneDatabase.forEach(p => {
+    if (!p) return;
+    // Nếu trạng thái đang để trống thì tự động điền 'Còn Hàng'
+    if (!p.status || !String(p.status).trim()) {
+      p.status = 'Còn Hàng';
+      changed = true;
+    }
+  });
+  if (changed) {
+    savePhoneStorage();
+  }
+}
+
 function renderPhoneGrid() {
+  fixPhoneDatabaseStatus();
   const container = document.getElementById('phoneGridContainer');
   updatePhoneViewModeBtn();
   if (typeof updateChuaXuLyBtnUI === 'function') updateChuaXuLyBtnUI();
