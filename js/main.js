@@ -2131,7 +2131,9 @@
               if (updated !== item.name) { item.name = updated; sChanged = true; }
             }
           });
-          if (sChanged) try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
+          if (sChanged) {
+            syncSalesBundleDebounced();
+          }
         }
 
         if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
@@ -2421,7 +2423,7 @@
               var list = data.list;
               list.sort(function(a, b) { return getItemTimestamp(b) - getItemTimestamp(a); });
               salesDatabase = list;
-              try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
+              isSalesCloudLoaded = true;
               if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
               if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
               if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
@@ -2532,7 +2534,7 @@
               let list = data.list;
               list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
               salesDatabase = list;
-              try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
+              isSalesCloudLoaded = true;
               if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
               if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
               if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
@@ -2614,7 +2616,7 @@
               }
             });
             salesDatabase = list;
-            try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
+            isSalesCloudLoaded = true;
             if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
             if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
@@ -3063,22 +3065,9 @@
       softwareDatabase = (typeof window.SEED_SOFTWARE_DATA !== 'undefined' && Array.isArray(window.SEED_SOFTWARE_DATA)) ? JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA)) : DEFAULT_SOFTWARE_DATA;
     }
 
-    // Dữ liệu Bán Hàng & Bán Gà: Khởi tạo an toàn kèm đồng bộ Firebase Firestore
+    // Dữ liệu Bán Hàng & Bán Gà: Khởi tạo an toàn (Tab Bán Hàng chạy Pure Firestore, không dùng localStorage)
     let salesDatabase = [];
-    try {
-      const sRaw = localStorage.getItem('KIMCHI_SALES_DB');
-      if (sRaw) {
-        salesDatabase = JSON.parse(sRaw) || [];
-        salesDatabase.forEach(item => {
-          if (item) {
-            if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
-            if (item.price !== undefined && item.price !== null && item.price !== '') item.price = formatPriceStr(item.price);
-            if (item.priceIn !== undefined && item.priceIn !== null && item.priceIn !== '') item.priceIn = formatPriceStr(item.priceIn);
-            if (item.profit !== undefined && item.profit !== null && item.profit !== '') item.profit = formatPriceStr(item.profit);
-          }
-        });
-      }
-    } catch(e) {}
+    let isSalesCloudLoaded = false;
 
     // Helper kiểm tra một phiếu bán hàng có khớp với phạm vi thời gian đang chọn (Ngày, Tháng, Năm, Tất Cả) hay không
     function isSaleItemMatchingCurrentFilter(item) {
@@ -3401,7 +3390,7 @@
 
         // Cập nhật lại salesDatabase: chỉ giữ lại các mục không bị xóa
         salesDatabase = salesDatabase.filter(it => !deleteIds.has(String(it.id)));
-        try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
+        syncSalesBundleDebounced();
         renderSalesTable(salesDatabase);
         alert(`Đã xóa thành công ${itemsToDelete.length} phiếu Bán Hàng thuộc [${scopeLabel}]!`);
       } else {
@@ -3460,7 +3449,7 @@
     }
 
     function saveSalesStorage(itemToSync) {
-      try { localStorage.setItem('KIMCHI_SALES_DB', JSON.stringify(salesDatabase)); } catch(e){}
+      // Pure Firestore 100%: Dữ liệu Tab Bán Hàng chỉ lưu và đồng bộ trực tiếp lên Cloud Firestore
       if (typeof db !== 'undefined' && db) {
         const syncItem = (it) => {
           if (!it || !it.id) return;
@@ -8775,10 +8764,10 @@
         }
 
         salesDatabase = salesDatabase.filter(s => String(s.id) !== String(id) && s.id != id);
-        saveSalesStorage();
         if (typeof db !== 'undefined' && db) {
           db.collection('sales').doc(String(id)).delete().catch(console.error);
         }
+        saveSalesStorage();
         renderSalesTable(salesDatabase);
 
         if (isPhone) {
