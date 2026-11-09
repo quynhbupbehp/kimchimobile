@@ -14485,6 +14485,119 @@ function copySwUrl(type, event) {
 window.copySwUrl = copySwUrl;
 
 /* ============================================================
+   QUẢN LÝ LINK HÓA ĐƠN TAB BÁN HÀNG (CLICK MỞ, NHẤN GIỮ CHÈN LINK)
+   ============================================================ */
+let _salesInvoiceTimer = null;
+let _salesInvoiceIsLongPress = false;
+
+function getSalesInvoiceLink() {
+  try {
+    let stored = localStorage.getItem('KIMCHI_SALES_INVOICE_LINK');
+    if (stored && typeof stored === 'string') return stored.trim();
+  } catch (e) { }
+  return '';
+}
+
+function saveSalesInvoiceLink(url) {
+  try {
+    localStorage.setItem('KIMCHI_SALES_INVOICE_LINK', url || '');
+  } catch (e) { }
+  if (typeof db !== 'undefined' && db) {
+    try {
+      db.collection('settings').doc('sales_invoice_link').set({
+        url: url || '',
+        updatedAt: Date.now()
+      }).catch(console.error);
+    } catch (e) { }
+  }
+}
+
+// Lắng nghe đồng bộ Firestore realtime cho link hóa đơn
+try {
+  if (typeof db !== 'undefined' && db) {
+    db.collection('settings').doc('sales_invoice_link').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const d = doc.data();
+        if (d && typeof d.url === 'string') {
+          try { localStorage.setItem('KIMCHI_SALES_INVOICE_LINK', d.url); } catch (e) { }
+        }
+      }
+    }, err => console.warn('Sync sales_invoice_link notice:', err.code || err));
+  }
+} catch (e) { }
+
+function editSalesInvoiceLink() {
+  const currentLink = getSalesInvoiceLink();
+  const input = prompt("🧾 CHÈN / CHỈNH SỬA LINK HÓA ĐƠN:\n\nNhập đường link hóa đơn bạn muốn mở khi click vào icon:\n(Để trống và bấm OK nếu muốn xóa link)", currentLink);
+  if (input !== null) {
+    let clean = input.trim();
+    if (clean && !/^https?:\/\//i.test(clean)) {
+      clean = 'https://' + clean;
+    }
+    saveSalesInvoiceLink(clean);
+    if (clean) {
+      alert("✅ Đã lưu link hóa đơn thành công:\n" + clean);
+    } else {
+      alert("🗑️ Đã xóa link hóa đơn!");
+    }
+  }
+}
+window.editSalesInvoiceLink = editSalesInvoiceLink;
+
+function handleSalesInvoicePressStart(e) {
+  _salesInvoiceIsLongPress = false;
+  if (_salesInvoiceTimer) clearTimeout(_salesInvoiceTimer);
+  _salesInvoiceTimer = setTimeout(() => {
+    _salesInvoiceIsLongPress = true;
+    _salesInvoiceTimer = null;
+    if (navigator.vibrate) { try { navigator.vibrate(60); } catch (err) { } }
+    editSalesInvoiceLink();
+  }, 500);
+}
+window.handleSalesInvoicePressStart = handleSalesInvoicePressStart;
+
+function handleSalesInvoicePressEnd(e) {
+  if (_salesInvoiceTimer) {
+    clearTimeout(_salesInvoiceTimer);
+    _salesInvoiceTimer = null;
+  }
+}
+window.handleSalesInvoicePressEnd = handleSalesInvoicePressEnd;
+
+function handleSalesInvoiceClick(e) {
+  if (_salesInvoiceTimer) {
+    clearTimeout(_salesInvoiceTimer);
+    _salesInvoiceTimer = null;
+  }
+  if (_salesInvoiceIsLongPress) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    _salesInvoiceIsLongPress = false;
+    return;
+  }
+  let link = getSalesInvoiceLink();
+  if (!link) {
+    const wantAdd = confirm("ℹ️ Bạn chưa chèn đường link hóa đơn nào!\n\nBấm 'OK' để chèn link ngay bây giờ:");
+    if (wantAdd) {
+      editSalesInvoiceLink();
+    }
+    return;
+  }
+  if (!/^https?:\/\//i.test(link)) link = 'https://' + link;
+  try {
+    const a = document.createElement('a');
+    a.href = link;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (err) {
+    window.open(link, '_blank');
+  }
+}
+window.handleSalesInvoiceClick = handleSalesInvoiceClick;
+
+/* ============================================================
    QUẢN LÝ TÀI KHOẢN TOOL / SERVER & GHI CHÚ PHẦN MỀM
    ============================================================ */
 const DEFAULT_SW_ACCOUNTS = [

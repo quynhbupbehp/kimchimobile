@@ -553,11 +553,28 @@
         <!-- HÀNG 2: DANH SÁCH BÁN HÀNG , NGÀY DƯƠNG , NGÀY ÂM và TẠO PHIẾU MỚI CHIA ĐỀU KHOẢNG CÁCH TRONG HÀNG NGANG -->
         <div class="sales-actions-row"
           style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: nowrap; white-space: nowrap; width: 100%;">
-          <!-- CỤM 1: DANH SÁCH BÁN HÀNG NỀN HỒNG CHỮ TRẮNG -->
-          <div style="display: flex; align-items: center; justify-content: flex-start; flex: 1 1 0; min-width: 0;">
+          <!-- CỤM 1: DANH SÁCH BÁN HÀNG NỀN HỒNG CHỮ TRẮNG + ICON HÓA ĐƠN -->
+          <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex: 1 1 0; min-width: 0;">
             <button type="button" class="sw-pill-btn sw-btn-pink active" id="salesMainTitleBar"
               style="height: 32px; padding: 0 14px; border-radius: 8px; font-weight: 900; font-size: 0.92rem; letter-spacing: 0.5px; white-space: nowrap; cursor: default; text-transform: uppercase; box-shadow: 0 0 14px rgba(236,72,153,0.5); flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">DANH
               SÁCH BÁN HÀNG</button>
+            <!-- ICON HÓA ĐƠN (TO BẰNG NÚT BIDV 32x32, CLICK ĐỂ MỞ LINK, NHẤN GIỮ ĐỂ CHÈN LINK) -->
+            <button type="button" id="btnSalesInvoiceLink" class="btn-sales-invoice-link"
+              title="Click để mở Link Hóa Đơn (Nhấn giữ để chèn/sửa Link)"
+              onmousedown="handleSalesInvoicePressStart(event)"
+              onmouseup="handleSalesInvoicePressEnd(event)"
+              onmouseleave="handleSalesInvoicePressEnd(event)"
+              ontouchstart="handleSalesInvoicePressStart(event)"
+              ontouchend="handleSalesInvoicePressEnd(event)"
+              onclick="handleSalesInvoiceClick(event)"
+              style="width: 32px; height: 32px; min-width: 32px; padding: 0; background: #0f172a; border: 1.5px solid #38bdf8; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35); flex-shrink: 0; transition: all 0.15s ease; user-select: none;">
+              <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: #38bdf8; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block; pointer-events: none;">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16l2.5-1.5L9 20l2.5-1.5L14 20l2.5-1.5L19 20l1-0.6V8z"></path>
+                <path d="M14 2v6h6"></path>
+                <line x1="8" y1="11" x2="16" y2="11"></line>
+                <line x1="8" y1="15" x2="13" y2="15"></line>
+              </svg>
+            </button>
           </div>
 
           <!-- CỤM 2: NGÀY DƯƠNG (TRÁI TIM + MODE + BỘ ĐIỀU KHIỂN NGÀY/THÁNG/NĂM DƯƠNG) -->
@@ -5981,7 +5998,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261109_190806"></script>
+  <script src="js/main.js?v=20261109_192040"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
