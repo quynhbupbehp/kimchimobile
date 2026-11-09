@@ -764,16 +764,39 @@
     function detectPhoneBrand(brand, phoneName) {
       let b = String(brand || '').toUpperCase().trim();
       let n = String(phoneName || '').toUpperCase().trim();
+
       if (b === 'MÁY NGOÀI' || b === '❤️❤️❤️' || n.startsWith('❤️❤️❤️') || n.startsWith('MÁY NGOÀI')) return 'KHAC';
       if (b === 'IPAD' || n.includes('IPAD')) return 'IPAD';
       if (b === 'IPHONE' || b.includes('APPLE') || isPhoneBrandIphone(b, n)) return 'IPHONE';
-      if (/^(?:\d{1,2}|X|XS|XR|SE)\b/i.test(n) || n.includes('PRO MAX') || n.includes('PLUS') || n.includes('IPHONE')) return 'IPHONE';
+
+      // ƯU TIÊN 1: Nếu đã có tên hãng cụ thể đã được lưu (như HONOR, SAMSUNG, OPPO, VIVO, REDMI, POCO, REALME...)
+      // thì GIỮ NGUYÊN 100% hãng đó, không để các từ như 'PLUS' hay 'X' ghi đè thành IPHONE!
+      if (b && b !== 'KHAC' && b !== 'KHÁC' && b !== 'ALL' && b !== 'TẤT CẢ') {
+        if (b.includes('SAMSUNG')) return 'SAMSUNG';
+        if (b.includes('HONOR')) return 'HONOR';
+        if (b.includes('OPPO')) return 'OPPO';
+        if (b.includes('VIVO')) return 'VIVO';
+        if (b.includes('POCO')) return 'POCO';
+        if (b.includes('REDMI') || b.includes('XIAOMI')) return 'REDMI';
+        if (b.includes('REALME')) return 'REALME';
+        return b;
+      }
+
+      // ƯU TIÊN 2: Nhận diện theo tên dòng máy nếu hãng chưa có
+      if (n.includes('HONOR')) return 'HONOR';
       if (b.includes('SAMSUNG') || n.includes('SAMSUNG') || /^(?:GALAXY|NOTE\s*\d+|Z\s*FLIP|Z\s*FOLD)\b/i.test(n) || /^(?:A\d+|S\d+|M\d+)\b/i.test(n)) return 'SAMSUNG';
       if (b.includes('POCO') || n.includes('POCO')) return 'POCO';
       if (b.includes('REDMI') || n.includes('REDMI') || b.includes('XIAOMI') || n.includes('XIAOMI') || /^MI\b/i.test(n)) return 'REDMI';
       if (b.includes('REALME') || n.includes('REALME') || /^C\d+\b/i.test(n)) return 'REALME';
       if (b.includes('OPPO') || n.includes('OPPO') || n.includes('RENO') || /^A\d+[XS]?\b/i.test(n) || /^F\d+\b/i.test(n)) return 'OPPO';
       if (b.includes('VIVO') || n.includes('VIVO') || n.includes('IQOO') || /^Y\d+\b/i.test(n)) return 'VIVO';
+
+      // Chỉ nhận diện là IPHONE khi tên máy thuộc đúng các định dạng của Apple iPhone:
+      // (Ví dụ: 11, 12, 13, 14, 15, 16, 7G, 8G, 6S, X, XS, XS MAX, XR, SE, 7 PLUS, 8 PLUS, 6S PLUS, 11 PRO MAX...)
+      if (/^(?:\d{1,2}|X|XS|XR|SE)(?:\s*(?:PRO\s*MAX|PRO|PLUS|MINI|MAX|G|S))?\b/i.test(n) || /^(?:6S|7G|8G)(?:\s*PLUS)?\b/i.test(n) || n.includes('IPHONE')) {
+        return 'IPHONE';
+      }
+
       if (/^\d+/i.test(n)) return 'IPHONE';
       return b || 'KHAC';
     }
@@ -833,6 +856,10 @@
         text = 'POCO';
         bg = '#facc15'; // nền vàng
         color = '#dc2626'; // chữ đỏ
+      } else if (detected === 'HONOR') {
+        text = 'HONOR';
+        bg = '#0284c7'; // xanh dương cyan sáng bóng
+        color = '#ffffff'; // chữ trắng
       } else {
         text = detected || 'KHÁC';
         bg = '#334155';
@@ -12850,7 +12877,7 @@ let currentEditingSoldPhone = null;
         let cleanNamePart = pName;
 
         // Loại bỏ tên hãng ở đầu tên máy để tránh trùng lặp trước khi gắn logo
-        cleanNamePart = cleanNamePart.replace(/^(?:SAMSUNG|IPHONE|IPAD|OPPO|REALME|XIAOMI|REDMI|POCO|VIVO)\s*[-–—:]*\s*/i, '');
+        cleanNamePart = cleanNamePart.replace(/^(?:SAMSUNG|IPHONE|IPAD|OPPO|REALME|XIAOMI|REDMI|POCO|VIVO|HONOR)\s*[-–—:]*\s*/i, '');
         if (brandDisplay && brandDisplay !== 'MÁY NGOÀI' && brandDisplay !== '❤️❤️❤️') {
           const bReg = new RegExp('^' + brandDisplay.replace(/[.*+?^$\{}()|[\]\\]/g, '\\$&') + '\\s*[-–—:]*\\s*', 'i');
           cleanNamePart = cleanNamePart.replace(bReg, '');
