@@ -25,8 +25,11 @@
     </script>
 
     <style>
-        *, *::before, *::after {
+        body, input, select, textarea, button, span:not([class*="fa-"]), div, p, label, a, table, th, td, h1, h2, h3 {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+        }
+        i, [class*="fa-"], [class^="fa-"] {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
         }
 
         body {
@@ -37,9 +40,7 @@
             font-weight: 700;
         }
 
-        input, select, textarea, button, span, div, p, label, a, table, th, td, h1, h2, h3 {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-        }
+        
 
         .card-dark {
             background-color: #0b0f19;
@@ -975,13 +976,9 @@
                         b = 'IPHONE';
                     } else if (/\b(SAMSUNG|GALAXY)\b/i.test(n) || /^[SAMUNG\s]*[ASM]\d+/i.test(n) || /\bNOTE\s*\d+/i.test(n) || /\bS\d{1,2}\b/i.test(n)) {
                         b = 'SAMSUNG';
-                    } else if (/\bPOCO\b/i.test(n)) {
-                        b = 'POCO';
-                    } else if (/\b(REDMI|XIAOMI|MI)\b/i.test(n) || /\bK\d{2}\b/i.test(n)) {
-                        b = 'REDMI';
-                    } else if (/\bREALME\b/i.test(n)) {
-                        b = 'REALME';
-                    } else if (/\b(OPPO|RENO)\b/i.test(n) || /\bF\d{1,2}\b/i.test(n)) {
+                    } else if (/\b(REDMI|POCO|XIAOMI|MI)\b/i.test(n) || /\bK\d{2}\b/i.test(n)) {
+                        b = 'MI';
+                    } else if (/\b(OPPO|REALME|RENO)\b/i.test(n) || /\bF\d{1,2}\b/i.test(n)) {
                         b = 'OPPO';
                     } else if (/\b(VIVO|IQOO)\b/i.test(n) || /\b(Y\d{2}|V\d{2})\b/i.test(n)) {
                         b = 'VIVO';
@@ -993,15 +990,12 @@
 
             if (!b) return '';
 
-            // Chuẩn hóa tên thương hiệu chính xác theo 8 quy tắc:
-            // 1. IPHONE: nền đen chữ trắng đậm
+            // Yêu cầu hiển thị thương hiệu chuẩn:
+            // 1. IPHONE / IPAD: nền đen chữ trắng đậm
             // 2. SAMSUNG: nền xanh dương chữ trắng đậm
-            // 3. OPPO: nền xanh lá chữ trắng đậm
-            // 4. VIVO: nền tím chữ trắng đậm
-            // 5. REALME: nền vàng chữ trắng đậm (text-shadow)
-            // 6. POCO: nền vàng chữ Đen
-            // 7. REDMI: nền đỏ chữ trắng đậm
-            // 8. IPAD: nền đen chữ trắng đậm
+            // 3. OPPO - REALME -> Hiển thị chữ OPPO nền xanh lá chữ trắng
+            // 4. REDMI - POCO -> Hiển thị chữ MI nền đỏ chữ trắng
+            // 5. VIVO: nền tím chữ trắng đậm
             let badgeText = '';
             let bg = '#000000';
             let color = '#ffffff';
@@ -1022,21 +1016,14 @@
                 badgeText = 'SAMSUNG';
                 bg = '#1d4ed8'; // xanh dương
                 color = '#ffffff';
-            } else if (b.includes('REALME')) {
-                badgeText = 'REALME';
-                bg = '#eab308'; // nền vàng
-                color = '#ffffff';
-                extraStyle = 'text-shadow: 0 1px 2px rgba(0,0,0,0.7);';
-            } else if (b.includes('POCO')) {
-                badgeText = 'POCO';
-                bg = '#facc15'; // nền vàng
-                color = '#000000'; // chữ Đen
-            } else if (b.includes('OPPO')) {
+            } else if (b.includes('OPPO') || b.includes('REALME')) {
+                // Tên hiển thị hãng OPPO - REALME chuyển thành OPPO nền xanh lá chữ trắng
                 badgeText = 'OPPO';
                 bg = '#16a34a'; // xanh lá
                 color = '#ffffff';
-            } else if (b.includes('REDMI') || b.includes('XIAOMI') || b.includes('MI')) {
-                badgeText = 'REDMI';
+            } else if (b.includes('REDMI') || b.includes('POCO') || b.includes('XIAOMI') || b.includes('MI')) {
+                // Tên hiển thị hãng REDMI - POCO chuyển thành MI nền đỏ chữ trắng
+                badgeText = 'MI';
                 bg = '#dc2626'; // nền đỏ
                 color = '#ffffff';
             } else if (b.includes('VIVO') || b.includes('IQOO')) {
