@@ -2347,7 +2347,7 @@ async function manualSyncAllToFirestore() {
       );
     }
 
-    // 4. Tab Bán Máy (Kho máy)
+    // 4. Tab Bán Máy (Kho máy) - Đồng bộ gói Bundle 1 Document duy nhất
     if (typeof phoneDatabase !== 'undefined' && Array.isArray(phoneDatabase) && phoneDatabase.length > 0) {
       promises.push(
         db.collection('sync_bundles').doc('phones').set({
@@ -2355,14 +2355,9 @@ async function manualSyncAllToFirestore() {
           updatedAt: now
         }, { merge: true }).catch(function () { })
       );
-      phoneDatabase.slice(0, 20).forEach(function (p) {
-        if (p && p.id) {
-          promises.push(db.collection('phones').doc(String(p.id)).set(p, { merge: true }).catch(function () { }));
-        }
-      });
     }
 
-    // 5. Tab Bảo Hành (Máy đã bán)
+    // 5. Tab Bảo Hành (Máy đã bán) - Đồng bộ gói Bundle 1 Document duy nhất
     if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase) && soldPhoneDatabase.length > 0) {
       promises.push(
         db.collection('sync_bundles').doc('sold_phones').set({
@@ -2370,11 +2365,6 @@ async function manualSyncAllToFirestore() {
           updatedAt: now
         }, { merge: true }).catch(function () { })
       );
-      soldPhoneDatabase.slice(0, 20).forEach(function (sp) {
-        if (sp && sp.id) {
-          promises.push(db.collection('sold_phones').doc(String(sp.id)).set(sp, { merge: true }).catch(function () { }));
-        }
-      });
     }
 
     // 6. Tab Sửa Chữa
