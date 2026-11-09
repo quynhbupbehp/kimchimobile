@@ -10054,10 +10054,6 @@ function saveNewPhone(e) {
     }
   }
 
-  if (status === 'Chưa Xử Lý') {
-    currentPhoneStatusFilter = 'CHUA_XU_LY';
-    try { localStorage.setItem('KIMCHI_PHONE_STATUS_FILTER', 'CHUA_XU_LY'); } catch (e) {}
-  }
   savePhoneStorage(savedItem);
   closePhoneModal();
   renderPhoneGrid();
