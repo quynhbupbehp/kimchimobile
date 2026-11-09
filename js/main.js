@@ -9931,6 +9931,7 @@ function saveNewPhone(e) {
   const dateIn = document.getElementById('mDateVal').value.trim();
 
   const originStr = origin || 'VN/A';
+  let savedItem = null;
 
   if (editId) {
     const p = phoneDatabase.find(item => item.id == editId);
@@ -9951,6 +9952,7 @@ function saveNewPhone(e) {
       p.note = note;
       p.date = dateIn;
       p.updatedAt = Date.now();
+      savedItem = p;
       if (typeof logActivity === 'function') {
         logActivity('EDIT', 'banmay', 'Bán máy', `Sửa thông tin máy: ${brand} ${name} (${imei || 'Không IMEI'}) - Giá: ${priceOut}`, oldData, p, p.id);
       }
@@ -9976,6 +9978,7 @@ function saveNewPhone(e) {
       updatedAt: Date.now()
     };
     phoneDatabase.unshift(newItem);
+    savedItem = newItem;
     if (typeof logActivity === 'function') {
       logActivity('ADD', 'banmay', 'Bán máy', `Nhập máy mới: ${brand} ${name} ${newItem.storage} (${imei || 'Không IMEI'}) - Vốn: ${newItem.priceIn}`, null, newItem, newItem.id);
     }
@@ -9984,9 +9987,12 @@ function saveNewPhone(e) {
   if (status === 'Chưa Xử Lý') {
     currentPhoneStatusFilter = 'CHUA_XU_LY';
   }
-  savePhoneStorage(p || newItem);
+  savePhoneStorage(savedItem);
   closePhoneModal();
   renderPhoneGrid();
+  if (typeof showToast === 'function') {
+    showToast(editId ? '✅ Đã cập nhật thông tin máy thành công!' : '✅ Đã thêm máy mới vào kho thành công!');
+  }
 }
 
 function viewPhone(id, fromSold = false) {
