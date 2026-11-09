@@ -2175,7 +2175,9 @@
               if (updated !== item.storage) { item.storage = updated; bChanged = true; }
             }
           });
-          if (bChanged) try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
+          if (bChanged) {
+            if (typeof syncBangaBundleDebounced === 'function') syncBangaBundleDebounced();
+          }
         }
 
         if (typeof phoneDatabase !== 'undefined' && Array.isArray(phoneDatabase)) {
@@ -2190,7 +2192,9 @@
               if (updated !== p.name) { p.name = updated; pChanged = true; }
             }
           });
-          if (pChanged) try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
+          if (pChanged) {
+            if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+          }
         }
 
         if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
@@ -2205,7 +2209,9 @@
               if (updated !== p.name) { p.name = updated; spChanged = true; }
             }
           });
-          if (spChanged) try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
+          if (spChanged) {
+            if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+          }
         }
 
         if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
@@ -2487,7 +2493,6 @@
               var list = data.list;
               list.sort(function(a, b) { return getItemTimestamp(b) - getItemTimestamp(a); });
               bangaDatabase = list;
-              try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
               if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
               if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
             }
@@ -2499,11 +2504,8 @@
           if (doc && doc.exists) {
             var data = doc.data();
             if (data && Array.isArray(data.list) && data.list.length > 0) {
-              var isSoldCleared = localStorage.getItem('KIMCHI_SOLD_PHONE_CLEARED') === 'true';
-              if (isSoldCleared) return;
               var list = data.list;
               soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(list) : list;
-              try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
               if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
             }
           }
@@ -2600,7 +2602,6 @@
               let list = data.list;
               list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
               bangaDatabase = list;
-              try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
               if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
               if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
             }
@@ -2613,11 +2614,8 @@
           if (doc && doc.exists) {
             const data = doc.data();
             if (data && Array.isArray(data.list) && data.list.length > 0) {
-              const isSoldCleared = localStorage.getItem('KIMCHI_SOLD_PHONE_CLEARED') === 'true';
-              if (isSoldCleared) return;
               let list = data.list;
               soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(list) : list;
-              try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
               if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
             }
           }
@@ -2671,7 +2669,6 @@
               }
             });
             bangaDatabase = list;
-            try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
             if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
         }, err => console.error("Lỗi sync banga realtime:", err));
@@ -2682,30 +2679,18 @@
       // 3. Đồng bộ Kho Bán Máy (phones) thời gian thực
       try {
         db.collection('phones').onSnapshot(snapshot => {
-          // Nếu người dùng vừa làm mới kho hoặc xóa sạch trên máy này thì không nạp đè dữ liệu cũ
-          const isPhoneCleared = localStorage.getItem('KIMCHI_PHONE_CLEARED') === 'true';
-          const resetTs = parseInt(localStorage.getItem('KIMCHI_PHONE_RESET_TS') || '0', 10);
-          if (isPhoneCleared) return;
-
           let list = [];
           snapshot.forEach(doc => {
             let data = doc.data();
             if (!data.id) data.id = doc.id;
-            // Bỏ qua các doc cũ được tạo trước thời điểm làm mới kho gần nhất
-            if (resetTs && data.createdAt && new Date(data.createdAt).getTime() < resetTs) return;
-            if (resetTs && !data.createdAt && Number(data.id) < resetTs) return;
             list.push(data);
           });
           if (list.length > 0) {
-            // Sắp xếp ID giảm dần (máy mới thêm luôn ở đầu bảng trên cả Mobile và Web)
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
-            // Hợp nhất list từ Firebase với danh sách seed để không bị mất 188 máy gốc
             phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(list) : list;
-            try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
             if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
           } else if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
             phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-            try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
             if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
           }
         }, err => console.error("Lỗi sync phones:", err));
@@ -2716,27 +2701,18 @@
       // 4. Đồng bộ Bảo Hành (sold_phones) thời gian thực
       try {
         db.collection('sold_phones').onSnapshot(snapshot => {
-          const isSoldCleared = localStorage.getItem('KIMCHI_SOLD_PHONE_CLEARED') === 'true';
-          const resetSoldTs = parseInt(localStorage.getItem('KIMCHI_SOLD_PHONE_RESET_TS') || '0', 10);
-          if (isSoldCleared) return;
-
           let list = [];
           snapshot.forEach(doc => {
             let data = doc.data();
             if (!data.id) data.id = doc.id;
-            if (resetSoldTs && data.createdAt && new Date(data.createdAt).getTime() < resetSoldTs) return;
-            if (resetSoldTs && !data.createdAt && Number(data.id) < resetSoldTs) return;
             list.push(data);
           });
           if (list.length > 0) {
             list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
-            // Hợp nhất list từ Firebase với danh sách seed để không bị mất 96 máy gốc
             soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(list) : list;
-            try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
             if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
           } else if (Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
             soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(soldPhoneDatabase) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
-            try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
             if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
           }
         }, err => console.error("Lỗi sync sold_phones:", err));
@@ -2776,7 +2752,6 @@
           if (list.length > 0) {
             list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
             repairDatabase = list;
-            try { localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase)); } catch(e){}
             if (typeof renderRepairTable === 'function') renderRepairTable();
             if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
           }
@@ -3443,23 +3418,16 @@
       item.profit = formatPriceStr(p);
     }
 
-    let bangaDatabase = [];
-    try {
-      const bgRaw = localStorage.getItem('KIMCHI_BANGA_DB');
-      if (bgRaw) {
-        bangaDatabase = JSON.parse(bgRaw) || [];
-      } else if (Array.isArray(window.SEED_BANGA_DATA) && window.SEED_BANGA_DATA.length > 0) {
-        bangaDatabase = JSON.parse(JSON.stringify(window.SEED_BANGA_DATA));
+    // Dữ liệu Bán Gà: Khởi tạo Pure Firestore (kèm seed dự phòng khi chưa có mạng)
+    let bangaDatabase = (Array.isArray(window.SEED_BANGA_DATA) && window.SEED_BANGA_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_BANGA_DATA)) : [];
+    bangaDatabase.forEach(item => {
+      if (item) {
+        if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
+        if (item.price !== undefined && item.price !== null && item.price !== '') item.price = formatPriceStr(item.price);
+        if (item.priceIn !== undefined && item.priceIn !== null && item.priceIn !== '') item.priceIn = formatPriceStr(item.priceIn);
+        if (item.profit !== undefined && item.profit !== null && item.profit !== '') item.profit = formatPriceStr(item.profit);
       }
-      bangaDatabase.forEach(item => {
-        if (item) {
-          if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
-          if (item.price !== undefined && item.price !== null && item.price !== '') item.price = formatPriceStr(item.price);
-          if (item.priceIn !== undefined && item.priceIn !== null && item.priceIn !== '') item.priceIn = formatPriceStr(item.priceIn);
-          if (item.profit !== undefined && item.profit !== null && item.profit !== '') item.profit = formatPriceStr(item.profit);
-        }
-      });
-    } catch(e) {}
+    });
 
     let _salesBundleTimer = null;
     function syncSalesBundleDebounced() {
@@ -3510,7 +3478,6 @@
     }
 
     function saveBangaStorage(itemToSync) {
-      try { localStorage.setItem('KIMCHI_BANGA_DB', JSON.stringify(bangaDatabase)); } catch(e){}
       if (typeof db !== 'undefined' && db) {
         const syncItem = (it) => {
           if (!it || !it.id) return;
@@ -4216,12 +4183,7 @@
       // Lấy danh sách sửa chữa an toàn
       let repairsList = [];
       try {
-        if (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) {
-          repairsList = repairDatabase;
-        } else {
-          const savedRep = localStorage.getItem('KIMCHI_REPAIR_DB');
-          repairsList = savedRep ? JSON.parse(savedRep) : [];
-        }
+        repairsList = (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) ? repairDatabase : [];
       } catch (e) {
         repairsList = [];
       }
@@ -4561,12 +4523,7 @@
       // 2. SỬA CHỮA (repairDatabase)
       let rList = [];
       try {
-        if (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) {
-          rList = repairDatabase;
-        } else {
-          const savedRep = localStorage.getItem('KIMCHI_REPAIR_DB');
-          rList = savedRep ? JSON.parse(savedRep) : [];
-        }
+        rList = (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) ? repairDatabase : [];
       } catch (e) {
         rList = [];
       }
@@ -4818,12 +4775,7 @@
       // 2. Sửa Chữa
       let rList = [];
       try {
-        if (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) {
-          rList = repairDatabase;
-        } else {
-          const savedRep = localStorage.getItem('KIMCHI_REPAIR_DB');
-          rList = savedRep ? JSON.parse(savedRep) : [];
-        }
+        rList = (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) ? repairDatabase : [];
       } catch (e) {
         rList = [];
       }
@@ -8672,11 +8624,7 @@
 
           if (newRecords.length > 0 || updatedCount > 0) {
             if (newRecords.length > 0) soldPhoneDatabase.push(...newRecords);
-
-            try {
-              localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
-              localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
-            } catch (e) {}
+            saveSoldPhoneStorage();
 
             // Tự động chuyển chế độ xem sang "Tất Cả" và bộ lọc bảo hành sang "Tất Cả" để hiển thị đầy đủ 100% 97 máy
             currentSoldPhoneWarrantyFilter = 'ALL';
@@ -9427,36 +9375,9 @@
     }
     window.mergeWithSeedPhones = mergeWithSeedPhones;
 
-    let phoneDatabase = [];
-    try {
-      const pRaw = localStorage.getItem('KIMCHI_PHONE_DB');
-      let currentLocalList = [];
-      if (pRaw) {
-        try { currentLocalList = JSON.parse(pRaw) || []; } catch(e) { currentLocalList = []; }
-      }
-      // Luôn hợp nhất bảo đảm có đầy đủ 188 máy chuẩn + máy người dùng tạo thêm (vd: Bịa Ra)
-      phoneDatabase = mergeWithSeedPhones(currentLocalList);
-      try {
-        localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase));
-        localStorage.setItem('KIMCHI_PHONE_RESET_V3', 'done');
-        localStorage.removeItem('KIMCHI_PHONE_CLEARED');
-      } catch(e) {}
-    } catch(e) {}
-
-    let soldPhoneDatabase = [];
-    try {
-      const spRaw = localStorage.getItem('KIMCHI_SOLD_PHONE_DB');
-      let currentLocalSoldList = [];
-      if (spRaw) {
-        try { currentLocalSoldList = JSON.parse(spRaw) || []; } catch(e) { currentLocalSoldList = []; }
-      }
-      // Luôn hợp nhất bảo đảm có đầy đủ 96 máy chuẩn từ file Excel + các đơn người dùng tạo thêm (vd: Bịa Ra)
-      soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(currentLocalSoldList) : currentLocalSoldList;
-      try {
-        localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
-        localStorage.removeItem('KIMCHI_SOLD_PHONE_CLEARED');
-      } catch(e) {}
-    } catch(e) {}
+    // Dữ liệu Bán Máy & Bảo Hành: Khởi tạo Pure Firestore (kèm hợp nhất 188 máy gốc + 96 máy bảo hành)
+    let phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
+    let soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : (window.SEED_SOLD_DATA || []);
     
     // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
     function autoSyncPhonesToWarranty() {
@@ -9535,7 +9456,7 @@
         }
 
         if (changed) {
-          try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
+          saveSoldPhoneStorage();
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
       } catch (err) {
@@ -9713,25 +9634,49 @@
       }
     }
 
+    let _phoneBundleTimer = null;
+    function syncPhoneBundleDebounced() {
+      if (typeof db === 'undefined' || !db) return;
+      clearTimeout(_phoneBundleTimer);
+      _phoneBundleTimer = setTimeout(() => {
+        try {
+          db.collection('sync_bundles').doc('phones').set({
+            list: phoneDatabase,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(e => console.warn('Sync phones bundle notice:', e.code || e));
+        } catch(e){}
+      }, 150);
+    }
+
+    let _soldPhoneBundleTimer = null;
+    function syncSoldPhoneBundleDebounced() {
+      if (typeof db === 'undefined' || !db) return;
+      clearTimeout(_soldPhoneBundleTimer);
+      _soldPhoneBundleTimer = setTimeout(() => {
+        try {
+          db.collection('sync_bundles').doc('sold_phones').set({
+            list: soldPhoneDatabase,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(e => console.warn('Sync sold_phones bundle notice:', e.code || e));
+        } catch(e){}
+      }, 150);
+    }
+
     function savePhoneStorage(itemToSync) {
-      try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch(e){}
       if (typeof db !== 'undefined' && db) {
         if (itemToSync && itemToSync.id) {
           db.collection('phones').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
-        } else {
-          // AGENTS.md Rule 6: Chi luu local hoac dong bo don le de chong chay quota Firestore
         }
+        syncPhoneBundleDebounced();
       }
     }
 
     function saveSoldPhoneStorage(itemToSync) {
-      try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
       if (typeof db !== 'undefined' && db) {
         if (itemToSync && itemToSync.id) {
           db.collection('sold_phones').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
-        } else {
-          // AGENTS.md Rule 6: Chi luu local hoac dong bo don le de chong chay quota Firestore
         }
+        syncSoldPhoneBundleDebounced();
       }
     }
 
@@ -11934,7 +11879,7 @@ let currentEditingSoldPhone = null;
       if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
         if (!Array.isArray(phoneDatabase) || phoneDatabase.length < window.SEED_PHONES_DATA.length) {
           phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-          try { localStorage.setItem('KIMCHI_PHONE_DB', JSON.stringify(phoneDatabase)); } catch (e) { }
+          savePhoneStorage();
         }
       }
 
@@ -12658,7 +12603,7 @@ let currentEditingSoldPhone = null;
         }
       });
       if (changed) {
-        try { localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase)); } catch(e){}
+        saveSoldPhoneStorage();
       }
     }
 
@@ -16968,29 +16913,29 @@ let currentEditingSoldPhone = null;
       }
     ];
 
-    // Dữ liệu Sửa Chữa: Khởi tạo an toàn kèm đồng bộ Firebase Firestore
-    let repairDatabase = [];
-    try {
-      const repRaw = localStorage.getItem('KIMCHI_REPAIR_DB');
-      if (repRaw) {
-        repairDatabase = JSON.parse(repRaw) || [];
-      } else if (Array.isArray(window.SEED_REPAIRS_DATA) && window.SEED_REPAIRS_DATA.length > 0) {
-        repairDatabase = JSON.parse(JSON.stringify(window.SEED_REPAIRS_DATA));
-      } else {
-        repairDatabase = DEFAULT_REPAIR_DATA;
-      }
-    } catch(e) {
-      repairDatabase = DEFAULT_REPAIR_DATA;
+    // Dữ liệu Sửa Chữa: Khởi tạo Pure Firestore (kèm seed dự phòng khi chưa có mạng)
+    let repairDatabase = (Array.isArray(window.SEED_REPAIRS_DATA) && window.SEED_REPAIRS_DATA.length > 0) ? JSON.parse(JSON.stringify(window.SEED_REPAIRS_DATA)) : DEFAULT_REPAIR_DATA;
+
+    let _repairBundleTimer = null;
+    function syncRepairBundleDebounced() {
+      if (typeof db === 'undefined' || !db) return;
+      clearTimeout(_repairBundleTimer);
+      _repairBundleTimer = setTimeout(() => {
+        try {
+          db.collection('sync_bundles').doc('repairs').set({
+            list: repairDatabase,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(e => console.warn('Sync repairs bundle notice:', e.code || e));
+        } catch(e){}
+      }, 150);
     }
 
     function saveRepairDb(itemToSync) {
-      try { localStorage.setItem('KIMCHI_REPAIR_DB', JSON.stringify(repairDatabase)); } catch(e){}
       if (typeof db !== 'undefined' && db) {
         if (itemToSync && itemToSync.id) {
           db.collection('repairs').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
-        } else {
-          // AGENTS.md Rule 6: Chi luu local hoac dong bo don le de chong chay quota Firestore
         }
+        syncRepairBundleDebounced();
       }
       if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     }
@@ -18607,13 +18552,7 @@ let currentEditingSoldPhone = null;
 
       // 3. Nợ từ repairDatabase (Sửa Chữa)
       let repList = [];
-      if (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) {
-        repList = repairDatabase;
-      } else {
-        try {
-          repList = JSON.parse(localStorage.getItem('KIMCHI_REPAIR_DB')) || [];
-        } catch(e) { repList = []; }
-      }
+      repList = (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) ? repairDatabase : [];
       repList.forEach(r => {
         let isDebt = (r.status === 'Nợ' || r.paymentStatus === 'Nợ Dai VL' || r.paymentStatus === 'NỢ DAI VL' || r.paymentStatus === 'NỢ DAI' || r.method === 'Nợ' || r.method === 'nợ');
         if (isDebt) {
@@ -20089,7 +20028,7 @@ let currentEditingSoldPhone = null;
           renderFn = () => { if (typeof renderMyDebtTable === 'function') renderMyDebtTable(); renderDebtDashboard(); };
         } else if (module === 'baohanh') {
           targetList = soldPhoneDatabase;
-          saveFn = () => localStorage.setItem('KIMCHI_SOLD_PHONE_DB', JSON.stringify(soldPhoneDatabase));
+          saveFn = () => saveSoldPhoneStorage();
           renderFn = () => { if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable(); };
         } else if (module === 'linhkien') {
           targetList = partsDatabase;
@@ -20342,7 +20281,7 @@ let currentEditingSoldPhone = null;
 
       // 3. Sửa chữa
       try {
-        const repDb = JSON.parse(localStorage.getItem('KIMCHI_REPAIR_DB')) || [];
+        const repDb = (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase)) ? repairDatabase : [];
         repDb.forEach(s => {
           if (checkMatch(s.dateFormatted, `${s.device || ''} ${s.customer || ''} ${s.issue || ''}`)) {
             const r = parsePriceNum(s.price);
@@ -20356,7 +20295,7 @@ let currentEditingSoldPhone = null;
 
       // 4. Bán máy
       try {
-        const soldDb = JSON.parse(localStorage.getItem('KIMCHI_SOLD_PHONE_DB')) || [];
+        const soldDb = (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) ? soldPhoneDatabase : [];
         soldDb.forEach(s => {
           if (checkMatch(s.dateTime, `${s.name || ''} ${s.customer || ''} ${s.imei || ''}`)) {
             const r = parsePriceNum(s.priceOut || s.total);
