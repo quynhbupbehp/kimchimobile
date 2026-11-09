@@ -8996,9 +8996,11 @@ function editBangaSale(id) {
 
   const conditionRow = document.getElementById('editSaleConditionRow');
   const conditionInput = document.getElementById('editSaleCondition');
-  if (conditionRow && conditionInput) {
-    conditionRow.style.display = 'block';
-    conditionInput.value = item.condition || details.condition || '';
+  if (conditionRow) {
+    conditionRow.style.display = 'none';
+  }
+  if (conditionInput) {
+    conditionInput.value = '';
   }
 
   const modal = document.getElementById('editSaleModal');
