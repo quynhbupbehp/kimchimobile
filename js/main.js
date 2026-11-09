@@ -9258,11 +9258,10 @@ function getSoldPhoneIds() {
   try {
     const raw = localStorage.getItem('KIMCHI_SOLD_OUT_IDS');
     const set = raw ? new Set(JSON.parse(raw)) : new Set();
-    // Bổ sung các ID và IMEI đang có trong soldPhoneDatabase
+    // Bổ sung các ID của máy đang có trong soldPhoneDatabase (chỉ lọc theo ID máy, không lọc theo IMEI để cho phép nhập lại máy khác cùng 4 số IMEI)
     if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
       soldPhoneDatabase.forEach(sp => {
         if (sp && sp.id) set.add(String(sp.id));
-        if (sp && sp.imei) set.add('imei_' + String(sp.imei).trim());
       });
     }
     return set;
@@ -9276,7 +9275,6 @@ function recordSoldPhoneId(id, imei) {
     const raw = localStorage.getItem('KIMCHI_SOLD_OUT_IDS');
     const list = raw ? JSON.parse(raw) : [];
     if (id && !list.includes(String(id))) list.push(String(id));
-    if (imei && !list.includes('imei_' + String(imei).trim())) list.push('imei_' + String(imei).trim());
     localStorage.setItem('KIMCHI_SOLD_OUT_IDS', JSON.stringify(list));
   } catch (e) { }
 }
@@ -9287,7 +9285,6 @@ function removeSoldPhoneId(id, imei) {
     if (!raw) return;
     let list = JSON.parse(raw);
     if (id) list = list.filter(x => x !== String(id));
-    if (imei) list = list.filter(x => x !== ('imei_' + String(imei).trim()));
     localStorage.setItem('KIMCHI_SOLD_OUT_IDS', JSON.stringify(list));
   } catch (e) { }
 }
@@ -9371,14 +9368,10 @@ window.mergeWithSeedSoldPhones = mergeWithSeedSoldPhones;
 function mergeWithSeedPhones(list) {
   const soldIds = getSoldPhoneIds();
   const deletedPhoneIds = getDeletedPhoneIds();
-  // Lọc danh sách hiện tại loại bỏ các máy đã bán hoặc đã xóa
+  // Lọc danh sách hiện tại loại bỏ các máy đã bán hoặc đã xóa theo ID
   let combined = Array.isArray(list) ? list.filter(item => {
     if (!item) return false;
     if (item.id && (soldIds.has(String(item.id)) || deletedPhoneIds.has(String(item.id)))) return false;
-    if (item.imei) {
-      let imeiKey = 'imei_' + String(item.imei).trim().toLowerCase();
-      if (soldIds.has('imei_' + String(item.imei).trim()) || deletedPhoneIds.has(imeiKey)) return false;
-    }
     return true;
   }) : [];
 
@@ -9391,11 +9384,9 @@ function mergeWithSeedPhones(list) {
       if (!s || !s.id) return;
       const sId = String(s.id);
       const sImei = s.imei ? String(s.imei).trim() : '';
-      const sImeiKey = sImei ? ('imei_' + sImei.toLowerCase()) : '';
 
-      // Tuyệt đối không nạp lại nếu máy này đã bán hoặc đã bị người dùng xóa
-      if (soldIds.has(sId) || (sImei && soldIds.has('imei_' + sImei))) return;
-      if (deletedPhoneIds.has(sId) || (sImeiKey && deletedPhoneIds.has(sImeiKey))) return;
+      // Tuyệt đối không nạp lại nếu máy này đã bán hoặc đã bị người dùng xóa theo ID
+      if (soldIds.has(sId) || deletedPhoneIds.has(sId)) return;
       if (existIdSet.has(sId) || (sImei && existImeiSet.has(sImei))) return;
 
       combined.push(s);
