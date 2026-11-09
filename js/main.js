@@ -18235,7 +18235,7 @@ function openRepairModalWithPrefill(data) {
     document.getElementById('rFormIssue').value = data.issue;
   }
   if (document.getElementById('rFormWarranty') && !document.getElementById('rFormWarranty').value) {
-    document.getElementById('rFormWarranty').value = data.warranty || '0 Bảo Hành';
+    document.getElementById('rFormWarranty').value = data.warranty || '';
   }
 
   // Thiết lập giá trị hiện mờ (ghost placeholder / default value)
