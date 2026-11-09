@@ -2517,6 +2517,7 @@ function fetchDirectCloudSync(showToastMsg) {
           } else {
             phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
           }
+          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -2647,6 +2648,7 @@ function initFirebaseRealtimeSync() {
             return;
           }
           phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
+          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -9422,8 +9424,20 @@ function mergeWithSeedPhones(list) {
 }
 window.mergeWithSeedPhones = mergeWithSeedPhones;
 
-// Dữ liệu Bán Máy & Bảo Hành: Khởi tạo Pure Firestore (kèm hợp nhất 188 máy gốc + 96 máy bảo hành)
-let phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
+// Dữ liệu Bán Máy & Bảo Hành: Khởi tạo từ Local Cache + Pure Firestore (kèm hợp nhất 188 máy gốc + 96 máy bảo hành)
+function loadInitialPhones() {
+  try {
+    const localRaw = localStorage.getItem('KIMCHI_PHONES_LOCAL');
+    if (localRaw) {
+      const parsed = JSON.parse(localRaw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(parsed) : parsed;
+      }
+    }
+  } catch (e) {}
+  return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
+}
+let phoneDatabase = loadInitialPhones();
 let soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : (window.SEED_SOLD_DATA || []);
 
 // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
@@ -9523,10 +9537,17 @@ window.autoSyncPhonesToWarranty = autoSyncPhonesToWarranty;
 
 let currentBrandFilter = "ALL";
 let currentPriceFilter = "ALL";
-let currentPhoneStatusFilter = "CON_HANG"; // "CON_HANG" (mặc định) hoặc "CHUA_XU_LY"
+let currentPhoneStatusFilter = (function() {
+  try {
+    return localStorage.getItem('KIMCHI_PHONE_STATUS_FILTER') || 'CON_HANG';
+  } catch (e) {
+    return 'CON_HANG';
+  }
+})(); // "CON_HANG" (mặc định) hoặc "CHUA_XU_LY"
 
 function togglePhoneChuaXuLyMode() {
   currentPhoneStatusFilter = (currentPhoneStatusFilter === 'CHUA_XU_LY') ? 'CON_HANG' : 'CHUA_XU_LY';
+  try { localStorage.setItem('KIMCHI_PHONE_STATUS_FILTER', currentPhoneStatusFilter); } catch (e) {}
   updateChuaXuLyBtnUI();
   renderPhoneGrid();
 }
@@ -9719,9 +9740,12 @@ function syncSoldPhoneBundleDebounced() {
 }
 
 function savePhoneStorage(itemToSync) {
+  try {
+    localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase));
+  } catch (e) {}
   if (typeof db !== 'undefined' && db) {
     if (itemToSync && itemToSync.id) {
-      db.collection('phones').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+      db.collection('phones').doc(String(itemToSync.id)).set(itemToSync, { merge: true }).catch(console.error);
     }
     syncPhoneBundleDebounced();
   }
@@ -10032,6 +10056,7 @@ function saveNewPhone(e) {
 
   if (status === 'Chưa Xử Lý') {
     currentPhoneStatusFilter = 'CHUA_XU_LY';
+    try { localStorage.setItem('KIMCHI_PHONE_STATUS_FILTER', 'CHUA_XU_LY'); } catch (e) {}
   }
   savePhoneStorage(savedItem);
   closePhoneModal();
