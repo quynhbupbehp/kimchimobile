@@ -2422,7 +2422,26 @@ async function manualSyncAllToFirestore() {
 window.manualSyncAllToFirestore = manualSyncAllToFirestore;
 
 function autoPushLocalDataToFirestore() {
-  // Tuân thủ AGENTS.md Rule 6: Không ghi hàng loạt lên Firestore khi khởi động để chống cháy quota
+  // Tự động chuẩn hóa đè 1 lần duy nhất lên sync_bundles cho Bán Máy & Bảo Hành nếu chưa chuẩn hóa
+  try {
+    if (typeof db === 'undefined' || !db) return;
+    const isCleaned = localStorage.getItem('KIMCHI_PHONES_CLEAN_V1');
+    if (isCleaned !== 'true') {
+      if (Array.isArray(phoneDatabase) && phoneDatabase.length > 0 && phoneDatabase.length <= 300) {
+        db.collection('sync_bundles').doc('phones').set({
+          list: phoneDatabase,
+          updatedAt: Date.now()
+        }, { merge: true }).catch(function () { });
+      }
+      if (Array.isArray(soldPhoneDatabase) && soldPhoneDatabase.length > 0 && soldPhoneDatabase.length <= 200) {
+        db.collection('sync_bundles').doc('sold_phones').set({
+          list: soldPhoneDatabase,
+          updatedAt: Date.now()
+        }, { merge: true }).catch(function () { });
+      }
+      localStorage.setItem('KIMCHI_PHONES_CLEAN_V1', 'true');
+    }
+  } catch (e) { }
   return;
 }
 window.autoPushLocalDataToFirestore = autoPushLocalDataToFirestore;
@@ -2486,7 +2505,14 @@ function fetchDirectCloudSync(showToastMsg) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          phoneDatabase = data.list;
+          // Bảo vệ chống dữ liệu rác cũ (> 500 máy) từ bundle cũ đè lên
+          if (data.list.length > 500 && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length < 300) {
+            console.warn('Phát hiện bundle phones cũ bị phình to (' + data.list.length + ' máy). Tự động chuẩn hóa về seed chuẩn.');
+            phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+            if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+          } else {
+            phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
+          }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -2497,7 +2523,14 @@ function fetchDirectCloudSync(showToastMsg) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          soldPhoneDatabase = data.list;
+          // Bảo vệ chống dữ liệu rác cũ (> 300 máy) từ bundle cũ đè lên
+          if (data.list.length > 300 && Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length < 200) {
+            console.warn('Phát hiện bundle sold_phones cũ bị phình to (' + data.list.length + ' máy). Tự động chuẩn hóa về seed chuẩn.');
+            soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
+            if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+          } else {
+            soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(data.list) : data.list;
+          }
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
       }
@@ -2605,7 +2638,11 @@ function initFirebaseRealtimeSync() {
       if (doc && doc.exists) {
         const data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          phoneDatabase = data.list;
+          if (data.list.length > 500 && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length < 300) {
+            console.warn('Bỏ qua sync_bundles phones bị phình to từ cloud cũ');
+            return;
+          }
+          phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -2617,7 +2654,11 @@ function initFirebaseRealtimeSync() {
       if (doc && doc.exists) {
         const data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          soldPhoneDatabase = data.list;
+          if (data.list.length > 300 && Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length < 200) {
+            console.warn('Bỏ qua sync_bundles sold_phones bị phình to từ cloud cũ');
+            return;
+          }
+          soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(data.list) : data.list;
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
       }
@@ -2678,53 +2719,8 @@ function initFirebaseRealtimeSync() {
     console.error("Lỗi setup sync banga:", err);
   }
 
-  // 3. Đồng bộ Kho Bán Máy (phones) thời gian thực
-  try {
-    db.collection('phones').onSnapshot(snapshot => {
-      let list = [];
-      snapshot.forEach(doc => {
-        let data = doc.data();
-        if (!data.id) data.id = doc.id;
-        list.push(data);
-      });
-      if (list.length > 0) {
-        list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
-        phoneDatabase = list;
-        if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
-      } else if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-        if (!phoneDatabase || phoneDatabase.length === 0) {
-          phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-          if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
-        }
-      }
-    }, err => console.error("Lỗi sync phones:", err));
-  } catch (err) {
-    console.error("Lỗi setup sync phones:", err);
-  }
-
-  // 4. Đồng bộ Bảo Hành (sold_phones) thời gian thực
-  try {
-    db.collection('sold_phones').onSnapshot(snapshot => {
-      let list = [];
-      snapshot.forEach(doc => {
-        let data = doc.data();
-        if (!data.id) data.id = doc.id;
-        list.push(data);
-      });
-      if (list.length > 0) {
-        list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
-        soldPhoneDatabase = list;
-        if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-      } else if (Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
-        if (!soldPhoneDatabase || soldPhoneDatabase.length === 0) {
-          soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
-          if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-        }
-      }
-    }, err => console.error("Lỗi sync sold_phones:", err));
-  } catch (err) {
-    console.error("Lỗi setup sync sold_phones:", err);
-  }
+  // 3. Đồng bộ Kho Bán Máy (phones) & Bảo Hành (sold_phones): Đã đồng bộ qua sync_bundles chuẩn,
+  // tuyệt đối không dùng onSnapshot trên collection đơn lẻ để tránh kéo 1.318 máy rác cũ và tránh bão đọc Firestore.
 
   // 5. Đồng bộ Main - Xác (mainxac) thời gian thực
   try {
