@@ -802,14 +802,15 @@ function detectPhoneBrand(brand, phoneName) {
 }
 window.detectPhoneBrand = detectPhoneBrand;
 
-// Badge chữ thương hiệu tab Bảo Hành theo yêu cầu chính xác 100%:
-// - IPHONE, IPAD: nền đen chữ trắng
-// - OPPO: nền xanh lá chữ trắng
-// - VIVO: nền xanh dương chữ vàng
-// - SAMSUNG: nền xanh dương chữ trắng
-// - REALME: nền vàng chữ đen
-// - REDMI: nền đỏ chữ trắng
-// - POCO: nền vàng chữ đỏ
+// Badge chữ/logo thương hiệu tab Bán Máy và Bảo Hành theo yêu cầu chính xác 100%:
+// 1. IPHONE: chỉ hiện logo táo Trắng nền đen
+// 2. SAMSUNG: nền xanh dương chữ trắng đậm
+// 3. OPPO: nền xanh lá chữ trắng đậm
+// 4. VIVO: nền tím chữ trắng đậm
+// 5. REALME: nền vàng chữ trắng đậm
+// 6. POCO: nền vàng chữ Đen
+// 7. REDMI: nền đỏ chữ trắng đậm
+// 8. IPAD: nền đen chữ trắng đậm
 function getPhoneBrandBadgeHtml(brand, phoneName) {
   let b = String(brand || '').toUpperCase().trim();
   let n = String(phoneName || '').toUpperCase().trim();
@@ -821,45 +822,47 @@ function getPhoneBrandBadgeHtml(brand, phoneName) {
   let bg = '#000000';
   let color = '#ffffff';
   let border = 'none';
+  let isAppleSvg = false;
+  let extraStyle = '';
 
   if (detected === 'IPHONE') {
-    text = 'IPHONE';
+    isAppleSvg = true;
     bg = '#000000';
-    color = '#ffffff';
     border = '1px solid #475569';
   } else if (detected === 'IPAD') {
     text = 'IPAD';
     bg = '#000000';
     color = '#ffffff';
     border = '1px solid #475569';
-  } else if (detected === 'OPPO') {
-    text = 'OPPO';
-    bg = '#059669'; // xanh lá
-    color = '#ffffff'; // chữ trắng
-  } else if (detected === 'VIVO') {
-    text = 'VIVO';
-    bg = '#1d4ed8'; // xanh dương
-    color = '#facc15'; // chữ vàng
   } else if (detected === 'SAMSUNG') {
     text = 'SAMSUNG';
-    bg = '#1e40af'; // xanh dương
-    color = '#ffffff'; // chữ trắng
+    bg = '#1d4ed8'; // xanh dương
+    color = '#ffffff'; // chữ trắng đậm
+  } else if (detected === 'OPPO') {
+    text = 'OPPO';
+    bg = '#16a34a'; // xanh lá
+    color = '#ffffff'; // chữ trắng đậm
+  } else if (detected === 'VIVO') {
+    text = 'VIVO';
+    bg = '#7c3aed'; // nền tím
+    color = '#ffffff'; // chữ trắng đậm
   } else if (detected === 'REALME') {
     text = 'REALME';
     bg = '#eab308'; // nền vàng
-    color = '#000000'; // chữ đen
-  } else if (detected === 'REDMI') {
-    text = 'REDMI';
-    bg = '#dc2626'; // nền đỏ
-    color = '#ffffff'; // chữ trắng
+    color = '#ffffff'; // chữ trắng đậm
+    extraStyle = 'text-shadow: 0 1px 2px rgba(0,0,0,0.7);'; // tăng độ rõ cho chữ trắng trên nền vàng
   } else if (detected === 'POCO') {
     text = 'POCO';
     bg = '#facc15'; // nền vàng
-    color = '#dc2626'; // chữ đỏ
+    color = '#000000'; // chữ Đen
+  } else if (detected === 'REDMI') {
+    text = 'REDMI';
+    bg = '#dc2626'; // nền đỏ
+    color = '#ffffff'; // chữ trắng đậm
   } else if (detected === 'HONOR') {
     text = 'HONOR';
     bg = '#0284c7'; // xanh dương cyan sáng bóng
-    color = '#ffffff'; // chữ trắng
+    color = '#ffffff'; // chữ trắng đậm
   } else {
     text = detected || 'KHÁC';
     bg = '#334155';
@@ -867,7 +870,12 @@ function getPhoneBrandBadgeHtml(brand, phoneName) {
   }
 
   let borderStyle = border !== 'none' ? `border: ${border};` : '';
-  return `<span class="brand-text-badge" style="display: inline-block; background: ${bg}; color: ${color}; font-weight: 900; font-size: 0.95rem; padding: 2px 8px; border-radius: 5px; letter-spacing: 0.5px; vertical-align: middle; margin-right: 6px; line-height: 1.25; ${borderStyle}">${escapeHtml(text)}</span>`;
+
+  if (isAppleSvg) {
+    return `<span class="brand-text-badge brand-badge-apple" style="display: inline-flex; align-items: center; justify-content: center; background: ${bg}; padding: 3px 8px; border-radius: 5px; vertical-align: middle; margin-right: 6px; line-height: 1; ${borderStyle}" title="IPHONE"><svg viewBox="0 0 170 170" style="width: 14px; height: 14px; fill: #ffffff; display: inline-block; vertical-align: middle;"><path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.04-7.58-7.71-11.65-14-6.3-9.88-11.16-21.73-14.57-35.54-3.41-13.82-5.12-26.68-5.12-38.59 0-14.78 3.59-26.73 10.77-35.85 7.18-9.12 16.32-13.79 27.42-14.01 5.33 0 11.25 1.5 17.75 4.5 6.5 3 10.45 4.54 11.85 4.63 1.85-.14 6.09-1.74 12.74-4.8 6.64-3.06 12.28-4.43 16.9-4.12 12.82.76 22.84 5.34 30.06 13.75-11.53 7.07-17.18 16.85-16.96 29.35.22 9.78 4 17.83 11.35 24.13 5.43 4.67 11.85 7.6 19.24 8.79-2.4 7.5-5.33 15.11-8.79 22.82zM119.22 31.84c0-7.29 2.56-14.13 7.67-20.52 5.11-6.39 11.41-10.43 18.9-12.12.87 3.59.98 7.07.33 10.44-.65 3.37-2.17 6.95-4.57 10.75-2.61 4.13-5.76 7.39-9.46 9.78-3.7 2.39-7.39 3.69-11.08 3.91-.43-1.09-.79-2.22-.79-2.24z"/></svg></span>`;
+  }
+
+  return `<span class="brand-text-badge" style="display: inline-block; background: ${bg}; color: ${color}; font-weight: 900; font-size: 0.95rem; padding: 2px 8px; border-radius: 5px; letter-spacing: 0.5px; vertical-align: middle; margin-right: 6px; line-height: 1.25; ${borderStyle} ${extraStyle}">${escapeHtml(text)}</span>`;
 }
 window.getPhoneBrandBadgeHtml = getPhoneBrandBadgeHtml;
 window.detectPhoneBrand = detectPhoneBrand;
@@ -12440,7 +12448,7 @@ function renderPhoneGrid() {
                         ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.5rem; letter-spacing: 0.5px;">${escapeHtml(p.imei)}</span>` : ''}
                       </div>
                       <div style="font-size: 1.08rem; color: #94a3b8; margin-top: 3px; display: flex; align-items: center; gap: 6px;">
-                        <span>${escapeHtml(p.brand || '')} •</span>
+                        <span>${getPhoneBrandBadgeHtml(p.brand, p.name)}</span>
                         ${conditionBadgeHtml}
                       </div>
                     </td>
