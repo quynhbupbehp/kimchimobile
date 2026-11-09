@@ -4063,9 +4063,19 @@ function renderSalesTable(items) {
   const searchInputVal = document.querySelector('#tab-banhang .search-sales-input').value.trim().toLowerCase();
 
   let filtered = items.filter(i => {
-    let parts = i.dateTime.split(' - ');
-    if (parts.length < 2) return false;
-    let datePart = parts[1].trim();
+    let rawDateStr = i.dateTime || i.date || '';
+    let datePart = rawDateStr;
+    if (rawDateStr.includes(' - ')) {
+      let parts = rawDateStr.split(' - ');
+      datePart = parts[1].trim();
+    }
+    if (datePart.includes('-')) {
+      let dp = datePart.split('-');
+      if (dp.length === 3 && dp[0].length === 4) {
+        datePart = `${dp[2]}/${dp[1]}/${dp[0]}`;
+      }
+    }
+    if (!datePart) return false;
 
     let matchTime = false;
     if (salesViewMode === 'day') {
@@ -5359,9 +5369,19 @@ function renderBangaTable(items) {
       return mainName.includes(searchInputVal) || accName.includes(searchInputVal) || custName.includes(searchInputVal);
     }
 
-    let parts = i.dateTime.split(' - ');
-    if (parts.length < 2) return false;
-    let datePart = parts[1].trim();
+    let rawDateStr = i.dateTime || i.date || '';
+    let datePart = rawDateStr;
+    if (rawDateStr.includes(' - ')) {
+      let parts = rawDateStr.split(' - ');
+      datePart = parts[1].trim();
+    }
+    if (datePart.includes('-')) {
+      let dp = datePart.split('-');
+      if (dp.length === 3 && dp[0].length === 4) {
+        datePart = `${dp[2]}/${dp[1]}/${dp[0]}`;
+      }
+    }
+    if (!datePart) return false;
 
     let matchTime = false;
     if (bangaViewMode === 'day') {
@@ -9331,22 +9351,31 @@ function mergeWithSeedSoldPhones(list) {
   const deletedIds = getDeletedSoldPhoneIds();
   let combined = Array.isArray(list) ? list.filter(item => {
     if (!item) return false;
-    if (item.id && deletedIds.has(String(item.id))) return false;
+    const sId = String(item.id || '');
+    const sImeiKey = item.imei ? ('imei_' + String(item.imei).trim().toLowerCase()) : '';
+    if (sId && deletedIds.has(sId)) return false;
+    if (sImeiKey && deletedIds.has(sImeiKey)) return false;
     return true;
   }) : [];
 
   if (Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length > 0) {
     const existIdSet = new Set(combined.map(s => String(s.id)));
+    const existImeiSet = new Set(combined.filter(s => s.imei).map(s => String(s.imei).trim().toLowerCase()));
 
     window.SEED_SOLD_DATA.forEach(seed => {
       if (!seed || !seed.id) return;
       const sId = String(seed.id);
+      const sImei = seed.imei ? String(seed.imei).trim() : '';
+      const sImeiKey = sImei ? ('imei_' + sImei.toLowerCase()) : '';
 
       if (deletedIds.has(sId)) return;
+      if (sImeiKey && deletedIds.has(sImeiKey)) return;
       if (existIdSet.has(sId)) return;
+      if (sImei && existImeiSet.has(sImei.toLowerCase())) return;
 
       combined.push(seed);
       existIdSet.add(sId);
+      if (sImei) existImeiSet.add(sImei.toLowerCase());
     });
   }
   return combined;
@@ -9400,12 +9429,21 @@ let soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeW
 function autoSyncPhonesToWarranty() {
   try {
     if (!Array.isArray(soldPhoneDatabase)) soldPhoneDatabase = [];
+    const deletedSoldIds = typeof getDeletedSoldPhoneIds === 'function' ? getDeletedSoldPhoneIds() : new Set();
     let changed = false;
 
     const checkAndAdd = (rec, source) => {
       if (!rec || !rec.name) return;
+      const recId = String(rec.id || '');
+      const recPhoneId = rec.phoneId || rec.soldPhoneId ? String(rec.phoneId || rec.soldPhoneId) : '';
       const nameStr = String(rec.name).trim();
       const imeiStr = rec.imei ? String(rec.imei).trim() : '';
+      const imeiKey = imeiStr ? ('imei_' + imeiStr.toLowerCase()) : '';
+
+      // Tuyệt đối không phục hồi máy đã bị người dùng xóa vĩnh viễn
+      if (recId && deletedSoldIds.has(recId)) return;
+      if (recPhoneId && deletedSoldIds.has(recPhoneId)) return;
+      if (imeiKey && deletedSoldIds.has(imeiKey)) return;
 
       // Nhận diện nếu là bán máy (chứa A17, iPhone, Samsung, Oppo, Redmi, Poco, Vivo...) hoặc có IMEI hoặc accessory === 'Bán Máy'
       const isPhoneItem = /A17|iPhone|iPad|Samsung|Galaxy|Oppo|Xiaomi|Redmi|Poco|Realme|Vivo/i.test(nameStr) ||
@@ -9416,7 +9454,7 @@ function autoSyncPhonesToWarranty() {
       // Kiểm tra xem trong Sổ Bảo Hành đã có máy này chưa (theo IMEI hoặc theo Name + Ngày)
       const exists = soldPhoneDatabase.some(sp => {
         if (imeiStr && sp.imei && String(sp.imei).trim().toLowerCase() === imeiStr.toLowerCase()) return true;
-        if (String(sp.id) === String(rec.id)) return true;
+        if (String(sp.id) === recId || (recPhoneId && String(sp.id) === recPhoneId)) return true;
         const spDate = sp.soldDate || sp.date || sp.dateTime || '';
         const recDate = rec.dateTime || rec.date || '';
         if (sp.name && sp.name.trim().toLowerCase() === nameStr.toLowerCase() && spDate && recDate && (spDate.includes(recDate) || recDate.includes(spDate))) {
@@ -9437,7 +9475,7 @@ function autoSyncPhonesToWarranty() {
         }
 
         let newSold = {
-          id: rec.id || (Date.now() + Math.random()),
+          id: recPhoneId || rec.id || (Date.now() + Math.random()),
           brand: detectedBrand,
           name: rec.phoneName || nameStr,
           storage: rec.storage || '',
@@ -10559,7 +10597,9 @@ function confirmSellPhone(e) {
   let displayName = `${soldItem.brand} - ${soldName} ${cleanStorage ? cleanStorage : ''} (${soldItem.imei})`.trim();
 
   let record = {
-    id: Date.now() + Math.random(),
+    id: 'sale_' + soldItem.id,
+    soldPhoneId: soldItem.id,
+    phoneId: soldItem.id,
     name: displayName,
     brand: soldItem.brand,
     phoneName: soldItem.name,
@@ -10575,17 +10615,19 @@ function confirmSellPhone(e) {
     priceIn: soldItem.priceIn || '0',
     profit: profitValStr,
     method: paymentMethod,
+    paymentMethod: paymentMethod,
     dateTime: fullDateTime,
+    date: dateVal,
     customer: customerName
   };
 
   if (targetList === 'Bán Gà') {
     bangaDatabase.unshift(record);
-    saveBangaStorage();
+    saveBangaStorage(record);
     renderBangaTable(bangaDatabase);
   } else {
     salesDatabase.unshift(record);
-    saveSalesStorage();
+    saveSalesStorage(record);
     renderSalesTable(salesDatabase);
   }
 
@@ -11148,29 +11190,115 @@ function saveEditedSoldPhone(e) {
 
   // Đồng bộ thông tin sang danh mục Bán Hàng / Bán Gà tương ứng nếu có
   let imeiLower = (item.imei || '').trim().toLowerCase();
-  const syncToSaleList = (list, saveFn, renderFn) => {
-    let saleItem = list.find(s => {
-      if (String(s.id) === String(item.id)) return true;
+  let foundSale = null;
+  let currentList = null;
+
+  // Tìm đơn hiện có trong salesDatabase hoặc bangaDatabase
+  if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+    let sIdx = salesDatabase.findIndex(s => {
+      if (String(s.id) === String(item.id) || (s.soldPhoneId && String(s.soldPhoneId) === String(item.id)) || (s.phoneId && String(s.phoneId) === String(item.id))) return true;
+      if (imeiLower && s.imei && String(s.imei).trim().toLowerCase() === imeiLower) return true;
       if (imeiLower && s.name && s.name.toLowerCase().includes(imeiLower)) return true;
       return false;
     });
-    if (saleItem) {
-      saleItem.customer = customer;
-      saleItem.total = formattedTotal;
-      saleItem.method = paymentMethod;
-      saleItem.profit = formattedProfit;
-      saleItem.warranty = warranty;
-      saleItem.dateTime = dateVal;
-      if (saveFn) saveFn();
-      if (renderFn) renderFn(list);
+    if (sIdx !== -1) {
+      foundSale = salesDatabase[sIdx];
+      currentList = 'Bán Hàng';
+      if (targetList === 'Bán Gà') {
+        salesDatabase.splice(sIdx, 1);
+        if (typeof saveSalesStorage === 'function') saveSalesStorage();
+        if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+      }
     }
-  };
-
-  if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
-    syncToSaleList(salesDatabase, saveSalesStorage, renderSalesTable);
   }
-  if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
-    syncToSaleList(bangaDatabase, saveBangaStorage, renderBangaTable);
+
+  if (!foundSale && typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
+    let bIdx = bangaDatabase.findIndex(b => {
+      if (String(b.id) === String(item.id) || (b.soldPhoneId && String(b.soldPhoneId) === String(item.id)) || (b.phoneId && String(b.phoneId) === String(item.id))) return true;
+      if (imeiLower && b.imei && String(b.imei).trim().toLowerCase() === imeiLower) return true;
+      if (imeiLower && b.name && b.name.toLowerCase().includes(imeiLower)) return true;
+      return false;
+    });
+    if (bIdx !== -1) {
+      foundSale = bangaDatabase[bIdx];
+      currentList = 'Bán Gà';
+      if (targetList === 'Bán Hàng') {
+        bangaDatabase.splice(bIdx, 1);
+        if (typeof saveBangaStorage === 'function') saveBangaStorage();
+        if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+      }
+    }
+  }
+
+  let fullDateTime = dateVal.includes(' - ') ? dateVal : `${getCurrentTimeStr()} - ${dateVal}`;
+
+  if (foundSale) {
+    foundSale.customer = customer;
+    foundSale.total = formattedTotal;
+    foundSale.method = paymentMethod;
+    foundSale.paymentMethod = paymentMethod;
+    foundSale.profit = formattedProfit;
+    foundSale.warranty = warranty;
+    foundSale.dateTime = fullDateTime;
+    foundSale.date = dateVal;
+
+    if (targetList === 'Bán Gà' && currentList === 'Bán Hàng') {
+      foundSale.accessory = 'Bán Máy';
+      bangaDatabase.unshift(foundSale);
+      if (typeof saveBangaStorage === 'function') saveBangaStorage(foundSale);
+      if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+    } else if (targetList === 'Bán Hàng' && currentList === 'Bán Gà') {
+      delete foundSale.accessory;
+      salesDatabase.unshift(foundSale);
+      if (typeof saveSalesStorage === 'function') saveSalesStorage(foundSale);
+      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+    } else {
+      if (targetList === 'Bán Gà') {
+        if (typeof saveBangaStorage === 'function') saveBangaStorage(foundSale);
+        if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+      } else {
+        if (typeof saveSalesStorage === 'function') saveSalesStorage(foundSale);
+        if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+      }
+    }
+  } else {
+    // Nếu chưa có đơn bán tương ứng thì tạo mới và đưa vào tab được chỉ định
+    let cleanStorage = formatStorageDisplay((item.storage || '').replace(/[()]/g, ''));
+    let soldName = formatBrandDeviceName(item.name || '');
+    let displayName = `${item.brand} - ${soldName} ${cleanStorage ? cleanStorage : ''} (${item.imei})`.trim();
+    let newRecord = {
+      id: 'sale_' + item.id,
+      soldPhoneId: item.id,
+      phoneId: item.id,
+      name: displayName,
+      brand: item.brand,
+      phoneName: item.name,
+      storage: cleanStorage,
+      color: item.color,
+      imei: item.imei,
+      condition: item.condition,
+      pinStatus: item.pinStatus,
+      pin: item.pin,
+      origin: item.origin,
+      accessory: targetList === 'Bán Gà' ? 'Bán Máy' : undefined,
+      total: formattedTotal,
+      priceIn: item.priceIn || '0',
+      profit: formattedProfit,
+      method: paymentMethod,
+      paymentMethod: paymentMethod,
+      dateTime: fullDateTime,
+      date: dateVal,
+      customer: customer
+    };
+    if (targetList === 'Bán Gà') {
+      bangaDatabase.unshift(newRecord);
+      if (typeof saveBangaStorage === 'function') saveBangaStorage(newRecord);
+      if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+    } else {
+      salesDatabase.unshift(newRecord);
+      if (typeof saveSalesStorage === 'function') saveSalesStorage(newRecord);
+      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+    }
   }
 
   if (typeof logActivity === 'function') {
@@ -11509,6 +11637,37 @@ function confirmDeleteOnlySoldPhone() {
   if (typeof db !== 'undefined' && db && id) {
     db.collection('sold_phones').doc(String(id)).delete().catch(console.error);
   }
+
+  // Đồng bộ dọn sạch triệt để đơn bán máy trong Bán Hàng hoặc Bán Gà để F5 không bao giờ tự nạp lại
+  const pImei = p.imei ? String(p.imei).trim().toLowerCase() : '';
+  const filterOutSale = (list) => {
+    return list.filter(s => {
+      if (String(s.id) === String(id)) return false;
+      if (s.soldPhoneId && String(s.soldPhoneId) === String(id)) return false;
+      if (s.phoneId && String(s.phoneId) === String(id)) return false;
+      if (pImei && s.imei && String(s.imei).trim().toLowerCase() === pImei) return false;
+      if (pImei && s.name && s.name.toLowerCase().includes(pImei)) return false;
+      return true;
+    });
+  };
+
+  if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+    const origLen = salesDatabase.length;
+    salesDatabase = filterOutSale(salesDatabase);
+    if (salesDatabase.length !== origLen) {
+      if (typeof saveSalesStorage === 'function') saveSalesStorage();
+      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+    }
+  }
+  if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
+    const origLen = bangaDatabase.length;
+    bangaDatabase = filterOutSale(bangaDatabase);
+    if (bangaDatabase.length !== origLen) {
+      if (typeof saveBangaStorage === 'function') saveBangaStorage();
+      if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+    }
+  }
+
   if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
 
   if (typeof logActivity === 'function') {
@@ -21801,3 +21960,4 @@ function reloadKimchiBankFrame() {
   }
 }
 window.reloadKimchiBankFrame = reloadKimchiBankFrame;
+
