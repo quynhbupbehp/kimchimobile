@@ -1712,7 +1712,7 @@
         <div class="sales-header-bar"
           style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: nowrap; gap: 12px; width: 100%;">
 
-          <!-- CỤM 1 (BÊN TRÁI): BADGE DOANH THU (ẨN) + NÚT MŨI TÊN EXCEL -->
+          <!-- CỤM 1 (BÊN TRÁI): TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH + NÚT MŨI TÊN EXCEL (BÊN PHẢI TIÊU ĐỀ) -->
           <div style="display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;">
             <div id="soldPhoneRevenueBadge"
               style="display: none !important; background: #000000; border: 1.5px solid #334155; border-radius: 9px; height: 38px; padding: 0 16px; align-items: center; gap: 8px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6); cursor: default;"
@@ -1734,7 +1734,12 @@
                 title="Doanh thu Ngày">0</span>
             </div>
 
-            <!-- Nút mũi tên mở Nhập/Xuất Excel -->
+            <!-- TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH (XANH NGỌC) NẰM Ở GÓC TRÁI -->
+            <span
+              style="background: #059669; color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 7px 26px; border-radius: 9px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.45); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">MÁY
+              ĐÃ BÁN & BẢO HÀNH</span>
+
+            <!-- Nút mũi tên mở Nhập/Xuất Excel chuyển sang bên phải MÁY ĐÃ BÁN & BẢO HÀNH -->
             <button type="button" id="btnSoldPhoneExcelToggle" onclick="toggleSoldPhoneExcelActions()"
               title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel"
               style="background: #000000; border: 1.5px solid #0284c7; color: #38bdf8; width: 34px; height: 38px; min-width: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; font-size: 0.95rem; font-weight: 900; box-shadow: 0 0 10px rgba(56, 189, 248, 0.35); transition: all 0.2s ease;">
@@ -1762,13 +1767,6 @@
               <input type="file" id="soldPhoneExcelFileInput" accept=".csv, .xlsx, .xls, text/csv"
                 style="display: none;" onchange="handleImportSoldPhoneExcelFile(event)">
             </div>
-          </div>
-
-          <!-- CỤM 2 (Ở GIỮA): TIÊU ĐỀ MÁY ĐÃ BÁN & BẢO HÀNH (XANH NGỌC) -->
-          <div style="display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
-            <span
-              style="background: #059669; color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 7px 26px; border-radius: 9px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.45); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">MÁY
-              ĐÃ BÁN & BẢO HÀNH</span>
           </div>
 
           <!-- CỤM 3 (GIỮA PHẢI TRÊN HÀNG 1): BỘ LỌC THỜI GIAN + NÚT CON MẮT (Y CHANG ẢNH MẪU) -->
@@ -5983,7 +5981,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261109_185141"></script>
+  <script src="js/main.js?v=20261109_185858"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
