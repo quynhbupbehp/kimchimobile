@@ -9894,8 +9894,39 @@ function openPhoneModal(editId = null) {
   }
 
   document.getElementById('phoneModal').classList.add('active');
+  if (typeof checkPhoneModalValidity === 'function') checkPhoneModalValidity();
 }
 window.openPhoneModal = openPhoneModal;
+
+function checkPhoneModalValidity() {
+  const saveBtn = document.getElementById('btnSavePhoneModal');
+  if (!saveBtn) return;
+
+  const nameVal = document.getElementById('mName') ? document.getElementById('mName').value.trim() : '';
+  const imeiVal = document.getElementById('mImei') ? document.getElementById('mImei').value.trim() : '';
+  const colorVal = document.getElementById('mColor') ? document.getElementById('mColor').value.trim() : '';
+  const storageVal = document.getElementById('mStorage') ? document.getElementById('mStorage').value.trim() : '';
+  const conditionVal = document.getElementById('mCondition') ? document.getElementById('mCondition').value.trim() : '';
+  const statusVal = document.getElementById('mStatus') ? document.getElementById('mStatus').value.trim() : '';
+  const priceInVal = document.getElementById('mPriceIn') ? document.getElementById('mPriceIn').value.trim() : '';
+  const priceOutVal = document.getElementById('mPriceOut') ? document.getElementById('mPriceOut').value.trim() : '';
+
+  // IMEI chỉ cần có ghi là được (tối đa 4 số)
+  const isValid = Boolean(nameVal && imeiVal && colorVal && storageVal && conditionVal && statusVal && priceInVal && priceOutVal);
+
+  if (isValid) {
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = '1';
+    saveBtn.style.cursor = 'pointer';
+    saveBtn.style.pointerEvents = 'auto';
+  } else {
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = '0.45';
+    saveBtn.style.cursor = 'not-allowed';
+    saveBtn.style.pointerEvents = 'none';
+  }
+}
+window.checkPhoneModalValidity = checkPhoneModalValidity;
 
 function closePhoneModal() {
   document.getElementById('phoneModal').classList.remove('active');

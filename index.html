@@ -2921,7 +2921,7 @@
             <label class="form-ticket-label">Tên Máy *</label>
             <div class="input-with-actions">
               <input type="text" list="mNameList" class="ticket-input" id="mName" required autocomplete="off"
-                oninput="formatTitleCaseInput(this)">
+                oninput="formatTitleCaseInput(this); checkPhoneModalValidity();">
               <datalist id="mNameList"></datalist>
               <div class="icon-btn-set">
                 <button type="button" class="btn-svg-action btn-svg-add"
@@ -2949,7 +2949,7 @@
             <div class="form-ticket-group" style="width: 58px; flex-shrink: 0;">
               <label class="form-ticket-label" style="text-align: center;">IMEI *</label>
               <input type="text" class="ticket-input" id="mImei" required maxlength="4" inputmode="numeric"
-                pattern="[0-9]{4}" placeholder="" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4);"
+                placeholder="" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4); checkPhoneModalValidity();"
                 style="text-align: center; font-weight: 800; padding: 9px 4px; letter-spacing: 0.5px;">
             </div>
 
@@ -2957,7 +2957,7 @@
               <label class="form-ticket-label">Màu Sắc *</label>
               <div class="input-with-actions">
                 <input type="text" list="mColorList" class="ticket-input" id="mColor" required autocomplete="off"
-                  oninput="formatTitleCaseInput(this)">
+                  oninput="formatTitleCaseInput(this); checkPhoneModalValidity();">
                 <datalist id="mColorList"></datalist>
                 <div class="icon-btn-set">
                   <button type="button" class="btn-svg-action btn-svg-add"
@@ -2985,10 +2985,10 @@
 
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Dung Lượng Máy</label>
+            <label class="form-ticket-label">Dung Lượng Máy *</label>
             <div class="input-with-actions">
-              <input type="text" list="mStorageList" class="ticket-input" id="mStorage" autocomplete="off"
-                oninput="formatTitleCaseInput(this)" onblur="formatStorageInput(this)">
+              <input type="text" list="mStorageList" class="ticket-input" id="mStorage" required autocomplete="off"
+                oninput="formatTitleCaseInput(this); checkPhoneModalValidity();" onblur="formatStorageInput(this); checkPhoneModalValidity();">
               <datalist id="mStorageList"></datalist>
               <div class="icon-btn-set">
                 <button type="button" class="btn-svg-action btn-svg-add"
@@ -3016,7 +3016,7 @@
             <label class="form-ticket-label">Tình Trạng Máy *</label>
             <div class="input-with-actions">
               <input type="text" list="mConditionList" class="ticket-input" id="mCondition" required autocomplete="off"
-                oninput="formatTitleCaseInput(this)">
+                oninput="formatTitleCaseInput(this); checkPhoneModalValidity();">
               <datalist id="mConditionList"></datalist>
               <div class="icon-btn-set">
                 <button type="button" class="btn-svg-action btn-svg-add"
@@ -3130,7 +3130,7 @@
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Trạng Thái <span style="color: #ef4444;">*</span></label>
-            <select class="ticket-input" id="mStatus" required
+            <select class="ticket-input" id="mStatus" required onchange="checkPhoneModalValidity();"
               style="cursor: pointer; font-weight: 800; background: #1e293b; color: #fff; border: 1px solid var(--border-color);">
               <option value="Còn Hàng" selected>Còn Hàng</option>
               <option value="Chưa Xử Lý">Chưa Xử Lý</option>
@@ -3140,15 +3140,15 @@
 
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label">Giá Nhập</label>
-            <input type="text" class="ticket-input" id="mPriceIn" inputmode="numeric"
-              oninput="formatCurrencyInput(this); calcModalProfit();">
+            <label class="form-ticket-label">Giá Nhập *</label>
+            <input type="text" class="ticket-input" id="mPriceIn" inputmode="numeric" required
+              oninput="formatCurrencyInput(this); calcModalProfit(); checkPhoneModalValidity();">
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá Bán *</label>
             <input type="text" class="ticket-input" id="mPriceOut" inputmode="numeric"
-              oninput="formatCurrencyInput(this); calcModalProfit();" required>
+              oninput="formatCurrencyInput(this); calcModalProfit(); checkPhoneModalValidity();" required>
           </div>
         </div>
 
@@ -3180,7 +3180,7 @@
             <input type="hidden" id="mProfit" value="">
           </div>
 
-          <button type="submit" class="btn-save-ticket active" style="font-weight: 900;">LƯU DỮ LIỆU</button>
+          <button type="submit" id="btnSavePhoneModal" class="btn-save-ticket active" style="font-weight: 900;">LƯU DỮ LIỆU</button>
         </div>
       </form>
     </div>
@@ -5983,7 +5983,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261109_164244"></script>
+  <script src="js/main.js?v=20261109_165232"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
