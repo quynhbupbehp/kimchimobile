@@ -8505,38 +8505,10 @@
           flex-wrap: nowrap !important;
         }
         #soldPhoneRevenueBadge,
-        #tab-baohanh #soldPhoneRevenueBadge {
-          flex: 1 1 50% !important;
-          width: calc(50% - 4px) !important;
-          max-width: calc(50% - 4px) !important;
-          height: 42px !important;
-          padding: 0 10px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          gap: 8px !important;
-          box-sizing: border-box !important;
-          margin: 0 !important;
-          background: #000000 !important;
-          border: 1.5px solid #334155 !important;
-          border-radius: 9px !important;
-        }
+        #tab-baohanh #soldPhoneRevenueBadge,
         #soldPhoneProfitBadge,
         #tab-baohanh #soldPhoneProfitBadge {
-          flex: 1 1 50% !important;
-          width: calc(50% - 4px) !important;
-          max-width: calc(50% - 4px) !important;
-          height: 42px !important;
-          padding: 0 10px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          gap: 8px !important;
-          box-sizing: border-box !important;
-          margin: 0 !important;
-          background: #000000 !important;
-          border: 1.5px solid #334155 !important;
-          border-radius: 9px !important;
+          display: none !important;
         }
         #tab-baohanh .unified-date-filter-box {
           display: none !important;

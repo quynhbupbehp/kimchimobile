@@ -8400,7 +8400,13 @@ window.triggerImportSoldPhoneExcel = triggerImportSoldPhoneExcel;
 
 function exportSoldPhoneToExcel() {
   let scopeLabel = getCurrentSoldPhoneScopeLabel();
-  let itemsToExport = soldPhoneDatabase.filter(isSoldPhoneItemMatchingCurrentFilter);
+  // Ưu tiên xuất chuẩn 100% theo đúng danh sách đang hiển thị trên giao diện hiện tại
+  let itemsToExport = [];
+  if (Array.isArray(window.currentRenderedSoldPhones) && window.currentRenderedSoldPhones.length > 0) {
+    itemsToExport = window.currentRenderedSoldPhones;
+  } else if (Array.isArray(soldPhoneDatabase)) {
+    itemsToExport = soldPhoneDatabase.filter(isSoldPhoneItemMatchingCurrentFilter);
+  }
   if (!Array.isArray(itemsToExport) || itemsToExport.length === 0) {
     alert(`Không có dữ liệu Bảo Hành nào thuộc [${scopeLabel}] để xuất Excel!`);
     return;
@@ -12885,6 +12891,9 @@ function renderSoldPhoneTable() {
     if (tb !== ta) return tb - ta;
     return (Number(b.id) || 0) - (Number(a.id) || 0);
   });
+
+  // Lưu trữ danh sách lọc đang hiển thị để xuất file Excel khớp 100% với giao diện hiện tại
+  window.currentRenderedSoldPhones = filtered;
 
   // Thống kê Doanh thu & Lợi nhuận
   let totalRevenue = 0;
