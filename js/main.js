@@ -2031,17 +2031,8 @@ function handleLogin(e) {
   const pass = passEl ? passEl.value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() : '';
   const masterPassList = ["250991", "250995", "Huyen@95", "123456"];
 
-  // Lấy danh sách tài khoản hệ thống từ localStorage hoặc mặc định
-  let accountsList = [];
-  try {
-    const stored = JSON.parse(localStorage.getItem('KIMCHI_SYSTEM_ACCOUNTS'));
-    if (Array.isArray(stored) && stored.length > 0) {
-      accountsList = stored;
-    }
-  } catch (err) { }
-  if (accountsList.length === 0 && typeof DEFAULT_SYSTEM_ACCOUNTS !== 'undefined') {
-    accountsList = DEFAULT_SYSTEM_ACCOUNTS;
-  }
+  // Lấy danh sách tài khoản hệ thống từ biến systemAccountsDb hoặc mặc định
+  let accountsList = (typeof systemAccountsDb !== 'undefined' && Array.isArray(systemAccountsDb) && systemAccountsDb.length > 0) ? systemAccountsDb : (typeof DEFAULT_SYSTEM_ACCOUNTS !== 'undefined' ? DEFAULT_SYSTEM_ACCOUNTS : []);
 
   // Tìm tài khoản trùng khớp username (không phân biệt hoa thường)
   let foundAcc = accountsList.find(a => (a.username || '').trim().toLowerCase() === user || (a.id || '').trim().toLowerCase() === user);
@@ -2971,10 +2962,8 @@ window.removeDeletedSoftwareId = removeDeletedSoftwareId;
 function recoverPhanMemFromActivityLogs(targetList) {
   if (!Array.isArray(targetList)) targetList = [];
   try {
-    const rawLog = localStorage.getItem('KIMCHI_ACTIVITY_LOG');
-    if (!rawLog) return targetList;
-    const logs = JSON.parse(rawLog);
-    if (!Array.isArray(logs) || logs.length === 0) return targetList;
+    const logs = (typeof activityLogDatabase !== 'undefined' && Array.isArray(activityLogDatabase)) ? activityLogDatabase : [];
+    if (logs.length === 0) return targetList;
 
     const deletedIds = getDeletedSoftwareIds();
     const idMap = new Map();
@@ -15723,13 +15712,7 @@ const DEFAULT_PARTS_DATA = [
   { id: 15, brand: 'SAMSUNG', device: 'A06 4G', type: 'Màn Oled', style: 'Màn Oled', priceSell: '450', priceCost: '200', profit: '250', qty: 1, status: 'Còn hàng', color: '—', date: '10/8/2026' }
 ];
 
-let partsDatabase = [];
-try {
-  const storedParts = localStorage.getItem('kimchi_parts_database_v2');
-  partsDatabase = storedParts ? JSON.parse(storedParts) : DEFAULT_PARTS_DATA;
-} catch (e) {
-  partsDatabase = DEFAULT_PARTS_DATA;
-}
+let partsDatabase = DEFAULT_PARTS_DATA;
 
 let partsFilterKeyword = '';
 let partsFilterBrand = '';
@@ -15737,11 +15720,26 @@ let partsFilterDevice = '';
 let partsFilterType = '';
 let partsFilterStatus = '';
 
-function savePartsStorage() {
-  try {
-    localStorage.setItem('kimchi_parts_database_v2', JSON.stringify(partsDatabase));
-  } catch (e) {
-    console.error('Lỗi lưu trữ partsDatabase:', e);
+let _partsBundleTimer = null;
+function syncPartsBundleDebounced() {
+  if (typeof db === 'undefined' || !db) return;
+  clearTimeout(_partsBundleTimer);
+  _partsBundleTimer = setTimeout(() => {
+    try {
+      db.collection('sync_bundles').doc('parts').set({
+        list: partsDatabase,
+        updatedAt: Date.now()
+      }, { merge: true }).catch(e => console.warn('Sync parts bundle notice:', e.code || e));
+    } catch (e) { }
+  }, 150);
+}
+
+function savePartsStorage(itemToSync) {
+  if (typeof db !== 'undefined' && db) {
+    if (itemToSync && itemToSync.id) {
+      db.collection('parts').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+    }
+    syncPartsBundleDebounced();
   }
 }
 
@@ -17998,27 +17996,28 @@ const DEFAULT_MY_DEBT_DATA = [
   { id: 8, creditor: 'Hiệp Bùi', date: '16/09/2026', itemType: '7 Plus', amount: 150, shop: 'Kim Chi Mobile', status: 'Đang nợ' }
 ];
 
-let myDebtDatabase = [];
-try {
-  const savedDebt = localStorage.getItem('KIMCHI_MY_DEBT_DB');
-  if (savedDebt) {
-    myDebtDatabase = JSON.parse(savedDebt);
-    if (myDebtDatabase.some(x => x.itemType === 'Kính X' || x.itemType === '7P Chập')) {
-      myDebtDatabase = myDebtDatabase.filter(x => x.itemType !== 'Kính X' && x.itemType !== '7P Chập');
-      localStorage.setItem('KIMCHI_MY_DEBT_DB', JSON.stringify(myDebtDatabase));
-    }
-  } else {
-    myDebtDatabase = DEFAULT_MY_DEBT_DATA;
-  }
-} catch (e) {
-  myDebtDatabase = DEFAULT_MY_DEBT_DATA;
+let myDebtDatabase = DEFAULT_MY_DEBT_DATA;
+
+let _myDebtBundleTimer = null;
+function syncMyDebtBundleDebounced() {
+  if (typeof db === 'undefined' || !db) return;
+  clearTimeout(_myDebtBundleTimer);
+  _myDebtBundleTimer = setTimeout(() => {
+    try {
+      db.collection('sync_bundles').doc('my_debt').set({
+        list: myDebtDatabase,
+        updatedAt: Date.now()
+      }, { merge: true }).catch(e => console.warn('Sync my_debt bundle notice:', e.code || e));
+    } catch (e) { }
+  }, 150);
 }
 
-function saveMyDebtDb() {
-  try {
-    localStorage.setItem('KIMCHI_MY_DEBT_DB', JSON.stringify(myDebtDatabase));
-  } catch (e) {
-    console.error('Lỗi lưu myDebtDatabase:', e);
+function saveMyDebtDb(itemToSync) {
+  if (typeof db !== 'undefined' && db) {
+    if (itemToSync && itemToSync.id) {
+      db.collection('my_debt').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+    }
+    syncMyDebtBundleDebounced();
   }
 }
 
@@ -18040,12 +18039,6 @@ function toggleDebtHide() {
 }
 
 function reloadDebtData() {
-  try {
-    const savedDebt = localStorage.getItem('KIMCHI_MY_DEBT_DB');
-    myDebtDatabase = savedDebt ? JSON.parse(savedDebt) : DEFAULT_MY_DEBT_DATA;
-  } catch (e) {
-    myDebtDatabase = DEFAULT_MY_DEBT_DATA;
-  }
   renderMyDebtTable();
 }
 
@@ -18405,12 +18398,31 @@ window.addEventListener('DOMContentLoaded', () => {
 // MODULE SỔ CÔNG NỢ TẬP TRUNG (5 PHẦN THEO YÊU CẦU)
 // =========================================================
 let currentDebtSection = 'all';
-let otherDebtDatabase = JSON.parse(localStorage.getItem('KIMCHI_OTHER_DEBT_DB')) || [
+let otherDebtDatabase = [
   { id: 1, target: 'Anh Tuấn Linh Kiện', reason: 'Nhập màn hình chưa thanh toán hết', amount: 500, date: '22/10/2026' }
 ];
 
-function saveOtherDebtDb() {
-  localStorage.setItem('KIMCHI_OTHER_DEBT_DB', JSON.stringify(otherDebtDatabase));
+let _otherDebtBundleTimer = null;
+function syncOtherDebtBundleDebounced() {
+  if (typeof db === 'undefined' || !db) return;
+  clearTimeout(_otherDebtBundleTimer);
+  _otherDebtBundleTimer = setTimeout(() => {
+    try {
+      db.collection('sync_bundles').doc('other_debt').set({
+        list: otherDebtDatabase,
+        updatedAt: Date.now()
+      }, { merge: true }).catch(e => console.warn('Sync other_debt bundle notice:', e.code || e));
+    } catch (e) { }
+  }, 150);
+}
+
+function saveOtherDebtDb(itemToSync) {
+  if (typeof db !== 'undefined' && db) {
+    if (itemToSync && itemToSync.id) {
+      db.collection('other_debt').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+    }
+    syncOtherDebtBundleDebounced();
+  }
 }
 
 function switchDebtSection(sec, btn) {
@@ -19802,18 +19814,27 @@ function deleteOtherDebtItem(id) {
 // MODULE NHẬT KÝ THAY ĐỔI & KHÔI PHỤC DỮ LIỆU
 // =========================================================
 let currentReportSubSection = 'finance';
-let activityLogDatabase = JSON.parse(localStorage.getItem('KIMCHI_ACTIVITY_LOG')) || [];
-if (Array.isArray(activityLogDatabase)) {
-  activityLogDatabase = activityLogDatabase.filter(x => x && x.id !== 'log_init_1');
-} else {
-  activityLogDatabase = [];
+let activityLogDatabase = [];
+
+let _activityLogBundleTimer = null;
+function syncActivityLogBundleDebounced() {
+  if (typeof db === 'undefined' || !db) return;
+  clearTimeout(_activityLogBundleTimer);
+  _activityLogBundleTimer = setTimeout(() => {
+    try {
+      db.collection('sync_bundles').doc('activity_logs').set({
+        list: activityLogDatabase.slice(0, 300),
+        updatedAt: Date.now()
+      }, { merge: true }).catch(e => console.warn('Sync activity_logs bundle notice:', e.code || e));
+    } catch (e) { }
+  }, 300);
 }
 
 function saveActivityLogDb() {
   if (activityLogDatabase.length > 500) {
     activityLogDatabase = activityLogDatabase.slice(0, 500);
   }
-  localStorage.setItem('KIMCHI_ACTIVITY_LOG', JSON.stringify(activityLogDatabase));
+  syncActivityLogBundleDebounced();
 }
 
 function logActivity(action, module, moduleName, description, oldData = null, newData = null, targetId = null) {
@@ -21226,16 +21247,26 @@ window.handleImportMainXacExcelFile = handleImportMainXacExcelFile;
 
 function loadQuynhNotes() {
   const area = document.getElementById('quynhNotesArea');
-  if (area) {
-    area.value = localStorage.getItem('KIMCHI_QUYNH_NOTES') || '';
+  if (area && typeof db !== 'undefined' && db) {
+    db.collection('sync_bundles').doc('quynh_notes').get().then(doc => {
+      if (doc && doc.exists && doc.data() && doc.data().content !== undefined) {
+        area.value = doc.data().content;
+      }
+    }).catch(e => console.warn('Load quynh_notes notice:', e));
   }
 }
 
 function saveQuynhNotes() {
   const area = document.getElementById('quynhNotesArea');
-  if (area) {
-    localStorage.setItem('KIMCHI_QUYNH_NOTES', area.value);
-    alert('Đã lưu ghi chú thành công!');
+  if (area && typeof db !== 'undefined' && db) {
+    db.collection('sync_bundles').doc('quynh_notes').set({
+      content: area.value,
+      updatedAt: Date.now()
+    }, { merge: true }).then(() => {
+      if (typeof showToast === 'function') showToast('✅ Đã lưu ghi chú lên Cloud thành công!');
+    }).catch(err => {
+      console.error('Lỗi lưu quynh_notes:', err);
+    });
   }
 }
 
@@ -21293,35 +21324,15 @@ const DEFAULT_SYSTEM_ACCOUNTS = [
 ];
 
 let systemAccountsDb = DEFAULT_SYSTEM_ACCOUNTS;
-try {
-  const stored = JSON.parse(localStorage.getItem('KIMCHI_SYSTEM_ACCOUNTS'));
-  if (Array.isArray(stored) && stored.length > 0) {
-    // Tự động loại bỏ Cao Bắc Mobile theo yêu cầu
-    systemAccountsDb = stored.filter(a => a.id !== 'caobac' && a.username !== 'caobac' && !(a.name || '').includes('Cao Bắc'));
-
-    // Chuẩn hóa allowedMenus theo các mục thực tế đang có trên web
-    systemAccountsDb.forEach(acc => {
-      if (Array.isArray(acc.allowedMenus)) {
-        acc.allowedMenus = acc.allowedMenus.map(m => m === 'QUYNHBUPBE' ? 'MAIN - XÁC' : m);
-      }
-      if (acc.isOwner) {
-        acc.allowedMenus = [...ALL_SYSTEM_MENUS];
-      } else {
-        acc.allowedMenus = (acc.allowedMenus || []).filter(m => ALL_SYSTEM_MENUS.includes(m));
-        if (acc.allowedMenus.length === 0) {
-          acc.allowedMenus = ['BÁN HÀNG', 'PHẦN MỀM', 'SỬA CHỮA', 'BÁO GIÁ SỬA'];
-        }
-      }
-    });
-  }
-} catch (err) {
-  systemAccountsDb = DEFAULT_SYSTEM_ACCOUNTS;
-}
 
 function saveSystemAccountsDb() {
-  localStorage.setItem('KIMCHI_SYSTEM_ACCOUNTS', JSON.stringify(systemAccountsDb));
+  if (typeof db !== 'undefined' && db) {
+    db.collection('sync_bundles').doc('system_accounts').set({
+      list: systemAccountsDb,
+      updatedAt: Date.now()
+    }, { merge: true }).catch(err => console.error('Lỗi sync system_accounts:', err));
+  }
 }
-saveSystemAccountsDb();
 
 function renderSystemAccountsTable() {
   const tbody = document.getElementById('accManagementTableBody');
