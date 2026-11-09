@@ -3244,17 +3244,31 @@ window.getCurrentBangaScopeLabel = getCurrentBangaScopeLabel;
 function isSoldPhoneItemMatchingCurrentFilter(item) {
   if (!item) return false;
   if (typeof soldPhoneViewMode === 'undefined' || soldPhoneViewMode === 'all') return true;
-  let dtStr = item.dateTime || item.soldDate || item.date || '';
-  let datePart = dtStr;
+  let dtStr = item.dateTime || item.soldDate || item.date || item.dateOut || '';
+  if (!dtStr) return true;
   if (dtStr.includes(' - ')) {
-    datePart = dtStr.split(' - ')[1].trim();
+    dtStr = dtStr.split(' - ')[1].trim();
   }
-  let parts = datePart.split('/');
-  if (parts.length < 3) return false;
-  let d = parseInt(parts[0], 10);
-  let m = parseInt(parts[1], 10);
-  let y = parseInt(parts[2], 10);
-  if (!y || !m) return false;
+  dtStr = String(dtStr).trim();
+
+  let d = 0, m = 0, y = 0;
+  if (dtStr.includes('-')) {
+    const parts = dtStr.split('-');
+    if (parts.length === 3 && parts[0].length === 4) {
+      y = parseInt(parts[0], 10);
+      m = parseInt(parts[1], 10);
+      d = parseInt(parts[2], 10);
+    }
+  } else if (dtStr.includes('/')) {
+    const parts = dtStr.split('/');
+    if (parts.length >= 3) {
+      d = parseInt(parts[0], 10);
+      m = parseInt(parts[1], 10);
+      y = parseInt(parts[2], 10);
+    }
+  }
+
+  if (!y || !m) return true;
 
   if (soldPhoneViewMode === 'day') {
     if (typeof currentSoldPhoneDateFilter === 'undefined' || !currentSoldPhoneDateFilter) return true;
