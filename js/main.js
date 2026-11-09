@@ -10997,6 +10997,12 @@ let currentEditingSoldPhone = null;
 
       calcEditSoldProfit();
 
+      // Đặt lại trạng thái nút Lưu Thay Đổi ban đầu (mờ), khi có thay đổi sẽ sáng rực lên
+      const btnSave = document.getElementById('btnSaveEditedSoldPhone');
+      if (btnSave) {
+        btnSave.classList.remove('active');
+      }
+
       const modal = document.getElementById('editSoldPhoneModal');
       if (modal) {
         modal.style.display = 'flex';
@@ -11014,6 +11020,14 @@ let currentEditingSoldPhone = null;
     }
     window.closeEditSoldPhoneModal = closeEditSoldPhoneModal;
 
+    function onEditSoldFieldChange() {
+      const btnSave = document.getElementById('btnSaveEditedSoldPhone');
+      if (btnSave) {
+        btnSave.classList.add('active');
+      }
+    }
+    window.onEditSoldFieldChange = onEditSoldFieldChange;
+
     function adjustEditSoldDate(deltaDays) {
       const input = document.getElementById('editSoldDateVal');
       if (!input) return;
@@ -11029,9 +11043,47 @@ let currentEditingSoldPhone = null;
         let mm = String(dt.getMonth() + 1).padStart(2, '0');
         let yyyy = dt.getFullYear();
         input.value = `${dd}/${mm}/${yyyy}`;
+        onEditSoldFieldChange();
       }
     }
     window.adjustEditSoldDate = adjustEditSoldDate;
+
+    function openNativeDatePickerForEditSold() {
+      const picker = document.getElementById('nativeDatePicker_editSold');
+      if (!picker) return;
+      const input = document.getElementById('editSoldDateVal');
+      if (input && input.value.trim()) {
+        let p = input.value.trim().split('/');
+        if (p.length === 3) {
+          let yyyy = p[2];
+          let mm = String(p[1]).padStart(2, '0');
+          let dd = String(p[0]).padStart(2, '0');
+          picker.value = `${yyyy}-${mm}-${dd}`;
+        }
+      }
+      if (typeof picker.showPicker === 'function') {
+        picker.showPicker();
+      } else {
+        picker.click();
+      }
+    }
+    window.openNativeDatePickerForEditSold = openNativeDatePickerForEditSold;
+
+    function handleNativeDateChangeForEditSold(val) {
+      if (!val) return;
+      const parts = val.split('-');
+      if (parts.length === 3) {
+        const dd = parts[2];
+        const mm = parts[1];
+        const yyyy = parts[0];
+        const input = document.getElementById('editSoldDateVal');
+        if (input) {
+          input.value = `${dd}/${mm}/${yyyy}`;
+          onEditSoldFieldChange();
+        }
+      }
+    }
+    window.handleNativeDateChangeForEditSold = handleNativeDateChangeForEditSold;
 
     function calcEditSoldProfit() {
       if (!currentEditingSoldPhone) return;
