@@ -19,16 +19,18 @@ Quy tắc này áp dụng vĩnh viễn cho mọi tương tác trong dự án `ki
 ---
 
 ## 3. NGUYÊN TẮC BẢO VỆ GIAO DIỆN & TOÀN VẸN DỮ LIỆU
-- **KHÔNG TỰ Ý THAY ĐỔI GIAO DIỆN**: Tuyệt đối giữ nguyên thiết kế giao diện hiện tại của tất cả các tab và thành phần. Chỉ can thiệp đúng chi tiết/vị trí được yêu cầu cụ thể.
-- **BẢO TỒN VĨNH VIỄN 100% DỮ LIỆU ĐÃ TẠO**: Tuyệt đối KHÔNG ĐƯỢC TỰ Ý CHỈNH SỬA, THÊM BỚT, XÓA BỎ bất kỳ dòng hay phần dữ liệu nào đã có ở tất cả các tab (Bán Máy, Bảo Hành, Phần Mềm, Bán Hàng, Bán Gà, Sửa Chữa, Công Nợ, Báo Giá...).
+- **CHỈ SỬA ĐÚNG PHẦN NGƯỜI DÙNG YÊU CẦU**: Tuyệt đối không được phép chỉnh sửa các phần khác. Chỉ can thiệp đúng vị trí/chi tiết được yêu cầu cụ thể.
+- **NGHIÊM CẤM THÊM BỚT & XÓA DỮ LIỆU NGƯỜI DÙNG**: Tuyệt đối KHÔNG ĐƯỢC TỰ Ý CHỈNH SỬA, THÊM BỚT, XÓA BỎ bất kỳ dòng hay phần dữ liệu nào đã có ở tất cả các tab (Bán Máy, Bảo Hành, Phần Mềm, Bán Hàng, Bán Gà, Sửa Chữa, Công Nợ, Báo Giá...).
 - **KHÔNG TỰ Ý ĐỔI DỮ LIỆU KHÁC**: Nghiêm cấm tự ý xóa bỏ, reset, nạp đè ngầm, hay làm xáo trộn cấu trúc / nội dung dữ liệu của người dùng khi chưa có yêu cầu trực tiếp.
+- **BẢO LƯU 100% GIAO DIỆN HIỆN TẠI**: Giữ nguyên vẹn thiết kế, bố cục, màu sắc, vị trí các nút bấm của toàn bộ các tab.
 
 ---
 
-## 4. NGUYÊN TẮC TÁCH BIỆT WEB & MOBILE KHI THÊM/SỬA CHỨC NĂNG
-- **KHI THÊM 1 CHỨC NĂNG MỚI**: Nếu người dùng không nói rõ "trên mobile", **TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý THÊM VÀO MOBILE**.
+## 4. NGUYÊN TẮC TÁCH BIỆT WEB & MOBILE (KHI NÀO NHẮC ĐẾN MOBILE MỚI ĐƯỢC SỬA MOBILE)
+- **KHI NÀO NHẮC ĐẾN MOBILE MỚI ĐƯỢC SỬA MOBILE**: Chỉ can thiệp vào giao diện hoặc tính năng Mobile khi người dùng ghi rõ "trên mobile" / "trên điện thoại" hoặc gửi ảnh chụp màn hình điện thoại. Nếu người dùng không nói rõ "trên mobile", **TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP ĐỤNG ĐẾN MOBILE**.
+- **KHI THÊM 1 CHỨC NĂNG MỚI**: Nếu không có yêu cầu rõ ràng cho Mobile, **TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý THÊM VÀO MOBILE**.
 - **SỬA TRÊN WEB KHÔNG ĐƯỢC ẢNH HƯỞNG ĐẾN MOBILE**: Mọi thay đổi, bố cục, kích thước, CSS/JS trên bản Web (Desktop) phải được cô lập độc lập, bảo đảm không làm biến dạng, xô lệch hoặc phát sinh lỗi trên giao diện Mobile.
-- **CHỈ SỬA MOBILE KHI CÓ YÊU CẦU CỤ THỂ**: Chỉ can thiệp vào giao diện Mobile khi người dùng ghi rõ "trên mobile" / "trên điện thoại" hoặc gửi ảnh chụp từ điện thoại. Khi có ảnh mẫu, làm đúng từng chi tiết 100%.
+- **LÀM THEO ẢNH CHỤP 100%**: Khi người dùng gửi ảnh mẫu từ mobile, làm đúng từng chi tiết 100%.
 
 ---
 

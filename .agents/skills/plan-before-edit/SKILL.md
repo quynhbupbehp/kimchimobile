@@ -14,15 +14,17 @@ Mọi tác vụ can thiệp vào mã nguồn trong dự án `kimchimobile` bắt
 ## 2. Loại Bỏ Toàn Bộ Popup / Dialog Xin Quyền (Mặc Định Cấp Quyền 100%)
 - Tuyệt đối không hỏi quyền truy cập bất cứ thứ gì. Mặc định người dùng luôn cấp quyền 100% vĩnh viễn.
 
-## 3. Bảo Toàn Giao Diện & Dữ Liệu Đã Tạo
-- Không tự ý thay đổi bố cục, kiểu dáng giao diện khi chưa có yêu cầu trực tiếp.
-- Giữ nguyên 100% dữ liệu đã tạo ở tất cả các tab (Bán Máy, Bảo Hành, Phần Mềm, Bán Hàng, Bán Gà, Sửa Chữa, Công Nợ, Báo Giá...).
+## 3. Chỉ Sửa Phần Người Dùng Yêu Cầu, Không Thêm Bớt & Xóa Dữ Liệu
+- **CHỈ SỬA ĐÚNG PHẦN ĐƯỢC YÊU CẦU**: Tuyệt đối không được phép chỉnh sửa các phần khác. Chỉ can thiệp đúng vị trí/chi tiết được yêu cầu cụ thể.
+- **NGHIÊM CẤM THÊM BỚT & XÓA DỮ LIỆU**: Tuyệt đối không được phép tự ý chỉnh sửa, thêm bớt hay xóa bỏ dữ liệu của người dùng ở bất kỳ tab nào (Bán Máy, Bảo Hành, Phần Mềm, Bán Hàng, Bán Gà, Sửa Chữa, Công Nợ, Báo Giá...).
 - Không tự ý sửa, xóa, reset hoặc ghi đè dữ liệu.
+- Giữ nguyên vẹn thiết kế và giao diện hiện tại của tất cả các tab.
 
-## 4. Tách Biệt Rõ Ràng Web & Mobile
+## 4. Tách Biệt Rõ Ràng Web & Mobile (Khi Nào Nhắc Đến Mobile Mới Được Sửa Mobile)
+- **KHI NÀO NHẮC ĐẾN MOBILE MỚI ĐƯỢC SỬA MOBILE**: Chỉ can thiệp vào giao diện hoặc tính năng Mobile khi người dùng ghi rõ "trên mobile" / "trên điện thoại" hoặc gửi ảnh chụp từ điện thoại. Nếu người dùng không nói rõ "trên mobile", **TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP ĐỤNG ĐẾN MOBILE**.
 - Khi thêm một tính năng mới: Nếu người dùng không nói rõ "trên mobile", TUYỆT ĐỐI KHÔNG thêm vào mobile.
 - Sửa trên Web KHÔNG ĐƯỢC làm ảnh hưởng hay xô lệch giao diện Mobile.
-- Chỉ sửa Mobile khi người dùng yêu cầu rõ ràng hoặc gửi ảnh chụp từ điện thoại (làm theo mẫu y chang 100%).
+- Khi có ảnh mẫu điện thoại: làm đúng theo từng chi tiết 100%.
 
 ## 5. Đồng Bộ Dữ Liệu Realtime Giữa Mobile & Web
 - Đảm bảo khi thao tác tạo đơn mới, sửa thông tin, hoặc xóa đơn trên Mobile đều cập nhật ngay lập tức dữ liệu như trên Web và ngược lại.
