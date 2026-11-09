@@ -2572,6 +2572,199 @@ function notifyFirebaseQuotaExceeded(err) {
 }
 window.notifyFirebaseQuotaExceeded = notifyFirebaseQuotaExceeded;
 
+
+// ==========================================
+// BỘ THEO DÕI HẠN MỨC FIRESTORE ĐỌC / GHI TRONG NGÀY (AGENTS.md Rule 6)
+// Giới hạn miễn phí mỗi ngày: 50.000 Reads / 20.000 Writes
+// ==========================================
+const FS_MAX_DAILY_READS = 50000;
+const FS_MAX_DAILY_WRITES = 20000;
+
+function getFsTodayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return 'KIMCHI_FS_USAGE_' + y + '-' + m + '-' + day;
+}
+
+function getFsDailyUsage() {
+  try {
+    const key = getFsTodayKey();
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const data = JSON.parse(raw);
+      return { reads: Number(data.reads) || 0, writes: Number(data.writes) || 0 };
+    }
+  } catch (e) {}
+  return { reads: 0, writes: 0 };
+}
+
+function saveFsDailyUsage(usage) {
+  try {
+    const key = getFsTodayKey();
+    localStorage.setItem(key, JSON.stringify(usage));
+  } catch (e) {}
+}
+
+function recordFsUsage(type, count = 1) {
+  try {
+    const usage = getFsDailyUsage();
+    if (type === 'read') usage.reads = (usage.reads || 0) + count;
+    else if (type === 'write') usage.writes = (usage.writes || 0) + count;
+    saveFsDailyUsage(usage);
+    updateFsUsageUI(usage);
+  } catch (e) {}
+}
+window.recordFsUsage = recordFsUsage;
+
+function updateFsUsageUI(usage) {
+  try {
+    const data = usage || getFsDailyUsage();
+    const readEl = document.getElementById('fsReadCountVal');
+    const readRemainEl = document.getElementById('fsReadRemainVal');
+    const writeEl = document.getElementById('fsWriteCountVal');
+    const writeRemainEl = document.getElementById('fsWriteRemainVal');
+
+    if (readEl) readEl.innerText = Number(data.reads || 0).toLocaleString('vi-VN');
+    if (readRemainEl) {
+      const remainR = Math.max(0, FS_MAX_DAILY_READS - (data.reads || 0));
+      readRemainEl.innerText = remainR.toLocaleString('vi-VN');
+      readRemainEl.style.color = (remainR < 5000) ? '#ef4444' : ((remainR < 15000) ? '#f59e0b' : '#4ade80');
+    }
+
+    if (writeEl) writeEl.innerText = Number(data.writes || 0).toLocaleString('vi-VN');
+    if (writeRemainEl) {
+      const remainW = Math.max(0, FS_MAX_DAILY_WRITES - (data.writes || 0));
+      writeRemainEl.innerText = remainW.toLocaleString('vi-VN');
+      writeRemainEl.style.color = (remainW < 2000) ? '#ef4444' : ((remainW < 6000) ? '#f59e0b' : '#4ade80');
+    }
+  } catch (e) {}
+}
+window.updateFsUsageUI = updateFsUsageUI;
+
+// Tự động hook vào Firestore db methods để đếm minh bạch & realtime
+function hookFirestoreQuotaCounter() {
+  if (typeof db === 'undefined' || !db || db._quotaHooked) return;
+  try {
+    const origDoc = db.doc.bind(db);
+    const origCollection = db.collection.bind(db);
+
+    const wrapDocRef = (docRef) => {
+      if (!docRef || docRef._quotaWrapped) return docRef;
+      docRef._quotaWrapped = true;
+
+      const origGet = docRef.get ? docRef.get.bind(docRef) : null;
+      if (origGet) {
+        docRef.get = function(...args) {
+          recordFsUsage('read', 1);
+          return origGet(...args);
+        };
+      }
+
+      const origSet = docRef.set ? docRef.set.bind(docRef) : null;
+      if (origSet) {
+        docRef.set = function(...args) {
+          recordFsUsage('write', 1);
+          return origSet(...args);
+        };
+      }
+
+      const origUpdate = docRef.update ? docRef.update.bind(docRef) : null;
+      if (origUpdate) {
+        docRef.update = function(...args) {
+          recordFsUsage('write', 1);
+          return origUpdate(...args);
+        };
+      }
+
+      const origDelete = docRef.delete ? docRef.delete.bind(docRef) : null;
+      if (origDelete) {
+        docRef.delete = function(...args) {
+          recordFsUsage('write', 1);
+          return origDelete(...args);
+        };
+      }
+
+      const origSnapshot = docRef.onSnapshot ? docRef.onSnapshot.bind(docRef) : null;
+      if (origSnapshot) {
+        docRef.onSnapshot = function(onNext, onError) {
+          recordFsUsage('read', 1);
+          return origSnapshot(function(doc) {
+            recordFsUsage('read', 1);
+            if (typeof onNext === 'function') onNext(doc);
+          }, onError);
+        };
+      }
+
+      return docRef;
+    };
+
+    const wrapQuery = (query) => {
+      if (!query || query._quotaWrapped) return query;
+      query._quotaWrapped = true;
+
+      const origGet = query.get ? query.get.bind(query) : null;
+      if (origGet) {
+        query.get = function(...args) {
+          return origGet(...args).then(res => {
+            const count = (res && res.docs) ? (res.docs.length || 1) : 1;
+            recordFsUsage('read', count);
+            return res;
+          });
+        };
+      }
+
+      const origSnapshot = query.onSnapshot ? query.onSnapshot.bind(query) : null;
+      if (origSnapshot) {
+        query.onSnapshot = function(onNext, onError) {
+          return origSnapshot(function(snapshot) {
+            const count = (snapshot && snapshot.docChanges) ? Math.max(1, snapshot.docChanges().length) : 1;
+            recordFsUsage('read', count);
+            if (typeof onNext === 'function') onNext(snapshot);
+          }, onError);
+        };
+      }
+
+      return query;
+    };
+
+    db.doc = function(path) {
+      return wrapDocRef(origDoc(path));
+    };
+
+    db.collection = function(name) {
+      const col = origCollection(name);
+      if (col && !col._quotaHooked) {
+        col._quotaHooked = true;
+        const origDocInner = col.doc.bind(col);
+        col.doc = function(id) {
+          return wrapDocRef(origDocInner(id));
+        };
+        wrapQuery(col);
+      }
+      return col;
+    };
+
+    db._quotaHooked = true;
+  } catch (e) {
+    console.warn('Lỗi hook Firestore Quota Counter:', e);
+  }
+}
+
+// Khởi chạy cập nhật UI khi mở trang
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      updateFsUsageUI();
+      hookFirestoreQuotaCounter();
+    });
+  } else {
+    updateFsUsageUI();
+    hookFirestoreQuotaCounter();
+  }
+}
+
 function initFirebaseRealtimeSync() {
   // Tải ngay dữ liệu từ Cloud trực tiếp qua HTTP GET (không đợi websocket snapshot)
   setTimeout(function () { if (typeof fetchDirectCloudSync === 'function') fetchDirectCloudSync(); }, 100);
