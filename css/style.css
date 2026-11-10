@@ -8451,15 +8451,25 @@
           overflow: hidden !important;
         }
         .phone-brand-logo {
-          width: 25px !important;
           height: 25px !important;
-          min-width: 25px !important;
+          min-height: 25px !important;
           border-radius: 6px !important;
-          object-fit: cover !important;
-          display: inline-block !important;
+          object-fit: contain !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
           flex-shrink: 0 !important;
           vertical-align: middle !important;
           box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+        }
+        .phone-brand-logo:not(.phone-brand-badge-text) {
+          width: 25px !important;
+          min-width: 25px !important;
+        }
+        .phone-brand-badge-text {
+          width: auto !important;
+          min-width: unset !important;
+          white-space: nowrap !important;
         }
         .phone-card-name {
           font-size: 1.05rem !important;
