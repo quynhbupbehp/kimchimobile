@@ -9998,12 +9998,15 @@ function loadInitialPhones() {
     if (localRaw) {
       const parsed = JSON.parse(localRaw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Dùng trực tiếp dữ liệu đã lưu trong máy, không tự ý chèn seed làm lệch số lượng
         return parsed;
       }
     }
   } catch (e) {}
-  return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
+  // Nếu chưa có cache, nạp seed nhưng tuyệt đối lọc bỏ ngay máy đã bán
+  if (Array.isArray(window.SEED_PHONES_DATA)) {
+    return JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+  }
+  return [];
 }
 let phoneDatabase = loadInitialPhones();
 let soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : (window.SEED_SOLD_DATA || []);
@@ -12748,10 +12751,10 @@ function renderPhoneGrid() {
   const rawSearch = document.getElementById('phoneSearchInput') ? document.getElementById('phoneSearchInput').value.trim() : '';
   const normSearch = normalizeQuery(rawSearch);
 
-  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (chỉ hợp nhất seed nếu danh sách máy trống)
+  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (chỉ lấy seed nếu danh sách hoàn toàn trống)
   if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
     if (!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) {
-      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+      phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
       savePhoneStorage();
     }
   }
