@@ -7575,19 +7575,21 @@
         #tab-banga #bangaRevenueBadge #bangaMonthRevenueVal {
           color: #22c55e !important;
           font-weight: 900 !important;
-          font-size: 1.15rem !important;
+          font-size: 0.95rem !important;
           line-height: 1 !important;
+          white-space: nowrap !important;
         }
         #tab-banga #bangaRevenueBadge svg {
-          width: 20px !important;
-          height: 20px !important;
+          width: 18px !important;
+          height: 18px !important;
           flex-shrink: 0 !important;
         }
         #tab-banga #bangaRevenueBadge #bangaDayRevenueVal {
           color: #ffffff !important;
           font-weight: 900 !important;
-          font-size: 1.15rem !important;
+          font-size: 0.95rem !important;
           line-height: 1 !important;
+          white-space: nowrap !important;
         }
         #tab-banga #bangaProfitBadge {
           order: 2 !important;

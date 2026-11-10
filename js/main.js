@@ -5596,7 +5596,7 @@ function renderBangaTable(items) {
     totalProf += prof;
   });
 
-  // Tính toán Doanh thu & Lãi (Ngày & Tháng & Năm & Tất cả) cho 2 box trên đầu chuẩn mẫu Bán Hàng / Sửa Chữa
+  // Tính toán Doanh thu, Lãi và Số lượng PK / Máy đã bán (Ngày & Tháng & Năm & Tất cả)
   let bangaDayRev = 0;
   let bangaDayProf = 0;
   let bangaMonthRev = 0;
@@ -5605,6 +5605,15 @@ function renderBangaTable(items) {
   let bangaYearProf = 0;
   let bangaAllRev = 0;
   let bangaAllProf = 0;
+
+  let bangaDayPhoneCount = 0;
+  let bangaDayPkCount = 0;
+  let bangaMonthPhoneCount = 0;
+  let bangaMonthPkCount = 0;
+  let bangaYearPhoneCount = 0;
+  let bangaYearPkCount = 0;
+  let bangaAllPhoneCount = 0;
+  let bangaAllPkCount = 0;
 
   const dd = String(currentBangaDateFilter.getDate()).padStart(2, '0');
   const mm = String(currentBangaDateFilter.getMonth() + 1).padStart(2, '0');
@@ -5619,6 +5628,17 @@ function renderBangaTable(items) {
     bangaAllRev += rev;
     bangaAllProf += prof;
 
+    let isItemPhone = false;
+    if (typeof getBangaPhoneDetails === 'function') {
+      let d = getBangaPhoneDetails(i);
+      isItemPhone = !!(d && d.isPhone);
+    }
+    if (isItemPhone) {
+      bangaAllPhoneCount++;
+    } else {
+      bangaAllPkCount++;
+    }
+
     let parts = (i.dateTime || '').split(' - ');
     if (parts.length >= 2) {
       let datePart = parts[1].trim();
@@ -5626,6 +5646,8 @@ function renderBangaTable(items) {
       if (datePart === targetDateStr) {
         bangaDayRev += rev;
         bangaDayProf += prof;
+        if (isItemPhone) bangaDayPhoneCount++;
+        else bangaDayPkCount++;
       }
 
       let dp = datePart.split('/');
@@ -5635,30 +5657,33 @@ function renderBangaTable(items) {
         if (m === targetMonth && y === targetYear) {
           bangaMonthRev += rev;
           bangaMonthProf += prof;
+          if (isItemPhone) bangaMonthPhoneCount++;
+          else bangaMonthPkCount++;
         }
         if (y === currentBangaYearFilter) {
           bangaYearRev += rev;
           bangaYearProf += prof;
+          if (isItemPhone) bangaYearPhoneCount++;
+          else bangaYearPkCount++;
         }
       }
     }
   });
 
-  // Cập nhật Box tím bên trái (Doanh thu Tháng/Năm [xanh] & Doanh thu Ngày [trắng])
+  // Cập nhật Box bên trái (Bên trái: PK đã bán, Bên phải: Máy đã bán theo chế độ xem Ngày/Tháng/Năm/Tất cả)
   const mRevEl = document.getElementById('bangaMonthRevenueVal');
   const dRevEl = document.getElementById('bangaDayRevenueVal');
   const mProfEl = document.getElementById('bangaMonthProfitVal');
   const dProfEl = document.getElementById('bangaDayProfitVal');
 
+  let curPkCount = bangaDayPkCount;
+  let curPhoneCount = bangaDayPhoneCount;
+  let periodTitle = `Ngày ${targetDateStr}`;
+
   if (bangaViewMode === 'year') {
-    if (mRevEl) {
-      mRevEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaYearRev);
-      mRevEl.title = `Doanh thu Năm ${currentBangaYearFilter}`;
-    }
-    if (dRevEl) {
-      dRevEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaDayRev);
-      dRevEl.title = 'Doanh thu Ngày';
-    }
+    curPkCount = bangaYearPkCount;
+    curPhoneCount = bangaYearPhoneCount;
+    periodTitle = `Năm ${currentBangaYearFilter}`;
     if (mProfEl) {
       mProfEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaYearProf);
       mProfEl.title = `Lãi Năm ${currentBangaYearFilter}`;
@@ -5668,14 +5693,9 @@ function renderBangaTable(items) {
       dProfEl.title = 'Lãi Ngày';
     }
   } else if (bangaViewMode === 'all') {
-    if (mRevEl) {
-      mRevEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaAllRev);
-      mRevEl.title = 'Tổng Doanh thu Tất cả';
-    }
-    if (dRevEl) {
-      dRevEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaDayRev);
-      dRevEl.title = 'Doanh thu Ngày';
-    }
+    curPkCount = bangaAllPkCount;
+    curPhoneCount = bangaAllPhoneCount;
+    periodTitle = 'Tất cả';
     if (mProfEl) {
       mProfEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaAllProf);
       mProfEl.title = 'Tổng Lãi Tất cả';
@@ -5684,15 +5704,10 @@ function renderBangaTable(items) {
       dProfEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaDayProf);
       dProfEl.title = 'Lãi Ngày';
     }
-  } else {
-    if (mRevEl) {
-      mRevEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaMonthRev);
-      mRevEl.title = `Doanh thu Tháng ${targetMonth + 1}/${targetYear}`;
-    }
-    if (dRevEl) {
-      dRevEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaDayRev);
-      dRevEl.title = 'Doanh thu Ngày';
-    }
+  } else if (bangaViewMode === 'month') {
+    curPkCount = bangaMonthPkCount;
+    curPhoneCount = bangaMonthPhoneCount;
+    periodTitle = `Tháng ${targetMonth + 1}/${targetYear}`;
     if (mProfEl) {
       mProfEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaMonthProf);
       mProfEl.title = `Lãi Tháng ${targetMonth + 1}/${targetYear}`;
@@ -5701,6 +5716,28 @@ function renderBangaTable(items) {
       dProfEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaDayProf);
       dProfEl.title = 'Lãi Ngày';
     }
+  } else {
+    // bangaViewMode === 'day'
+    curPkCount = bangaDayPkCount;
+    curPhoneCount = bangaDayPhoneCount;
+    periodTitle = `Ngày ${targetDateStr}`;
+    if (mProfEl) {
+      mProfEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaMonthProf);
+      mProfEl.title = `Lãi Tháng ${targetMonth + 1}/${targetYear}`;
+    }
+    if (dProfEl) {
+      dProfEl.innerText = isBangaSensitiveHidden ? '***' : formatPriceStr(bangaDayProf);
+      dProfEl.title = 'Lãi Ngày';
+    }
+  }
+
+  if (mRevEl) {
+    mRevEl.innerText = isBangaSensitiveHidden ? '***' : `PK : ${curPkCount}`;
+    mRevEl.title = `Phụ kiện đã bán (${periodTitle})`;
+  }
+  if (dRevEl) {
+    dRevEl.innerText = isBangaSensitiveHidden ? '***' : `Máy : ${curPhoneCount}`;
+    dRevEl.title = `Máy đã bán (${periodTitle})`;
   }
 
   // CẬP NHẬT ICON LÃI NGÀY BÁN GÀ: 0 - 999 MẶT KHÓC, >= 1000 MẶT CƯỜI
