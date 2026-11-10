@@ -7862,20 +7862,34 @@
         /* === TAB 2: PHẦN MỀM MOBILE (< 768PX) - CHUẨN Y CHANG ẢNH MẪU 100% === */
         #tab-phanmem .sw-top-header-bar {
           display: grid !important;
-          grid-template-columns: 1fr !important;
+          grid-template-columns: 1fr 1fr !important;
           gap: 8px !important;
           width: 100% !important;
           margin-bottom: 8px !important;
         }
-        /* HÀNG 1: ẨN DOANH THU TRÊN MOBILE, CHỈ HIỂN THỊ THẺ LÃI THÁNG & NGÀY */
+        /* HÀNG 1: DOANH THU (TRÁI) & LÃI (PHẢI) CÙNG 1 HÀNG */
         #tab-phanmem .sw-top-header-bar > div:first-child {
-          display: none !important;
+          grid-column: 1 / 2 !important;
+          grid-row: 1 !important;
+          width: 100% !important;
+          margin: 0 !important;
+          display: flex !important;
         }
+        #tab-phanmem #swRevenueBadge,
         #swRevenueBadge {
-          display: none !important;
+          display: flex !important;
+          width: 100% !important;
+          height: 42px !important;
+          justify-content: center !important;
+          box-sizing: border-box !important;
+          padding: 0 10px !important;
+          margin: 0 !important;
+          background: #000000 !important;
+          border: 1.5px solid #334155 !important;
+          border-radius: 9px !important;
         }
         #tab-phanmem .sw-top-header-bar > div:last-child {
-          grid-column: 1 / -1 !important;
+          grid-column: 2 / 3 !important;
           grid-row: 1 !important;
           width: 100% !important;
           margin: 0 !important;
@@ -7884,9 +7898,9 @@
         #tab-phanmem .sw-top-header-bar > div:last-child > .sw-stat-pill {
           width: 100% !important;
           height: 42px !important;
-          justify-content: space-between !important;
+          justify-content: center !important;
           box-sizing: border-box !important;
-          padding: 0 16px !important;
+          padding: 0 10px !important;
           margin: 0 !important;
           background: #000000 !important;
           border: 1.5px solid #334155 !important;
@@ -7894,7 +7908,7 @@
         }
         #tab-phanmem #swProfitBadge #swMonthProfitText {
           font-size: 1.15rem !important;
-          color: #ef4444 !important;
+          color: #4ade80 !important;
           font-weight: 900 !important;
         }
         #tab-phanmem #swProfitBadge #swProfitEmojiIcon {
@@ -7903,9 +7917,8 @@
           object-fit: contain !important;
           flex-shrink: 0 !important;
         }
-        /* GIẢM KÍCH CỠ CHỮ LÃI NGÀY 20% TRÊN MOBILE (1.15rem -> 0.92rem) */
         #tab-phanmem #swProfitBadge #swDayProfitText {
-          font-size: 0.92rem !important;
+          font-size: 1.15rem !important;
           color: #ffffff !important;
           font-weight: 900 !important;
         }
@@ -7913,7 +7926,7 @@
           display: none !important;
         }
 
-        /* HÀNG 2: 3 NÚT PHÍM TẮT TRÊN MOBILE (LINK TOOL - TESTPOINT - CÔNG NỢ) */
+        /* HÀNG 2 & 3: LƯỚI 6 NÚT PHÍM TẮT (3 CỘT X 2 HÀNG) Y CHANG ẢNH MẪU */
         .sw-shortcuts-container,
         #tab-phanmem .sw-top-header-bar > div:nth-child(2) {
           grid-column: 1 / -1 !important;
@@ -7954,27 +7967,14 @@
           color: #ffffff !important;
           box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4) !important;
         }
-
-        /* ẨN Ô TÀI KHOẢN, GHI CHÚ, LINK ROM TRÊN MOBILE THEO YÊU CẦU */
+        /* HIỂN THỊ ĐẦY ĐỦ 6 NÚT TRÊN MOBILE */
         .sw-shortcuts-container .sw-shortcut-rom,
         .sw-shortcuts-container .sw-shortcut-accounts,
         .sw-shortcuts-container .sw-shortcut-notes,
         #tab-phanmem .sw-shortcut-rom,
         #tab-phanmem .sw-shortcut-accounts,
         #tab-phanmem .sw-shortcut-notes {
-          display: none !important;
-        }
-        .sw-shortcuts-container .sw-shortcut-tool,
-        #tab-phanmem .sw-shortcut-tool {
-          order: 1 !important;
-        }
-        .sw-shortcuts-container .sw-shortcut-testpoint,
-        #tab-phanmem .sw-shortcut-testpoint {
-          order: 2 !important;
-        }
-        .sw-shortcuts-container .sw-shortcut-congno,
-        #tab-phanmem .sw-shortcut-congno {
-          order: 3 !important;
+          display: inline-flex !important;
         }
 
         /* HÀNG 4 & 5: BỘ LỌC NGÀY & NÚT DANH SÁCH PHẦN MỀM / TẠO ĐƠN MỚI */
