@@ -826,9 +826,9 @@ function getPhoneBrandBadgeHtml(brand, phoneName) {
 
   if (detected === 'IPHONE') {
     text = 'IPHONE';
-    bg = '#000000';
-    color = '#ffffff';
-    border = '1px solid #475569';
+    bg = '#ffffff';
+    color = '#ea580c';
+    border = '1px solid #fed7aa';
   } else if (detected === 'IPAD') {
     text = 'IPAD';
     bg = '#000000';
