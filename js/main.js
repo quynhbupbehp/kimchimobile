@@ -2523,7 +2523,8 @@ function fetchDirectCloudSync(showToastMsg) {
             phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
             if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
           } else {
-            phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
+            // Lấy trực tiếp danh sách từ Cloud làm chuẩn để Web và Mobile luôn khớp nhau 100%
+            phoneDatabase = Array.isArray(data.list) ? data.list : [];
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
@@ -2543,7 +2544,7 @@ function fetchDirectCloudSync(showToastMsg) {
             soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
             if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
           } else {
-            soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(data.list) : data.list;
+            soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
           }
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
@@ -2884,7 +2885,8 @@ function initFirebaseRealtimeSync() {
             console.warn('Bỏ qua sync_bundles phones bị phình to từ cloud cũ');
             return;
           }
-          phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
+          // Đồng bộ trực tiếp danh sách từ Cloud Realtime 100% - Không chèn seed làm lệch số lượng máy
+          phoneDatabase = Array.isArray(data.list) ? data.list : [];
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
@@ -2902,7 +2904,7 @@ function initFirebaseRealtimeSync() {
             console.warn('Bỏ qua sync_bundles sold_phones bị phình to từ cloud cũ');
             return;
           }
-          soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(data.list) : data.list;
+          soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
       }
@@ -9996,7 +9998,8 @@ function loadInitialPhones() {
     if (localRaw) {
       const parsed = JSON.parse(localRaw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(parsed) : parsed;
+        // Dùng trực tiếp dữ liệu đã lưu trong máy, không tự ý chèn seed làm lệch số lượng
+        return parsed;
       }
     }
   } catch (e) {}
