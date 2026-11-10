@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261110_195754">
+  <link rel="stylesheet" href="css/style.css?v=20261110_201154">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261110_195754";
+    var CURRENT_PAGE_VERSION = "20261110_201154";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -462,10 +462,15 @@
                   style="height: 36px; background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer; box-sizing: border-box;">
                   📥 Nhập
                 </button>
-                <button type="button" class="btn-action-sales" onclick="exportSalesToExcel()"
+                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportSalesToExcel()"
                   title="Xuất danh sách Bán Hàng ra file Excel"
                   style="height: 36px; background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer; box-sizing: border-box;">
                   📤 Xuất
+                </button>
+                <button type="button" class="btn-action-sales" onclick="removeDuplicateSalesItems()"
+                  title="Xóa các đơn bán hàng trùng lặp, chỉ giữ lại duy nhất 1 đơn"
+                  style="height: 36px; background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; font-weight: 800; font-size: 0.88rem; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245,158,11,0.25); cursor: pointer; box-sizing: border-box;">
+                  🧹 Lọc Trùng
                 </button>
                 <button type="button" class="btn-action-sales" onclick="clearAllSalesData()"
                   title="Xóa danh sách Bán Hàng theo phạm vi thời gian đang chọn (Ngày, Tháng, Năm, Tất Cả)"
@@ -810,6 +815,7 @@
                   📥 Nhập
                 </button>
                 <button type="button" class="btn-action-sales" onclick="exportSoftwareToExcel()"
+                  class="btn-action-sales btn-export-excel-action"
                   title="Xuất danh sách Phần Mềm ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
                   📤 Xuất
@@ -1581,10 +1587,15 @@
                   style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.97rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
                   📥 Nhập
                 </button>
-                <button type="button" class="btn-action-sales" onclick="exportBangaToExcel()"
+                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportBangaToExcel()"
                   title="Xuất danh sách Bán Gà ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.97rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
                   📤 Xuất
+                </button>
+                <button type="button" class="btn-action-sales" onclick="removeDuplicateBangaItems()"
+                  title="Xóa các đơn bán gà trùng lặp, chỉ giữ lại duy nhất 1 đơn"
+                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; font-weight: 800; font-size: 0.97rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245,158,11,0.25); cursor: pointer;">
+                  🧹 Lọc Trùng
                 </button>
                 <button type="button" class="btn-action-sales" onclick="clearAllBangaData()"
                   title="Xóa toàn bộ danh sách Bán Gà để nhập lại từ đầu"
@@ -2385,10 +2396,15 @@
                   style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
                   📥 Nhập
                 </button>
-                <button type="button" class="btn-action-sales" onclick="exportMainXacToExcel()"
+                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportMainXacToExcel()"
                   title="Xuất danh sách Main Xác ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
                   📤 Xuất
+                </button>
+                <button type="button" class="btn-action-sales" onclick="removeDuplicateMainXacItems()"
+                  title="Xóa máy main xác trùng lặp, chỉ giữ lại duy nhất 1 máy"
+                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245,158,11,0.25); cursor: pointer;">
+                  🧹 Lọc Trùng
                 </button>
                 <button type="button" class="btn-action-sales" onclick="clearAllMainXacData()"
                   title="Xóa toàn bộ danh sách Main Xác để nhập lại từ đầu"
@@ -6109,7 +6125,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261110_195754"></script>
+  <script src="js/main.js?v=20261110_201154"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

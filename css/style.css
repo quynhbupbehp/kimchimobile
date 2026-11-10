@@ -10625,3 +10625,20 @@
   color: #0b111e;
   transform: scale(1.05);
 }
+
+/* ============================================================
+   ẨN TẤT CẢ NÚT XUẤT EXCEL TRÊN MOBILE THEO YÊU CẦU
+   ============================================================ */
+@media screen and (max-width: 768px) {
+  .btn-export-excel-action,
+  button[onclick*="exportSalesToExcel"],
+  button[onclick*="exportSoftwareToExcel"],
+  button[onclick*="exportRepairToExcel"],
+  button[onclick*="exportPhoneToExcel"],
+  button[onclick*="exportBangaToExcel"],
+  button[onclick*="exportSoldPhoneToExcel"],
+  button[onclick*="exportDebtSoftwareToExcel"],
+  button[onclick*="exportMainXacToExcel"] {
+    display: none !important;
+  }
+}
