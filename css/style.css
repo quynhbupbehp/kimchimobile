@@ -39,6 +39,9 @@
     }
 
     @media (min-width: 1024px) {
+      .btn-sales-notepad-mobile {
+        display: none !important;
+      }
       html, body {
         height: 100%;
         max-height: 100vh;
@@ -7261,20 +7264,54 @@
           align-items: center !important;
           gap: 6px !important;
         }
-        #btnSalesToggleHide {
-          height: 38px !important;
-          width: 65px !important;
-          flex-shrink: 0 !important;
-          border-radius: 9px !important;
-          font-size: 0.92rem !important;
-          font-weight: 800 !important;
-          background: #0f172a !important;
-          border: 1.5px solid #1e293b !important;
-          color: #ffffff !important;
+        /* 1. Ẩn icon đám mây trên Mobile tab Bán Hàng */
+        #tab-banhang #btnSyncAllCloud {
+          display: none !important;
+        }
+        /* Thay vào đó là icon sổ tay ghi chú */
+        #tab-banhang #btnSalesNotePadMobile {
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
+          width: 44px !important;
+          min-width: 44px !important;
+          height: 38px !important;
+          padding: 0 !important;
+          background: #0f172a !important;
+          border: 1.5px solid #f59e0b !important;
+          border-radius: 9px !important;
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35) !important;
           cursor: pointer !important;
+          flex-shrink: 0 !important;
+          box-sizing: border-box !important;
+        }
+        /* 2. Ẩn nút Ẩn/Hiện trên Mobile tab Bán Hàng */
+        #tab-banhang #btnSalesToggleHide {
+          display: none !important;
+        }
+        /* Thay vào đó là logo BIDV để chuyển khoản */
+        #tab-banhang .btn-bank-bidv {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 44px !important;
+          min-width: 44px !important;
+          height: 38px !important;
+          padding: 0 !important;
+          background: transparent !important;
+          border: 1.5px solid #059669 !important;
+          border-radius: 9px !important;
+          box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4) !important;
+          cursor: pointer !important;
+          overflow: hidden !important;
+          flex-shrink: 0 !important;
+          box-sizing: border-box !important;
+        }
+        #tab-banhang .btn-bank-bidv img {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+          border-radius: 7px !important;
         }
         .btn-create-ticket {
           flex: 1 1 auto !important;
@@ -10373,10 +10410,13 @@
 
 
 
-/* ẨN NÚT BIDV BANK TRÊN GIAO DIỆN MOBILE (< 768px và < 900px) */
+/* ẨN NÚT BIDV BANK TRÊN GIAO DIỆN MOBILE (< 768px) CHO CÁC TAB KHÁC */
 @media (max-width: 768px) {
-  .btn-bank-bidv,
   .btn-bank-bidv-sw {
+    display: none !important;
+  }
+  :not(#tab-banhang) > * > .btn-bank-bidv,
+  :not(#tab-banhang) .btn-bank-bidv {
     display: none !important;
   }
 }
