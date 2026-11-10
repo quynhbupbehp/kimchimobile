@@ -992,8 +992,21 @@
               </div>
             </div>
 
-            <!-- Cột 3 (Phải): NÚT ẨN + NÚT TẠO ĐƠN MỚI -->
+            <!-- Cột 3 (Phải): Ô TÌM KIẾM + BIDV + NÚT ẨN + NÚT TẠO ĐƠN MỚI -->
             <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+              <!-- Ô TÌM KIẾM PHẦN MỀM -->
+              <div class="search-box-bm" id="swSearchBoxWrapper"
+                style="height: 38px; box-sizing: border-box; position: relative; z-index: 9999; flex-shrink: 0;">
+                <span class="search-label-single-line">TÌM KIẾM</span>
+                <input type="text" id="swSearchInput" class="search-input-field" inputmode="text"
+                  placeholder="🔍 Tìm khách / tên máy..." oninput="handleSoftwareSearchInput(this)"
+                  onfocus="handleSoftwareSearchInput(this)" onkeydown="handleSoftwareSearchKeydown(event)"
+                  autocomplete="off" style="width: 200px;">
+                <button type="button" id="btnClearSwSearch" class="btn-clear-search" onclick="clearSoftwareSearch()"
+                  title="Xóa tìm kiếm">✕</button>
+                <div id="swSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;"></div>
+              </div>
+
               <button type="button" onclick="openKimchiBankModal()" class="btn-bank-bidv-sw"
                 title="Mở Kim Chi Mobile Bank (BIDV)"
                 style="width: 34px; height: 34px; padding: 0; background: transparent; border: 1.5px solid #059669; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; box-shadow: 0 2px 6px rgba(5,150,105,0.35); flex-shrink: 0; transition: transform 0.1s;">
@@ -6075,7 +6088,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261110_092304"></script>
+  <script src="js/main.js?v=20261110_093146"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
