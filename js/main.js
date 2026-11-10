@@ -14917,7 +14917,8 @@ function viewSoftwareTicket(id) {
     }
 
     viewModal.classList.add('active');
-    viewModal.style.display = 'flex';
+    viewModal.style.setProperty('display', 'flex', 'important');
+    viewModal.style.zIndex = '10000000';
   } else {
     alert(`CHI TIẾT ĐƠN PHẦN MỀM:\n- Khách hàng: ${item.customer}\n- Thiết bị: ${item.device}\n- Báo giá: ${formatPriceStr(item.price)}\n- Phí dịch vụ: ${formatPriceStr(item.cost)}\n- Lãi: ${formatPriceStr(item.profit)}\n- Thời gian: ${item.dayMonth}-${item.year || '2026'} lúc ${item.time}\n- Trạng thái: ${item.paymentStatus}`);
   }
@@ -15674,14 +15675,19 @@ function openSwNotesModal() {
   const searchInput = document.getElementById('swLinkSearchInput');
   if (searchInput) searchInput.value = '';
   renderSwNotesList();
-  modal.style.display = 'flex';
+  modal.classList.add('active');
+  modal.style.setProperty('display', 'flex', 'important');
+  modal.style.zIndex = '10000000';
 }
 window.openSwNotesModal = openSwNotesModal;
 window.openSwLinksModal = openSwNotesModal;
 
 function closeSwNotesModal() {
   const modal = document.getElementById('swNotesModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.setProperty('display', 'none', 'important');
+  }
   resetSwNoteForm();
   const form = document.getElementById('swLinkForm');
   if (form) form.style.display = 'none';
@@ -16795,7 +16801,7 @@ function renderSoftwareTable(database) {
       : `<span class="sw-badge-paid" style="cursor: default; user-select: none;">✔ ĐÃ TRẢ <span style="font-size: 0.95rem; margin-left: 2px;">💰</span></span>`;
 
     return `
-          <tr>
+          <tr ondblclick="viewSoftwareTicket('${safeId}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<450){ viewSoftwareTicket('${safeId}'); } this._lastTap=now;" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết đơn">
             <td class="sw-col-check" style="text-align: center;">
               ${isDebt ? `
                 <span style="display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem; color: #ffffff; filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.45)); user-select: none;" title="Khách nợ dai VL">💀</span>
