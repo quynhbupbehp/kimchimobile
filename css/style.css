@@ -8030,7 +8030,7 @@
           border: none !important;
           box-shadow: 0 3px 10px rgba(236, 72, 153, 0.4) !important;
         }
-        /* Hàng 5 - Phải: Tạo Đơn Mới (Vàng) */
+        /* Hàng 5 - Phải: Tạo Đơn Mới (Hồng/Vàng) - Ẩn ô tìm kiếm và các nút thừa trên mobile */
         #tab-phanmem .sw-toolbar > div:last-child {
           grid-column: 2 / 3 !important;
           grid-row: 2 !important;
@@ -8040,8 +8040,11 @@
           margin: 0 !important;
           width: 100% !important;
         }
+        #tab-phanmem #swSearchBoxWrapper,
+        #tab-phanmem .btn-bank-bidv-sw,
         #tab-phanmem .sw-btn-pay,
-        #tab-phanmem .sw-eye-toggle-btn {
+        #tab-phanmem .sw-eye-toggle-btn,
+        #btnSwHide {
           display: none !important;
         }
         #tab-phanmem .sw-btn-create-new {
