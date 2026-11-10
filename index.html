@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261110_184235">
+  <link rel="stylesheet" href="css/style.css?v=20261110_184747">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261110_184235";
+    var CURRENT_PAGE_VERSION = "20261110_184747";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -885,7 +885,7 @@
             <button type="button" class="sw-pill-btn sw-btn-black sw-shortcut-accounts" onclick="openSwAccountsModal()"
               title="Quản lý tài khoản tool / server">TÀI KHOẢN</button>
             <button type="button" class="sw-pill-btn sw-btn-black sw-shortcut-notes" onclick="openSwNotesModal()"
-              title="Quản lý link web phần mềm">GHI CHÚ</button>
+              title="Quản lý link web phần mềm">LINK WEB</button>
             <button type="button" class="sw-pill-btn sw-btn-congno sw-shortcut-congno" id="swBtnCongNo"
               onclick="toggleSoftwareDebtView()" title="Xem sổ công nợ phần mềm">CÔNG NỢ</button>
           </div>
@@ -1032,7 +1032,7 @@
                 </svg>
               </button>
               <button type="button" class="sw-btn-create-new" onclick="openSoftwareModal()"
-                style="background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important; border: 1px solid #f472b6 !important; box-shadow: 0 3px 12px rgba(236, 72, 153, 0.45) !important;">
+                style="background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%) !important; border: 1px solid #facc15 !important; box-shadow: 0 3px 12px rgba(245, 158, 11, 0.45) !important;">
                 <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:3;">
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
@@ -6108,7 +6108,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261110_184235"></script>
+  <script src="js/main.js?v=20261110_184747"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
