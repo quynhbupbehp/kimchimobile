@@ -13162,6 +13162,10 @@ function clearSoldPhoneSearch() {
     renderSoldPhoneTable();
   }
 }
+window.handleSoldPhoneSearchInput = handleSoldPhoneSearchInput;
+window.clearSoldPhoneSearch = clearSoldPhoneSearch;
+window.renderSoldPhoneSearchSuggestions = renderSoldPhoneSearchSuggestions;
+window.getSoldPhoneNameSuggestions = getSoldPhoneNameSuggestions;
 
 function handleSoldPhoneWarrantyFilterChange(select) {
   currentSoldPhoneWarrantyFilter = select.value || 'ALL';
