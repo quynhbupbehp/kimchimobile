@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261110_205132">
+  <link rel="stylesheet" href="css/style.css?v=20261110_213101">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261110_205132";
+    var CURRENT_PAGE_VERSION = "20261110_213101";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -5941,12 +5941,12 @@
     </style>
 
     <div class="stats-modal-inner" style="position: relative;">
-      <!-- NÚT ĐÓNG TRÊN CÙNG BÊN PHẢI (TRONG GÓC KHUNG, KHÔNG BỊ TRÀN HAY BỊ LẤP MẤT GÓC) -->
+      <!-- NÚT ĐÓNG TINH TẾ GÓC PHẢI (ĐẸP TRÊN CẢ WEB LẪN MOBILE) -->
       <button type="button" class="stats-top-outer-close-btn" onclick="closeMobileRevenueStatsModal()"
-        style="position: absolute; top: 12px; right: 12px; z-index: 10; background: #ef4444; border: 2px solid #ffffff; color: #ffffff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 10px rgba(239,68,68,0.5); font-weight: 900; font-size: 1rem; line-height: 1; padding: 0;"
-        title="Đóng bảng theo dõi">
-        ✕
-      </button>
+        style="position: absolute; top: 10px; right: 12px; z-index: 20; background: transparent; border: none; color: #94a3b8; font-size: 1.35rem; font-weight: 900; width: 32px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; line-height: 1; padding: 0; transition: all 0.2s ease;"
+        onmouseover="this.style.color='#ffffff'; this.style.background='rgba(239,68,68,0.85)';"
+        onmouseout="this.style.color='#94a3b8'; this.style.background='transparent';"
+        title="Đóng bảng theo dõi">✕</button>
       <!-- TIÊU ĐỀ: THEO DÕI DOANH THU & NGÀY CÓ ICON LỊCH ĐỎ TRẮNG Y CHANG MẪU -->
       <div style="background: transparent; padding: 18px 12px 10px 12px; text-align: center;">
         <h2
@@ -6127,7 +6127,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261110_205132"></script>
+  <script src="js/main.js?v=20261110_213101"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
