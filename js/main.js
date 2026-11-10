@@ -2527,7 +2527,7 @@ function fetchDirectCloudSync(showToastMsg) {
             phoneDatabase = Array.isArray(data.list) ? data.list : [];
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
-          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
+          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -2630,7 +2630,7 @@ function resetFsDailyUsage() {
     const key = getFsTodayKey();
     localStorage.removeItem(key);
     updateFsUsageUI({ reads: 0, writes: 0 });
-  } catch (e) {}
+  } catch (e) { }
 }
 window.resetFsDailyUsage = resetFsDailyUsage;
 
@@ -2642,7 +2642,7 @@ function getFsDailyUsage() {
       const data = JSON.parse(raw);
       return { reads: Number(data.reads) || 0, writes: Number(data.writes) || 0 };
     }
-  } catch (e) {}
+  } catch (e) { }
   return { reads: 0, writes: 0 };
 }
 
@@ -2650,7 +2650,7 @@ function saveFsDailyUsage(usage) {
   try {
     const key = getFsTodayKey();
     localStorage.setItem(key, JSON.stringify(usage));
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function recordFsUsage(type, count = 1) {
@@ -2660,7 +2660,7 @@ function recordFsUsage(type, count = 1) {
     else if (type === 'write') usage.writes = (usage.writes || 0) + count;
     saveFsDailyUsage(usage);
     updateFsUsageUI(usage);
-  } catch (e) {}
+  } catch (e) { }
 }
 window.recordFsUsage = recordFsUsage;
 
@@ -2685,7 +2685,7 @@ function updateFsUsageUI(usage) {
       writeRemainEl.innerText = remainW.toLocaleString('vi-VN');
       writeRemainEl.style.color = (remainW < 2000) ? '#ef4444' : ((remainW < 6000) ? '#f59e0b' : '#4ade80');
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 window.updateFsUsageUI = updateFsUsageUI;
 
@@ -2702,7 +2702,7 @@ function hookFirestoreQuotaCounter() {
 
       const origGet = docRef.get ? docRef.get.bind(docRef) : null;
       if (origGet) {
-        docRef.get = function(...args) {
+        docRef.get = function (...args) {
           recordFsUsage('read', 1);
           return origGet(...args);
         };
@@ -2710,7 +2710,7 @@ function hookFirestoreQuotaCounter() {
 
       const origSet = docRef.set ? docRef.set.bind(docRef) : null;
       if (origSet) {
-        docRef.set = function(...args) {
+        docRef.set = function (...args) {
           recordFsUsage('write', 1);
           return origSet(...args);
         };
@@ -2718,7 +2718,7 @@ function hookFirestoreQuotaCounter() {
 
       const origUpdate = docRef.update ? docRef.update.bind(docRef) : null;
       if (origUpdate) {
-        docRef.update = function(...args) {
+        docRef.update = function (...args) {
           recordFsUsage('write', 1);
           return origUpdate(...args);
         };
@@ -2726,7 +2726,7 @@ function hookFirestoreQuotaCounter() {
 
       const origDelete = docRef.delete ? docRef.delete.bind(docRef) : null;
       if (origDelete) {
-        docRef.delete = function(...args) {
+        docRef.delete = function (...args) {
           recordFsUsage('write', 1);
           return origDelete(...args);
         };
@@ -2734,8 +2734,8 @@ function hookFirestoreQuotaCounter() {
 
       const origSnapshot = docRef.onSnapshot ? docRef.onSnapshot.bind(docRef) : null;
       if (origSnapshot) {
-        docRef.onSnapshot = function(onNext, onError) {
-          return origSnapshot(function(doc) {
+        docRef.onSnapshot = function (onNext, onError) {
+          return origSnapshot(function (doc) {
             recordFsUsage('read', 1);
             if (typeof onNext === 'function') onNext(doc);
           }, onError);
@@ -2751,7 +2751,7 @@ function hookFirestoreQuotaCounter() {
 
       const origGet = query.get ? query.get.bind(query) : null;
       if (origGet) {
-        query.get = function(...args) {
+        query.get = function (...args) {
           return origGet(...args).then(res => {
             const count = (res && res.docs) ? (res.docs.length || 1) : 1;
             recordFsUsage('read', count);
@@ -2762,8 +2762,8 @@ function hookFirestoreQuotaCounter() {
 
       const origSnapshot = query.onSnapshot ? query.onSnapshot.bind(query) : null;
       if (origSnapshot) {
-        query.onSnapshot = function(onNext, onError) {
-          return origSnapshot(function(snapshot) {
+        query.onSnapshot = function (onNext, onError) {
+          return origSnapshot(function (snapshot) {
             const count = (snapshot && snapshot.docChanges) ? Math.max(1, snapshot.docChanges().length) : 1;
             recordFsUsage('read', count);
             if (typeof onNext === 'function') onNext(snapshot);
@@ -2774,16 +2774,16 @@ function hookFirestoreQuotaCounter() {
       return query;
     };
 
-    db.doc = function(path) {
+    db.doc = function (path) {
       return wrapDocRef(origDoc(path));
     };
 
-    db.collection = function(name) {
+    db.collection = function (name) {
       const col = origCollection(name);
       if (col && !col._quotaHooked) {
         col._quotaHooked = true;
         const origDocInner = col.doc.bind(col);
-        col.doc = function(id) {
+        col.doc = function (id) {
           return wrapDocRef(origDocInner(id));
         };
         wrapQuery(col);
@@ -2888,7 +2888,7 @@ function initFirebaseRealtimeSync() {
           // Đồng bộ trực tiếp 100% từ Cloud Realtime: Web hay Mobile thêm/sửa/xóa là bên kia cập nhật tức thì
           phoneDatabase = Array.isArray(data.list) ? data.list : [];
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
-          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
+          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -9864,7 +9864,7 @@ function setPhoneEditOverride(savedItem) {
       map['imei_' + String(copy.imei).trim().toLowerCase()] = copy;
     }
     localStorage.setItem('KIMCHI_PHONE_EDIT_OVERRIDES', JSON.stringify(map));
-  } catch (e) {}
+  } catch (e) { }
 }
 function removePhoneEditOverride(id, imei) {
   try {
@@ -9874,7 +9874,7 @@ function removePhoneEditOverride(id, imei) {
       delete map['imei_' + String(imei).trim().toLowerCase()];
     }
     localStorage.setItem('KIMCHI_PHONE_EDIT_OVERRIDES', JSON.stringify(map));
-  } catch (e) {}
+  } catch (e) { }
 }
 function getPhoneStatusOverrides() {
   try {
@@ -9889,7 +9889,7 @@ function setPhoneStatusOverride(id, status, imei) {
     if (id) map[String(id)] = status;
     if (imei && String(imei).trim()) map['imei_' + String(imei).trim().toLowerCase()] = status;
     localStorage.setItem('KIMCHI_PHONE_STATUS_OVERRIDES', JSON.stringify(map));
-  } catch (e) {}
+  } catch (e) { }
 }
 function applyPhoneStatusOverrides(list) {
   if (!Array.isArray(list)) return list;
@@ -10038,7 +10038,7 @@ function loadInitialPhones() {
         return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(parsed) : parsed;
       }
     }
-  } catch (e) {}
+  } catch (e) { }
   return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
 }
 let phoneDatabase = loadInitialPhones();
@@ -10141,7 +10141,7 @@ window.autoSyncPhonesToWarranty = autoSyncPhonesToWarranty;
 
 let currentBrandFilter = "ALL";
 let currentPriceFilter = "ALL";
-let currentPhoneStatusFilter = (function() {
+let currentPhoneStatusFilter = (function () {
   try {
     return localStorage.getItem('KIMCHI_PHONE_STATUS_FILTER') || 'CON_HANG';
   } catch (e) {
@@ -10151,7 +10151,7 @@ let currentPhoneStatusFilter = (function() {
 
 function togglePhoneChuaXuLyMode() {
   currentPhoneStatusFilter = (currentPhoneStatusFilter === 'CHUA_XU_LY') ? 'CON_HANG' : 'CHUA_XU_LY';
-  try { localStorage.setItem('KIMCHI_PHONE_STATUS_FILTER', currentPhoneStatusFilter); } catch (e) {}
+  try { localStorage.setItem('KIMCHI_PHONE_STATUS_FILTER', currentPhoneStatusFilter); } catch (e) { }
   updateChuaXuLyBtnUI();
   renderPhoneGrid();
 }
@@ -10349,7 +10349,7 @@ function savePhoneStorage(itemToSync) {
       applyPhoneStatusOverrides(phoneDatabase);
     }
     localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase));
-  } catch (e) {}
+  } catch (e) { }
   if (typeof db !== 'undefined' && db) {
     if (itemToSync && itemToSync.id) {
       db.collection('phones').doc(String(itemToSync.id)).set(itemToSync, { merge: true }).catch(console.error);
@@ -10359,7 +10359,7 @@ function savePhoneStorage(itemToSync) {
         list: phoneDatabase,
         updatedAt: Date.now()
       }, { merge: true }).catch(console.error);
-    } catch (e) {}
+    } catch (e) { }
     syncPhoneBundleDebounced();
   }
 }
@@ -11116,7 +11116,7 @@ function openSellPhoneModal(id) {
 
   calcSellProfit();
   checkGiftsEntered();
-  
+
   const btnConfirm = document.getElementById('btnConfirmSellPhone');
   if (btnConfirm) {
     btnConfirm.disabled = false;
@@ -11125,7 +11125,7 @@ function openSellPhoneModal(id) {
 
   const modal = document.getElementById('sellPhoneModal');
   if (modal) {
-    modal.style.display = 'flex';
+    modal.style.display = '';
     modal.classList.add('active');
   }
 }
@@ -11135,7 +11135,7 @@ function closeSellPhoneModal() {
   const modal = document.getElementById('sellPhoneModal');
   if (modal) {
     modal.classList.remove('active');
-    modal.style.display = 'none';
+    modal.style.display = '';
   }
   const btnConfirm = document.getElementById('btnConfirmSellPhone');
   if (btnConfirm) {
@@ -11234,7 +11234,7 @@ function confirmSellPhone(e) {
   }
   const rawId = document.getElementById('sellPhoneId').value;
   const numId = parseFloat(rawId);
-  
+
   // Tìm máy linh hoạt theo cả chuỗi ID và số ID để tránh lệch kiểu dữ liệu
   const idx = phoneDatabase.findIndex(p => String(p.id) === String(rawId) || p.id == numId || (p.id && String(p.id) === String(numId)));
   if (idx === -1) {
@@ -12781,7 +12781,7 @@ function fixPhoneDatabaseStatus() {
   if (changed) {
     try {
       localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase));
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -15466,12 +15466,12 @@ window.renderSalesNotePadTabs = renderSalesNotePadTabs;
 function switchSalesNotePadTab(tabName) {
   const ta = document.getElementById('salesNotePadTextarea');
   let data = getSalesNotePadData();
-  
+
   // Lưu nội dung của tab hiện tại trước khi chuyển
   if (ta && data.activeTab && data.tabs.hasOwnProperty(data.activeTab)) {
     data.tabs[data.activeTab] = ta.value;
   }
-  
+
   if (data.tabs.hasOwnProperty(tabName)) {
     data.activeTab = tabName;
   } else {
@@ -15598,7 +15598,7 @@ function openSalesNotePadModal() {
   const modal = document.getElementById('salesNotePadModal');
   const ta = document.getElementById('salesNotePadTextarea');
   const data = getSalesNotePadData();
-  
+
   renderSalesNotePadTabs();
 
   if (ta) {
@@ -23617,7 +23617,7 @@ function removeDuplicateSalesItems() {
     let nameKey = (item.name || '').trim().toLowerCase();
     let priceKey = String(parsePriceNum(item.total) || 0);
     let custKey = (item.customer || '').trim().toLowerCase();
-    
+
     // Khóa trùng: Cùng ngày + cùng tên hàng + cùng giá (hoặc cùng khách)
     let key = `${datePart}|${nameKey}|${priceKey}`;
     if (!seen.has(key)) {
