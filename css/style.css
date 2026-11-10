@@ -39,8 +39,19 @@
     }
 
     @media (min-width: 1024px) {
+      html, body {
+        height: 100%;
+        max-height: 100vh;
+        overflow-y: hidden !important;
+      }
       body {
         zoom: 1.05;
+      }
+      .content-wrapper {
+        height: 100vh;
+        max-height: 100vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
     }
 
