@@ -3088,6 +3088,7 @@ function initNumericKeyboardsForMobile() {
 
 window.addEventListener('DOMContentLoaded', () => {
   initAllTabsToVietnamToday();
+  if (typeof initReportMonthYearPickers === 'function') initReportMonthYearPickers();
   migrateStorageUnits();
   initFirebaseRealtimeSync();
   initNumericKeyboardsForMobile();
@@ -21638,8 +21639,45 @@ window.logActivity = logActivity;
 // MODULE BÁO CÁO TÀI CHÍNH
 // =========================================================
 let reportViewMode = 'month';
-let reportSelectedMonth = '10/2026';
+const _dNow = new Date();
+let reportSelectedMonth = `${String(_dNow.getMonth() + 1).padStart(2, '0')}/${_dNow.getFullYear()}`;
 let reportFilterCustom = null;
+
+function changeReportMonthYear() {
+  const selMonth = document.getElementById('repSelectMonth');
+  const selYear = document.getElementById('repSelectYear');
+  const now = new Date();
+  const mm = selMonth ? selMonth.value : String(now.getMonth() + 1).padStart(2, '0');
+  const yyyy = selYear ? selYear.value : String(now.getFullYear());
+  reportSelectedMonth = `${mm}/${yyyy}`;
+  setReportMode('month');
+}
+window.changeReportMonthYear = changeReportMonthYear;
+
+function initReportMonthYearPickers() {
+  const now = new Date();
+  const curMm = String(now.getMonth() + 1).padStart(2, '0');
+  const curYyyy = String(now.getFullYear());
+
+  const selMonth = document.getElementById('repSelectMonth');
+  const selYear = document.getElementById('repSelectYear');
+
+  if (selMonth) {
+    selMonth.value = curMm;
+  }
+  if (selYear) {
+    // Đảm bảo option của năm hiện tại có mặt
+    if (!Array.from(selYear.options).some(o => o.value === curYyyy)) {
+      const opt = document.createElement('option');
+      opt.value = curYyyy;
+      opt.textContent = curYyyy;
+      selYear.appendChild(opt);
+    }
+    selYear.value = curYyyy;
+  }
+  reportSelectedMonth = `${curMm}/${curYyyy}`;
+}
+window.initReportMonthYearPickers = initReportMonthYearPickers;
 
 function parseVietnameseDate(dStr, defaultYear = '2026') {
   if (!dStr) return null;
@@ -21738,16 +21776,20 @@ function renderFinancialReports() {
   const yyyy = String(now.getFullYear());
   const todayStr = `${dd}/${mm}/${yyyy}`;
 
-  // Lấy tháng đang chọn từ menu sổ xuống
-  const selBox = document.getElementById('repSelectMonth');
-  if (selBox && selBox.value) {
-    reportSelectedMonth = selBox.value;
+  // Lấy tháng và năm đang chọn từ 2 menu sổ xuống
+  const selMonth = document.getElementById('repSelectMonth');
+  const selYear = document.getElementById('repSelectYear');
+  if (selMonth && selYear && selMonth.value && selYear.value) {
+    reportSelectedMonth = `${selMonth.value}/${selYear.value}`;
   }
   let [selMm, selYyyy] = (reportSelectedMonth || `${mm}/${yyyy}`).split('/');
   if (!selMm || !selYyyy) {
     selMm = mm;
     selYyyy = yyyy;
   }
+  // Đồng bộ lại giá trị được chọn trên dropdown nếu chưa khớp
+  if (selMonth && selMonth.value !== selMm) selMonth.value = selMm;
+  if (selYear && selYear.value !== selYyyy) selYear.value = selYyyy;
 
   // Tải chỉ tiêu kinh doanh được lưu hoặc mặc định
   let savedTargets = {};
