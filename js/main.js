@@ -12339,7 +12339,7 @@ function updateSuggestionHighlight(items) {
 }
 
 document.addEventListener('click', function (e) {
-  if (!e.target.closest('.search-box-bm')) {
+  if (!e.target.closest('#tab-banmay .search-box-bm') && !e.target.closest('.banmay-top-bar .search-box-bm')) {
     hidePhoneSearchSuggestions();
   }
 });
