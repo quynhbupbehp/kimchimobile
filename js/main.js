@@ -9513,7 +9513,35 @@ window.recordSoldPhoneId = recordSoldPhoneId;
 window.removeSoldPhoneId = removeSoldPhoneId;
 
 
-// QUẢN LÝ TRẠNG THÁI MÁY BỀN VỮNG (CHỐNG BỊ SEED HOẶC CLOUD ĐÈ LẠI KHI F5)
+// QUẢN LÝ THÔNG TIN & TRẠNG THÁI MÁY BỀN VỮNG (CHỐNG BỊ SEED HOẶC CLOUD ĐÈ LẠI KHI F5)
+function getPhoneEditOverrides() {
+  try {
+    const raw = localStorage.getItem('KIMCHI_PHONE_EDIT_OVERRIDES');
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) { return {}; }
+}
+function setPhoneEditOverride(savedItem) {
+  try {
+    if (!savedItem || (!savedItem.id && !savedItem.imei)) return;
+    const map = getPhoneEditOverrides();
+    const copy = JSON.parse(JSON.stringify(savedItem));
+    if (copy.id) map[String(copy.id)] = copy;
+    if (copy.imei && String(copy.imei).trim()) {
+      map['imei_' + String(copy.imei).trim().toLowerCase()] = copy;
+    }
+    localStorage.setItem('KIMCHI_PHONE_EDIT_OVERRIDES', JSON.stringify(map));
+  } catch (e) {}
+}
+function removePhoneEditOverride(id, imei) {
+  try {
+    const map = getPhoneEditOverrides();
+    if (id && map[String(id)]) delete map[String(id)];
+    if (imei && map['imei_' + String(imei).trim().toLowerCase()]) {
+      delete map['imei_' + String(imei).trim().toLowerCase()];
+    }
+    localStorage.setItem('KIMCHI_PHONE_EDIT_OVERRIDES', JSON.stringify(map));
+  } catch (e) {}
+}
 function getPhoneStatusOverrides() {
   try {
     const raw = localStorage.getItem('KIMCHI_PHONE_STATUS_OVERRIDES');
@@ -9531,19 +9559,27 @@ function setPhoneStatusOverride(id, status, imei) {
 }
 function applyPhoneStatusOverrides(list) {
   if (!Array.isArray(list)) return list;
-  const map = getPhoneStatusOverrides();
-  list.forEach(p => {
+  const statusMap = getPhoneStatusOverrides();
+  const editMap = getPhoneEditOverrides();
+  list.forEach((p, idx) => {
     if (!p) return;
     const idKey = p.id ? String(p.id) : '';
     const imeiKey = p.imei ? ('imei_' + String(p.imei).trim().toLowerCase()) : '';
-    if (idKey && map[idKey]) {
-      p.status = map[idKey];
-    } else if (imeiKey && map[imeiKey]) {
-      p.status = map[imeiKey];
+    const overrideObj = (idKey && editMap[idKey]) || (imeiKey && editMap[imeiKey]);
+    if (overrideObj) {
+      Object.assign(p, overrideObj);
+    }
+    if (idKey && statusMap[idKey]) {
+      p.status = statusMap[idKey];
+    } else if (imeiKey && statusMap[imeiKey]) {
+      p.status = statusMap[imeiKey];
     }
   });
   return list;
 }
+window.getPhoneEditOverrides = getPhoneEditOverrides;
+window.setPhoneEditOverride = setPhoneEditOverride;
+window.removePhoneEditOverride = removePhoneEditOverride;
 window.getPhoneStatusOverrides = getPhoneStatusOverrides;
 window.setPhoneStatusOverride = setPhoneStatusOverride;
 window.applyPhoneStatusOverrides = applyPhoneStatusOverrides;
@@ -10218,7 +10254,7 @@ function saveNewPhone(e) {
   e.preventDefault();
   const editId = document.getElementById('mEditId').value;
   const brandSelectVal = document.getElementById('mBrandSelect') ? document.getElementById('mBrandSelect').value : '';
-  const existingP = editId ? phoneDatabase.find(x => x.id == editId) : null;
+  const existingP = editId ? phoneDatabase.find(x => String(x.id) === String(editId) || x.id == editId) : null;
   let resolvedBrand = brandSelectVal || (existingP ? (existingP.brand || (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter)) : (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter));
   if (resolvedBrand === 'OPPO & REALME' || resolvedBrand === 'OPPO - REALME') {
     resolvedBrand = /realme/i.test(document.getElementById('mName').value) ? 'REALME' : 'OPPO';
@@ -10247,7 +10283,7 @@ function saveNewPhone(e) {
   let savedItem = null;
 
   if (editId) {
-    const p = phoneDatabase.find(item => item.id == editId);
+    const p = phoneDatabase.find(item => String(item.id) === String(editId) || item.id == editId);
     if (p) {
       const oldData = JSON.parse(JSON.stringify(p));
       p.brand = brand;
@@ -10297,8 +10333,13 @@ function saveNewPhone(e) {
     }
   }
 
-  if (savedItem && savedItem.status && typeof setPhoneStatusOverride === 'function') {
-    setPhoneStatusOverride(savedItem.id, savedItem.status, savedItem.imei);
+  if (savedItem) {
+    if (typeof setPhoneEditOverride === 'function') {
+      setPhoneEditOverride(savedItem);
+    }
+    if (savedItem.status && typeof setPhoneStatusOverride === 'function') {
+      setPhoneStatusOverride(savedItem.id, savedItem.status, savedItem.imei);
+    }
   }
   savePhoneStorage(savedItem);
   closePhoneModal();
@@ -10657,6 +10698,9 @@ function deletePhone(id) {
     if (clean === "yes" || clean === "ok" || clean === "đồng ý" || clean === "dong y") {
       if (typeof recordDeletedPhoneId === 'function') {
         recordDeletedPhoneId(id, p ? p.imei : null);
+      }
+      if (typeof removePhoneEditOverride === 'function') {
+        removePhoneEditOverride(id, p ? p.imei : null);
       }
       phoneDatabase = phoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);
       savePhoneStorage();
