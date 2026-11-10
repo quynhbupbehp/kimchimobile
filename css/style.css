@@ -8302,30 +8302,44 @@
         #btnPhoneChuaXuLyToggle {
           display: none !important;
         }
+        /* CỐ ĐỊNH HÀNG TÌM KIẾM TRÊN MOBILE (STICKY TOP) */
         .banmay-top-bar {
+          position: sticky !important;
+          top: 104px !important;
+          z-index: 850 !important;
+          background: #060a14 !important;
+          padding: 6px 0 !important;
+          margin-bottom: 8px !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.75) !important;
           display: flex !important;
           align-items: center !important;
           gap: 8px !important;
-          margin-bottom: 6px !important;
           width: 100% !important;
         }
-        .banmay-top-bar .search-box-bm {
-          flex: 1 1 auto !important;
+        .banmay-top-bar > div:first-child {
           width: 100% !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+        }
+        .banmay-top-bar .search-box-bm {
+          flex: 1 1 50% !important;
+          width: auto !important;
+          min-width: 0 !important;
           height: 40px !important;
           background: #0b101d !important;
           border: 1.5px solid #1e293b !important;
           border-radius: 8px !important;
           display: flex !important;
           align-items: center !important;
-          padding: 0 10px !important;
+          padding: 0 8px !important;
           box-sizing: border-box !important;
         }
         .banmay-top-bar .search-label-single-line {
           color: #f59e0b !important;
           font-weight: 900 !important;
-          font-size: 0.9rem !important;
-          margin-right: 8px !important;
+          font-size: 0.85rem !important;
+          margin-right: 6px !important;
           white-space: nowrap !important;
         }
         .banmay-top-bar .search-input-field {
@@ -8333,72 +8347,52 @@
           border: none !important;
           outline: none !important;
           color: #ffffff !important;
-          font-size: 0.88rem !important;
+          font-size: 0.85rem !important;
           flex: 1 1 auto !important;
+          min-width: 0 !important;
           height: 36px !important;
         }
-        #addPhoneBtnWrapper {
-          display: none !important;
-        }
-
-        /* KHỐI GIÁ BÁN & MỌI MỨC GIÁ CỐ ĐỊNH TRÊN MOBILE (STICKY TOP) */
-        .banmay-sticky-price-row {
-          position: sticky !important;
-          top: 104px !important;
-          z-index: 850 !important;
-          background: #060a14 !important;
-          padding: 6px 0 !important;
-          margin-bottom: 8px !important;
+        /* TĂNG KÍCH THƯỚC Ô LỌC GIÁ BÁN TRÀN VÀO PHẦN THỪA CỦA Ô CỜ */
+        .banmay-top-bar .price-filter-box-bm {
           display: flex !important;
-          align-items: center !important;
-          gap: 8px !important;
-          width: 100% !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.75) !important;
-        }
-        .banmay-sticky-price-row .price-filter-box-bm {
-          flex: 1 1 auto !important;
+          flex: 1 1 50% !important;
           width: auto !important;
+          min-width: 0 !important;
           height: 40px !important;
           background: #0b101d !important;
           border: 1.5px solid #1e293b !important;
           border-radius: 8px !important;
-          display: flex !important;
           align-items: center !important;
-          padding: 0 10px !important;
+          padding: 0 8px !important;
           box-sizing: border-box !important;
           margin: 0 !important;
         }
-        .banmay-sticky-price-row .price-filter-label {
+        .banmay-top-bar .price-filter-label {
           color: #38bdf8 !important;
           font-weight: 900 !important;
-          font-size: 0.88rem !important;
+          font-size: 0.85rem !important;
           white-space: nowrap !important;
           margin-right: 6px !important;
         }
-        .banmay-sticky-price-row select {
+        .banmay-top-bar select {
           flex: 1 1 auto !important;
+          min-width: 0 !important;
           background: transparent !important;
           border: none !important;
           color: #f59e0b !important;
           font-weight: 900 !important;
-          font-size: 0.9rem !important;
+          font-size: 0.85rem !important;
           outline: none !important;
         }
-        .banmay-sticky-price-row #btnPhoneViewModeToggle {
-          flex: 0 0 auto !important;
-          height: 40px !important;
-          width: 48px !important;
-          background: #0b101d !important;
-          border: 1.5px solid #1e293b !important;
-          border-radius: 8px !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
-          box-sizing: border-box !important;
-          margin: 0 !important;
+        /* BỎ Ô LÁ CỜ ĐỎ SAO VÀNG TRÊN MOBILE */
+        #btnPhoneViewModeToggle,
+        .banmay-top-bar #btnPhoneViewModeToggle {
+          display: none !important;
         }
-        .banmay-sticky-price-row .btn-sell-external-desktop {
+        #addPhoneBtnWrapper {
+          display: none !important;
+        }
+        .banmay-sticky-price-row {
           display: none !important;
         }
 

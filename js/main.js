@@ -12713,6 +12713,30 @@ function fixPhoneDatabaseStatus() {
   }
 }
 
+// Định dạng hiển thị Dung Lượng Pin riêng cho mobile (100% -> 100, 4.100 mAh -> 4.1K)
+function formatMobilePinDisplay(rawPin) {
+  if (!rawPin && rawPin !== 0) return '';
+  let str = String(rawPin).trim();
+  if (!str) return '';
+
+  let mahMatch = str.match(/([\d.,]+)\s*mAh/i);
+  if (mahMatch) {
+    let cleanNum = mahMatch[1].replace(/[.,]/g, '');
+    let num = parseFloat(cleanNum);
+    if (!isNaN(num) && num >= 1000) {
+      let val = (num / 1000).toString();
+      val = parseFloat(val).toString();
+      return val + 'K';
+    }
+  }
+
+  if (str.includes('%')) {
+    return str.replace(/%/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  return str;
+}
+
 function renderPhoneGrid() {
   fixPhoneDatabaseStatus();
   const container = document.getElementById('phoneGridContainer');
@@ -12736,9 +12760,20 @@ function renderPhoneGrid() {
     currentBrandFilter = 'ALL';
   }
 
+  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 768;
   let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
     ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
     : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
+
+  // Trên Mobile: Luôn chỉ hiển thị danh sách còn hàng (loại bỏ máy chưa xử lý, main xác hoặc đã bán)
+  if (isMobileScreen) {
+    filtered = filtered.filter(p => {
+      let st = (p.status || '').toLowerCase().trim();
+      if (!st || st === 'còn hàng' || st === 'con hang') return true;
+      if (st.includes('chưa xử lý') || st.includes('đã bán') || st.includes('da ban')) return false;
+      return true;
+    });
+  }
   if (currentBrandFilter !== 'ALL') {
     const cbf = (currentBrandFilter || '').toUpperCase().trim();
     filtered = filtered.filter(p => {
@@ -13115,6 +13150,9 @@ function renderPhoneGrid() {
       let dotColor = getHexColor(p.color);
 
       let isDesktop = typeof window !== 'undefined' && window.innerWidth > 768;
+      if (!isDesktop) {
+        displayPinPct = formatMobilePinDisplay(displayPinPct);
+      }
       let displayName = pName;
       let logoHtml = '';
 
