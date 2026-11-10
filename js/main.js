@@ -13369,7 +13369,7 @@ function renderSoldPhoneTable() {
     let displayProfit = isSoldPhonePricesHidden ? '*****' : formatPriceStr(profitVal);
 
     let method = p.method || p.paymentMethod || 'Tiền Mặt';
-    let methodColor = (method === 'Chuyển Khoản' || method === 'CK') ? '#38bdf8' : '#10b981';
+    let methodColor = (method === 'Chuyển Khoản' || method === 'CK') ? '#ff3b30' : '#10b981';
 
     let rawSoldDate = p.soldDate || p.date || p.dateTime || p.soldDateTime || '';
     function formatSoldDateToVN(raw) {
