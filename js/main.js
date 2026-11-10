@@ -2523,8 +2523,7 @@ function fetchDirectCloudSync(showToastMsg) {
             phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
             if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
           } else {
-            // Lấy trực tiếp danh sách từ Cloud làm chuẩn để Web và Mobile luôn khớp nhau 100%
-            phoneDatabase = Array.isArray(data.list) ? data.list : [];
+            phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
@@ -2544,7 +2543,7 @@ function fetchDirectCloudSync(showToastMsg) {
             soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
             if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
           } else {
-            soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
+            soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(data.list) : data.list;
           }
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
@@ -2885,8 +2884,7 @@ function initFirebaseRealtimeSync() {
             console.warn('Bỏ qua sync_bundles phones bị phình to từ cloud cũ');
             return;
           }
-          // Đồng bộ trực tiếp danh sách từ Cloud Realtime 100% - Không chèn seed làm lệch số lượng máy
-          phoneDatabase = Array.isArray(data.list) ? data.list : [];
+          phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
@@ -2904,7 +2902,7 @@ function initFirebaseRealtimeSync() {
             console.warn('Bỏ qua sync_bundles sold_phones bị phình to từ cloud cũ');
             return;
           }
-          soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
+          soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(data.list) : data.list;
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
       }
@@ -9998,15 +9996,11 @@ function loadInitialPhones() {
     if (localRaw) {
       const parsed = JSON.parse(localRaw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(parsed) : parsed;
       }
     }
   } catch (e) {}
-  // Nếu chưa có cache, nạp seed nhưng tuyệt đối lọc bỏ ngay máy đã bán
-  if (Array.isArray(window.SEED_PHONES_DATA)) {
-    return JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-  }
-  return [];
+  return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
 }
 let phoneDatabase = loadInitialPhones();
 let soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : (window.SEED_SOLD_DATA || []);
@@ -12719,12 +12713,11 @@ function fixPhoneDatabaseStatus() {
   }
 }
 
-// Định dạng hiển thị Dung Lượng Pin riêng cho mobile (100% -> 100, 4.100 mAh -> 4.1K)
+// Định dạng pin gọn gàng trên mobile
 function formatMobilePinDisplay(rawPin) {
   if (!rawPin && rawPin !== 0) return '';
   let str = String(rawPin).trim();
   if (!str) return '';
-
   let mahMatch = str.match(/([\d.,]+)\s*mAh/i);
   if (mahMatch) {
     let cleanNum = mahMatch[1].replace(/[.,]/g, '');
@@ -12735,11 +12728,9 @@ function formatMobilePinDisplay(rawPin) {
       return val + 'K';
     }
   }
-
   if (str.includes('%')) {
     return str.replace(/%/g, '').replace(/\s+/g, ' ').trim();
   }
-
   return str;
 }
 
@@ -12751,10 +12742,10 @@ function renderPhoneGrid() {
   const rawSearch = document.getElementById('phoneSearchInput') ? document.getElementById('phoneSearchInput').value.trim() : '';
   const normSearch = normalizeQuery(rawSearch);
 
-  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (chỉ lấy seed nếu danh sách hoàn toàn trống)
+  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (chỉ hợp nhất seed nếu danh sách máy trống)
   if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
     if (!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) {
-      phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
       savePhoneStorage();
     }
   }
@@ -12766,18 +12757,9 @@ function renderPhoneGrid() {
     currentBrandFilter = 'ALL';
   }
 
-  // Đồng nhất 100% logic lọc máy giữa Web & Mobile:
-  let filtered = phoneDatabase.filter(p => {
-    let st = (p.status || '').toLowerCase().trim();
-    if (currentPhoneStatusFilter === 'CHUA_XU_LY') {
-      return st.includes('chưa xử lý') || st.includes('main xác');
-    }
-    // Chế độ Còn Hàng: Loại bỏ máy Chưa Xử Lý và máy Đã Bán
-    if (st.includes('chưa xử lý') || st.includes('main xác') || st.includes('đã bán') || st.includes('da ban')) {
-      return false;
-    }
-    return true;
-  });
+  let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
+    ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
+    : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
   if (currentBrandFilter !== 'ALL') {
     const cbf = (currentBrandFilter || '').toUpperCase().trim();
     filtered = filtered.filter(p => {
