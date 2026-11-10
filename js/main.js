@@ -2523,7 +2523,8 @@ function fetchDirectCloudSync(showToastMsg) {
             phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
             if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
           } else {
-            phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
+            // Đồng bộ trực tiếp 100% từ Cloud: Thiết bị này (Web/Mobile) nhận đúng những gì thiết bị kia đã tạo/sửa/xóa
+            phoneDatabase = Array.isArray(data.list) ? data.list : [];
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
@@ -2543,7 +2544,7 @@ function fetchDirectCloudSync(showToastMsg) {
             soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
             if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
           } else {
-            soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(data.list) : data.list;
+            soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
           }
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
@@ -2884,7 +2885,8 @@ function initFirebaseRealtimeSync() {
             console.warn('Bỏ qua sync_bundles phones bị phình to từ cloud cũ');
             return;
           }
-          phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(data.list) : data.list;
+          // Đồng bộ trực tiếp 100% từ Cloud Realtime: Web hay Mobile thêm/sửa/xóa là bên kia cập nhật tức thì
+          phoneDatabase = Array.isArray(data.list) ? data.list : [];
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) {}
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
@@ -2902,7 +2904,7 @@ function initFirebaseRealtimeSync() {
             console.warn('Bỏ qua sync_bundles sold_phones bị phình to từ cloud cũ');
             return;
           }
-          soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(data.list) : data.list;
+          soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
       }
@@ -10999,6 +11001,7 @@ function deletePhone(id) {
       }
       phoneDatabase = phoneDatabase.filter(item => String(item.id) !== String(id) && item.id != id);
       savePhoneStorage();
+      if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
       if (typeof db !== 'undefined' && db && id) {
         db.collection('phones').doc(String(id)).delete().catch(console.error);
       }
@@ -12757,9 +12760,20 @@ function renderPhoneGrid() {
     currentBrandFilter = 'ALL';
   }
 
+  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 768;
   let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
     ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
     : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
+
+  // TRÊN MOBILE: TAB BÁN MÁY CHỈ HIỂN THỊ DUY NHẤT CÁC MÁY CÒN HÀNG (LOẠI BỎ HẲN MÁY ĐÃ BÁN, CHƯA XỬ LÝ)
+  if (isMobileScreen) {
+    filtered = filtered.filter(p => {
+      let st = (p.status || '').toLowerCase().trim();
+      if (!st || st === 'còn hàng' || st === 'con hang') return true;
+      if (st.includes('chưa xử lý') || st.includes('đã bán') || st.includes('da ban') || st.includes('main xác')) return false;
+      return true;
+    });
+  }
   if (currentBrandFilter !== 'ALL') {
     const cbf = (currentBrandFilter || '').toUpperCase().trim();
     filtered = filtered.filter(p => {
