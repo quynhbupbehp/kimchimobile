@@ -11098,7 +11098,7 @@ function openSellPhoneModal(id) {
 
   let defaultPrice = p.price || '';
   let priceInput = document.getElementById('sellPriceOut');
-  priceInput.value = '';
+  priceInput.value = defaultPrice;
   priceInput.placeholder = defaultPrice;
   priceInput.dataset.defaultPrice = defaultPrice;
 
@@ -11229,7 +11229,9 @@ function calcSellProfit() {
 }
 
 function confirmSellPhone(e) {
-  e.preventDefault();
+  if (e && typeof e.preventDefault === 'function') {
+    e.preventDefault();
+  }
   const rawId = document.getElementById('sellPhoneId').value;
   const numId = parseFloat(rawId);
   
