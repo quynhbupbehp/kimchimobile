@@ -13687,12 +13687,15 @@ function renderSoldPhoneTable() {
     mobileCardsContainer.innerHTML = filtered.map(p => {
       let brandDisplay = formatBrandDeviceName(p.brand || '');
       let pName = formatBrandDeviceName(p.name || '');
-      // Bỏ tên hãng đi theo yêu cầu (ví dụ: IPHONE - SE - 2020 thì chỉ hiển thị SE - 2020)
-      let brandAndName = pName;
+      let logoHtml = getPhoneBrandLogoHtml(p.brand, p.name, 25);
+      // Trên Mobile: Loại bỏ tên hãng ở đầu tên máy để logo không bị trùng lặp
+      let brandAndName = pName.replace(/^(?:SAMSUNG|OPPO|REALME|XIAOMI|REDMI|POCO|VIVO|HONOR|IPHONE|IPAD|APPLE)\s*[-–—:]*\s*/i, '');
       if (brandDisplay && brandDisplay !== 'MÁY NGOÀI' && brandDisplay !== '❤️❤️❤️') {
         const regex = new RegExp(`^${brandDisplay}\\s*[-–—:]*\\s*`, 'i');
         brandAndName = brandAndName.replace(regex, '');
       }
+      // Thay thế cụm PRO MAX thành PRM để tên máy gọn gàng
+      brandAndName = brandAndName.replace(/pro\s*max/gi, 'PRM');
       brandAndName = formatBrandDeviceName(brandAndName);
 
       let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
@@ -13710,6 +13713,7 @@ function renderSoldPhoneTable() {
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
               <div class="phone-card-header">
                 <div class="phone-header-left">
+                  ${logoHtml}
                   <span class="phone-card-name">${escapeHtml(brandAndName)}</span>
                   ${getColorDotHtml(p.color, 24)}
                   ${storageDisplay ? `<span class="phone-card-storage">${escapeHtml(storageDisplay)}</span>` : ''}
