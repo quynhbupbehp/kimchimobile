@@ -899,9 +899,9 @@
         <div id="swListView">
           <!-- HÀNG 2: DANH SÁCH PHẦN MỀM (NỀN HỒNG) & KHÁCH HÀNG (TRÁI) + BỘ LỌC NGÀY (CĂN GIỮA) + ẨN & TẠO ĐƠN MỚI (PHẢI) -->
           <div class="sw-toolbar"
-            style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; margin-bottom: 14px;">
+            style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; width: 100%; flex-wrap: nowrap;">
             <!-- Cột 1 (Trái): DANH SÁCH PHẦN MỀM (NỀN HỒNG) + Ô CHỌN KHÁCH HÀNG -->
-            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 10px; flex-shrink: 0;">
               <button type="button" class="sw-pill-btn sw-btn-pink active" id="swMainTitleBar"
                 onclick="switchSoftwareView('list')" title="Danh sách phần mềm"
                 style="padding: 7px 16px; border-radius: 8px; font-weight: 900; letter-spacing: 0.5px; white-space: nowrap;">DANH
@@ -915,8 +915,8 @@
               </div>
             </div>
 
-            <!-- Cột 2 (Giữa): BỘ LỌC XEM THEO THỐNG NHẤT (CHUẨN MẪU MỚI: [Ngày ▼] [<] 24/10/2026 [>] [📅]) - CĂN CHÍNH GIỮA TUYỆT ĐỐI -->
-            <div style="display: flex; align-items: center; justify-content: center;">
+            <!-- Cột 2 (Giữa): BỘ LỌC XEM THEO THỐNG NHẤT (NẰM CHÍNH GIỮA 2 Ô: Ô KHÁCH HÀNG VÀ Ô TÌM KIẾM) -->
+            <div style="display: flex; align-items: center; justify-content: center; flex: 1 1 auto; min-width: 0;">
               <div class="unified-date-filter-box">
                 <select class="unified-mode-select" id="swModeSelect" onchange="setSoftwareMode(this.value)"
                   title="Xem theo Ngày / Tháng / Năm / Tất Cả">
@@ -993,7 +993,7 @@
             </div>
 
             <!-- Cột 3 (Phải): Ô TÌM KIẾM + BIDV + NÚT ẨN + NÚT TẠO ĐƠN MỚI -->
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-shrink: 0;">
               <!-- Ô TÌM KIẾM PHẦN MỀM -->
               <div class="search-box-bm" id="swSearchBoxWrapper"
                 style="height: 38px; box-sizing: border-box; position: relative; z-index: 9999; flex-shrink: 0;">
@@ -6088,7 +6088,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261110_093146"></script>
+  <script src="js/main.js?v=20261110_094026"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
