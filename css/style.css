@@ -10369,3 +10369,22 @@
     display: none !important;
   }
 }
+
+
+/* Badge thương hiệu điện thoại: đảm bảo nền và màu chữ hiển thị chuẩn */
+.brand-text-badge {
+  display: inline-block !important;
+  font-weight: 900 !important;
+  font-size: 0.95rem !important;
+  padding: 2px 8px !important;
+  border-radius: 5px !important;
+  letter-spacing: 0.5px !important;
+  vertical-align: middle !important;
+  line-height: 1.25 !important;
+}
+.brand-text-badge-iphone {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #ea580c !important;
+  border: 1px solid #fed7aa !important;
+}
