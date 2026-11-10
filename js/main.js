@@ -12763,20 +12763,18 @@ function renderPhoneGrid() {
     currentBrandFilter = 'ALL';
   }
 
-  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 768;
-  let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
-    ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
-    : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
-
-  // Trên Mobile: Luôn chỉ hiển thị danh sách còn hàng (loại bỏ máy chưa xử lý, main xác hoặc đã bán)
-  if (isMobileScreen) {
-    filtered = filtered.filter(p => {
-      let st = (p.status || '').toLowerCase().trim();
-      if (!st || st === 'còn hàng' || st === 'con hang') return true;
-      if (st.includes('chưa xử lý') || st.includes('đã bán') || st.includes('da ban')) return false;
-      return true;
-    });
-  }
+  // Đồng nhất 100% logic lọc máy giữa Web & Mobile:
+  let filtered = phoneDatabase.filter(p => {
+    let st = (p.status || '').toLowerCase().trim();
+    if (currentPhoneStatusFilter === 'CHUA_XU_LY') {
+      return st.includes('chưa xử lý') || st.includes('main xác');
+    }
+    // Chế độ Còn Hàng: Loại bỏ máy Chưa Xử Lý và máy Đã Bán
+    if (st.includes('chưa xử lý') || st.includes('main xác') || st.includes('đã bán') || st.includes('da ban')) {
+      return false;
+    }
+    return true;
+  });
   if (currentBrandFilter !== 'ALL') {
     const cbf = (currentBrandFilter || '').toUpperCase().trim();
     filtered = filtered.filter(p => {
