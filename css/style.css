@@ -10499,3 +10499,23 @@
           border-radius: 7px !important;
           display: block !important;
         }
+
+
+/* POPUP KIMCHI BANK TRÊN MOBILE */
+#kimchiBankModal.active {
+  display: flex !important;
+  z-index: 99999999 !important;
+  position: fixed !important;
+  inset: 0 !important;
+  padding: 4px !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+#kimchiBankModal.active > div {
+  width: 98vw !important;
+  max-width: 98vw !important;
+  height: 94vh !important;
+  max-height: 94vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
