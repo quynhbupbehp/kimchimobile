@@ -14182,6 +14182,7 @@ function selectSwDropdownItem(type, value) {
       handleSwDeviceChange(value);
     }
     input.dispatchEvent(new Event('change'));
+    if (typeof checkSoftwareFormValidity === 'function') checkSoftwareFormValidity();
   }
   const menu = document.getElementById(meta.menuId);
   if (menu) menu.classList.remove('open');
@@ -14648,8 +14649,49 @@ function openSoftwareModal(editId = null) {
   }
 
   document.getElementById('softwareModal').classList.add('active');
+  checkSoftwareFormValidity();
 }
 window.openSoftwareModal = openSoftwareModal;
+function checkSoftwareFormValidity() {
+  const submitBtn = document.getElementById('swSubmitBtn');
+  if (!submitBtn) return;
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const custVal = (document.getElementById('swCustomerInput')?.value || '').trim();
+  const devVal = (document.getElementById('swDeviceInput')?.value || '').trim();
+  const priceVal = (document.getElementById('swPriceInput')?.value || '').trim();
+
+  // Bắt buộc nhập đủ Khách hàng, Tên máy và Báo giá
+  const isValid = Boolean(custVal && devVal && priceVal);
+
+  if (isMobile) {
+    if (isValid) {
+      submitBtn.disabled = false;
+      submitBtn.classList.add('active');
+      submitBtn.style.opacity = '1';
+      submitBtn.style.filter = 'none';
+      submitBtn.style.cursor = 'pointer';
+      submitBtn.style.pointerEvents = 'auto';
+      submitBtn.style.boxShadow = '0 4px 16px rgba(16, 185, 129, 0.55)';
+    } else {
+      submitBtn.disabled = true;
+      submitBtn.classList.remove('active');
+      submitBtn.style.opacity = '0.35';
+      submitBtn.style.filter = 'grayscale(0.6)';
+      submitBtn.style.cursor = 'not-allowed';
+      submitBtn.style.pointerEvents = 'none';
+      submitBtn.style.boxShadow = 'none';
+    }
+  } else {
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = '1';
+    submitBtn.style.filter = 'none';
+    submitBtn.style.cursor = 'pointer';
+    submitBtn.style.pointerEvents = 'auto';
+  }
+}
+window.checkSoftwareFormValidity = checkSoftwareFormValidity;
+
 
 function closeSoftwareModal() {
   document.getElementById('softwareModal').classList.remove('active');
