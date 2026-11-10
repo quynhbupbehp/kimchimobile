@@ -827,11 +827,11 @@ function getPhoneBrandBadgeHtml(brand, phoneName) {
   let customClass = '';
   if (detected === 'IPHONE') {
     text = 'IPHONE';
-    bg = '#ffffff !important';
-    color = '#ea580c !important';
-    border = '1px solid #fed7aa !important';
+    bg = '#ea580c !important';
+    color = '#ffffff !important';
+    border = 'none';
     customClass = 'brand-text-badge-iphone';
-    extraStyle = 'background-color: #ffffff !important; color: #ea580c !important;';
+    extraStyle = 'background-color: #ea580c !important; color: #ffffff !important; text-shadow: 0 1px 2px rgba(0,0,0,0.5);';
   } else if (detected === 'IPAD') {
     text = 'IPAD';
     bg = '#000000';
