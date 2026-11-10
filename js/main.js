@@ -13337,17 +13337,8 @@ function getSoldPhoneNameSuggestions(query) {
   if (!query || !query.trim()) return [];
   const qNorm = (typeof normalizeQuery === 'function' ? normalizeQuery(query.trim()) : query.trim()).toLowerCase();
 
+  // Khi tìm kiếm: quét trên toàn bộ máy đã bán
   let pool = soldPhoneDatabase || [];
-  if (currentSoldPhoneBrandFilter && currentSoldPhoneBrandFilter !== 'ALL') {
-    const cbf = (currentSoldPhoneBrandFilter || '').toUpperCase().trim();
-    pool = pool.filter(p => {
-      let pBrand = (p.brand || '').trim().toUpperCase();
-      let pDet = (typeof detectPhoneBrand === 'function') ? detectPhoneBrand(p.brand, p.name).toUpperCase() : pBrand;
-      let match = (pBrand === cbf || pDet === cbf);
-      if (cbf === 'IPHONE' && (pBrand === 'IPAD' || pDet === 'IPAD')) match = true;
-      return match;
-    });
-  }
 
   const nameMap = new Map();
   pool.forEach(p => {
@@ -13552,9 +13543,12 @@ function renderSoldPhoneTable() {
 
   populateSoldPhoneBrandDropdown();
 
+  const normKeyword = (typeof normalizeQuery === 'function' ? normalizeQuery(keyword) : keyword).trim();
+  const searchWords = normKeyword ? normKeyword.split(/\s+/).filter(Boolean) : [];
+
   let filtered = soldPhoneDatabase.filter(p => {
-    // 1. Lọc theo Từ khóa tìm kiếm
-    if (keyword) {
+    // KHI CÓ TỪ KHÓA TÌM KIẾM: TÌM XUYÊN SUỐT TRÊN TOÀN BỘ MÁY ĐÃ BÁN (BỎ QUA NGÀY/THÁNG/NĂM, HÃNG, TRẠNG THÁI BH)
+    if (searchWords.length > 0) {
       let brand = (p.brand || '').toLowerCase();
       let name = (p.name || '').toLowerCase();
       let imei = (p.imei || '').toLowerCase();
@@ -13564,11 +13558,15 @@ function renderSoldPhoneTable() {
       let method = (p.method || p.paymentMethod || '').toLowerCase();
       let note = (p.note || '').toLowerCase();
       let gift = (p.giftStr || '').toLowerCase();
-      let fullStr = `${brand} ${name} ${imei} ${customer} ${storage} ${color} ${method} ${note} ${gift}`;
-      if (!fullStr.includes(keyword)) return false;
+      let fullStr = `${brand} ${name} ${imei} ${customer} ${storage} ${color} ${method} ${note} ${gift}`.toLowerCase();
+      let normFullStr = (typeof normalizeQuery === 'function' ? normalizeQuery(fullStr) : fullStr).toLowerCase();
+
+      // Tất cả các từ khóa gõ vào đều phải xuất hiện trong thông tin máy
+      return searchWords.every(w => fullStr.includes(w) || normFullStr.includes(w));
     }
 
-    // 2. Lọc theo Hãng: Các hãng đã bán, mặc định là Tất Cả (nhận diện chuẩn 100%)
+    // KHI KHÔNG CÓ TỪ KHÓA: ÁP DỤNG BỘ LỌC HÃNG, BẢO HÀNH VÀ NGÀY/THÁNG/NĂM ĐỂ HIỂN THỊ DANH SÁCH BÊN DƯỚI
+    // 1. Lọc theo Hãng
     if (currentSoldPhoneBrandFilter && currentSoldPhoneBrandFilter !== 'ALL') {
       let cFilter = currentSoldPhoneBrandFilter.toUpperCase().trim();
       let pBrand = (p.brand || '').trim().toUpperCase();
@@ -13578,15 +13576,14 @@ function renderSoldPhoneTable() {
       if (!match) return false;
     }
 
-    // 3. Lọc theo Trạng thái Bảo Hành: Còn Bảo Hành / Hết Bảo Hành / Tất Cả
+    // 2. Lọc theo Trạng thái Bảo Hành
     if (currentSoldPhoneWarrantyFilter && currentSoldPhoneWarrantyFilter !== 'ALL') {
       let isUnderWarranty = isPhoneUnderWarranty(p);
       if (currentSoldPhoneWarrantyFilter === 'CON' && !isUnderWarranty) return false;
       if (currentSoldPhoneWarrantyFilter === 'HET' && isUnderWarranty) return false;
     }
 
-    // 4. Lọc theo Chế độ xem: Nếu đang tìm kiếm thì tìm trên TOÀN BỘ danh sách bảo hành; Nếu không tìm kiếm thì lọc theo Ngày / Tháng / Năm / Tất Cả
-    if (keyword) return true;
+    // 3. Lọc theo Chế độ xem: Ngày / Tháng / Năm / Tất Cả
     if (soldPhoneViewMode === 'all') return true;
 
     let pDate = parseSoldPhoneDate(p);
