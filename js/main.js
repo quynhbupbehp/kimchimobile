@@ -2545,6 +2545,33 @@ function fetchDirectCloudSync(showToastMsg) {
       }
     }).catch(function (e) { console.warn('fetchDirectCloudSync sold_phones:', e); });
 
+    // 6. Tải Sửa Chữa (repairs) Bundle
+    db.collection('sync_bundles').doc('repairs').get().then(function (doc) {
+      if (doc && doc.exists) {
+        var data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          var list = data.list;
+          list.sort(function (a, b) { return getItemTimestamp(b) - getItemTimestamp(a); });
+          repairDatabase = list;
+          if (typeof renderRepairTable === 'function') renderRepairTable();
+          if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+        }
+      }
+    }).catch(function (e) { console.warn('fetchDirectCloudSync repairs:', e); });
+
+    // 7. Tải Main Xác (mainxac) Bundle
+    db.collection('sync_bundles').doc('mainxac').get().then(function (doc) {
+      if (doc && doc.exists) {
+        var data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          var list = data.list;
+          list.sort(function (a, b) { return (Number(b.id) || 0) - (Number(a.id) || 0); });
+          mainXacDatabase = list;
+          if (typeof renderMainXacGrid === 'function') renderMainXacGrid();
+        }
+      }
+    }).catch(function (e) { console.warn('fetchDirectCloudSync mainxac:', e); });
+
     if (showToastMsg && typeof showToast === 'function') {
       showToast('⚡ Đã đồng bộ dữ liệu đám mây mới nhất!');
     }
@@ -2591,6 +2618,15 @@ function getFsTodayKey() {
   const day = String(d.getDate()).padStart(2, '0');
   return 'KIMCHI_FS_USAGE_' + y + '-' + m + '-' + day;
 }
+
+function resetFsDailyUsage() {
+  try {
+    const key = getFsTodayKey();
+    localStorage.removeItem(key);
+    updateFsUsageUI({ reads: 0, writes: 0 });
+  } catch (e) {}
+}
+window.resetFsDailyUsage = resetFsDailyUsage;
 
 function getFsDailyUsage() {
   try {
@@ -2693,7 +2729,6 @@ function hookFirestoreQuotaCounter() {
       const origSnapshot = docRef.onSnapshot ? docRef.onSnapshot.bind(docRef) : null;
       if (origSnapshot) {
         docRef.onSnapshot = function(onNext, onError) {
-          recordFsUsage('read', 1);
           return origSnapshot(function(doc) {
             recordFsUsage('read', 1);
             if (typeof onNext === 'function') onNext(doc);
@@ -2869,139 +2904,39 @@ function initFirebaseRealtimeSync() {
     }, err => console.warn('Bundle sync sold_phones notice:', err.code || err));
   } catch (e) { }
 
-  // 1. Đồng bộ Bán Hàng (sales) thời gian thực
+  // Đồng bộ Sửa Chữa (repairs) siêu tốc qua sync_bundles
   try {
-    db.collection('sales').onSnapshot(snapshot => {
-      let list = [];
-      snapshot.forEach(doc => {
-        let data = doc.data();
-        if (!data.id) data.id = doc.id;
-        list.push(data);
-      });
-      list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
-      list.forEach(item => {
-        if (item) {
-          if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
-          if (item.price !== undefined && item.price !== null && item.price !== '') item.price = formatPriceStr(item.price);
-          if (item.priceIn !== undefined && item.priceIn !== null && item.priceIn !== '') item.priceIn = formatPriceStr(item.priceIn);
-          if (item.profit !== undefined && item.profit !== null && item.profit !== '') item.profit = formatPriceStr(item.profit);
+    db.collection('sync_bundles').doc('repairs').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          let list = data.list;
+          list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+          repairDatabase = list;
+          if (typeof renderRepairTable === 'function') renderRepairTable();
+          if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
         }
-      });
-      salesDatabase = list;
-      isSalesCloudLoaded = true;
-      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
-      if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
-      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-    }, err => console.error("Lỗi sync sales realtime:", err));
-  } catch (err) {
-    console.error("Lỗi setup sync sales:", err);
-  }
-
-  // 2. Đồng bộ Bán Gà (banga) thời gian thực
-  try {
-    db.collection('banga').onSnapshot(snapshot => {
-      let list = [];
-      snapshot.forEach(doc => {
-        let data = doc.data();
-        if (!data.id) data.id = doc.id;
-        list.push(data);
-      });
-      list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
-      list.forEach(item => {
-        if (item) {
-          if (item.total !== undefined && item.total !== null && item.total !== '') item.total = formatPriceStr(item.total);
-          if (item.price !== undefined && item.price !== null && item.price !== '') item.price = formatPriceStr(item.price);
-          if (item.priceIn !== undefined && item.priceIn !== null && item.priceIn !== '') item.priceIn = formatPriceStr(item.priceIn);
-          if (item.profit !== undefined && item.profit !== null && item.profit !== '') item.profit = formatPriceStr(item.profit);
-        }
-      });
-      bangaDatabase = list;
-      if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
-      if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-    }, err => console.error("Lỗi sync banga realtime:", err));
-  } catch (err) {
-    console.error("Lỗi setup sync banga:", err);
-  }
-
-  // 3. Đồng bộ Kho Bán Máy (phones) & Bảo Hành (sold_phones): Đã đồng bộ qua sync_bundles chuẩn,
-  // tuyệt đối không dùng onSnapshot trên collection đơn lẻ để tránh kéo 1.318 máy rác cũ và tránh bão đọc Firestore.
-
-  // 5. Đồng bộ Main - Xác (mainxac) thời gian thực
-  try {
-    db.collection('mainxac').onSnapshot(snapshot => {
-      let list = [];
-      snapshot.forEach(doc => {
-        let data = doc.data();
-        if (!data.id) data.id = doc.id;
-        list.push(data);
-      });
-      if (list.length > 0) {
-        list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
-        mainXacDatabase = list;
-        if (typeof renderMainXacGrid === 'function') renderMainXacGrid();
       }
-    }, err => console.error("Lỗi sync mainxac:", err));
-  } catch (err) {
-    console.error("Lỗi setup sync mainxac:", err);
-  }
+    }, err => console.warn('Bundle sync repairs notice:', err.code || err));
+  } catch (e) { }
 
-  // 6. Đồng bộ Sửa Chữa (repairs) thời gian thực
+  // Đồng bộ Main - Xác (mainxac) siêu tốc qua sync_bundles
   try {
-    db.collection('repairs').onSnapshot(snapshot => {
-      let list = [];
-      snapshot.forEach(doc => {
-        let data = doc.data();
-        if (!data.id) data.id = doc.id;
-        list.push(data);
-      });
-      if (list.length > 0) {
-        list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
-        repairDatabase = list;
-        if (typeof renderRepairTable === 'function') renderRepairTable();
-        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+    db.collection('sync_bundles').doc('mainxac').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          let list = data.list;
+          list.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+          mainXacDatabase = list;
+          if (typeof renderMainXacGrid === 'function') renderMainXacGrid();
+        }
       }
-    }, err => console.error("Lỗi sync repairs:", err));
-  } catch (err) {
-    console.error("Lỗi setup sync repairs:", err);
-  }
+    }, err => console.warn('Bundle sync mainxac notice:', err.code || err));
+  } catch (e) { }
 
-  // 7. Đồng bộ Phần Mềm (software) thời gian thực giữa Web và Mobile
-  try {
-    db.collection('software').onSnapshot(snapshot => {
-      const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
-      let list = [];
-      snapshot.forEach(doc => {
-        let data = doc.data();
-        data.id = doc.id; // LUÔN dùng Firestore doc ID — đảm bảo sync đúng document
-        list.push(data);
-      });
-      if (list.length > 0) {
-        if (isSoftwareCleared) {
-          // Người dùng vừa xóa sạch dữ liệu trên thiết bị này, không ghi đè lại
-          return;
-        }
-        // Sắp xếp ID lớn nhất / mới nhất lên đầu
-        list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
-        softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(list) : list;
-        if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-        if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
-        if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
-          renderSoftwareDebtTable();
-        }
-        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-      } else if (!isSoftwareCleared && Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
-        softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(softwareDatabase) : JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA));
-        if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
-        if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
-        if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
-          renderSoftwareDebtTable();
-        }
-        if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-      }
-    }, err => console.error("Lỗi sync software realtime:", err));
-  } catch (err) {
-    console.error("Lỗi setup sync software:", err);
-  }
+  // ĐÃ CHUYỂN TOÀN BỘ CÁC TAB SANG CƠ CHẾ SYNC_BUNDLES SIÊU TIẾT KIỆM QUOTA (RULE 6)
+  // Tuyệt đối không dùng onSnapshot trên collection lớn để loại bỏ bão đọc Firestore.
 
   // 8. Đồng bộ Danh sách Hãng Điện Thoại Mới (custom brands)
   try {
