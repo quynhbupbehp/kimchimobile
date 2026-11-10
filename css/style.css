@@ -10642,3 +10642,11 @@
     display: none !important;
   }
 }
+
+/* Ẩn nút ghi chú mobile btnSalesNotePadMobile khi ở trên Web Desktop để tránh xuất hiện 2 icon ghi chú */
+@media screen and (min-width: 769px) {
+  #btnSalesNotePadMobile,
+  .btn-sales-notepad-mobile {
+    display: none !important;
+  }
+}
