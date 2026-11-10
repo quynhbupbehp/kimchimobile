@@ -12664,11 +12664,11 @@ function renderPhoneGrid() {
       let cleanPct = (displayPinPct || '').trim();
       let pinInfoHtml = '';
       if (cleanPct && cleanStatus) {
-        pinInfoHtml = `<span style="color: #ffffff; font-weight: 800;">${escapeHtml(cleanPct)}</span><span style="color: #64748b; font-weight: 700; margin: 0 5px;">-</span><span style="color: #f59e0b; font-weight: 900;">${escapeHtml(cleanStatus)}</span>`;
-      } else if (cleanPct) {
-        pinInfoHtml = `<span style="color: #ffffff; font-weight: 800;">${escapeHtml(cleanPct)}</span>`;
+        pinInfoHtml = `<span style="color: #f59e0b; font-weight: 900;">${escapeHtml(cleanStatus)}</span><span style="color: #64748b; font-weight: 700; margin: 0 5px;">-</span><span style="color: #ffffff; font-weight: 800;">${escapeHtml(cleanPct)}</span>`;
       } else if (cleanStatus) {
         pinInfoHtml = `<span style="color: #f59e0b; font-weight: 900;">${escapeHtml(cleanStatus)}</span>`;
+      } else if (cleanPct) {
+        pinInfoHtml = `<span style="color: #ffffff; font-weight: 800;">${escapeHtml(cleanPct)}</span>`;
       } else {
         pinInfoHtml = `<span style="color: #64748b;">—</span>`;
       }
@@ -12727,10 +12727,7 @@ function renderPhoneGrid() {
                       ${escapeHtml(formattedPrice)}
                     </td>
                     <td style="text-align: center; color: #cbd5e1; font-weight: 700; font-size: 1.07rem;">
-                      <span style="display: inline-flex; align-items: center; gap: 8px; justify-content: center;">
-                        ${getColorDotHtml(p.color, 30)}
-                        <span>${escapeHtml(p.color || 'Mặc định')}</span>
-                      </span>
+                      <span>${escapeHtml(p.color || 'Mặc định')}</span>
                     </td>
                     <td style="text-align: center; font-size: 1.2rem; white-space: nowrap;">
                       ${pinInfoHtml}
