@@ -11116,12 +11116,32 @@ function openSellPhoneModal(id) {
 
   calcSellProfit();
   checkGiftsEntered();
-  document.getElementById('sellPhoneModal').classList.add('active');
+  
+  const btnConfirm = document.getElementById('btnConfirmSellPhone');
+  if (btnConfirm) {
+    btnConfirm.disabled = false;
+    btnConfirm.style.pointerEvents = 'auto';
+  }
+
+  const modal = document.getElementById('sellPhoneModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+  }
 }
 window.openSellPhoneModal = openSellPhoneModal;
 
 function closeSellPhoneModal() {
-  document.getElementById('sellPhoneModal').classList.remove('active');
+  const modal = document.getElementById('sellPhoneModal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+  const btnConfirm = document.getElementById('btnConfirmSellPhone');
+  if (btnConfirm) {
+    btnConfirm.disabled = false;
+    btnConfirm.style.pointerEvents = 'auto';
+  }
 }
 
 function handleDefaultInputFocus(input) {
@@ -11210,8 +11230,11 @@ function calcSellProfit() {
 
 function confirmSellPhone(e) {
   e.preventDefault();
-  const id = parseFloat(document.getElementById('sellPhoneId').value);
-  const idx = phoneDatabase.findIndex(p => p.id === id);
+  const rawId = document.getElementById('sellPhoneId').value;
+  const numId = parseFloat(rawId);
+  
+  // Tìm máy linh hoạt theo cả chuỗi ID và số ID để tránh lệch kiểu dữ liệu
+  const idx = phoneDatabase.findIndex(p => String(p.id) === String(rawId) || p.id == numId || (p.id && String(p.id) === String(numId)));
   if (idx === -1) {
     alert('Không tìm thấy thông tin máy trong kho!');
     return;
@@ -11244,9 +11267,16 @@ function confirmSellPhone(e) {
     return;
   }
 
+  // Khóa nút Xác Nhận ngay để chống bấm liên tiếp 2 lần
+  const btnConfirm = document.getElementById('btnConfirmSellPhone');
+  if (btnConfirm) {
+    btnConfirm.disabled = true;
+    btnConfirm.style.pointerEvents = 'none';
+  }
+
   const customerName = toTitleCase(document.getElementById('sellCustomerName').value.trim()) || 'Khách Lẻ';
   const priceInput = document.getElementById('sellPriceOut');
-  const actualPriceOut = priceInput.value.trim() || priceInput.dataset.defaultPrice || currentSellingPhone.price || '0';
+  const actualPriceOut = priceInput.value.trim() || priceInput.dataset.defaultPrice || (currentSellingPhone ? currentSellingPhone.price : '0') || '0';
   const dateVal = document.getElementById('sellDateVal').value.trim() || getCurrentDateStr();
   const timeVal = getCurrentTimeStr();
   const fullDateTime = `${timeVal} - ${dateVal}`;
