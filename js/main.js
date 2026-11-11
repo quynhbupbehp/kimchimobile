@@ -2671,8 +2671,20 @@ function autoPushLocalDataToFirestore() {
   // Tự động chuẩn hóa đè 1 lần duy nhất lên sync_bundles cho Bán Máy & Bảo Hành nếu chưa chuẩn hóa
   try {
     if (typeof db === 'undefined' || !db) return;
-    const isCleaned = localStorage.getItem('KIMCHI_PHONES_CLEAN_V1');
+    const isCleaned = localStorage.getItem('KIMCHI_PHONES_CLEAN_150_V2');
     if (isCleaned !== 'true') {
+      try {
+        localStorage.removeItem('KIMCHI_SOLD_OUT_IDS');
+        localStorage.removeItem('KIMCHI_PHONES_DELETED_IDS');
+        localStorage.removeItem('KIMCHI_PHONE_STATUS_OVERRIDES');
+        localStorage.removeItem('KIMCHI_PHONE_EDIT_OVERRIDES');
+      } catch (e) { }
+
+      if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+        phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+        try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
+      }
+
       if (Array.isArray(phoneDatabase) && phoneDatabase.length > 0 && phoneDatabase.length <= 300) {
         db.collection('sync_bundles').doc('phones').set({
           list: sanitizeForFirestore(phoneDatabase),
@@ -2685,7 +2697,8 @@ function autoPushLocalDataToFirestore() {
           updatedAt: Date.now()
         }, { merge: true }).catch(function () { });
       }
-      localStorage.setItem('KIMCHI_PHONES_CLEAN_V1', 'true');
+      localStorage.setItem('KIMCHI_PHONES_CLEAN_150_V2', 'true');
+      if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
     }
   } catch (e) { }
   return;
@@ -10061,9 +10074,8 @@ function handleSearchBanga(input) {
 // =========================================================
 function getSoldPhoneIds() {
   try {
-    const raw = localStorage.getItem('KIMCHI_SOLD_OUT_IDS');
-    const set = raw ? new Set(JSON.parse(raw)) : new Set();
-    // Bổ sung các ID của máy đang có trong soldPhoneDatabase (hoặc từ KIMCHI_SOLD_PHONES_LOCAL nếu soldPhoneDatabase chưa khởi tạo)
+    const set = new Set();
+    // Chỉ lấy ID của máy thực sự có trong sổ bảo hành soldPhoneDatabase
     if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase)) {
       soldPhoneDatabase.forEach(sp => {
         if (sp && sp.id) set.add(String(sp.id));
@@ -13309,8 +13321,8 @@ function renderPhoneGrid() {
     ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
     : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
 
-  // TRÊN MOBILE: TAB BÁN MÁY CHỈ HIỂN THỊ DUY NHẤT CÁC MÁY CÒN HÀNG (LOẠI BỎ HẲN MÁY ĐÃ BÁN, CHƯA XỬ LÝ)
-  if (isMobileScreen) {
+  // TRÊN MOBILE & DESKTOP: TAB BÁN MÁY CHỈ HIỂN THỊ DUY NHẤT CÁC MÁY CÒN HÀNG KHI Ở CHẾ ĐỘ CON_HANG
+  if (isMobileScreen && currentPhoneStatusFilter !== 'CHUA_XU_LY') {
     filtered = filtered.filter(p => {
       let st = (p.status || '').toLowerCase().trim();
       if (!st || st === 'còn hàng' || st === 'con hang') return true;
