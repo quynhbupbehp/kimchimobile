@@ -14847,11 +14847,15 @@ function toggleHideSoftwareColumns() {
   }
 }
 
-function markSoftwareAsPaidOnDblClick(id) {
+function markSoftwareAsPaidOnDblClick(id, event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+  }
   const item = softwareDatabase.find(x => String(x.id) === String(id) || x.id == id);
   if (!item) return;
 
-  // Chỉ khi nợ dai vl mới chuyển sang đã trả, đã trả thì không có tác dụng
+  // Chỉ khi nợ dai vl mới chuyển sang đã trả, đã trả thì vô hiệu hóa không làm gì
   if (isSoftwareDebt(item)) {
     const oldData = JSON.parse(JSON.stringify(item));
     item.paymentStatus = 'ĐÃ TRẢ';
@@ -14865,6 +14869,9 @@ function markSoftwareAsPaidOnDblClick(id) {
     if (typeof updateSoftwareProfits === 'function') updateSoftwareProfits();
     if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
       renderSoftwareDebtTable();
+    }
+    if (typeof showToast === 'function') {
+      showToast(`✔ Đã chuyển nhanh đơn ${item.customer || ''} sang ĐÃ TRẢ thành công!`);
     }
   }
 }
@@ -17292,8 +17299,8 @@ function renderSoftwareTable(database) {
     let isDebt = isSoftwareDebt(item);
     let safeId = String(item.id).replace(/'/g, "\\'");
     let statusBadgeHtml = isDebt
-      ? `<span class="sw-badge-debt" ondblclick="markSoftwareAsPaidOnDblClick('${safeId}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ markSoftwareAsPaidOnDblClick('${safeId}'); } this._lastTap=now;" title="Nháy đúp 2 lần để chuyển sang ĐÃ TRẢ" style="cursor: pointer; user-select: none;">💀 NỢ DAI VL</span>`
-      : `<span class="sw-badge-paid" style="cursor: default; user-select: none;">✔ ĐÃ TRẢ <span style="font-size: 0.95rem; margin-left: 2px;">💰</span></span>`;
+      ? `<span class="sw-badge-debt" ondblclick="markSoftwareAsPaidOnDblClick('${safeId}', event)" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ markSoftwareAsPaidOnDblClick('${safeId}', event); } this._lastTap=now;" title="Nháy đúp 2 lần để chuyển nhanh sang ĐÃ TRẢ" style="cursor: pointer; user-select: none;">💀 NỢ DAI VL</span>`
+      : `<span class="sw-badge-paid" ondblclick="event.stopPropagation(); event.preventDefault();" ontouchend="event.stopPropagation();" title="Đơn đã trả tiền (Vô hiệu hóa, không thể bấm)" style="cursor: not-allowed; user-select: none; pointer-events: none;">✔ ĐÃ TRẢ <span style="font-size: 0.95rem; margin-left: 2px;">💰</span></span>`;
 
     return `
           <tr ondblclick="viewSoftwareTicket('${safeId}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<450){ viewSoftwareTicket('${safeId}'); } this._lastTap=now;" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết đơn">
