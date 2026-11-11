@@ -14654,31 +14654,28 @@ function openSoftwareModal(editId = null) {
   document.getElementById('swFeeInput').value = '';
 
   let defaultDateVal = '';
-  if (typeof swViewMode !== 'undefined' && swViewMode === 'month') {
+  // Ưu tiên 1: Lấy ngày đang chọn trên thanh bộ lọc Ngày (chế độ xem theo Ngày)
+  const filterDateEl = document.getElementById('filterSoftwareDateDisplay');
+  const filterDateText = filterDateEl ? (filterDateEl.value || filterDateEl.innerText || filterDateEl.textContent || '').trim() : '';
+  if (filterDateText && filterDateText !== '--/--/----' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(filterDateText)) {
+    defaultDateVal = filterDateText;
+  } else if (typeof swFilterDate !== 'undefined' && swFilterDate instanceof Date && !isNaN(swFilterDate.getTime())) {
+    const dd = String(swFilterDate.getDate()).padStart(2, '0');
+    const mm = String(swFilterDate.getMonth() + 1).padStart(2, '0');
+    const yyyy = swFilterDate.getFullYear();
+    defaultDateVal = `${dd}/${mm}/${yyyy}`;
+  } else if (typeof swViewMode !== 'undefined' && swViewMode === 'month') {
     const vnNow = getVietnamDate();
     let targetMonth = (typeof currentSoftwareMonthFilter !== 'undefined' && currentSoftwareMonthFilter) ? currentSoftwareMonthFilter.month : vnNow.getMonth();
     let targetYear = (typeof currentSoftwareMonthFilter !== 'undefined' && currentSoftwareMonthFilter) ? currentSoftwareMonthFilter.year : vnNow.getFullYear();
-    let dayToUse = (typeof swFilterDate !== 'undefined' && swFilterDate instanceof Date && !isNaN(swFilterDate.getTime())) ? swFilterDate.getDate() : vnNow.getDate();
+    let dayToUse = vnNow.getDate();
     const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
     if (dayToUse > daysInTargetMonth) dayToUse = daysInTargetMonth;
     const dd = String(dayToUse).padStart(2, '0');
     const mm = String(targetMonth + 1).padStart(2, '0');
     defaultDateVal = `${dd}/${mm}/${targetYear}`;
   } else {
-    const filterDateEl = document.getElementById('filterSoftwareDateDisplay');
-    if (filterDateEl) {
-      defaultDateVal = (filterDateEl.value || filterDateEl.innerText || filterDateEl.textContent || '').trim();
-    }
-    if (!defaultDateVal || defaultDateVal === '--/--/----' || defaultDateVal.length < 8) {
-      if (typeof swFilterDate !== 'undefined' && swFilterDate instanceof Date && !isNaN(swFilterDate.getTime())) {
-        const dd = String(swFilterDate.getDate()).padStart(2, '0');
-        const mm = String(swFilterDate.getMonth() + 1).padStart(2, '0');
-        const yyyy = swFilterDate.getFullYear();
-        defaultDateVal = dd + '/' + mm + '/' + yyyy;
-      } else {
-        defaultDateVal = getCurrentDateStr();
-      }
-    }
+    defaultDateVal = getCurrentDateStr();
   }
   document.getElementById('swFormDate').value = defaultDateVal;
 
