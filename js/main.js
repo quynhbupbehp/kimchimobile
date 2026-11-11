@@ -3067,15 +3067,7 @@ window.addEventListener('DOMContentLoaded', () => {
     updateSidebarOverallProfits();
   }
 
-  // Gắn sự kiện click trực tiếp cho nút Xác Nhận Bán Máy để đảm bảo nhận sự kiện 100%
-  const btnSellConfirmEl = document.getElementById('btnConfirmSellPhone');
-  if (btnSellConfirmEl) {
-    btnSellConfirmEl.addEventListener('click', (ev) => {
-      if (typeof confirmSellPhone === 'function') {
-        confirmSellPhone(ev);
-      }
-    });
-  }
+  // Khởi tạo hoàn tất
 });
 
 // Dữ liệu mẫu khởi tạo chuẩn Phần Mềm
@@ -11165,6 +11157,7 @@ function openSellPhoneModal(id) {
 window.openSellPhoneModal = openSellPhoneModal;
 
 function closeSellPhoneModal() {
+  _isSellingPhoneInProgress = false;
   const modal = document.getElementById('sellPhoneModal');
   if (modal) {
     modal.classList.remove('active');
@@ -11274,10 +11267,21 @@ function calcSellProfit() {
 }
 window.calcSellProfit = calcSellProfit;
 
+let _isSellingPhoneInProgress = false;
+
 function confirmSellPhone(e) {
   if (e && typeof e.preventDefault === 'function') {
     e.preventDefault();
   }
+  if (e && typeof e.stopPropagation === 'function') {
+    e.stopPropagation();
+  }
+
+  // Khóa chống bấm đúp hoặc kích hoạt trùng lặp sự kiện
+  if (_isSellingPhoneInProgress) return;
+  _isSellingPhoneInProgress = true;
+  setTimeout(() => { _isSellingPhoneInProgress = false; }, 2000);
+
   const rawId = document.getElementById('sellPhoneId') ? document.getElementById('sellPhoneId').value : '';
   const numId = parseFloat(rawId);
 
@@ -11296,6 +11300,7 @@ function confirmSellPhone(e) {
   }
 
   if (idx === -1) {
+    _isSellingPhoneInProgress = false;
     alert('Không tìm thấy thông tin máy trong kho!');
     const btnReset = document.getElementById('btnConfirmSellPhone');
     if (btnReset) {
@@ -11308,18 +11313,21 @@ function confirmSellPhone(e) {
 
   const targetList = document.getElementById('sellTargetList') ? document.getElementById('sellTargetList').value : '';
   if (!targetList) {
+    _isSellingPhoneInProgress = false;
     alert('Vui lòng chọn danh mục "Lưu Vào" (Bán Hàng hoặc Bán Gà)!');
     return;
   }
 
   const paymentMethod = document.getElementById('sellPaymentMethod') ? document.getElementById('sellPaymentMethod').value : '';
   if (!paymentMethod) {
+    _isSellingPhoneInProgress = false;
     alert('Vui lòng chọn hình thức "Thanh Toán" (Tiền Mặt hoặc Chuyển Khoản)!');
     return;
   }
 
   const warranty = document.getElementById('sellWarranty') ? document.getElementById('sellWarranty').value : '';
   if (!warranty) {
+    _isSellingPhoneInProgress = false;
     alert('Vui lòng chọn gói "Bảo Hành"!');
     return;
   }
@@ -11329,6 +11337,7 @@ function confirmSellPhone(e) {
   const gCluc = document.getElementById('giftCluc') ? document.getElementById('giftCluc').value.trim() : '';
   const gKhac = document.getElementById('giftKhac') ? document.getElementById('giftKhac').value.trim() : '';
   if (!gSac && !gOp && !gCluc && !gKhac) {
+    _isSellingPhoneInProgress = false;
     alert('Vui lòng nhập thông tin quà tặng vào ít nhất 1 trong 4 ô phụ kiện tặng kèm!');
     return;
   }
