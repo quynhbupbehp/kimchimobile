@@ -550,7 +550,7 @@
                         </div>
                     </div>
 
-                    <div>
+                    <div id="modal-type-group" class="transition-opacity duration-200">
                         <label
                             class="block text-xs md:text-sm font-extrabold text-[#f59e0b] uppercase mb-1.5 tracking-wider">KIỂU</label>
                         <div class="flex items-center gap-2">
@@ -2042,9 +2042,9 @@
             const totalDisplayCount = isImportTab ? expandedImportRows.length : filtered.length;
             if (rowCountEl) rowCountEl.innerText = totalDisplayCount;
 
-            // Kiểu chỉ hiển thị ở tab IPHONE và TẤT CẢ (hoặc HẾT HÀNG), còn lại các hãng khác ẩn cột kiểu đi
+            // Kiểu chỉ hiển thị ở tab IPHONE (các hãng khác không hiển thị cột kiểu)
             const brandUp = (currentBrand || '').trim().toUpperCase();
-            const showKieuTab = (brandUp === 'IPHONE' || brandUp === 'TẤT CẢ' || brandUp === '' || isOutStockTab);
+            const showKieuTab = (brandUp === 'IPHONE');
 
             let totalCostSum = 0;
             let totalQtySum = 0;
@@ -2281,45 +2281,27 @@
 
                         const zeroQtyClassMobile = isOutStockTab ? 'row-hover px-2 rounded-xl' : (qtyVal === 0 ? 'yellow-pulse-row px-2 rounded-xl' : 'row-hover px-2 rounded-xl');
 
-                        const showTypeMobile = showKieuTab;
+                        // Chỉ hãng iPhone mới hiển thị kiểu trên mobile, các hãng khác không hiển thị
+                        const isDeviceIphone = (d.brand || '').trim().toUpperCase() === 'IPHONE';
+                        const showTypeMobile = isDeviceIphone && d.type;
 
-                        if (showTypeMobile) {
-                            return `
-                                <div class="py-2.5 flex items-center justify-between gap-2 ${mobileItemBorderClass} ${zeroQtyClassMobile}" onclick="handleRowClick(this)">
-                                    <div class="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
-                                        ${formattedNameHtml}
-                                        <div class="flex items-center gap-1 text-[11px] md:text-xs text-gray-400 shrink-0 whitespace-nowrap">
-                                            <span class="text-emerald-400 font-semibold">${displayPart}</span>
-                                            ${d.type ? `<span class="text-indigo-300 font-bold">• ${d.type}</span>` : ''}
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3 shrink-0 ml-auto whitespace-nowrap">
-                                        <div class="text-sm text-red-500 font-bold w-4 text-center shrink-0" ${!isOutStockTab ? `ondblclick="enableInlineQtyEdit(this, ${realIndex})"` : ''} data-qty="${d.qty}">${d.qty}</div>
-                                        <div class="text-right shrink-0 min-w-[50px]">
-                                            <div class="text-base font-bold text-amber-400" style="color: #fbbf24 !important;">${priceFormatted}</div>
-                                        </div>
+                        return `
+                            <div class="py-2.5 flex items-center justify-between gap-2 ${mobileItemBorderClass} ${zeroQtyClassMobile}" onclick="handleRowClick(this)">
+                                <div class="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
+                                    ${formattedNameHtml}
+                                    <div class="flex items-center gap-1 text-[11px] md:text-xs text-gray-400 shrink-0 whitespace-nowrap">
+                                        <span class="text-emerald-400 font-semibold">${displayPart}</span>
+                                        ${showTypeMobile ? `<span class="text-indigo-300 font-bold">• ${d.type}</span>` : ''}
                                     </div>
                                 </div>
-                            `;
-                        } else {
-                            // Ngoại trừ iPhone và Tất cả, ẩn phần Kiểu đi
-                            return `
-                                <div class="py-2.5 flex items-center justify-between gap-2 ${mobileItemBorderClass} ${zeroQtyClassMobile}" onclick="handleRowClick(this)">
-                                    <div class="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
-                                        ${formattedNameHtml}
-                                        <div class="flex items-center gap-1 text-[11px] md:text-xs text-gray-400 shrink-0 whitespace-nowrap">
-                                            <span class="text-emerald-400 font-semibold">${displayPart}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3 shrink-0 ml-auto whitespace-nowrap">
-                                        <div class="text-sm text-red-500 font-bold w-4 text-center shrink-0" ondblclick="enableInlineQtyEdit(this, ${realIndex})" data-qty="${d.qty}">${d.qty}</div>
-                                        <div class="text-right shrink-0 min-w-[50px]">
-                                            <div class="text-base font-bold text-amber-400" style="color: #fbbf24 !important;">${priceFormatted}</div>
-                                        </div>
+                                <div class="flex items-center gap-3 shrink-0 ml-auto whitespace-nowrap">
+                                    <div class="text-sm text-red-500 font-bold w-4 text-center shrink-0" ${!isOutStockTab ? `ondblclick="enableInlineQtyEdit(this, ${realIndex})"` : ''} data-qty="${d.qty}">${d.qty}</div>
+                                    <div class="text-right shrink-0 min-w-[50px]">
+                                        <div class="text-base font-bold text-amber-400" style="color: #fbbf24 !important;">${priceFormatted}</div>
                                     </div>
                                 </div>
-                            `;
-                        }
+                            </div>
+                        `;
                     }).join('');
                 }
             }
@@ -2560,9 +2542,33 @@
             const brandSelect = document.getElementById('device-brand-select');
             const typeSelect = document.getElementById('device-type-select');
             const typeHidden = document.getElementById('device-type');
+            const typeGroup = document.getElementById('modal-type-group');
             if (!typeSelect) return;
 
-            const b = selectedBrand || (brandSelect ? brandSelect.value : '') || currentBrand || 'IPHONE';
+            const b = (selectedBrand || (brandSelect ? brandSelect.value : '') || currentBrand || 'IPHONE').trim().toUpperCase();
+            const isIphone = (b === 'IPHONE');
+
+            if (!isIphone) {
+                // Các hãng khác ngoài IPHONE: mờ đi, để trống và không cho phép ghi gì
+                typeSelect.innerHTML = `<option value="" class="bg-[#0b0f19] text-white"></option>`;
+                typeSelect.value = '';
+                typeSelect.disabled = true;
+                if (typeHidden) typeHidden.value = '';
+
+                if (typeGroup) {
+                    typeGroup.style.opacity = '0.35';
+                    typeGroup.style.pointerEvents = 'none';
+                }
+                return;
+            }
+
+            // Hãng IPHONE: hiển thị rõ ràng, cho phép chọn bình thường
+            typeSelect.disabled = false;
+            if (typeGroup) {
+                typeGroup.style.opacity = '1';
+                typeGroup.style.pointerEvents = 'auto';
+            }
+
             const brandTypeList = getTypesForBrand(b).filter(t => t && t.trim());
             typeSelect.innerHTML = brandTypeList.map(t => `<option value="${t}" class="bg-[#0b0f19] text-white">${t}</option>`).join('');
 
@@ -2889,7 +2895,8 @@
             const name = document.getElementById('device-name').value.trim().toUpperCase();
             let part = document.getElementById('device-part').value.trim().toUpperCase();
             if (part === 'CÁP SẠC') part = 'BO SẠC';
-            const type = document.getElementById('device-type').value.trim().toUpperCase();
+            // Chỉ hãng IPHONE mới lưu kiểu, các hãng khác luôn để rỗng
+            const type = (brand === 'IPHONE') ? document.getElementById('device-type').value.trim().toUpperCase() : '';
             const price = document.getElementById('device-price').value.trim();
             const cost = document.getElementById('device-cost').value.trim();
             const qty = parseInt(document.getElementById('device-qty').value) || 0;
