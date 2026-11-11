@@ -3066,6 +3066,16 @@ window.addEventListener('DOMContentLoaded', () => {
   if (typeof updateSidebarOverallProfits === 'function') {
     updateSidebarOverallProfits();
   }
+
+  // Gắn sự kiện click trực tiếp cho nút Xác Nhận Bán Máy để đảm bảo nhận sự kiện 100%
+  const btnSellConfirmEl = document.getElementById('btnConfirmSellPhone');
+  if (btnSellConfirmEl) {
+    btnSellConfirmEl.addEventListener('click', (ev) => {
+      if (typeof confirmSellPhone === 'function') {
+        confirmSellPhone(ev);
+      }
+    });
+  }
 });
 
 // Dữ liệu mẫu khởi tạo chuẩn Phần Mềm
@@ -11158,26 +11168,30 @@ function closeSellPhoneModal() {
   const modal = document.getElementById('sellPhoneModal');
   if (modal) {
     modal.classList.remove('active');
-    modal.style.display = '';
+    modal.style.display = 'none';
   }
   const btnConfirm = document.getElementById('btnConfirmSellPhone');
   if (btnConfirm) {
     btnConfirm.disabled = false;
     btnConfirm.style.pointerEvents = 'auto';
+    btnConfirm.innerText = 'Xác Nhận';
   }
 }
+window.closeSellPhoneModal = closeSellPhoneModal;
 
 function handleDefaultInputFocus(input) {
   // Khi bấm vào tự ẩn placeholder/nội dung mờ để người dùng nhập mới
   input.dataset.oldPlaceholder = input.placeholder;
   input.placeholder = '';
 }
+window.handleDefaultInputFocus = handleDefaultInputFocus;
 
 function handleDefaultInputBlur(input, fallbackPlaceholder) {
   if (!input.placeholder) {
     input.placeholder = input.dataset.oldPlaceholder || fallbackPlaceholder;
   }
 }
+window.handleDefaultInputBlur = handleDefaultInputBlur;
 
 function handlePriceOutFocus(input) {
   // Khi bấm vào tự ẩn giá mờ để nhập giá mới
@@ -11188,6 +11202,7 @@ function handlePriceOutFocus(input) {
   }
   calcSellProfit();
 }
+window.handlePriceOutFocus = handlePriceOutFocus;
 
 function handlePriceOutBlur(input) {
   if (input.value.trim() === '') {
@@ -11195,24 +11210,28 @@ function handlePriceOutBlur(input) {
   }
   calcSellProfit();
 }
+window.handlePriceOutBlur = handlePriceOutBlur;
 
 function handleGiftFocus(input) {
   if (input.value === '0') {
     input.value = '';
   }
 }
+window.handleGiftFocus = handleGiftFocus;
 
 function handleGiftBlur(input) {
   if (input.value.trim() === '') {
     input.placeholder = '0';
   }
 }
+window.handleGiftBlur = handleGiftBlur;
 
 function handleGiftInput(input) {
   formatCurrencyInput(input);
   calcSellProfit();
   checkGiftsEntered();
 }
+window.handleGiftInput = handleGiftInput;
 
 function checkGiftsEntered() {
   const gSac = document.getElementById('giftSac').value.trim();
@@ -11223,12 +11242,15 @@ function checkGiftsEntered() {
 
   const hasAtLeastOne = (gSac !== '' || gOp !== '' || gCluc !== '' || gKhac !== '');
 
-  if (hasAtLeastOne) {
-    btnConfirm.classList.add('active');
-  } else {
-    btnConfirm.classList.remove('active');
+  if (btnConfirm) {
+    if (hasAtLeastOne) {
+      btnConfirm.classList.add('active');
+    } else {
+      btnConfirm.classList.remove('active');
+    }
   }
 }
+window.checkGiftsEntered = checkGiftsEntered;
 
 function calcSellProfit() {
   if (!currentSellingPhone) return;
@@ -11250,43 +11272,62 @@ function calcSellProfit() {
   let profitFormatted = (profit < 0 ? '-' : '') + formatPriceStr(Math.abs(profit));
   document.getElementById('sellProfitVal').value = profitFormatted;
 }
+window.calcSellProfit = calcSellProfit;
 
 function confirmSellPhone(e) {
   if (e && typeof e.preventDefault === 'function') {
     e.preventDefault();
   }
-  const rawId = document.getElementById('sellPhoneId').value;
+  const rawId = document.getElementById('sellPhoneId') ? document.getElementById('sellPhoneId').value : '';
   const numId = parseFloat(rawId);
 
-  // Tìm máy linh hoạt theo cả chuỗi ID và số ID để tránh lệch kiểu dữ liệu
-  const idx = phoneDatabase.findIndex(p => String(p.id) === String(rawId) || p.id == numId || (p.id && String(p.id) === String(numId)));
+  // Tìm máy linh hoạt theo chuỗi ID, số ID và dự phòng theo IMEI của máy đang mở popup
+  let idx = phoneDatabase.findIndex(p => String(p.id) === String(rawId) || p.id == numId || (p.id && String(p.id) === String(numId)));
+  if (idx === -1 && currentSellingPhone) {
+    if (currentSellingPhone.id) {
+      idx = phoneDatabase.findIndex(p => String(p.id) === String(currentSellingPhone.id) || p.id == currentSellingPhone.id);
+    }
+    if (idx === -1 && currentSellingPhone.imei) {
+      const curImei = String(currentSellingPhone.imei).trim().toLowerCase();
+      if (curImei) {
+        idx = phoneDatabase.findIndex(p => p.imei && String(p.imei).trim().toLowerCase() === curImei);
+      }
+    }
+  }
+
   if (idx === -1) {
     alert('Không tìm thấy thông tin máy trong kho!');
+    const btnReset = document.getElementById('btnConfirmSellPhone');
+    if (btnReset) {
+      btnReset.disabled = false;
+      btnReset.style.pointerEvents = 'auto';
+      btnReset.innerText = 'Xác Nhận';
+    }
     return;
   }
 
-  const targetList = document.getElementById('sellTargetList').value;
+  const targetList = document.getElementById('sellTargetList') ? document.getElementById('sellTargetList').value : '';
   if (!targetList) {
     alert('Vui lòng chọn danh mục "Lưu Vào" (Bán Hàng hoặc Bán Gà)!');
     return;
   }
 
-  const paymentMethod = document.getElementById('sellPaymentMethod').value;
+  const paymentMethod = document.getElementById('sellPaymentMethod') ? document.getElementById('sellPaymentMethod').value : '';
   if (!paymentMethod) {
     alert('Vui lòng chọn hình thức "Thanh Toán" (Tiền Mặt hoặc Chuyển Khoản)!');
     return;
   }
 
-  const warranty = document.getElementById('sellWarranty').value;
+  const warranty = document.getElementById('sellWarranty') ? document.getElementById('sellWarranty').value : '';
   if (!warranty) {
     alert('Vui lòng chọn gói "Bảo Hành"!');
     return;
   }
 
-  const gSac = document.getElementById('giftSac').value.trim();
-  const gOp = document.getElementById('giftOp').value.trim();
-  const gCluc = document.getElementById('giftCluc').value.trim();
-  const gKhac = document.getElementById('giftKhac').value.trim();
+  const gSac = document.getElementById('giftSac') ? document.getElementById('giftSac').value.trim() : '';
+  const gOp = document.getElementById('giftOp') ? document.getElementById('giftOp').value.trim() : '';
+  const gCluc = document.getElementById('giftCluc') ? document.getElementById('giftCluc').value.trim() : '';
+  const gKhac = document.getElementById('giftKhac') ? document.getElementById('giftKhac').value.trim() : '';
   if (!gSac && !gOp && !gCluc && !gKhac) {
     alert('Vui lòng nhập thông tin quà tặng vào ít nhất 1 trong 4 ô phụ kiện tặng kèm!');
     return;
@@ -11297,6 +11338,7 @@ function confirmSellPhone(e) {
   if (btnConfirm) {
     btnConfirm.disabled = true;
     btnConfirm.style.pointerEvents = 'none';
+    btnConfirm.innerText = '⏳ Đang lưu...';
   }
 
   const customerName = toTitleCase(document.getElementById('sellCustomerName').value.trim()) || 'Khách Lẻ';
@@ -11413,6 +11455,7 @@ function confirmSellPhone(e) {
 
   alert(`Đã xác nhận bán máy ${soldItem.name} (${soldItem.imei}) thành công!\n- Lưu vào: ${targetList}\n- Thanh toán: ${paymentMethod}\n- Bảo hành: ${warranty}.`);
 }
+window.confirmSellPhone = confirmSellPhone;
 
 /* ============================================================
    XỬ LÝ BÁN MÁY NGOÀI KHO (CHUẨN FORM POPUP XÁC NHẬN BÁN MÁY)
