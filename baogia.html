@@ -153,6 +153,19 @@
             font-weight: bold;
         }
 
+        /* Badge thương hiệu điện thoại hiển thị trên danh sách Desktop giống tab Bán Máy */
+        .brand-text-badge-desktop {
+            display: inline-block !important;
+            font-weight: 900 !important;
+            font-size: 0.95rem !important;
+            padding: 2px 8px !important;
+            border-radius: 5px !important;
+            letter-spacing: 0.5px !important;
+            vertical-align: middle !important;
+            line-height: 1.25 !important;
+            text-transform: uppercase !important;
+        }
+
         .draggable-tab {
             cursor: grab;
             user-select: none;
@@ -1042,9 +1055,13 @@
             }
 
             const borderStyle = border !== 'none' ? 'border: ' + border + ';' : '';
-            const padStyle = isMobile ? 'padding: 1px 5px; font-size: 9px;' : 'padding: 2px 7px; font-size: 11px;';
+            if (isMobile) {
+                const padStyle = 'padding: 1px 5px; font-size: 9px;';
+                return '<span class="brand-text-badge" style="display: inline-block; background: ' + bg + '; color: ' + color + '; font-weight: 900; ' + padStyle + ' border-radius: 4px; letter-spacing: 0.5px; vertical-align: middle; margin-right: 5px; line-height: 1.25; ' + borderStyle + ' ' + extraStyle + '">' + badgeText + '</span>';
+            }
 
-            return '<span class="brand-text-badge" style="display: inline-block; background: ' + bg + '; color: ' + color + '; font-weight: 900; ' + padStyle + ' border-radius: 4px; letter-spacing: 0.5px; vertical-align: middle; margin-right: 5px; line-height: 1.25; ' + borderStyle + ' ' + extraStyle + '">' + badgeText + '</span>';
+            // Giao diện Web (Desktop): Giống 100% badge ở tab Bán Máy (font-size 0.95rem, padding 2px 8px, border-radius 5px, font-weight 900)
+            return '<span class="brand-text-badge-desktop" style="background: ' + bg + '; color: ' + color + '; margin-right: 6px; ' + borderStyle + ' ' + extraStyle + '">' + badgeText + '</span>';
         }
 
         function renderDeviceNames(nameStr, colorStr, isMobile = false, realIndex = null, brand = '') {
@@ -1491,9 +1508,14 @@
                 // Trên Mobile (< 768px): Thay tên các hãng bằng logo thương hiệu theo yêu cầu
                 const mobileLogo = getBrandMobileLogoHtml(b);
 
-                // Loại bỏ chữ ANDROID trên tên hiển thị desktop nếu có
+                // Loại bỏ chữ ANDROID trên tên hiển thị desktop nếu có, và chuẩn hóa OPPO, MI
                 let desktopBrandName = b;
-                if (b.toUpperCase().includes('ANDROID')) {
+                const bUpper = b.toUpperCase();
+                if (bUpper.includes('OPPO') || bUpper.includes('REALME')) {
+                    desktopBrandName = 'OPPO';
+                } else if (bUpper.includes('REDMI') || bUpper.includes('POCO') || bUpper.includes('XIAOMI') || bUpper.includes('MI')) {
+                    desktopBrandName = 'MI';
+                } else if (bUpper.includes('ANDROID')) {
                     desktopBrandName = b.replace(/\bANDROID\b/gi, '').replace(/\s*-\s*-\s*/g, ' - ').replace(/^[\s-]+|[\s-]+$/g, '').trim();
                 }
 
