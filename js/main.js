@@ -19474,11 +19474,28 @@ function openRepairModal(editId = null) {
 
   try {
     const now = (typeof getVietnamDate === 'function') ? getVietnamDate() : new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
+    let yyyy = now.getFullYear();
+    let mm = String(now.getMonth() + 1).padStart(2, '0');
+    let dd = String(now.getDate()).padStart(2, '0');
     const curHour = String(now.getHours()).padStart(2, '0');
     const curMin = String(now.getMinutes()).padStart(2, '0');
+
+    // Ưu tiên 1: Lấy chính xác ngày đang chọn trên thanh bộ lọc Ngày của Tab Sửa Chữa
+    const filterRepairEl = document.getElementById('filterRepairDateDisplay');
+    const filterRepairText = filterRepairEl ? (filterRepairEl.value || filterRepairEl.innerText || filterRepairEl.textContent || '').trim() : '';
+    if (filterRepairText && filterRepairText !== '--/--/----' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(filterRepairText)) {
+      const parts = filterRepairText.split('/');
+      dd = parts[0].padStart(2, '0');
+      mm = parts[1].padStart(2, '0');
+      yyyy = parseInt(parts[2], 10);
+    } else if (typeof repairFilterDate !== 'undefined' && repairFilterDate instanceof Date && !isNaN(repairFilterDate.getTime())) {
+      dd = String(repairFilterDate.getDate()).padStart(2, '0');
+      mm = String(repairFilterDate.getMonth() + 1).padStart(2, '0');
+      yyyy = repairFilterDate.getFullYear();
+    } else if (typeof repairViewMode !== 'undefined' && repairViewMode === 'month' && typeof currentRepairMonthFilter !== 'undefined' && currentRepairMonthFilter) {
+      mm = String(currentRepairMonthFilter.month + 1).padStart(2, '0');
+      yyyy = currentRepairMonthFilter.year;
+    }
 
     if (document.getElementById('rFormDate')) document.getElementById('rFormDate').value = `${yyyy}-${mm}-${dd}`;
     if (document.getElementById('rFormHour')) document.getElementById('rFormHour').value = curHour;
