@@ -7705,10 +7705,10 @@
           text-overflow: ellipsis !important;
           vertical-align: middle !important;
         }
-        /* CỘT 1: TÊN HÀNG / GÀ - CHIM CÚT (60% - TĂNG THÊM 10%) - Cỡ chữ giảm 5% */
+        /* CỘT 1: TÊN HÀNG / GÀ - CHIM CÚT (56%) - Cỡ chữ giảm 5% */
         #tab-banga .sales-table th:nth-child(1) {
-          width: 60% !important;
-          max-width: 60% !important;
+          width: 56% !important;
+          max-width: 56% !important;
           min-width: 0 !important;
           text-align: left !important;
           padding-left: 5px !important;
@@ -7718,8 +7718,8 @@
           white-space: nowrap !important;
         }
         #tab-banga .sales-table td:nth-child(1) {
-          width: 60% !important;
-          max-width: 60% !important;
+          width: 56% !important;
+          max-width: 56% !important;
           min-width: 0 !important;
           text-align: left !important;
           padding-left: 5px !important;
@@ -7730,6 +7730,10 @@
         }
         #tab-banga .sales-table td:nth-child(1) * {
           font-size: 0.77rem !important; /* Giảm 5% */
+        }
+        /* ẨN DUNG LƯỢNG MÁY TRÊN MOBILE ĐỂ DÀNH KHÔNG GIAN CHO TÊN MÁY, MÀU VÀ IMEI */
+        #tab-banga .sales-table td:nth-child(1) .banga-storage-tag {
+          display: none !important;
         }
         /* VÒNG TRÒN MÀU SẮC: TRÒN VO 100% BẰNG SVG CIRCLE, KHÔNG THỂ BỊ BẦU DỤC */
         #tab-banga .sales-table td:nth-child(1) .banga-dot-circle {
@@ -7795,22 +7799,23 @@
           font-size: 0.76rem !important;
           padding: 6px 1px !important;
         }
-        /* CỘT 4: LÃI (8%) */
+        /* CỘT 4: LÃI (12%) - Thu nhỏ cỡ chữ để hiển thị đầy đủ 4 số và 1 dấu chấm (ví dụ: 1.234) */
         #tab-banga .sales-table th:nth-child(4) {
-          width: 8% !important;
-          max-width: 8% !important;
+          width: 12% !important;
+          max-width: 12% !important;
           min-width: 0 !important;
           text-align: center !important;
           font-size: 0.73rem !important;
           padding: 6px 1px !important;
         }
         #tab-banga .sales-table td:nth-child(4) {
-          width: 8% !important;
-          max-width: 8% !important;
+          width: 12% !important;
+          max-width: 12% !important;
           min-width: 0 !important;
           text-align: center !important;
-          font-size: 0.72rem !important;
+          font-size: 0.65rem !important;
           padding: 6px 1px !important;
+          letter-spacing: -0.2px !important;
         }
         /* ẨN CỘT 5 (HÌNH THỨC), 6 (THAO TÁC), 7 (NGÀY BÁN), 8 (THANH TOÁN) TRÊN MOBILE */
         #tab-banga .sales-table th:nth-child(5),

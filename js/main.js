@@ -5828,14 +5828,14 @@ function renderBangaTable(items) {
             `;
       }
       let cleanStorageStr = details.storage ? formatStorageDisplay(details.storage).replace(/GB$/i, '').trim() : '';
-      let storagePart = cleanStorageStr ? `<span>${cleanStorageStr}</span>` : '';
+      let storagePart = cleanStorageStr ? `<span class="banga-storage-tag">${cleanStorageStr}</span>` : '';
       let imeiPart = details.imei ? `<span style="border: 1px solid #ef4444; color: #ffffff; font-weight: 900; font-size: 1.27rem; padding: 2px 7px; border-radius: 4px; display: inline-block; letter-spacing: 0.5px;">${details.imei}</span>` : '';
 
       nameHtml = `
             <div style="display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; flex-wrap: nowrap; white-space: nowrap;">
               <span style="font-size: 1.27rem; font-weight: 800; white-space: nowrap;">${displayName}</span>
               ${dotHtml}
-              ${storagePart ? `<span style="color: #eab308; font-weight: 700; font-size: 1.16rem; white-space: nowrap;">${storagePart}</span>` : ''}
+              ${storagePart ? `<span class="banga-storage-tag" style="color: #eab308; font-weight: 700; font-size: 1.16rem; white-space: nowrap;">${storagePart}</span>` : ''}
               ${imeiPart}
             </div>
           `;
