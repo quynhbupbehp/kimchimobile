@@ -2084,14 +2084,20 @@ function openAppDatePicker(targetInputId, tabKey) {
   renderAppDatePicker();
   const modal = document.getElementById('appDatePickerModal');
   if (modal) {
-    modal.style.display = 'flex';
+    modal.classList.add('active');
+    modal.classList.add('show');
+    modal.style.setProperty('display', 'flex', 'important');
   }
 }
 window.openAppDatePicker = openAppDatePicker;
 
 function closeAppDatePickerModal() {
   const modal = document.getElementById('appDatePickerModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.classList.remove('active');
+    modal.classList.remove('show');
+    modal.style.setProperty('display', 'none', 'important');
+  }
 }
 window.closeAppDatePickerModal = closeAppDatePickerModal;
 

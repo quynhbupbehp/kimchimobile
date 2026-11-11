@@ -8953,7 +8953,9 @@
         }
         .modal-overlay.active,
         .modal-overlay.show,
-        div[id$="Modal"].active {
+        div[id$="Modal"].active,
+        #appDatePickerModal.active,
+        #appDatePickerModal.show {
           display: flex !important;
         }
         .modal-ticket-box,
