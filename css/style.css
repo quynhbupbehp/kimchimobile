@@ -8998,6 +8998,54 @@
           min-width: 100% !important;
         }
 
+        /* BÁN MÁY NGOÀI KHO TRÊN MOBILE */
+        #externalSellPhoneModal .ext-row-name-imei {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
+          gap: 8px !important;
+          width: 100% !important;
+        }
+        #externalSellPhoneModal .ext-row-name-imei .form-ticket-group:first-child {
+          flex: 0 0 calc(68% - 4px) !important;
+          width: calc(68% - 4px) !important;
+          max-width: calc(68% - 4px) !important;
+          min-width: 0 !important;
+        }
+        #externalSellPhoneModal .ext-row-name-imei .form-ticket-group:last-child {
+          flex: 0 0 calc(32% - 4px) !important;
+          width: calc(32% - 4px) !important;
+          max-width: calc(32% - 4px) !important;
+          min-width: 0 !important;
+        }
+        #externalSellPhoneModal #btnConfirmExtSellPhone {
+          background: #ef4444 !important;
+          color: #ffffff !important;
+          font-weight: 900 !important;
+          text-shadow: none !important;
+        }
+        #externalSellPhoneModal .date-adjust-container {
+          gap: 2px !important;
+          display: flex !important;
+          align-items: center !important;
+          width: 100% !important;
+        }
+        #externalSellPhoneModal .date-adjust-container .btn-date-step {
+          width: 24px !important;
+          min-width: 24px !important;
+          flex: 0 0 24px !important;
+          padding: 0 !important;
+          font-size: 0.95rem !important;
+        }
+        #externalSellPhoneModal #extSellDateVal {
+          font-size: 0.82rem !important;
+          padding: 6px 2px !important;
+          min-width: 0 !important;
+          flex: 1 1 auto !important;
+          text-align: center !important;
+          letter-spacing: -0.2px !important;
+        }
+
         /* HÀNG TÊN MÁY (70%) & IMEI (30%) TRÊN MOBILE CÙNG 1 HÀNG */
         #buyBackPhoneModal .bb-row-name-imei {
           display: flex !important;
