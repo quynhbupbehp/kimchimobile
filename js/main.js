@@ -2636,17 +2636,23 @@ window.notifyFirebaseQuotaExceeded = notifyFirebaseQuotaExceeded;
 
 // ==========================================
 // BỘ THEO DÕI HẠN MỨC FIRESTORE ĐỌC / GHI TRONG NGÀY (AGENTS.md Rule 6)
-// Giới hạn miễn phí mỗi ngày: 50.000 Reads / 20.000 Writes
+// Giới hạn miễn phí: 50.000 Reads / 20.000 Writes
+// Chu kỳ tính: Tự động reset vào đúng 15:00 (15h chiều) hàng ngày theo giờ Việt Nam
+// (Trùng khớp 100% với giờ reset quota 00:00 UTC của Google Cloud / Firebase)
 // ==========================================
 const FS_MAX_DAILY_READS = 50000;
 const FS_MAX_DAILY_WRITES = 20000;
 
 function getFsTodayKey() {
   const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return 'KIMCHI_FS_USAGE_' + y + '-' + m + '-' + day;
+  // Lùi 15 tiếng để mốc 15:00 hôm nay trở thành điểm bắt đầu của chu kỳ mới (00:00)
+  // Trước 15:00: thuộc chu kỳ bắt đầu từ 15:00 hôm qua
+  // Từ 15:00 trở đi: thuộc chu kỳ bắt đầu từ 15:00 hôm nay
+  const adjusted = new Date(d.getTime() - 15 * 60 * 60 * 1000);
+  const y = adjusted.getFullYear();
+  const m = String(adjusted.getMonth() + 1).padStart(2, '0');
+  const day = String(adjusted.getDate()).padStart(2, '0');
+  return 'KIMCHI_FS_USAGE_' + y + '-' + m + '-' + day + '_15H';
 }
 
 function resetFsDailyUsage() {
