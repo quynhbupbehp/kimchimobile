@@ -2304,6 +2304,18 @@ window.getItemTimestamp = getItemTimestamp;
 
 // === CƠ CHẾ ĐỒNG BỘ ĐÁM MÂY 2 CHIỀU TỰ ĐỘNG GIỮA WEB VÀ MOBILE ===
 
+// Hàm chuẩn hóa dữ liệu an toàn trước khi đẩy lên Cloud Firestore (loại bỏ hoàn toàn undefined)
+function sanitizeForFirestore(data) {
+  try {
+    return JSON.parse(JSON.stringify(data, function (key, value) {
+      return value === undefined ? null : value;
+    }));
+  } catch (e) {
+    return data;
+  }
+}
+window.sanitizeForFirestore = sanitizeForFirestore;
+
 // =========================================================
 // HÀM ĐỒNG BỘ TOÀN BỘ CÁC TAB LÊN FIREBASE CLOUD THỦ CÔNG
 // =========================================================
@@ -2333,7 +2345,7 @@ async function manualSyncAllToFirestore() {
     if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase) && salesDatabase.length > 0) {
       promises.push(
         db.collection('sync_bundles').doc('sales').set({
-          list: salesDatabase,
+          list: sanitizeForFirestore(salesDatabase),
           updatedAt: now
         }, { merge: true })
       );
@@ -2343,7 +2355,7 @@ async function manualSyncAllToFirestore() {
     if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase) && softwareDatabase.length > 0) {
       promises.push(
         db.collection('sync_bundles').doc('software').set({
-          list: softwareDatabase,
+          list: sanitizeForFirestore(softwareDatabase),
           updatedAt: now
         }, { merge: true })
       );
@@ -2353,7 +2365,7 @@ async function manualSyncAllToFirestore() {
     if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase) && bangaDatabase.length > 0) {
       promises.push(
         db.collection('sync_bundles').doc('banga').set({
-          list: bangaDatabase,
+          list: sanitizeForFirestore(bangaDatabase),
           updatedAt: now
         }, { merge: true })
       );
@@ -2363,7 +2375,7 @@ async function manualSyncAllToFirestore() {
     if (typeof phoneDatabase !== 'undefined' && Array.isArray(phoneDatabase) && phoneDatabase.length > 0) {
       promises.push(
         db.collection('sync_bundles').doc('phones').set({
-          list: phoneDatabase,
+          list: sanitizeForFirestore(phoneDatabase),
           updatedAt: now
         }, { merge: true }).catch(function () { })
       );
@@ -2373,7 +2385,7 @@ async function manualSyncAllToFirestore() {
     if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase) && soldPhoneDatabase.length > 0) {
       promises.push(
         db.collection('sync_bundles').doc('sold_phones').set({
-          list: soldPhoneDatabase,
+          list: sanitizeForFirestore(soldPhoneDatabase),
           updatedAt: now
         }, { merge: true }).catch(function () { })
       );
@@ -2383,7 +2395,7 @@ async function manualSyncAllToFirestore() {
     if (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase) && repairDatabase.length > 0) {
       promises.push(
         db.collection('sync_bundles').doc('repairs').set({
-          list: repairDatabase,
+          list: sanitizeForFirestore(repairDatabase),
           updatedAt: now
         }, { merge: true }).catch(function () { })
       );
@@ -2393,7 +2405,7 @@ async function manualSyncAllToFirestore() {
     if (typeof mainXacDatabase !== 'undefined' && Array.isArray(mainXacDatabase) && mainXacDatabase.length > 0) {
       promises.push(
         db.collection('sync_bundles').doc('mainxac').set({
-          list: mainXacDatabase,
+          list: sanitizeForFirestore(mainXacDatabase),
           updatedAt: now
         }, { merge: true }).catch(function () { })
       );
@@ -3579,7 +3591,7 @@ function syncSalesBundleDebounced() {
   _salesBundleTimer = setTimeout(() => {
     try {
       db.collection('sync_bundles').doc('sales').set({
-        list: salesDatabase,
+        list: sanitizeForFirestore(salesDatabase),
         updatedAt: Date.now()
       }, { merge: true }).catch(e => console.warn('Sync sales bundle notice:', e.code || e));
     } catch (e) { }
@@ -3592,7 +3604,7 @@ function saveSalesStorage(itemToSync) {
     const syncItem = (it) => {
       if (!it || !it.id) return;
       const docId = String(it.id);
-      db.collection('sales').doc(docId).set(it, { merge: true }).catch(err => {
+      db.collection('sales').doc(docId).set(sanitizeForFirestore(it), { merge: true }).catch(err => {
         console.error("Loi dong bo doc sales:", docId, err);
       });
     };
@@ -3613,7 +3625,7 @@ function syncBangaBundleDebounced() {
   _bangaBundleTimer = setTimeout(() => {
     try {
       db.collection('sync_bundles').doc('banga').set({
-        list: bangaDatabase,
+        list: sanitizeForFirestore(bangaDatabase),
         updatedAt: Date.now()
       }, { merge: true }).catch(e => console.warn('Sync banga bundle notice:', e.code || e));
     } catch (e) { }
@@ -3625,7 +3637,7 @@ function saveBangaStorage(itemToSync) {
     const syncItem = (it) => {
       if (!it || !it.id) return;
       const docId = String(it.id);
-      db.collection('banga').doc(docId).set(it, { merge: true }).catch(err => {
+      db.collection('banga').doc(docId).set(sanitizeForFirestore(it), { merge: true }).catch(err => {
         console.error("Loi dong bo doc banga:", docId, err);
       });
     };
@@ -11404,7 +11416,7 @@ function confirmSellPhone(e) {
       pinStatus: soldItem.pinStatus,
       pin: soldItem.pin,
       origin: soldItem.origin,
-      accessory: targetList === 'Bán Gà' ? 'Bán Máy' : undefined,
+      accessory: targetList === 'Bán Gà' ? 'Bán Máy' : '',
       total: actualPriceOut,
       priceIn: soldItem.priceIn || '0',
       profit: profitValStr,
@@ -11720,7 +11732,7 @@ function confirmExternalSellPhone(e) {
     pinStatus: '',
     pin: '',
     origin: '',
-    accessory: targetList === 'Bán Gà' ? 'Bán Máy (Ngoài Kho)' : undefined,
+    accessory: targetList === 'Bán Gà' ? 'Bán Máy (Ngoài Kho)' : '',
     total: priceOut,
     priceIn: priceIn,
     profit: profitValStr,
@@ -12188,7 +12200,7 @@ function saveEditedSoldPhone(e) {
         pinStatus: item.pinStatus,
         pin: item.pin,
         origin: item.origin,
-        accessory: targetList === 'Bán Gà' ? 'Bán Máy' : undefined,
+        accessory: targetList === 'Bán Gà' ? 'Bán Máy' : '',
         total: formattedTotal,
         priceIn: item.priceIn || '0',
         profit: formattedProfit,
