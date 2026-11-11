@@ -8669,7 +8669,11 @@
           white-space: nowrap !important;
         }
         #tab-baohanh .price-filter-box-bm,
-        #tab-baohanh .baohanh-excel-controls {
+        #tab-baohanh .baohanh-excel-controls,
+        #btnSoldPhoneExcelToggle,
+        #soldPhoneActionsBox,
+        #tab-baohanh #btnSoldPhoneExcelToggle,
+        #tab-baohanh #soldPhoneActionsBox {
           display: none !important;
         }
 
