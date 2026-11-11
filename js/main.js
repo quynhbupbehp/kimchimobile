@@ -2031,6 +2031,42 @@ function adjustSellDate(days) {
   }
 }
 
+function openNativeDatePickerForSellPhone() {
+  const picker = document.getElementById('nativeDatePicker_sellPhone');
+  if (!picker) return;
+  const input = document.getElementById('sellDateVal');
+  if (input && input.value.trim()) {
+    let p = input.value.trim().split('/');
+    if (p.length === 3) {
+      let yyyy = p[2];
+      let mm = String(p[1]).padStart(2, '0');
+      let dd = String(p[0]).padStart(2, '0');
+      picker.value = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+  if (typeof picker.showPicker === 'function') {
+    picker.showPicker();
+  } else {
+    picker.click();
+  }
+}
+window.openNativeDatePickerForSellPhone = openNativeDatePickerForSellPhone;
+
+function handleNativeDateChangeForSellPhone(val) {
+  if (!val) return;
+  const parts = val.split('-');
+  if (parts.length === 3) {
+    const dd = parts[2];
+    const mm = parts[1];
+    const yyyy = parts[0];
+    const input = document.getElementById('sellDateVal');
+    if (input) {
+      input.value = `${dd}/${mm}/${yyyy}`;
+    }
+  }
+}
+window.handleNativeDateChangeForSellPhone = handleNativeDateChangeForSellPhone;
+
 function handleLogin(e) {
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
@@ -11610,6 +11646,42 @@ function adjustExtSellDate(days) {
     dateInput.value = getCurrentDateStr();
   }
 }
+
+function openNativeDatePickerForExtSell() {
+  const picker = document.getElementById('nativeDatePicker_extSell');
+  if (!picker) return;
+  const input = document.getElementById('extSellDateVal');
+  if (input && input.value.trim()) {
+    let p = input.value.trim().split('/');
+    if (p.length === 3) {
+      let yyyy = p[2];
+      let mm = String(p[1]).padStart(2, '0');
+      let dd = String(p[0]).padStart(2, '0');
+      picker.value = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+  if (typeof picker.showPicker === 'function') {
+    picker.showPicker();
+  } else {
+    picker.click();
+  }
+}
+window.openNativeDatePickerForExtSell = openNativeDatePickerForExtSell;
+
+function handleNativeDateChangeForExtSell(val) {
+  if (!val) return;
+  const parts = val.split('-');
+  if (parts.length === 3) {
+    const dd = parts[2];
+    const mm = parts[1];
+    const yyyy = parts[0];
+    const input = document.getElementById('extSellDateVal');
+    if (input) {
+      input.value = `${dd}/${mm}/${yyyy}`;
+    }
+  }
+}
+window.handleNativeDateChangeForExtSell = handleNativeDateChangeForExtSell;
 
 function handleExtGiftFocus(input) {
   if (input.value === '0') input.value = '';

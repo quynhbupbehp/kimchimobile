@@ -9024,26 +9024,39 @@
           font-weight: 900 !important;
           text-shadow: none !important;
         }
-        #externalSellPhoneModal .date-adjust-container {
+        #externalSellPhoneModal .date-adjust-container,
+        #sellPhoneModal .date-adjust-container {
           gap: 2px !important;
           display: flex !important;
           align-items: center !important;
           width: 100% !important;
         }
-        #externalSellPhoneModal .date-adjust-container .btn-date-step {
+        #externalSellPhoneModal .date-adjust-container .btn-date-step,
+        #sellPhoneModal .date-adjust-container .btn-date-step {
           width: 24px !important;
           min-width: 24px !important;
           flex: 0 0 24px !important;
           padding: 0 !important;
           font-size: 0.95rem !important;
         }
-        #externalSellPhoneModal #extSellDateVal {
+        #externalSellPhoneModal #extSellDateVal,
+        #sellPhoneModal #sellDateVal {
           font-size: 0.82rem !important;
           padding: 6px 2px !important;
           min-width: 0 !important;
           flex: 1 1 auto !important;
           text-align: center !important;
           letter-spacing: -0.2px !important;
+          user-select: none !important;
+          -webkit-user-select: none !important;
+          pointer-events: none !important;
+        }
+        #externalSellPhoneModal #extSellTotalGiftMoney,
+        #externalSellPhoneModal #extSellProfitVal,
+        #sellPhoneModal #sellTotalGiftMoney,
+        #sellPhoneModal #sellProfitVal {
+          font-size: 0.8rem !important;
+          padding: 8px 1px !important;
         }
 
         /* HÀNG TÊN MÁY (70%) & IMEI (30%) TRÊN MOBILE CÙNG 1 HÀNG */
