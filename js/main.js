@@ -6879,6 +6879,10 @@ function handleImportSalesExcelFile(event) {
         // Chuẩn hóa ngày giờ sang dạng "HH:mm - DD/MM/YYYY"
         let dateTime = formatImportDateTime(rawDate);
 
+        // Chỉ nhập các dòng thuộc đúng phạm vi Ngày/Tháng/Năm/Tất Cả đang chọn ở bộ lọc tab Bán Hàng
+        if (!isSaleItemMatchingCurrentFilter({ dateTime: dateTime })) {
+          continue;
+        }
 
         // Kiểm tra xem đơn hàng này đã tồn tại trong salesDatabase chưa (theo dateTime + name + totalNum)
         let existingItem = salesDatabase.find(s =>
@@ -7380,6 +7384,11 @@ function handleImportSoftwareExcelFile(event) {
           yearPart = rawYear;
         }
 
+        // Chỉ nhập các dòng thuộc đúng phạm vi Ngày/Tháng/Năm/Tất Cả đang chọn ở bộ lọc tab Phần Mềm
+        if (!isSoftwareItemMatchingCurrentFilter({ dayMonth: dayMonthPart, year: yearPart })) {
+          continue;
+        }
+
         // Xử lý thanh toán
         let statusClean = rawStatus.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         let isDebt = (statusClean.includes('no') || statusClean.includes('dai') || statusClean.includes('chua'));
@@ -7449,17 +7458,18 @@ function handleImportSoftwareExcelFile(event) {
         if (newRecords.length > 0) softwareDatabase = [...newRecords, ...softwareDatabase];
         localStorage.removeItem('KIMCHI_PHANMEM_CLEARED');
         saveSoftwareStorage([...newRecords]);
-        if (typeof setSoftwareMode === 'function') setSoftwareMode('all');
-        else if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
+        if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
         if (typeof renderDebtSoftwareList === 'function') renderDebtSoftwareList();
         if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
         if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
         if (typeof renderSalesTable === 'function' && Array.isArray(salesDatabase)) renderSalesTable(salesDatabase);
 
-        let msg = `Nhập thành công!\n- Thêm mới: ${newRecords.length} đơn\n- Cập nhật (ghi đè): ${updatedCount} đơn.`;
+        let scopeLabel = getCurrentSoftwareScopeLabel();
+        let msg = `Nhập thành công cho phạm vi [${scopeLabel}]!\n- Thêm mới: ${newRecords.length} đơn\n- Cập nhật (ghi đè): ${updatedCount} đơn.`;
         alert(msg);
       } else {
-        alert("Không tìm thấy dòng dữ liệu phần mềm hợp lệ nào trong file Excel!");
+        let scopeLabel = getCurrentSoftwareScopeLabel();
+        alert(`Không tìm thấy dòng dữ liệu phần mềm nào phù hợp với phạm vi [${scopeLabel}] trong file Excel!`);
       }
     } catch (err) {
       console.error("Lỗi đọc file Excel phần mềm:", err);
@@ -7731,9 +7741,11 @@ function handleImportRepairExcelFile(event) {
         if (newRecords.length > 0) repairDatabase.push(...newRecords);
         saveRepairDb();
         if (typeof renderRepairTable === 'function') renderRepairTable();
-        alert(`Đã nhập thành công ${newRecords.length} phiếu Sửa Chữa mới và cập nhật ${updatedCount} phiếu!`);
+        let scopeLabel = getCurrentRepairScopeLabel();
+        alert(`Đã nhập thành công ${newRecords.length} phiếu Sửa Chữa mới và cập nhật ${updatedCount} phiếu thuộc [${scopeLabel}]!`);
       } else {
-        alert("Không tìm thấy dữ liệu Sửa Chữa hợp lệ trong file!");
+        let scopeLabel = getCurrentRepairScopeLabel();
+        alert(`Không tìm thấy dữ liệu Sửa Chữa nào phù hợp với phạm vi [${scopeLabel}] trong file!`);
       }
     } catch (err) {
       console.error("Lỗi đọc file Excel Sửa Chữa:", err);
@@ -8475,6 +8487,11 @@ async function handleImportBangaExcelFile(event) {
         let paymentStatus = (method === 'Nợ') ? 'Nợ Dai VL' : 'Đã Trả';
         let dateTime = formatImportDateTime(rawDate);
 
+        // Chỉ nhập các dòng thuộc đúng phạm vi Ngày/Tháng/Năm/Tất Cả đang chọn ở bộ lọc tab Bán Gà
+        if (!isBangaItemMatchingCurrentFilter({ dateTime: dateTime })) {
+          continue;
+        }
+
         let nonMachineRegex = /bán thẻ|thẻ nhớ|nạp|cầm đồ|thay lưng|sửa|míc|mic|ép kính|sim|bán màn|đớp|viettel|huy linh|rút tiền|bộ sạc|dây sạc|củ sạc|tai nghe|cường lực|ốp lưng|dán|pin|vỏ|camera|loa|hòa/i;
         let isMachine = false;
         if (rawType) {
@@ -8550,23 +8567,16 @@ async function handleImportBangaExcelFile(event) {
     });
 
     saveBangaStorage();
-    bangaViewMode = 'year';
-    const bangaSel = document.getElementById('bangaModeSelect');
-    if (bangaSel) bangaSel.value = 'year';
-    const dayBox = document.getElementById('bangaDateFilterBox');
-    const monthBox = document.getElementById('bangaMonthFilterBox');
-    const yearBox = document.getElementById('bangaYearFilterBox');
-    if (dayBox) dayBox.style.display = 'none';
-    if (monthBox) monthBox.style.display = 'none';
-    if (yearBox) yearBox.style.display = 'inline-flex';
 
     if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
-    alert(`🎉 ĐÃ NHẬP THÀNH CÔNG ${totalNewRecords.length} PHIẾU BÁN GÀ MỚI (Cập nhật ${totalUpdatedCount} phiếu) từ ${files.length} file!\n(Đã tự động chuyển sang chế độ xem Năm để hiển thị toàn bộ phiếu vừa nhập)`);
+    let scopeLabel = getCurrentBangaScopeLabel();
+    alert(`🎉 ĐÃ NHẬP THÀNH CÔNG ${totalNewRecords.length} PHIẾU BÁN GÀ MỚI (Cập nhật ${totalUpdatedCount} phiếu) thuộc [${scopeLabel}] từ ${files.length} file!`);
   } else {
     if (errorFiles.length > 0) {
       alert(`Có lỗi khi đọc các file: ${errorFiles.join(', ')}`);
     } else {
-      alert("Không tìm thấy dữ liệu Bán Gà hợp lệ trong các file đã chọn!");
+      let scopeLabel = getCurrentBangaScopeLabel();
+      alert(`Không tìm thấy dữ liệu Bán Gà nào phù hợp với phạm vi [${scopeLabel}] trong các file đã chọn!`);
     }
   }
 }
@@ -8789,6 +8799,11 @@ function handleImportSoldPhoneExcelFile(event) {
         let method = normalizePaymentMethod(rawMethod);
         let dateTime = formatImportDateTime(rawDate);
 
+        // Chỉ nhập các máy thuộc đúng phạm vi Ngày/Tháng/Năm/Tất Cả đang chọn ở bộ lọc tab Bảo Hành (Máy Đã Bán)
+        if (!isSoldPhoneItemMatchingCurrentFilter({ dateTime: dateTime, soldDate: dateTime, date: dateTime })) {
+          continue;
+        }
+
         // Kiểm tra trùng lặp: Nếu có IMEI chuẩn, so sánh theo IMEI. Nếu là IMEI ảo/placeholder hoặc không có IMEI, so sánh tên máy + màu + dung lượng + ngày bán
         let existing = null;
         if (imei && !isDummyImei(imei)) {
@@ -8842,17 +8857,13 @@ function handleImportSoldPhoneExcelFile(event) {
         if (newRecords.length > 0) soldPhoneDatabase.push(...newRecords);
         saveSoldPhoneStorage();
 
-        // Tự động chuyển chế độ xem sang "Tất Cả" và bộ lọc bảo hành sang "Tất Cả" để hiển thị đầy đủ 100% 97 máy
-        currentSoldPhoneWarrantyFilter = 'ALL';
-        const warSelect = document.getElementById('soldPhoneWarrantyFilter');
-        if (warSelect) warSelect.value = 'ALL';
+        if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
 
-        if (typeof setSoldPhoneMode === 'function') setSoldPhoneMode('all');
-        else if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-
-        alert(`🎉 ĐÃ NHẬP THÀNH CÔNG ${newRecords.length} MÁY BẢO HÀNH (Cập nhật ${updatedCount} máy)!\n\n(Hệ thống đã tự động chuyển sang chế độ xem Tất Cả để hiển thị đủ toàn bộ máy đã bán)`);
+        let scopeLabel = getCurrentSoldPhoneScopeLabel();
+        alert(`🎉 ĐÃ NHẬP THÀNH CÔNG ${newRecords.length} MÁY BẢO HÀNH (Cập nhật ${updatedCount} máy) thuộc [${scopeLabel}]!`);
       } else {
-        alert("Không tìm thấy dữ liệu Bảo Hành hợp lệ trong file!");
+        let scopeLabel = getCurrentSoldPhoneScopeLabel();
+        alert(`Không tìm thấy dữ liệu Bảo Hành nào phù hợp với phạm vi [${scopeLabel}] trong file!`);
       }
     } catch (err) {
       console.error("Lỗi đọc file Excel Bảo Hành:", err);
