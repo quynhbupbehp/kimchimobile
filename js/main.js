@@ -17300,7 +17300,7 @@ function renderSoftwareTable(database) {
     let safeId = String(item.id).replace(/'/g, "\\'");
     let statusBadgeHtml = isDebt
       ? `<span class="sw-badge-debt" ondblclick="markSoftwareAsPaidOnDblClick('${safeId}', event)" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ markSoftwareAsPaidOnDblClick('${safeId}', event); } this._lastTap=now;" title="Nháy đúp 2 lần để chuyển nhanh sang ĐÃ TRẢ" style="cursor: pointer; user-select: none;">💀 NỢ DAI VL</span>`
-      : `<span class="sw-badge-paid" ondblclick="event.stopPropagation(); event.preventDefault();" ontouchend="event.stopPropagation();" title="Đơn đã trả tiền (Vô hiệu hóa, không thể bấm)" style="cursor: not-allowed; user-select: none; pointer-events: none;">✔ ĐÃ TRẢ <span style="font-size: 0.95rem; margin-left: 2px;">💰</span></span>`;
+      : `<span class="sw-badge-paid" title="Đơn đã trả tiền (Vô hiệu hóa, không thể bấm)" style="cursor: not-allowed; user-select: none;">✔ ĐÃ TRẢ <span style="font-size: 0.95rem; margin-left: 2px;">💰</span></span>`;
 
     return `
           <tr ondblclick="viewSoftwareTicket('${safeId}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<450){ viewSoftwareTicket('${safeId}'); } this._lastTap=now;" style="cursor: pointer;" title="Nháy 2 lần để xem chi tiết đơn">
@@ -17328,7 +17328,7 @@ function renderSoftwareTable(database) {
             <td class="sw-col-extra">
               <span style="color: #f59e0b; font-weight: 900; font-size: 1.16rem;">${swHideProfits ? '***' : formatPriceStr(item.profit)}</span>
             </td>
-            <td class="sw-col-extra">
+            <td class="sw-col-extra" ondblclick="event.stopPropagation();" ontouchend="event.stopPropagation();" style="cursor: default;">
               ${statusBadgeHtml}
             </td>
             <td class="sw-col-extra">
