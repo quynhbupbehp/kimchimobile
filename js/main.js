@@ -10261,30 +10261,28 @@ window.mergeWithSeedSoldPhones = mergeWithSeedSoldPhones;
 function mergeWithSeedPhones(list) {
   const soldIds = getSoldPhoneIds();
   const deletedPhoneIds = getDeletedPhoneIds();
-  // Lọc danh sách hiện tại loại bỏ các máy đã bán hoặc đã xóa theo ID
-  let combined = Array.isArray(list) ? list.filter(item => {
-    if (!item) return false;
-    if (item.id && (soldIds.has(String(item.id)) || deletedPhoneIds.has(String(item.id)))) return false;
-    return true;
-  }) : [];
+  // Nếu đã có danh sách máy lưu cục bộ, chỉ lọc bỏ máy đã bán/xóa, tuyệt đối không tự ý nhồi thêm seed cũ
+  if (Array.isArray(list) && list.length > 0) {
+    let combined = list.filter(item => {
+      if (!item) return false;
+      if (item.id && (soldIds.has(String(item.id)) || deletedPhoneIds.has(String(item.id)))) return false;
+      return true;
+    });
+    if (typeof applyPhoneStatusOverrides === 'function') {
+      combined = applyPhoneStatusOverrides(combined);
+    }
+    return combined;
+  }
 
+  // Chỉ khi danh sách hoàn toàn trống (máy mới tinh chưa từng có dữ liệu), mới lấy từ SEED_PHONES_DATA
+  let combined = [];
   if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
     const seeds = window.SEED_PHONES_DATA;
-    const existIdSet = new Set(combined.map(s => String(s.id)));
-    const existImeiSet = new Set(combined.filter(s => s.imei).map(s => String(s.imei).trim()));
-
     seeds.forEach(s => {
       if (!s || !s.id) return;
       const sId = String(s.id);
-      const sImei = s.imei ? String(s.imei).trim() : '';
-
-      // Tuyệt đối không nạp lại nếu máy này đã bán hoặc đã bị người dùng xóa theo ID
       if (soldIds.has(sId) || deletedPhoneIds.has(sId)) return;
-      if (existIdSet.has(sId) || (sImei && existImeiSet.has(sImei))) return;
-
       combined.push(s);
-      existIdSet.add(sId);
-      if (sImei) existImeiSet.add(sImei);
     });
   }
   if (typeof applyPhoneStatusOverrides === 'function') {
@@ -13291,10 +13289,10 @@ function renderPhoneGrid() {
   const rawSearch = document.getElementById('phoneSearchInput') ? document.getElementById('phoneSearchInput').value.trim() : '';
   const normSearch = normalizeQuery(rawSearch);
 
-  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (chỉ hợp nhất seed nếu danh sách máy trống)
+  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (chỉ lấy seed nếu danh sách máy hoàn toàn trống)
   if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
     if (!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) {
-      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
       savePhoneStorage();
     }
   }
