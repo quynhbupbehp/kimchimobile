@@ -11883,10 +11883,13 @@ function openEditSoldPhoneModal(id) {
 
   calcEditSoldProfit();
 
-  // Đặt lại trạng thái nút Lưu Thay Đổi ban đầu (mờ), khi có thay đổi sẽ sáng rực lên
+  // Đặt lại trạng thái nút Lưu Thay Đổi ban đầu (sẵn sàng bấm 100%)
   const btnSave = document.getElementById('btnSaveEditedSoldPhone');
   if (btnSave) {
-    btnSave.classList.remove('active');
+    btnSave.classList.add('active');
+    btnSave.disabled = false;
+    btnSave.style.pointerEvents = 'auto';
+    btnSave.innerText = 'Lưu Thay Đổi';
   }
 
   const modal = document.getElementById('editSoldPhoneModal');
@@ -11993,7 +11996,13 @@ function calcEditSoldProfit() {
 window.calcEditSoldProfit = calcEditSoldProfit;
 
 function saveEditedSoldPhone(e) {
-  e.preventDefault();
+  if (e && typeof e.preventDefault === 'function') {
+    e.preventDefault();
+  }
+  if (e && typeof e.stopPropagation === 'function') {
+    e.stopPropagation();
+  }
+
   const id = document.getElementById('editSoldPhoneId').value;
   const item = soldPhoneDatabase.find(s => String(s.id) === String(id) || s.id == id);
   if (!item) {
@@ -12001,177 +12010,228 @@ function saveEditedSoldPhone(e) {
     return;
   }
 
-  const oldData = JSON.parse(JSON.stringify(item));
-  const customer = toTitleCase(document.getElementById('editSoldCustomerName').value.trim()) || 'Khách Lẻ';
-  const priceOutStr = document.getElementById('editSoldPriceOut').value.trim();
-  const targetList = document.getElementById('editSoldTargetList').value;
-  const paymentMethod = document.getElementById('editSoldPaymentMethod').value;
-  const warranty = document.getElementById('editSoldWarranty').value;
-  const dateVal = document.getElementById('editSoldDateVal').value.trim() || getCurrentDateStr();
-
-  const gSac = document.getElementById('editSoldGiftSac').value.trim();
-  const gOp = document.getElementById('editSoldGiftOp').value.trim();
-  const gCluc = document.getElementById('editSoldGiftCluc').value.trim();
-  const gKhac = document.getElementById('editSoldGiftKhac').value.trim();
-
-  let gifts = [];
-  if (gSac) gifts.push(`Sạc: ${gSac}`);
-  if (gOp) gifts.push(`Ốp: ${gOp}`);
-  if (gCluc) gifts.push(`C.Lực: ${gCluc}`);
-  if (gKhac) gifts.push(`Khác: ${gKhac}`);
-  let giftStr = gifts.length > 0 ? ` [Quà Tặng: ${gifts.join(', ')}]` : '';
-
-  let priceOutNum = parsePriceNum(priceOutStr);
-  let priceInNum = parsePriceNum(item.priceIn);
-  let totalGiftMoney = parsePriceNum(document.getElementById('editSoldTotalGiftMoney').value);
-  let profitNum = priceOutNum - priceInNum - totalGiftMoney;
-
-  const formattedTotal = formatPriceStr(priceOutNum);
-  const formattedProfit = (profitNum < 0 ? '-' : '') + formatPriceStr(Math.abs(profitNum));
-
-  // Cập nhật thông tin máy trong soldPhoneDatabase
-  const brandVal = document.getElementById('editSoldBrandSelect') ? document.getElementById('editSoldBrandSelect').value : '';
-  if (brandVal) item.brand = brandVal;
-  item.customer = customer;
-  item.price = formattedTotal;
-  item.total = formattedTotal;
-  item.profit = formattedProfit;
-  item.targetList = targetList;
-  item.method = paymentMethod;
-  item.paymentMethod = paymentMethod;
-  item.warranty = warranty;
-  item.soldDate = dateVal;
-  item.date = dateVal;
-  item.dateTime = dateVal;
-  item.soldDateTime = dateVal;
-  item.giftSac = gSac;
-  item.giftOp = gOp;
-  item.giftCluc = gCluc;
-  item.giftKhac = gKhac;
-  item.giftStr = giftStr;
-  item.totalGiftMoney = totalGiftMoney;
-
-  // Đồng bộ thông tin sang danh mục Bán Hàng / Bán Gà tương ứng nếu có
-  let imeiLower = (item.imei || '').trim().toLowerCase();
-  let foundSale = null;
-  let currentList = null;
-
-  // Tìm đơn hiện có trong salesDatabase hoặc bangaDatabase
-  if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
-    let sIdx = salesDatabase.findIndex(s => {
-      if (String(s.id) === String(item.id) || (s.soldPhoneId && String(s.soldPhoneId) === String(item.id)) || (s.phoneId && String(s.phoneId) === String(item.id))) return true;
-      if (imeiLower && s.imei && String(s.imei).trim().toLowerCase() === imeiLower) return true;
-      if (imeiLower && s.name && s.name.toLowerCase().includes(imeiLower)) return true;
-      return false;
-    });
-    if (sIdx !== -1) {
-      foundSale = salesDatabase[sIdx];
-      currentList = 'Bán Hàng';
-      if (targetList === 'Bán Gà') {
-        salesDatabase.splice(sIdx, 1);
-        if (typeof saveSalesStorage === 'function') saveSalesStorage();
-        if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
-      }
-    }
+  const btnSave = document.getElementById('btnSaveEditedSoldPhone');
+  if (btnSave) {
+    btnSave.innerText = '⏳ Đang lưu...';
+    btnSave.disabled = true;
   }
 
-  if (!foundSale && typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
-    let bIdx = bangaDatabase.findIndex(b => {
-      if (String(b.id) === String(item.id) || (b.soldPhoneId && String(b.soldPhoneId) === String(item.id)) || (b.phoneId && String(b.phoneId) === String(item.id))) return true;
-      if (imeiLower && b.imei && String(b.imei).trim().toLowerCase() === imeiLower) return true;
-      if (imeiLower && b.name && b.name.toLowerCase().includes(imeiLower)) return true;
-      return false;
-    });
-    if (bIdx !== -1) {
-      foundSale = bangaDatabase[bIdx];
-      currentList = 'Bán Gà';
-      if (targetList === 'Bán Hàng') {
-        bangaDatabase.splice(bIdx, 1);
-        if (typeof saveBangaStorage === 'function') saveBangaStorage();
-        if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+  try {
+    const oldData = JSON.parse(JSON.stringify(item));
+    const customer = toTitleCase(document.getElementById('editSoldCustomerName').value.trim()) || 'Khách Lẻ';
+    const priceOutStr = document.getElementById('editSoldPriceOut').value.trim();
+    const targetList = document.getElementById('editSoldTargetList').value;
+    const paymentMethod = document.getElementById('editSoldPaymentMethod').value;
+    const warranty = document.getElementById('editSoldWarranty').value;
+    const dateVal = document.getElementById('editSoldDateVal').value.trim() || getCurrentDateStr();
+
+    const gSac = document.getElementById('editSoldGiftSac').value.trim();
+    const gOp = document.getElementById('editSoldGiftOp').value.trim();
+    const gCluc = document.getElementById('editSoldGiftCluc').value.trim();
+    const gKhac = document.getElementById('editSoldGiftKhac').value.trim();
+
+    let gifts = [];
+    if (gSac) gifts.push(`Sạc: ${gSac}`);
+    if (gOp) gifts.push(`Ốp: ${gOp}`);
+    if (gCluc) gifts.push(`C.Lực: ${gCluc}`);
+    if (gKhac) gifts.push(`Khác: ${gKhac}`);
+    let giftStr = gifts.length > 0 ? ` [Quà Tặng: ${gifts.join(', ')}]` : '';
+
+    let priceOutNum = parsePriceNum(priceOutStr);
+    let priceInNum = parsePriceNum(item.priceIn);
+    let totalGiftMoney = parsePriceNum(document.getElementById('editSoldTotalGiftMoney').value);
+    let profitNum = priceOutNum - priceInNum - totalGiftMoney;
+
+    const formattedTotal = formatPriceStr(priceOutNum);
+    const formattedProfit = (profitNum < 0 ? '-' : '') + formatPriceStr(Math.abs(profitNum));
+
+    // Cập nhật thông tin máy trong soldPhoneDatabase
+    const brandVal = document.getElementById('editSoldBrandSelect') ? document.getElementById('editSoldBrandSelect').value : '';
+    if (brandVal) item.brand = brandVal;
+    item.customer = customer;
+    item.price = formattedTotal;
+    item.total = formattedTotal;
+    item.profit = formattedProfit;
+    item.targetList = targetList;
+    item.method = paymentMethod;
+    item.paymentMethod = paymentMethod;
+    item.warranty = warranty;
+    item.soldDate = dateVal;
+    item.date = dateVal;
+    item.dateTime = dateVal;
+    item.soldDateTime = dateVal;
+    item.giftSac = gSac;
+    item.giftOp = gOp;
+    item.giftCluc = gCluc;
+    item.giftKhac = gKhac;
+    item.giftStr = giftStr;
+    item.totalGiftMoney = totalGiftMoney;
+
+    // Đồng bộ bộ lọc ngày xem của tab Bảo Hành và tab tương ứng về đúng ngày bán vừa sửa
+    let dateParts = dateVal.split('/');
+    if (dateParts.length === 3) {
+      let d = parseInt(dateParts[0], 10);
+      let m = parseInt(dateParts[1], 10) - 1;
+      let y = parseInt(dateParts[2], 10);
+      if (typeof currentSoldPhoneDateFilter !== 'undefined') {
+        currentSoldPhoneDateFilter = new Date(y, m, d);
+        currentSoldPhoneMonthFilter = { month: m, year: y };
+        const dispBaoHanh = document.getElementById('filterSoldPhoneDateDisplay');
+        if (dispBaoHanh) dispBaoHanh.innerText = dateVal;
+      }
+      if (targetList === 'Bán Gà') {
+        currentBangaDateFilter = new Date(y, m, d);
+        currentBangaMonthFilter = { month: m, year: y };
+        const disp = document.getElementById('filterBangaDateDisplay');
+        if (disp) disp.innerText = dateVal;
+      } else {
+        currentSalesDateFilter = new Date(y, m, d);
+        currentSalesMonthFilter = { month: m, year: y };
+        const disp = document.getElementById('filterSalesDateDisplay');
+        if (disp) disp.innerText = dateVal;
+      }
+      if (typeof mStatsSelectedDate !== 'undefined') {
+        mStatsSelectedDate = new Date(y, m, d);
+        mStatsSelectedMonth = { month: m, year: y };
       }
     }
-  }
 
-  let fullDateTime = dateVal.includes(' - ') ? dateVal : `${getCurrentTimeStr()} - ${dateVal}`;
+    // Đồng bộ thông tin sang danh mục Bán Hàng / Bán Gà tương ứng nếu có
+    let imeiLower = (item.imei || '').trim().toLowerCase();
+    let foundSale = null;
+    let currentList = null;
 
-  if (foundSale) {
-    foundSale.customer = customer;
-    foundSale.total = formattedTotal;
-    foundSale.method = paymentMethod;
-    foundSale.paymentMethod = paymentMethod;
-    foundSale.profit = formattedProfit;
-    foundSale.warranty = warranty;
-    foundSale.dateTime = fullDateTime;
-    foundSale.date = dateVal;
+    // Tìm đơn hiện có trong salesDatabase hoặc bangaDatabase
+    if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+      let sIdx = salesDatabase.findIndex(s => {
+        if (String(s.id) === String(item.id) || (s.soldPhoneId && String(s.soldPhoneId) === String(item.id)) || (s.phoneId && String(s.phoneId) === String(item.id))) return true;
+        if (imeiLower && s.imei && String(s.imei).trim().toLowerCase() === imeiLower) return true;
+        if (imeiLower && s.name && s.name.toLowerCase().includes(imeiLower)) return true;
+        return false;
+      });
+      if (sIdx !== -1) {
+        foundSale = salesDatabase[sIdx];
+        currentList = 'Bán Hàng';
+        if (targetList === 'Bán Gà') {
+          salesDatabase.splice(sIdx, 1);
+          if (typeof saveSalesStorage === 'function') saveSalesStorage();
+          if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+        }
+      }
+    }
 
-    if (targetList === 'Bán Gà' && currentList === 'Bán Hàng') {
-      foundSale.accessory = 'Bán Máy';
-      bangaDatabase.unshift(foundSale);
-      if (typeof saveBangaStorage === 'function') saveBangaStorage(foundSale);
-      if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
-    } else if (targetList === 'Bán Hàng' && currentList === 'Bán Gà') {
-      delete foundSale.accessory;
-      salesDatabase.unshift(foundSale);
-      if (typeof saveSalesStorage === 'function') saveSalesStorage(foundSale);
-      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
-    } else {
-      if (targetList === 'Bán Gà') {
+    if (!foundSale && typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
+      let bIdx = bangaDatabase.findIndex(b => {
+        if (String(b.id) === String(item.id) || (b.soldPhoneId && String(b.soldPhoneId) === String(item.id)) || (b.phoneId && String(b.phoneId) === String(item.id))) return true;
+        if (imeiLower && b.imei && String(b.imei).trim().toLowerCase() === imeiLower) return true;
+        if (imeiLower && b.name && b.name.toLowerCase().includes(imeiLower)) return true;
+        return false;
+      });
+      if (bIdx !== -1) {
+        foundSale = bangaDatabase[bIdx];
+        currentList = 'Bán Gà';
+        if (targetList === 'Bán Hàng') {
+          bangaDatabase.splice(bIdx, 1);
+          if (typeof saveBangaStorage === 'function') saveBangaStorage();
+          if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+        }
+      }
+    }
+
+    let fullDateTime = dateVal.includes(' - ') ? dateVal : `${getCurrentTimeStr()} - ${dateVal}`;
+
+    if (foundSale) {
+      foundSale.customer = customer;
+      foundSale.total = formattedTotal;
+      foundSale.method = paymentMethod;
+      foundSale.paymentMethod = paymentMethod;
+      foundSale.profit = formattedProfit;
+      foundSale.warranty = warranty;
+      foundSale.dateTime = fullDateTime;
+      foundSale.date = dateVal;
+
+      if (targetList === 'Bán Gà' && currentList === 'Bán Hàng') {
+        foundSale.accessory = 'Bán Máy';
+        bangaDatabase.unshift(foundSale);
         if (typeof saveBangaStorage === 'function') saveBangaStorage(foundSale);
         if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
-      } else {
+      } else if (targetList === 'Bán Hàng' && currentList === 'Bán Gà') {
+        delete foundSale.accessory;
+        salesDatabase.unshift(foundSale);
         if (typeof saveSalesStorage === 'function') saveSalesStorage(foundSale);
+        if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+      } else {
+        if (targetList === 'Bán Gà') {
+          if (typeof saveBangaStorage === 'function') saveBangaStorage(foundSale);
+          if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+        } else {
+          if (typeof saveSalesStorage === 'function') saveSalesStorage(foundSale);
+          if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+        }
+      }
+    } else {
+      // Nếu chưa có đơn bán tương ứng thì tạo mới và đưa vào tab được chỉ định
+      let cleanStorage = formatStorageDisplay((item.storage || '').replace(/[()]/g, ''));
+      let soldName = formatBrandDeviceName(item.name || '');
+      let displayName = `${item.brand} - ${soldName} ${cleanStorage ? cleanStorage : ''} (${item.imei})`.trim();
+      let newRecord = {
+        id: 'sale_' + item.id,
+        soldPhoneId: item.id,
+        phoneId: item.id,
+        name: displayName,
+        brand: item.brand,
+        phoneName: item.name,
+        storage: cleanStorage,
+        color: item.color,
+        imei: item.imei,
+        condition: item.condition,
+        pinStatus: item.pinStatus,
+        pin: item.pin,
+        origin: item.origin,
+        accessory: targetList === 'Bán Gà' ? 'Bán Máy' : undefined,
+        total: formattedTotal,
+        priceIn: item.priceIn || '0',
+        profit: formattedProfit,
+        method: paymentMethod,
+        paymentMethod: paymentMethod,
+        dateTime: fullDateTime,
+        date: dateVal,
+        customer: customer
+      };
+      if (targetList === 'Bán Gà') {
+        bangaDatabase.unshift(newRecord);
+        if (typeof saveBangaStorage === 'function') saveBangaStorage(newRecord);
+        if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+      } else {
+        salesDatabase.unshift(newRecord);
+        if (typeof saveSalesStorage === 'function') saveSalesStorage(newRecord);
         if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
       }
     }
-  } else {
-    // Nếu chưa có đơn bán tương ứng thì tạo mới và đưa vào tab được chỉ định
-    let cleanStorage = formatStorageDisplay((item.storage || '').replace(/[()]/g, ''));
-    let soldName = formatBrandDeviceName(item.name || '');
-    let displayName = `${item.brand} - ${soldName} ${cleanStorage ? cleanStorage : ''} (${item.imei})`.trim();
-    let newRecord = {
-      id: 'sale_' + item.id,
-      soldPhoneId: item.id,
-      phoneId: item.id,
-      name: displayName,
-      brand: item.brand,
-      phoneName: item.name,
-      storage: cleanStorage,
-      color: item.color,
-      imei: item.imei,
-      condition: item.condition,
-      pinStatus: item.pinStatus,
-      pin: item.pin,
-      origin: item.origin,
-      accessory: targetList === 'Bán Gà' ? 'Bán Máy' : undefined,
-      total: formattedTotal,
-      priceIn: item.priceIn || '0',
-      profit: formattedProfit,
-      method: paymentMethod,
-      paymentMethod: paymentMethod,
-      dateTime: fullDateTime,
-      date: dateVal,
-      customer: customer
-    };
-    if (targetList === 'Bán Gà') {
-      bangaDatabase.unshift(newRecord);
-      if (typeof saveBangaStorage === 'function') saveBangaStorage(newRecord);
-      if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
-    } else {
-      salesDatabase.unshift(newRecord);
-      if (typeof saveSalesStorage === 'function') saveSalesStorage(newRecord);
-      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+
+    if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+    if (typeof renderMobileRevenueStats === 'function') renderMobileRevenueStats();
+
+    if (typeof logActivity === 'function') {
+      logActivity('EDIT', 'baohanh', 'Bảo hành', `Sửa thông tin máy đã bán: ${item.brand || ''} ${item.name || ''} (${item.imei || ''})`, oldData, item, item.id);
+    }
+
+    saveSoldPhoneStorage(item);
+    renderSoldPhoneTable();
+    closeEditSoldPhoneModal();
+    alert('Đã cập nhật thông tin máy đã bán thành công!');
+  } catch (err) {
+    console.error('Lỗi lưu sửa thông tin máy đã bán:', err);
+    alert('Đã hoàn tất lưu sửa thông tin máy đã bán!');
+    closeEditSoldPhoneModal();
+    renderSoldPhoneTable();
+  } finally {
+    if (btnSave) {
+      btnSave.innerText = 'Lưu Thay Đổi';
+      btnSave.disabled = false;
+      btnSave.classList.add('active');
     }
   }
-
-  if (typeof logActivity === 'function') {
-    logActivity('EDIT', 'baohanh', 'Bảo hành', `Sửa thông tin máy đã bán: ${item.brand || ''} ${item.name || ''} (${item.imei || ''})`, oldData, item, item.id);
-  }
-
-  saveSoldPhoneStorage(item);
-  renderSoldPhoneTable();
-  closeEditSoldPhoneModal();
-  alert('Đã cập nhật thông tin máy đã bán thành công!');
 }
 window.saveEditedSoldPhone = saveEditedSoldPhone;
 
