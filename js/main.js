@@ -11332,10 +11332,35 @@ function confirmSellPhone(e) {
     profit: profitValStr,
     method: paymentMethod,
     paymentMethod: paymentMethod,
+    paymentStatus: 'Đã Trả',
     dateTime: fullDateTime,
     date: dateVal,
     customer: customerName
   };
+
+  // Đồng bộ bộ lọc ngày xem của tab tương ứng về đúng ngày bán để hiển thị ngay lập tức
+  let dateParts = dateVal.split('/');
+  if (dateParts.length === 3) {
+    let d = parseInt(dateParts[0], 10);
+    let m = parseInt(dateParts[1], 10) - 1;
+    let y = parseInt(dateParts[2], 10);
+    if (targetList === 'Bán Gà') {
+      currentBangaDateFilter = new Date(y, m, d);
+      currentBangaMonthFilter = { month: m, year: y };
+      const disp = document.getElementById('filterBangaDateDisplay');
+      if (disp) disp.innerText = dateVal;
+    } else {
+      currentSalesDateFilter = new Date(y, m, d);
+      currentSalesMonthFilter = { month: m, year: y };
+      const disp = document.getElementById('filterSalesDateDisplay');
+      if (disp) disp.innerText = dateVal;
+    }
+    // Đồng bộ cả ngày của modal Doanh Thu nếu người dùng mở xem
+    if (typeof mStatsSelectedDate !== 'undefined') {
+      mStatsSelectedDate = new Date(y, m, d);
+      mStatsSelectedMonth = { month: m, year: y };
+    }
+  }
 
   if (targetList === 'Bán Gà') {
     bangaDatabase.unshift(record);
@@ -11346,6 +11371,9 @@ function confirmSellPhone(e) {
     saveSalesStorage(record);
     renderSalesTable(salesDatabase);
   }
+
+  if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+  if (typeof renderMobileRevenueStats === 'function') renderMobileRevenueStats();
 
   if (typeof logActivity === 'function') {
     logActivity('EDIT', 'banmay', 'Bán máy', `Bán máy: ${displayName} cho ${customerName} - Giá: ${actualPriceOut} (Lãi: ${profitValStr})`, null, soldItem, soldItem.id);
@@ -11613,6 +11641,29 @@ function confirmExternalSellPhone(e) {
     note: 'Bán máy ❤️'
   };
 
+  // Đồng bộ bộ lọc ngày xem của tab tương ứng về đúng ngày bán để hiển thị ngay lập tức
+  let extDateParts = dateVal.split('/');
+  if (extDateParts.length === 3) {
+    let d = parseInt(extDateParts[0], 10);
+    let m = parseInt(extDateParts[1], 10) - 1;
+    let y = parseInt(extDateParts[2], 10);
+    if (targetList === 'Bán Gà') {
+      currentBangaDateFilter = new Date(y, m, d);
+      currentBangaMonthFilter = { month: m, year: y };
+      const disp = document.getElementById('filterBangaDateDisplay');
+      if (disp) disp.innerText = dateVal;
+    } else {
+      currentSalesDateFilter = new Date(y, m, d);
+      currentSalesMonthFilter = { month: m, year: y };
+      const disp = document.getElementById('filterSalesDateDisplay');
+      if (disp) disp.innerText = dateVal;
+    }
+    if (typeof mStatsSelectedDate !== 'undefined') {
+      mStatsSelectedDate = new Date(y, m, d);
+      mStatsSelectedMonth = { month: m, year: y };
+    }
+  }
+
   if (targetList === 'Bán Gà') {
     bangaDatabase.unshift(record);
     saveBangaStorage();
@@ -11622,6 +11673,9 @@ function confirmExternalSellPhone(e) {
     saveSalesStorage();
     renderSalesTable(salesDatabase);
   }
+
+  if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+  if (typeof renderMobileRevenueStats === 'function') renderMobileRevenueStats();
 
   closeExternalSellPhoneModal();
   renderSoldPhoneTable();
