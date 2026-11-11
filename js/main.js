@@ -2033,26 +2033,47 @@ function adjustSellDate(days) {
 
 // === BỘ CHỌN LỊCH DẠNG POPUP NỔI CHUYÊN DỤNG (UNIVERSAL APP DATE PICKER) ===
 let appDatePickerTargetInputId = null;
+let appDatePickerTargetTabKey = null;
 let appDatePickerYear = 2026;
 let appDatePickerMonth = 10; // 0-indexed (10 = tháng 11)
 let appDatePickerSelectedDay = 11;
 
-function openAppDatePicker(targetInputId) {
+function openAppDatePicker(targetInputId, tabKey) {
   appDatePickerTargetInputId = targetInputId;
-  const input = document.getElementById(targetInputId);
+  appDatePickerTargetTabKey = tabKey || null;
+  const input = targetInputId ? document.getElementById(targetInputId) : null;
   const now = new Date();
   appDatePickerYear = now.getFullYear();
   appDatePickerMonth = now.getMonth();
   appDatePickerSelectedDay = now.getDate();
 
-  if (input && input.value && input.value.trim()) {
-    const p = input.value.trim().split('/');
+  let dateStrToCheck = '';
+  if (input) {
+    dateStrToCheck = input.value || input.innerText || '';
+  } else if (tabKey) {
+    let curD = null;
+    if (tabKey === 'sales') curD = typeof currentSalesDateFilter !== 'undefined' ? currentSalesDateFilter : null;
+    else if (tabKey === 'sw') curD = typeof swFilterDate !== 'undefined' ? swFilterDate : null;
+    else if (tabKey === 'repair') curD = typeof repairFilterDate !== 'undefined' ? repairFilterDate : null;
+    else if (tabKey === 'banga') curD = typeof currentBangaDateFilter !== 'undefined' ? currentBangaDateFilter : null;
+    else if (tabKey === 'soldPhone') curD = typeof currentSoldPhoneDateFilter !== 'undefined' ? currentSoldPhoneDateFilter : null;
+    else if (tabKey === 'mainXac') curD = typeof currentMainXacDateFilter !== 'undefined' ? currentMainXacDateFilter : null;
+    else if (tabKey === 'mStats') curD = typeof mStatsSelectedDate !== 'undefined' ? mStatsSelectedDate : null;
+
+    if (curD instanceof Date && !isNaN(curD.getTime())) {
+      appDatePickerSelectedDay = curD.getDate();
+      appDatePickerMonth = curD.getMonth();
+      appDatePickerYear = curD.getFullYear();
+    }
+  }
+
+  if (dateStrToCheck && dateStrToCheck.trim()) {
+    const p = dateStrToCheck.trim().split('/');
     if (p.length === 3) {
       const d = parseInt(p[0], 10);
       const m = parseInt(p[1], 10);
       const y = parseInt(p[2], 10);
       if (!isNaN(d) && !isNaN(m) && !isNaN(y) && d >= 1 && d <= 31 && m >= 1 && m <= 12) {
-        appDatePickerDay = d;
         appDatePickerMonth = m - 1;
         appDatePickerYear = y;
         appDatePickerSelectedDay = d;
@@ -2088,16 +2109,35 @@ function changeAppDatePickerMonth(delta) {
 window.changeAppDatePickerMonth = changeAppDatePickerMonth;
 
 function selectAppDatePickerDate(d) {
-  if (!appDatePickerTargetInputId) return;
-  const target = document.getElementById(appDatePickerTargetInputId);
-  if (target) {
-    const dd = String(d).padStart(2, '0');
-    const mm = String(appDatePickerMonth + 1).padStart(2, '0');
-    const yyyy = appDatePickerYear;
-    target.value = `${dd}/${mm}/${yyyy}`;
-    target.dispatchEvent(new Event('input', { bubbles: true }));
-    target.dispatchEvent(new Event('change', { bubbles: true }));
+  const dd = String(d).padStart(2, '0');
+  const mm = String(appDatePickerMonth + 1).padStart(2, '0');
+  const yyyy = appDatePickerYear;
+  const formatted = `${dd}/${mm}/${yyyy}`;
+  const isoVal = `${yyyy}-${mm}-${dd}`;
+
+  if (appDatePickerTargetInputId) {
+    const target = document.getElementById(appDatePickerTargetInputId);
+    if (target) {
+      if ('value' in target) {
+        target.value = formatted;
+      } else {
+        target.innerText = formatted;
+      }
+      target.dispatchEvent(new Event('input', { bubbles: true }));
+      target.dispatchEvent(new Event('change', { bubbles: true }));
+    }
   }
+
+  if (appDatePickerTargetTabKey) {
+    if (appDatePickerTargetTabKey === 'mStats') {
+      if (typeof handleMobileStatsNativeDate === 'function') {
+        handleMobileStatsNativeDate(isoVal);
+      }
+    } else if (typeof handleNativeDateChange === 'function') {
+      handleNativeDateChange(appDatePickerTargetTabKey, isoVal);
+    }
+  }
+
   closeAppDatePickerModal();
 }
 window.selectAppDatePickerDate = selectAppDatePickerDate;
@@ -4040,34 +4080,16 @@ function applyCustomDateFilter(tabKey, modeType, rawVal, el, originalText) {
 window.applyCustomDateFilter = applyCustomDateFilter;
 
 function openDatePicker(tabKey) {
-  const input = document.getElementById('nativeDatePicker_' + tabKey);
-  if (!input) return;
+  // Mở popup lịch chuyên dụng tương thích 100% trên điện thoại & desktop
+  let targetInputId = null;
+  if (tabKey === 'sales') targetInputId = 'filterSalesDateDisplay';
+  else if (tabKey === 'sw') targetInputId = 'filterSoftwareDateDisplay';
+  else if (tabKey === 'repair') targetInputId = 'filterRepairDateDisplay';
+  else if (tabKey === 'banga') targetInputId = 'filterBangaDateDisplay';
+  else if (tabKey === 'soldPhone') targetInputId = 'filterSoldPhoneDateDisplay';
+  else if (tabKey === 'mainXac') targetInputId = 'filterMainXacDateDisplay';
 
-  let curD = null;
-  if (tabKey === 'sales') curD = currentSalesDateFilter;
-  else if (tabKey === 'sw') curD = swFilterDate;
-  else if (tabKey === 'repair') curD = repairFilterDate;
-  else if (tabKey === 'banga') curD = currentBangaDateFilter;
-  else if (tabKey === 'soldPhone') curD = currentSoldPhoneDateFilter;
-  else if (tabKey === 'mainXac') curD = currentMainXacDateFilter;
-
-  if (curD instanceof Date && !isNaN(curD.getTime())) {
-    const y = curD.getFullYear();
-    const m = String(curD.getMonth() + 1).padStart(2, '0');
-    const d = String(curD.getDate()).padStart(2, '0');
-    input.value = `${y}-${m}-${d}`;
-  }
-
-  if (typeof input.showPicker === 'function') {
-    try {
-      input.showPicker();
-      return;
-    } catch (e) {
-      console.warn('showPicker error:', e);
-    }
-  }
-  input.focus();
-  input.click();
+  openAppDatePicker(targetInputId, tabKey);
 }
 window.openDatePicker = openDatePicker;
 
@@ -5037,17 +5059,7 @@ function resetMobileStatsToCurrentDate() {
 window.resetMobileStatsToCurrentDate = resetMobileStatsToCurrentDate;
 
 function openMobileStatsNativeDatePicker() {
-  const picker = document.getElementById('mStatsNativeDatePicker');
-  if (!picker) return;
-  initMobileStatsDates();
-  const y = mStatsSelectedDate.getFullYear();
-  const m = String(mStatsSelectedDate.getMonth() + 1).padStart(2, '0');
-  const d = String(mStatsSelectedDate.getDate()).padStart(2, '0');
-  picker.value = `${y}-${m}-${d}`;
-  if (typeof picker.showPicker === 'function') {
-    try { picker.showPicker(); return; } catch (err) { }
-  }
-  picker.click();
+  openAppDatePicker('mStatsDateNavLabel', 'mStats');
 }
 window.openMobileStatsNativeDatePicker = openMobileStatsNativeDatePicker;
 
