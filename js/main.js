@@ -11297,20 +11297,15 @@ function handleGiftInput(input) {
 window.handleGiftInput = handleGiftInput;
 
 function checkGiftsEntered() {
-  const gSac = document.getElementById('giftSac').value.trim();
-  const gOp = document.getElementById('giftOp').value.trim();
-  const gCluc = document.getElementById('giftCluc').value.trim();
-  const gKhac = document.getElementById('giftKhac').value.trim();
+  const gSac = document.getElementById('giftSac') ? document.getElementById('giftSac').value.trim() : '';
+  const gOp = document.getElementById('giftOp') ? document.getElementById('giftOp').value.trim() : '';
+  const gCluc = document.getElementById('giftCluc') ? document.getElementById('giftCluc').value.trim() : '';
+  const gKhac = document.getElementById('giftKhac') ? document.getElementById('giftKhac').value.trim() : '';
   const btnConfirm = document.getElementById('btnConfirmSellPhone');
 
-  const hasAtLeastOne = (gSac !== '' || gOp !== '' || gCluc !== '' || gKhac !== '');
-
+  // Nút Bán Máy luôn ở trạng thái active sẵn sàng lưu, không bắt buộc phải điền ô quà tặng nào
   if (btnConfirm) {
-    if (hasAtLeastOne) {
-      btnConfirm.classList.add('active');
-    } else {
-      btnConfirm.classList.remove('active');
-    }
+    btnConfirm.classList.add('active');
   }
 }
 window.checkGiftsEntered = checkGiftsEntered;
@@ -11407,11 +11402,7 @@ function confirmSellPhone(e) {
     const gOp = document.getElementById('giftOp') ? document.getElementById('giftOp').value.trim() : '';
     const gCluc = document.getElementById('giftCluc') ? document.getElementById('giftCluc').value.trim() : '';
     const gKhac = document.getElementById('giftKhac') ? document.getElementById('giftKhac').value.trim() : '';
-    if (!gSac && !gOp && !gCluc && !gKhac) {
-      _isSellingPhoneInProgress = false;
-      alert('Vui lòng nhập thông tin quà tặng vào ít nhất 1 trong 4 ô phụ kiện tặng kèm!');
-      return;
-    }
+    // Quà tặng là tùy chọn (để mặc định, không bắt buộc điền ô nào vẫn cho lưu bình thường)
 
     // Khóa nút Xác Nhận ngay để chống bấm liên tiếp 2 lần
     const btnConfirm = document.getElementById('btnConfirmSellPhone');
@@ -11558,15 +11549,27 @@ window.confirmSellPhone = confirmSellPhone;
    XỬ LÝ BÁN MÁY NGOÀI KHO (CHUẨN FORM POPUP XÁC NHẬN BÁN MÁY)
    ============================================================ */
 function openExternalSellPhoneModal() {
-  document.getElementById('extPhoneName').value = '';
-  document.getElementById('extPhoneImei').value = '';
-  document.getElementById('extPriceIn').value = '';
-  document.getElementById('extCondition').value = '';
-  document.getElementById('extCustomerName').value = '';
-  document.getElementById('extPriceOut').value = '';
-  document.getElementById('extTargetList').value = '';
-  document.getElementById('extPaymentMethod').value = '';
-  document.getElementById('extWarranty').value = '';
+  const pName = document.getElementById('extPhoneName');
+  if (pName) {
+    pName.value = '';
+    pName.removeAttribute('list');
+  }
+  const pImei = document.getElementById('extPhoneImei');
+  if (pImei) pImei.value = '';
+  const pPriceIn = document.getElementById('extPriceIn');
+  if (pPriceIn) pPriceIn.value = '';
+  const pCondition = document.getElementById('extCondition');
+  if (pCondition) pCondition.value = 'Full Chức Năng';
+  const pCustomer = document.getElementById('extCustomerName');
+  if (pCustomer) pCustomer.value = 'Khách Lẻ';
+  const pPriceOut = document.getElementById('extPriceOut');
+  if (pPriceOut) pPriceOut.value = '';
+  const pTargetList = document.getElementById('extTargetList');
+  if (pTargetList) pTargetList.value = '';
+  const pPaymentMethod = document.getElementById('extPaymentMethod');
+  if (pPaymentMethod) pPaymentMethod.value = '';
+  const pWarranty = document.getElementById('extWarranty');
+  if (pWarranty) pWarranty.value = '0 Bảo Hành';
   ['extGiftSac', 'extGiftOp', 'extGiftCluc', 'extGiftKhac'].forEach(gid => {
     let el = document.getElementById(gid);
     if (el) {
@@ -11574,7 +11577,8 @@ function openExternalSellPhoneModal() {
       el.placeholder = '0';
     }
   });
-  document.getElementById('extSellDateVal').value = getCurrentDateStr();
+  const dVal = document.getElementById('extSellDateVal');
+  if (dVal) dVal.value = getCurrentDateStr();
   calcExtSellProfit();
   checkExtGiftsEntered();
   const modal = document.getElementById('externalSellPhoneModal');
@@ -11622,18 +11626,10 @@ function handleExtGiftInput(input) {
 }
 
 function checkExtGiftsEntered() {
-  const gSac = document.getElementById('extGiftSac') ? document.getElementById('extGiftSac').value.trim() : '';
-  const gOp = document.getElementById('extGiftOp') ? document.getElementById('extGiftOp').value.trim() : '';
-  const gCluc = document.getElementById('extGiftCluc') ? document.getElementById('extGiftCluc').value.trim() : '';
-  const gKhac = document.getElementById('extGiftKhac') ? document.getElementById('extGiftKhac').value.trim() : '';
   const btnConfirm = document.getElementById('btnConfirmExtSellPhone');
   if (!btnConfirm) return;
-  const hasAtLeastOne = (gSac !== '' || gOp !== '' || gCluc !== '' || gKhac !== '');
-  if (hasAtLeastOne) {
-    btnConfirm.classList.add('active');
-  } else {
-    btnConfirm.classList.remove('active');
-  }
+  // Nút BÁN MÁY luôn ở trạng thái active sẵn sàng lưu, không bắt buộc điền ô quà tặng nào
+  btnConfirm.classList.add('active');
 }
 
 function calcExtSellProfit() {
@@ -11663,45 +11659,35 @@ function confirmExternalSellPhone(e) {
     document.getElementById('extPhoneName').focus();
     return;
   }
-  const imei = document.getElementById('extPhoneImei').value.trim();
-  if (!imei) {
-    alert('Vui lòng nhập IMEI!');
-    document.getElementById('extPhoneImei').focus();
-    return;
-  }
-  const priceIn = document.getElementById('extPriceIn').value.trim();
+  const imei = document.getElementById('extPhoneImei') ? document.getElementById('extPhoneImei').value.trim() : '';
+  const priceIn = document.getElementById('extPriceIn') ? document.getElementById('extPriceIn').value.trim() : '';
   if (!priceIn) {
     alert('Vui lòng nhập giá nhập!');
     document.getElementById('extPriceIn').focus();
     return;
   }
-  const priceOut = document.getElementById('extPriceOut').value.trim();
+  const priceOut = document.getElementById('extPriceOut') ? document.getElementById('extPriceOut').value.trim() : '';
   if (!priceOut) {
-    alert('Vui lòng nhập giá bán thực tế!');
+    alert('Vui lòng nhập giá bán!');
     document.getElementById('extPriceOut').focus();
     return;
   }
-  const targetList = document.getElementById('extTargetList').value;
+  const targetList = document.getElementById('extTargetList') ? document.getElementById('extTargetList').value : '';
   if (!targetList) {
     alert('Vui lòng chọn danh sách "Lưu Vào" (Bán Hàng hoặc Bán Gà)!');
     document.getElementById('extTargetList').focus();
     return;
   }
-  const paymentMethod = document.getElementById('extPaymentMethod').value;
+  const paymentMethod = document.getElementById('extPaymentMethod') ? document.getElementById('extPaymentMethod').value : '';
   if (!paymentMethod) {
     alert('Vui lòng chọn hình thức "Thanh Toán"!');
     document.getElementById('extPaymentMethod').focus();
     return;
   }
-  const warranty = document.getElementById('extWarranty').value;
-  if (!warranty) {
-    alert('Vui lòng chọn gói "Bảo Hành"!');
-    document.getElementById('extWarranty').focus();
-    return;
-  }
-  const rawCustomer = document.getElementById('extCustomerName').value.trim();
+  const warranty = (document.getElementById('extWarranty') && document.getElementById('extWarranty').value) ? document.getElementById('extWarranty').value : '0 Bảo Hành';
+  const rawCustomer = document.getElementById('extCustomerName') ? document.getElementById('extCustomerName').value.trim() : '';
   const customerName = rawCustomer ? toTitleCase(rawCustomer) : 'Khách Lẻ';
-  const condition = document.getElementById('extCondition').value.trim() || 'Zin Đẹp 99%';
+  const condition = (document.getElementById('extCondition') && document.getElementById('extCondition').value.trim()) ? document.getElementById('extCondition').value.trim() : 'Full Chức Năng';
   const dateVal = document.getElementById('extSellDateVal').value.trim() || getCurrentDateStr();
   const timeVal = getCurrentTimeStr();
   const fullDateTime = `${timeVal} - ${dateVal}`;

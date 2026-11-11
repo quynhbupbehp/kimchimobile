@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261111_181827">
+  <link rel="stylesheet" href="css/style.css?v=20261111_201614">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261111_181827";
+    var CURRENT_PAGE_VERSION = "20261111_201614";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -3914,57 +3914,44 @@
       </div>
 
       <form onsubmit="confirmExternalSellPhone(event)" novalidate>
-        <!-- KHỐI NHẬP THÔNG TIN MÁY NGOÀI KHO -->
-        <div
-          style="background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 12px 16px; margin-bottom: 1.1rem;">
-          <div
-            style="font-size: 0.82rem; font-weight: 800; color: #f59e0b; margin-bottom: 8px; text-transform: uppercase;">
-            📱 Thông Tin Máy
+        <!-- CÁC HÀNG NHẬP THÔNG TIN MÁY NGOÀI KHO -->
+        <!-- Hàng 1: Tên Máy * (chiếm 2 phần) và IMEI (chiếm 1 phần, không bắt buộc) -->
+        <div class="form-ticket-row" style="margin-bottom: 0.85rem;">
+          <div class="form-ticket-group" style="flex: 2;">
+            <label class="form-ticket-label" style="color: #facc15;">Tên Máy *</label>
+            <input type="text" class="ticket-input" id="extPhoneName" required placeholder="" autocomplete="off"
+              style="font-weight: 800; color: #fff;">
           </div>
-          <div class="form-ticket-row" style="margin-bottom: 8px;">
-            <div class="form-ticket-group" style="flex: 2;">
-              <label class="form-ticket-label">Tên Máy *</label>
-              <input type="text" class="ticket-input" id="extPhoneName" required placeholder="" autocomplete="off"
-                style="font-weight: 800; color: #fff;">
-            </div>
-            <div class="form-ticket-group" style="flex: 1;">
-              <label class="form-ticket-label">IMEI *</label>
-              <input type="text" class="ticket-input" id="extPhoneImei" required placeholder="" autocomplete="off"
-                maxlength="15" style="text-align: center; color: var(--amber-color); font-weight: 900;">
-            </div>
-          </div>
-          <div class="form-ticket-row">
-            <div class="form-ticket-group" style="flex: 1;">
-              <label class="form-ticket-label">Giá Nhập *</label>
-              <input type="text" class="ticket-input" id="extPriceIn" required placeholder=""
-                oninput="formatCurrencyInput(this); calcExtSellProfit();" style="font-weight: 800; color: #cbd5e1;">
-            </div>
-            <div class="form-ticket-group" style="flex: 1;">
-              <label class="form-ticket-label">Tình Trạng</label>
-              <input type="text" class="ticket-input" id="extCondition" placeholder="" autocomplete="off"
-                style="color: #9ca3af; font-weight: 700;">
-            </div>
+          <div class="form-ticket-group" style="flex: 1;">
+            <label class="form-ticket-label" style="color: #facc15;">IMEI</label>
+            <input type="text" class="ticket-input" id="extPhoneImei" placeholder="" autocomplete="off"
+              maxlength="15" style="text-align: center; color: var(--amber-color); font-weight: 900;">
           </div>
         </div>
 
-        <!-- KHỐI THÔNG TIN BÁN HÀNG (Y HỆT XÁC NHẬN BÁN MÁY) -->
-        <div class="form-ticket-row" style="margin-bottom: 0.9rem;">
+        <!-- Hàng 2: Giá Bán * và Giá Nhập * (chỉ nhập, không gợi ý) -->
+        <div class="form-ticket-row" style="margin-bottom: 0.85rem;">
           <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label" style="color: #facc15;">Tên Khách Hàng</label>
-            <input type="text" class="ticket-input" id="extCustomerName" placeholder="Khách Lẻ"
-              style="font-weight: 800; text-transform: capitalize;">
-          </div>
-
-          <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label" style="color: #facc15;">Giá Bán Thực Tế *</label>
-            <input type="text" class="ticket-input" id="extPriceOut" required placeholder=""
-              oninput="formatCurrencyInput(this); calcExtSellProfit(); checkExtGiftsEntered();"
+            <label class="form-ticket-label" style="color: #facc15;">Giá Bán *</label>
+            <input type="text" class="ticket-input" id="extPriceOut" required placeholder="" autocomplete="off"
+              oninput="formatCurrencyInput(this); calcExtSellProfit();"
               style="color: #10b981; font-weight: 900; font-size: 1.15rem;">
           </div>
+          <div class="form-ticket-group" style="flex: 1;">
+            <label class="form-ticket-label" style="color: #facc15;">Giá Nhập *</label>
+            <input type="text" class="ticket-input" id="extPriceIn" required placeholder="" autocomplete="off"
+              oninput="formatCurrencyInput(this); calcExtSellProfit();" style="font-weight: 800; color: #cbd5e1;">
+          </div>
         </div>
 
-        <div class="form-ticket-row" style="margin-bottom: 1.25rem;">
-          <div class="form-ticket-group" style="flex: 1.1;">
+        <!-- Hàng 3: Ẩn Tên Khách Hàng, Tình Trạng, và Bảo Hành * -->
+        <input type="hidden" id="extCustomerName" value="Khách Lẻ">
+        <input type="hidden" id="extCondition" value="Full Chức Năng">
+        <input type="hidden" id="extWarranty" value="0 Bảo Hành">
+
+        <!-- Hàng 4: Lưu Vào * và Thanh Toán * -->
+        <div class="form-ticket-row" style="margin-bottom: 1.1rem;">
+          <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label" style="color: #facc15;">Lưu Vào *</label>
             <select class="ticket-input" id="extTargetList" required style="cursor: pointer; font-weight: 800;">
               <option value="" disabled selected>-- Chọn --</option>
@@ -3979,17 +3966,6 @@
               <option value="" disabled selected>-- Chọn --</option>
               <option value="Tiền Mặt">Tiền Mặt</option>
               <option value="Chuyển Khoản">Chuyển Khoản</option>
-            </select>
-          </div>
-
-          <div class="form-ticket-group" style="flex: 1;">
-            <label class="form-ticket-label" style="color: #facc15;">Bảo Hành *</label>
-            <select class="ticket-input" id="extWarranty" required style="cursor: pointer; font-weight: 800;">
-              <option value="" disabled selected>-- Chọn --</option>
-              <option value="3 Tháng">3 Tháng</option>
-              <option value="6 Tháng">6 Tháng</option>
-              <option value="12 Tháng">12 Tháng</option>
-              <option value="0 Bảo Hành">0 Bảo Hành</option>
             </select>
           </div>
         </div>
@@ -4049,9 +4025,9 @@
           </div>
 
           <div style="flex: 1.25;">
-            <button type="submit" id="btnConfirmExtSellPhone" class="btn-confirm-sell-main"
-              style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-              Xác Nhận Bán
+            <button type="submit" id="btnConfirmExtSellPhone" class="btn-confirm-sell-main active"
+              style="background: linear-gradient(135deg, #ef4444, #dc2626); font-weight: 900; letter-spacing: 0.5px;">
+              BÁN MÁY
             </button>
           </div>
         </div>
@@ -6127,7 +6103,7 @@
   <script src="js/seed_data.js?v=20261108_195200"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261111_181827"></script>
+  <script src="js/main.js?v=20261111_201614"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
