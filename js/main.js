@@ -2031,24 +2031,164 @@ function adjustSellDate(days) {
   }
 }
 
-function openNativeDatePickerForSellPhone() {
-  const picker = document.getElementById('nativeDatePicker_sellPhone');
-  if (!picker) return;
-  const input = document.getElementById('sellDateVal');
-  if (input && input.value.trim()) {
-    let p = input.value.trim().split('/');
+// === BỘ CHỌN LỊCH DẠNG POPUP NỔI CHUYÊN DỤNG (UNIVERSAL APP DATE PICKER) ===
+let appDatePickerTargetInputId = null;
+let appDatePickerYear = 2026;
+let appDatePickerMonth = 10; // 0-indexed (10 = tháng 11)
+let appDatePickerSelectedDay = 11;
+
+function openAppDatePicker(targetInputId) {
+  appDatePickerTargetInputId = targetInputId;
+  const input = document.getElementById(targetInputId);
+  const now = new Date();
+  appDatePickerYear = now.getFullYear();
+  appDatePickerMonth = now.getMonth();
+  appDatePickerSelectedDay = now.getDate();
+
+  if (input && input.value && input.value.trim()) {
+    const p = input.value.trim().split('/');
     if (p.length === 3) {
-      let yyyy = p[2];
-      let mm = String(p[1]).padStart(2, '0');
-      let dd = String(p[0]).padStart(2, '0');
-      picker.value = `${yyyy}-${mm}-${dd}`;
+      const d = parseInt(p[0], 10);
+      const m = parseInt(p[1], 10);
+      const y = parseInt(p[2], 10);
+      if (!isNaN(d) && !isNaN(m) && !isNaN(y) && d >= 1 && d <= 31 && m >= 1 && m <= 12) {
+        appDatePickerDay = d;
+        appDatePickerMonth = m - 1;
+        appDatePickerYear = y;
+        appDatePickerSelectedDay = d;
+      }
     }
   }
-  if (typeof picker.showPicker === 'function') {
-    picker.showPicker();
-  } else {
-    picker.click();
+
+  renderAppDatePicker();
+  const modal = document.getElementById('appDatePickerModal');
+  if (modal) {
+    modal.style.display = 'flex';
   }
+}
+window.openAppDatePicker = openAppDatePicker;
+
+function closeAppDatePickerModal() {
+  const modal = document.getElementById('appDatePickerModal');
+  if (modal) modal.style.display = 'none';
+}
+window.closeAppDatePickerModal = closeAppDatePickerModal;
+
+function changeAppDatePickerMonth(delta) {
+  appDatePickerMonth += delta;
+  if (appDatePickerMonth < 0) {
+    appDatePickerMonth = 11;
+    appDatePickerYear--;
+  } else if (appDatePickerMonth > 11) {
+    appDatePickerMonth = 0;
+    appDatePickerYear++;
+  }
+  renderAppDatePicker();
+}
+window.changeAppDatePickerMonth = changeAppDatePickerMonth;
+
+function selectAppDatePickerDate(d) {
+  if (!appDatePickerTargetInputId) return;
+  const target = document.getElementById(appDatePickerTargetInputId);
+  if (target) {
+    const dd = String(d).padStart(2, '0');
+    const mm = String(appDatePickerMonth + 1).padStart(2, '0');
+    const yyyy = appDatePickerYear;
+    target.value = `${dd}/${mm}/${yyyy}`;
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+    target.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  closeAppDatePickerModal();
+}
+window.selectAppDatePickerDate = selectAppDatePickerDate;
+
+function selectAppDatePickerToday() {
+  const now = new Date();
+  appDatePickerYear = now.getFullYear();
+  appDatePickerMonth = now.getMonth();
+  selectAppDatePickerDate(now.getDate());
+}
+window.selectAppDatePickerToday = selectAppDatePickerToday;
+
+function renderAppDatePicker() {
+  const monthYearEl = document.getElementById('appDatePickerMonthYear');
+  if (monthYearEl) {
+    monthYearEl.textContent = `Tháng ${appDatePickerMonth + 1} / ${appDatePickerYear}`;
+  }
+
+  const grid = document.getElementById('appDatePickerGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const firstDayIndex = (new Date(appDatePickerYear, appDatePickerMonth, 1).getDay() + 6) % 7; // Thứ 2 = 0, CN = 6
+  const daysInMonth = new Date(appDatePickerYear, appDatePickerMonth + 1, 0).getDate();
+
+  // Các ô trống đầu tháng
+  for (let i = 0; i < firstDayIndex; i++) {
+    const blank = document.createElement('div');
+    grid.appendChild(blank);
+  }
+
+  // Lấy ngày hiện tại trong input mục tiêu
+  let curVal = '';
+  if (appDatePickerTargetInputId) {
+    const target = document.getElementById(appDatePickerTargetInputId);
+    if (target && target.value) curVal = target.value.trim();
+  }
+
+  const today = new Date();
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = d;
+
+    const isToday = (today.getDate() === d && today.getMonth() === appDatePickerMonth && today.getFullYear() === appDatePickerYear);
+    const dateStr = `${String(d).padStart(2, '0')}/${String(appDatePickerMonth + 1).padStart(2, '0')}/${appDatePickerYear}`;
+    const isSelected = (curVal === dateStr);
+
+    let bg = '#1e293b';
+    let color = '#ffffff';
+    let border = '1px solid #334155';
+
+    if (isSelected) {
+      bg = '#e11d48'; // Nền đỏ nổi bật
+      border = '1px solid #f43f5e';
+      color = '#ffffff';
+    } else if (isToday) {
+      bg = 'rgba(2, 132, 199, 0.35)';
+      border = '1px solid #0284c7';
+      color = '#38bdf8';
+    }
+
+    btn.style.cssText = `
+      height: 38px;
+      border-radius: 8px;
+      background: ${bg};
+      color: ${color};
+      border: ${border};
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    `;
+
+    btn.onclick = function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      selectAppDatePickerDate(d);
+    };
+
+    grid.appendChild(btn);
+  }
+}
+window.renderAppDatePicker = renderAppDatePicker;
+
+function openNativeDatePickerForSellPhone() {
+  openAppDatePicker('sellDateVal');
 }
 window.openNativeDatePickerForSellPhone = openNativeDatePickerForSellPhone;
 
@@ -11648,23 +11788,7 @@ function adjustExtSellDate(days) {
 }
 
 function openNativeDatePickerForExtSell() {
-  const picker = document.getElementById('nativeDatePicker_extSell');
-  if (!picker) return;
-  const input = document.getElementById('extSellDateVal');
-  if (input && input.value.trim()) {
-    let p = input.value.trim().split('/');
-    if (p.length === 3) {
-      let yyyy = p[2];
-      let mm = String(p[1]).padStart(2, '0');
-      let dd = String(p[0]).padStart(2, '0');
-      picker.value = `${yyyy}-${mm}-${dd}`;
-    }
-  }
-  if (typeof picker.showPicker === 'function') {
-    picker.showPicker();
-  } else {
-    picker.click();
-  }
+  openAppDatePicker('extSellDateVal');
 }
 window.openNativeDatePickerForExtSell = openNativeDatePickerForExtSell;
 
