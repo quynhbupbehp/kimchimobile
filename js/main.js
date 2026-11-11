@@ -2545,6 +2545,7 @@ function fetchDirectCloudSync(showToastMsg) {
             if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
           } else {
             soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
+            try { localStorage.setItem('KIMCHI_SOLD_PHONES_LOCAL', JSON.stringify(soldPhoneDatabase)); } catch (e) { }
           }
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
@@ -2905,6 +2906,7 @@ function initFirebaseRealtimeSync() {
             return;
           }
           soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
+          try { localStorage.setItem('KIMCHI_SOLD_PHONES_LOCAL', JSON.stringify(soldPhoneDatabase)); } catch (e) { }
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
       }
@@ -10041,8 +10043,20 @@ function loadInitialPhones() {
   } catch (e) { }
   return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
 }
+function loadInitialSoldPhones() {
+  try {
+    const localRaw = localStorage.getItem('KIMCHI_SOLD_PHONES_LOCAL');
+    if (localRaw) {
+      const parsed = JSON.parse(localRaw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(parsed) : parsed;
+      }
+    }
+  } catch (e) { }
+  return (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : (window.SEED_SOLD_DATA || []);
+}
 let phoneDatabase = loadInitialPhones();
-let soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : (window.SEED_SOLD_DATA || []);
+let soldPhoneDatabase = loadInitialSoldPhones();
 
 // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
 function autoSyncPhonesToWarranty() {
@@ -10365,10 +10379,19 @@ function savePhoneStorage(itemToSync) {
 }
 
 function saveSoldPhoneStorage(itemToSync) {
+  try {
+    localStorage.setItem('KIMCHI_SOLD_PHONES_LOCAL', JSON.stringify(soldPhoneDatabase));
+  } catch (e) { }
   if (typeof db !== 'undefined' && db) {
     if (itemToSync && itemToSync.id) {
-      db.collection('sold_phones').doc(String(itemToSync.id)).set(itemToSync).catch(console.error);
+      db.collection('sold_phones').doc(String(itemToSync.id)).set(itemToSync, { merge: true }).catch(console.error);
     }
+    try {
+      db.collection('sync_bundles').doc('sold_phones').set({
+        list: soldPhoneDatabase,
+        updatedAt: Date.now()
+      }, { merge: true }).catch(console.error);
+    } catch (e) { }
     syncSoldPhoneBundleDebounced();
   }
 }
