@@ -2633,6 +2633,17 @@ async function manualSyncAllToFirestore() {
       );
     }
 
+    // 8. Tab Hệ Thống - Nhật Ký (activity_logs) - Đồng bộ gói Bundle 7 ngày gần nhất
+    if (typeof activityLogDatabase !== 'undefined' && Array.isArray(activityLogDatabase) && activityLogDatabase.length > 0) {
+      if (typeof pruneOldActivityLogs === 'function') pruneOldActivityLogs();
+      promises.push(
+        db.collection('sync_bundles').doc('activity_logs').set({
+          list: sanitizeForFirestore(activityLogDatabase),
+          updatedAt: now
+        }, { merge: true }).catch(function () { })
+      );
+    }
+
     await Promise.all(promises);
 
     if (btn) {
@@ -2836,6 +2847,19 @@ function fetchDirectCloudSync(showToastMsg) {
         }
       }
     }).catch(function (e) { console.warn('fetchDirectCloudSync mainxac:', e); });
+
+    // 8. Tải Nhật Ký Hệ Thống (activity_logs) Bundle
+    db.collection('sync_bundles').doc('activity_logs').get().then(function (doc) {
+      if (doc && doc.exists) {
+        var data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          activityLogDatabase = data.list;
+          if (typeof pruneOldActivityLogs === 'function') pruneOldActivityLogs();
+          try { localStorage.setItem('KIMCHI_ACTIVITY_LOGS_LOCAL', JSON.stringify(activityLogDatabase)); } catch (e) { }
+          if (typeof renderActivityLogTable === 'function') renderActivityLogTable();
+        }
+      }
+    }).catch(function (e) { console.warn('fetchDirectCloudSync activity_logs:', e); });
 
     if (showToastMsg && typeof showToast === 'function') {
       showToast('⚡ Đã đồng bộ dữ liệu đám mây mới nhất!');
@@ -3217,6 +3241,21 @@ function initFirebaseRealtimeSync() {
         }
       }
     }, err => console.warn('Bundle sync mainxac notice:', err.code || err));
+  } catch (e) { }
+
+  // Đồng bộ Nhật Ký Hệ Thống (activity_logs) siêu tốc qua sync_bundles
+  try {
+    db.collection('sync_bundles').doc('activity_logs').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          activityLogDatabase = data.list;
+          if (typeof pruneOldActivityLogs === 'function') pruneOldActivityLogs();
+          try { localStorage.setItem('KIMCHI_ACTIVITY_LOGS_LOCAL', JSON.stringify(activityLogDatabase)); } catch (e) { }
+          if (typeof renderActivityLogTable === 'function') renderActivityLogTable();
+        }
+      }
+    }, err => console.warn('Bundle sync activity_logs notice:', err.code || err));
   } catch (e) { }
 
   // ĐÃ CHUYỂN TOÀN BỘ CÁC TAB SANG CƠ CHẾ SYNC_BUNDLES SIÊU TIẾT KIỆM QUOTA (RULE 6)
@@ -22119,10 +22158,73 @@ function deleteOtherDebtItem(id) {
 }
 
 // =========================================================
-// MODULE NHẬT KÝ THAY ĐỔI & KHÔI PHỤC DỮ LIỆU
+// MODULE NHẬT KÝ THAY ĐỔI & KHÔI PHỤC DỮ LIỆU (LƯU TOÀN BỘ 7 NGÀY GẦN NHẤT)
 // =========================================================
 let currentReportSubSection = 'finance';
-let activityLogDatabase = [];
+
+// Tự động giải mã timestamp của nhật ký từ object hoặc time string
+function parseLogTimestamp(item) {
+  if (!item) return 0;
+  if (typeof item.timestamp === 'number' && !isNaN(item.timestamp) && item.timestamp > 0) {
+    return item.timestamp;
+  }
+  if (typeof item.id === 'string' && item.id.startsWith('log_')) {
+    const parts = item.id.split('_');
+    const ts = parseInt(parts[1], 10);
+    if (!isNaN(ts) && ts > 0) return ts;
+  }
+  if (typeof item.time === 'string') {
+    const parts = item.time.split(' - ');
+    const datePart = parts.length > 1 ? parts[1].trim() : parts[0].trim();
+    const timePart = parts.length > 1 ? parts[0].trim() : '';
+    if (datePart.includes('/')) {
+      const dp = datePart.split('/');
+      const tp = timePart.split(':');
+      if (dp.length === 3) {
+        const d = new Date(parseInt(dp[2], 10), parseInt(dp[1], 10) - 1, parseInt(dp[0], 10), parseInt(tp[0] || 0, 10), parseInt(tp[1] || 0, 10), parseInt(tp[2] || 0, 10));
+        return d.getTime();
+      }
+    }
+  }
+  return 0;
+}
+
+// TỰ ĐỘNG XÓA NGÀY ĐẦU TIÊN CỦA 7 NGÀY KHI QUÁ 7 NGÀY, ĐẢM BẢO LUÔN TRONG 7 NGÀY
+function pruneOldActivityLogs() {
+  if (!Array.isArray(activityLogDatabase)) {
+    activityLogDatabase = [];
+    return false;
+  }
+  const now = Date.now();
+  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+  const initialLen = activityLogDatabase.length;
+
+  activityLogDatabase = activityLogDatabase.filter(item => {
+    if (!item) return false;
+    const ts = parseLogTimestamp(item);
+    if (!ts) return true; // Giữ lại nếu chưa xác định được thời gian
+    return (now - ts) <= SEVEN_DAYS_MS;
+  });
+
+  return activityLogDatabase.length !== initialLen;
+}
+window.pruneOldActivityLogs = pruneOldActivityLogs;
+
+function loadInitialActivityLogs() {
+  try {
+    const raw = localStorage.getItem('KIMCHI_ACTIVITY_LOGS_LOCAL');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) { }
+  return [];
+}
+
+let activityLogDatabase = loadInitialActivityLogs();
+pruneOldActivityLogs();
 
 let _activityLogBundleTimer = null;
 function syncActivityLogBundleDebounced() {
@@ -22130,8 +22232,9 @@ function syncActivityLogBundleDebounced() {
   clearTimeout(_activityLogBundleTimer);
   _activityLogBundleTimer = setTimeout(() => {
     try {
+      pruneOldActivityLogs();
       db.collection('sync_bundles').doc('activity_logs').set({
-        list: activityLogDatabase.slice(0, 300),
+        list: sanitizeForFirestore(activityLogDatabase),
         updatedAt: Date.now()
       }, { merge: true }).catch(e => console.warn('Sync activity_logs bundle notice:', e.code || e));
     } catch (e) { }
@@ -22139,19 +22242,22 @@ function syncActivityLogBundleDebounced() {
 }
 
 function saveActivityLogDb() {
-  if (activityLogDatabase.length > 500) {
-    activityLogDatabase = activityLogDatabase.slice(0, 500);
-  }
+  pruneOldActivityLogs();
+  try {
+    localStorage.setItem('KIMCHI_ACTIVITY_LOGS_LOCAL', JSON.stringify(activityLogDatabase));
+  } catch (e) { }
   syncActivityLogBundleDebounced();
 }
 
 function logActivity(action, module, moduleName, description, oldData = null, newData = null, targetId = null) {
+  const nowTs = Date.now();
   const timeStr = typeof getCurrentTimeStr === 'function' ? getCurrentTimeStr() : '';
   const dateStr = typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : '';
   const logItem = {
-    id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    id: 'log_' + nowTs + '_' + Math.random().toString(36).substr(2, 4),
+    timestamp: nowTs,
     time: `${timeStr} - ${dateStr}`,
-    action: action, // 'ADD', 'EDIT', 'DELETE'
+    action: action, // 'ADD', 'EDIT', 'DELETE', 'BUY_BACK', 'RESTORE'
     module: module,
     moduleName: moduleName,
     description: description,
@@ -22208,8 +22314,9 @@ function setLogFilter(key, val) {
 }
 
 function clearAllActivityLogs() {
-  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử nhật ký không?')) {
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử nhật ký trong 7 ngày không?')) {
     activityLogDatabase = [];
+    try { localStorage.removeItem('KIMCHI_ACTIVITY_LOGS_LOCAL'); } catch (e) { }
     saveActivityLogDb();
     renderActivityLogTable();
   }
