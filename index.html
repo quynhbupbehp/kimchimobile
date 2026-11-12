@@ -5223,30 +5223,41 @@
           </div>
         </div>
 
-        <!-- HÀNG 5: Ô LÃI bên trái | Ô MÌNH NỢ ở giữa | Nút Tạo đơn bên phải -->
+        <!-- HÀNG 5: Ô LÃI | Ô PK | Ô MÌNH NỢ | NÚT TẠO ĐƠN (CÙNG NẰM TRÊN 1 HÀNG) -->
         <div class="repair-modal-actions"
-          style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; gap: 10px; flex-wrap: wrap;">
+          style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; gap: 8px; flex-wrap: nowrap; width: 100%; box-sizing: border-box;">
+          <!-- 1. Ô LÃI -->
           <div
-            style="display: flex; align-items: center; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; height: 38px; padding: 0 16px; min-width: 130px; box-sizing: border-box;">
-            <span style="font-weight: 900; font-size: 0.95rem; color: #facc15; letter-spacing: 0.5px;">LÃI
+            style="display: flex; align-items: center; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; height: 38px; padding: 0 12px; flex: 1 1 auto; min-width: 110px; box-sizing: border-box;">
+            <span style="font-weight: 900; font-size: 0.95rem; color: #facc15; letter-spacing: 0.5px; white-space: nowrap;">LÃI
               :&nbsp;</span>
-            <span id="rFormProfitDisplay" style="font-weight: 900; font-size: 1.05rem; color: #10b981;"></span>
+            <span id="rFormProfitDisplay" style="font-weight: 900; font-size: 1.05rem; color: #10b981; white-space: nowrap;"></span>
           </div>
 
-          <!-- Ô CHỌN NGƯỜI MÌNH NỢ (MẶC ĐỊNH TRỐNG, KHÔNG BẮT BUỘC) -->
+          <!-- 2. Ô PK (CHỈ NHẬP TỐI ĐA 4 CHỮ SỐ) -->
           <div
-            style="position: relative; display: inline-flex; align-items: center; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; height: 38px; padding: 0 8px; box-sizing: border-box; min-width: 175px; flex: 0 1 auto;">
-            <label for="rFormCreditor" style="font-weight: 900; font-size: 0.92rem; color: #facc15; margin-right: 6px; white-space: nowrap; cursor: pointer;">Mình Nợ :</label>
+            style="display: inline-flex; align-items: center; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; height: 38px; padding: 0 10px; flex: 0 0 110px; width: 110px; box-sizing: border-box;">
+            <label for="rFormPk" style="font-weight: 900; font-size: 0.92rem; color: #facc15; margin-right: 6px; white-space: nowrap; cursor: pointer;">PK :</label>
+            <input type="text" id="rFormPk" maxlength="4" placeholder="0"
+              oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4); updateRepairFormProfit();"
+              style="width: 100%; height: 100%; background: transparent; border: none; color: #ffffff; font-size: 0.95rem; font-weight: 800; text-align: center; outline: none; padding: 0; box-sizing: border-box;">
+          </div>
+
+          <!-- 3. Ô CHỌN NGƯỜI MÌNH NỢ (MẶC ĐỊNH TRỐNG, KHÔNG BẮT BUỘC) -->
+          <div
+            style="position: relative; display: inline-flex; align-items: center; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; height: 38px; padding: 0 8px; box-sizing: border-box; flex: 1.2 1 auto; min-width: 155px;">
+            <label for="rFormCreditor" style="font-weight: 900; font-size: 0.92rem; color: #facc15; margin-right: 4px; white-space: nowrap; cursor: pointer;">Mình Nợ :</label>
             <select id="rFormCreditor" class="repair-select-filter"
-              style="appearance: none; -webkit-appearance: none; background: transparent; border: none; color: #ffffff; height: 100%; font-size: 0.92rem; font-weight: 800; cursor: pointer; outline: none; padding: 0 20px 0 2px; margin: 0; box-sizing: border-box;">
+              style="appearance: none; -webkit-appearance: none; background: transparent; border: none; color: #ffffff; height: 100%; width: 100%; font-size: 0.92rem; font-weight: 800; cursor: pointer; outline: none; padding: 0 18px 0 2px; margin: 0; box-sizing: border-box;">
               <option value="" style="background: #0f172a; color: #94a3b8;">-- Không --</option>
             </select>
-            <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; font-size: 0.70rem; font-weight: 900;">▼</span>
+            <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; font-size: 0.70rem; font-weight: 900;">▼</span>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 10px;">
+          <!-- 4. NÚT TẠO ĐƠN -->
+          <div style="flex: 0 0 auto;">
             <button type="submit" class="btn-modal-submit" id="rBtnSubmit"
-              style="height: 38px; padding: 0 24px; font-weight: 900; font-size: 0.95rem; letter-spacing: 0.5px;">
+              style="height: 38px; padding: 0 20px; font-weight: 900; font-size: 0.95rem; letter-spacing: 0.5px; white-space: nowrap;">
               TẠO ĐƠN
             </button>
           </div>

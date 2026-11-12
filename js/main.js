@@ -20057,12 +20057,14 @@ window.suggestAddRepairOptionIfNew = suggestAddRepairOptionIfNew;
 function updateRepairFormProfit() {
   const pInp = document.getElementById('rFormPrice');
   const cInp = document.getElementById('rFormCost');
+  const pkInp = document.getElementById('rFormPk');
   const disp = document.getElementById('rFormProfitDisplay');
   if (!disp) return;
   const p = parseRawNumber(pInp ? pInp.value : 0);
   const c = parseRawNumber(cInp ? cInp.value : 0);
-  if (p || c) {
-    disp.innerText = formatNumberDisplay(p - c);
+  const pk = parseRawNumber(pkInp ? pkInp.value : 0);
+  if (p || c || pk) {
+    disp.innerText = formatNumberDisplay(p - c - pk);
   } else {
     disp.innerText = '';
   }
@@ -20196,6 +20198,7 @@ function openRepairModal(editId = null) {
       if (document.getElementById('rFormPaymentStatus')) document.getElementById('rFormPaymentStatus').value = item.status || 'Đã thanh toán';
       if (document.getElementById('rFormPaymentMethod')) document.getElementById('rFormPaymentMethod').value = item.method || 'Tiền mặt';
       populateRepairCreditorDropdown(item.creditor || '');
+      if (document.getElementById('rFormPk')) document.getElementById('rFormPk').value = (item.pk !== undefined && item.pk !== null && item.pk !== '') ? String(item.pk).slice(0, 4) : '';
 
       if (item.dateFormatted && document.getElementById('rFormDate')) {
         const dp = item.dateFormatted.split('/');
@@ -20220,6 +20223,7 @@ function openRepairModal(editId = null) {
     if (document.getElementById('rFormPaymentStatus')) document.getElementById('rFormPaymentStatus').value = 'Đã thanh toán';
     if (document.getElementById('rFormPaymentMethod')) document.getElementById('rFormPaymentMethod').value = 'Tiền mặt';
     populateRepairCreditorDropdown('');
+    if (document.getElementById('rFormPk')) document.getElementById('rFormPk').value = '';
     const disp = document.getElementById('rFormProfitDisplay');
     if (disp) disp.innerText = '';
   }
@@ -20308,7 +20312,8 @@ function saveRepairItem(e) {
   const warranty = document.getElementById('rFormWarranty').value.trim();
   const priceRaw = parseRawNumber(document.getElementById('rFormPrice').value);
   const costRaw = parseRawNumber(document.getElementById('rFormCost').value);
-  const profit = priceRaw - costRaw;
+  const pkRaw = parseRawNumber(document.getElementById('rFormPk') ? document.getElementById('rFormPk').value : 0);
+  const profit = priceRaw - costRaw - pkRaw;
 
   const dateVal = document.getElementById('rFormDate').value; // yyyy-mm-dd
   let dateFormatted = getCurrentDateStr();
