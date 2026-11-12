@@ -7118,10 +7118,12 @@ function executeTaxExportS1a() {
       let isCk = (method === 'chuyển khoản' || method === 'ck' || method === 'chuyển tiền');
       let methodLabel = isCk ? 'Chuyển Tiền' : 'Tiền mặt';
 
-      dayTotalAmount += totalNum;
+      // Số tiền quy ra đơn vị nghìn (nhân 1000)
+      let fullAmount = totalNum * 1000;
+      dayTotalAmount += fullAmount;
 
-      let desc = name ? `Doanh thu bán lẻ ${name}` : 'Doanh thu bán lẻ hàng hóa, dịch vụ';
-      aoa.push([dayStr, desc, totalNum, methodLabel]);
+      let desc = name ? name : 'Hàng hóa, dịch vụ';
+      aoa.push([dayStr, desc, fullAmount, methodLabel]);
     });
 
     // Dòng tổng cộng của ngày
@@ -7139,11 +7141,11 @@ function executeTaxExportS1a() {
 
     const ws = XLSX.utils.aoa_to_sheet(aoa);
 
-    // Định độ rộng cột (Column widths)
+    // Định độ rộng cột (Column widths): Ô diễn giải thu nhỏ lại hợp lý
     ws['!cols'] = [
       { wch: 15 }, // Ngày tháng
-      { wch: 45 }, // Diễn giải
-      { wch: 18 }, // Số tiền
+      { wch: 32 }, // Diễn giải
+      { wch: 20 }, // Số tiền
       { wch: 18 }  // Hình thức
     ];
 
@@ -7214,14 +7216,18 @@ function executeTaxExportPDF() {
       let method = String(it.method || '').toLowerCase().trim();
       let isCk = (method === 'chuyển khoản' || method === 'ck' || method === 'chuyển tiền');
       let methodLabel = isCk ? 'Chuyển Tiền' : 'Tiền mặt';
-      let desc = name ? `Doanh thu bán lẻ ${name}` : 'Doanh thu bán lẻ hàng hóa, dịch vụ';
-      dayTotal += totalNum;
+
+      // Số tiền đầy đủ đuôi .000
+      let fullAmount = totalNum * 1000;
+      dayTotal += fullAmount;
+
+      let desc = name ? name : 'Hàng hóa, dịch vụ';
 
       rowsHtml += `
         <tr>
           <td style="text-align: center;">${dayStr}</td>
           <td>${escapeHtml(desc)}</td>
-          <td style="text-align: right; font-weight: 700;">${formatNumberDisplay(totalNum)}</td>
+          <td style="text-align: right; font-weight: 700;">${formatNumberDisplay(fullAmount)}</td>
           <td style="text-align: center; font-weight: 600;">${methodLabel}</td>
         </tr>
       `;
@@ -7257,10 +7263,10 @@ function executeTaxExportPDF() {
         <table class="report-table">
           <thead>
             <tr>
-              <th style="width: 15%;">Ngày tháng</th>
-              <th style="width: 50%;">Diễn giải</th>
-              <th style="width: 20%;">Số tiền</th>
-              <th style="width: 15%;">Hình thức</th>
+              <th style="width: 18%;">Ngày tháng</th>
+              <th style="width: 40%;">Diễn giải</th>
+              <th style="width: 22%;">Số tiền</th>
+              <th style="width: 20%;">Hình thức</th>
             </tr>
             <tr class="col-num-row">
               <th>A</th>
