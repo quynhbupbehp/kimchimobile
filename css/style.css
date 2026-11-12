@@ -7248,6 +7248,15 @@
           line-height: 1 !important;
         }
 
+        /* ẨN NÚT EXCEL TRÊN MOBILE TAB BÁN HÀNG */
+        #tab-banhang .sales-excel-wrapper,
+        #tab-banhang .excel-menu-dropdown-wrapper,
+        #tab-banhang #btnSalesExcelToggle,
+        #tab-banhang .btn-excel-toggle-custom,
+        #tab-banhang #salesExcelActionsBox {
+          display: none !important;
+        }
+
         /* HÀNG 2: CỤM HÀNH ĐỘNG ẨN + TẠO PHIẾU MỚI */
         .sales-actions-row,
         .repair-actions-row {
