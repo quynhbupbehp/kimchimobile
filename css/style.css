@@ -5120,12 +5120,24 @@
 
     .repair-input-trio-box input {
       flex: 1;
-      background: transparent;
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
       border: none;
       color: #fff;
       font-size: 0.88rem;
       outline: none;
       min-width: 0;
+    }
+
+    .repair-input-trio-box input:-webkit-autofill,
+    .repair-input-trio-box input:-webkit-autofill:hover,
+    .repair-input-trio-box input:-webkit-autofill:focus,
+    .repair-input-trio-box input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 1000px #111724 inset !important;
+      box-shadow: 0 0 0 1000px #111724 inset !important;
+      -webkit-text-fill-color: #ffffff !important;
+      transition: background-color 5000s ease-in-out 0s;
     }
 
     .repair-input-trio-box select {

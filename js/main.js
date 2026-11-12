@@ -21059,6 +21059,8 @@ function saveRepairItem(e) {
 
   const status = document.getElementById('rFormPaymentStatus').value || 'Đã thanh toán';
   const method = document.getElementById('rFormPaymentMethod').value || 'Tiền mặt';
+  const creditor = (document.getElementById('rFormCreditor') ? document.getElementById('rFormCreditor').value : '').trim();
+  const pk = pkRaw;
 
   if (!customer || !device || !issue || !warranty || isNaN(priceRaw) || isNaN(costRaw)) {
     alert('Vui lòng nhập đầy đủ các trường bắt buộc: Khách hàng, Tên máy, Tình trạng, Bảo hành, Báo giá và Vốn!');
@@ -21077,6 +21079,8 @@ function saveRepairItem(e) {
       item.price = priceRaw;
       item.cost = costRaw;
       item.profit = profit;
+      item.pk = pk;
+      item.creditor = creditor;
       item.dateFormatted = dateFormatted;
       item.timeFormatted = timeFormatted;
       item.status = status;
@@ -21095,6 +21099,8 @@ function saveRepairItem(e) {
       price: priceRaw,
       cost: costRaw,
       profit,
+      pk,
+      creditor,
       dateFormatted,
       timeFormatted,
       status,
