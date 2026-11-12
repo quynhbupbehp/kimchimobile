@@ -16636,18 +16636,18 @@ function getSalesNotePadData() {
     let stored = localStorage.getItem('KIMCHI_SALES_NOTEPAD');
     if (!stored) return defaultData;
 
-    // Nếu dữ liệu cũ là chuỗi thuần (single string), chuyển sang cấu trúc multi-tab
+    // Nếu dữ liệu cũ là chuỗi JSON, chuyển sang cấu trúc multi-tab
     if (stored.trim().startsWith('{')) {
       try {
         let parsed = JSON.parse(stored);
         if (parsed && typeof parsed.tabs === 'object' && parsed.tabs !== null) {
-          if (!parsed.activeTab || !parsed.tabs[parsed.activeTab]) {
-            const keys = Object.keys(parsed.tabs);
+          const keys = Object.keys(parsed.tabs);
+          if (!parsed.activeTab || !parsed.tabs.hasOwnProperty(parsed.activeTab)) {
             parsed.activeTab = keys.length > 0 ? keys[0] : 'HUYỀN';
           }
           // Đảm bảo tối thiểu có HUYỀN và QUỲNH
-          if (!parsed.tabs['HUYỀN']) parsed.tabs['HUYỀN'] = parsed.tabs['HUYỀN'] || '';
-          if (!parsed.tabs['QUỲNH']) parsed.tabs['QUỲNH'] = parsed.tabs['QUỲNH'] || '';
+          if (!parsed.tabs.hasOwnProperty('HUYỀN')) parsed.tabs['HUYỀN'] = '';
+          if (!parsed.tabs.hasOwnProperty('QUỲNH')) parsed.tabs['QUỲNH'] = '';
           return parsed;
         }
       } catch (pe) { }
@@ -16659,6 +16659,9 @@ function getSalesNotePadData() {
   return defaultData;
 }
 
+let salesNoteLongPressTimer = null;
+let salesNoteLongPressTriggered = false;
+
 function renderSalesNotePadTabs() {
   const container = document.getElementById('salesNotePadTabsBar');
   if (!container) return;
@@ -16669,10 +16672,18 @@ function renderSalesNotePadTabs() {
   let html = '';
   tabNames.forEach(name => {
     const isActive = (name === activeTab);
-    const canDelete = (tabNames.length > 1 && name !== 'HUYỀN' && name !== 'QUỲNH');
-    html += `<button type="button" class="sales-note-tab-btn ${isActive ? 'active' : ''}" onclick="switchSalesNotePadTab('${name.replace(/'/g, "\\'")}')">
-      ${name}
-      ${canDelete ? `<span class="tab-delete-x" title="Xóa tab này" onclick="event.stopPropagation(); removeSalesNotePadTab('${name.replace(/'/g, "\\'")}')">✕</span>` : ''}
+    const escapedName = name.replace(/'/g, "\\'");
+    html += `<button type="button" class="sales-note-tab-btn ${isActive ? 'active' : ''}" 
+      data-tab-name="${escapeHtml(name)}"
+      onclick="handleSalesNoteTabClick('${escapedName}')"
+      onmousedown="startSalesNoteTabLongPress('${escapedName}')"
+      onmouseup="cancelSalesNoteTabLongPress()"
+      onmouseleave="cancelSalesNoteTabLongPress()"
+      ontouchstart="startSalesNoteTabLongPress('${escapedName}')"
+      ontouchend="cancelSalesNoteTabLongPress()"
+      ontouchcancel="cancelSalesNoteTabLongPress()"
+      oncontextmenu="handleSalesNoteTabContextMenu(event, '${escapedName}')">
+      ${escapeHtml(name)}
     </button>`;
   });
 
@@ -16682,6 +16693,97 @@ function renderSalesNotePadTabs() {
   container.innerHTML = html;
 }
 window.renderSalesNotePadTabs = renderSalesNotePadTabs;
+
+function startSalesNoteTabLongPress(tabName) {
+  salesNoteLongPressTriggered = false;
+  if (salesNoteLongPressTimer) clearTimeout(salesNoteLongPressTimer);
+  salesNoteLongPressTimer = setTimeout(() => {
+    salesNoteLongPressTriggered = true;
+    openSalesNoteTabOptions(tabName);
+  }, 500);
+}
+
+function cancelSalesNoteTabLongPress() {
+  if (salesNoteLongPressTimer) {
+    clearTimeout(salesNoteLongPressTimer);
+    salesNoteLongPressTimer = null;
+  }
+}
+
+function handleSalesNoteTabClick(tabName) {
+  if (salesNoteLongPressTriggered) {
+    salesNoteLongPressTriggered = false;
+    return;
+  }
+  cancelSalesNoteTabLongPress();
+  switchSalesNotePadTab(tabName);
+}
+
+function handleSalesNoteTabContextMenu(event, tabName) {
+  if (event) event.preventDefault();
+  cancelSalesNoteTabLongPress();
+  openSalesNoteTabOptions(tabName);
+}
+
+function openSalesNoteTabOptions(tabName) {
+  const isDefaultTab = (tabName === 'HUYỀN');
+  const action = prompt(
+    `TÙY CHỌN TAB: "${tabName}"\n\n` +
+    `1. Nhập số [ 1 ] để SỬA TÊN TAB\n` +
+    (!isDefaultTab ? `2. Nhập số [ 2 ] để XÓA TAB NÀY\n\n` : `\n(Tab ${tabName} là mặc định không thể xóa)\n\n`) +
+    `Nhập 1 hoặc 2:`, '1'
+  );
+
+  if (action === '1') {
+    renameSalesNotePadTab(tabName);
+  } else if (action === '2' && !isDefaultTab) {
+    removeSalesNotePadTab(tabName);
+  }
+}
+
+function renameSalesNotePadTab(oldName) {
+  const newName = prompt(`Nhập tên mới cho tab "${oldName}":`, oldName);
+  if (!newName || !newName.trim()) return;
+  const cleanName = newName.trim().toUpperCase();
+  if (cleanName === oldName) return;
+
+  let data = getSalesNotePadData();
+  const ta = document.getElementById('salesNotePadTextarea');
+  if (ta && data.activeTab && data.tabs.hasOwnProperty(data.activeTab)) {
+    data.tabs[data.activeTab] = ta.value;
+  }
+
+  if (data.tabs.hasOwnProperty(cleanName)) {
+    alert(`Tên tab "${cleanName}" đã tồn tại! Vui lòng chọn tên khác.`);
+    return;
+  }
+
+  // Chuyển dữ liệu sang key mới và giữ nguyên thứ tự
+  const newTabs = {};
+  for (let k in data.tabs) {
+    if (k === oldName) {
+      newTabs[cleanName] = data.tabs[oldName];
+    } else {
+      newTabs[k] = data.tabs[k];
+    }
+  }
+  data.tabs = newTabs;
+
+  if (data.activeTab === oldName) {
+    data.activeTab = cleanName;
+  }
+
+  try {
+    localStorage.setItem('KIMCHI_SALES_NOTEPAD', JSON.stringify(data));
+  } catch (e) { }
+
+  if (ta && data.activeTab === cleanName) {
+    ta.value = data.tabs[cleanName] || '';
+  }
+
+  renderSalesNotePadTabs();
+  autoSaveSalesNotePad();
+}
 
 function switchSalesNotePadTab(tabName) {
   const ta = document.getElementById('salesNotePadTextarea');
@@ -16723,7 +16825,7 @@ function addNewSalesNotePadTab() {
     data.tabs[data.activeTab] = ta.value;
   }
 
-  if (!data.tabs[cleanName]) {
+  if (!data.tabs.hasOwnProperty(cleanName)) {
     data.tabs[cleanName] = '';
   }
   data.activeTab = cleanName;
@@ -16743,8 +16845,8 @@ function addNewSalesNotePadTab() {
 window.addNewSalesNotePadTab = addNewSalesNotePadTab;
 
 function removeSalesNotePadTab(tabName) {
-  if (tabName === 'HUYỀN' || tabName === 'QUỲNH') {
-    alert('Không thể xóa tab mặc định!');
+  if (tabName === 'HUYỀN') {
+    alert('Không thể xóa tab mặc định HUYỀN!');
     return;
   }
   if (!confirm('Bạn có chắc chắn muốn xóa tab "' + tabName + '" cùng toàn bộ nội dung của tab này?')) {
