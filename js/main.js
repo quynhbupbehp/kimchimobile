@@ -6959,6 +6959,213 @@ function executeExportSales(type) {
 }
 window.executeExportSales = executeExportSales;
 
+/* ============================================================
+   XUẤT BÁO CÁO THUẾ MẪU S1a-HKD (MỖI NGÀY 1 SHEET / TRANG)
+   Theo Thông tư số 152/2025/TT-BTC & TT 88/2021/TT-BTC của Bộ Tài Chính
+   Hộ Kinh Doanh: Cao Thị Huyền - MST: 030195011647
+   ============================================================ */
+function openTaxReportModal() {
+  const modal = document.getElementById('taxReportModal');
+  if (!modal) return;
+
+  const now = new Date();
+  const curM = now.getMonth() + 1;
+  const curY = now.getFullYear();
+
+  const selM = document.getElementById('taxExportMonth');
+  const selY = document.getElementById('taxExportYear');
+  if (selM) selM.value = String(curM);
+  if (selY) selY.value = String(curY);
+
+  updateTaxExportSummary();
+  modal.style.display = 'flex';
+}
+window.openTaxReportModal = openTaxReportModal;
+
+function closeTaxReportModal() {
+  const modal = document.getElementById('taxReportModal');
+  if (modal) modal.style.display = 'none';
+}
+window.closeTaxReportModal = closeTaxReportModal;
+
+function getSalesItemsForTaxMonth(targetM, targetY) {
+  if (!Array.isArray(salesDatabase)) return [];
+  return salesDatabase.filter(item => {
+    let rawDateStr = item.dateTime || item.date || '';
+    let datePart = rawDateStr;
+    if (rawDateStr.includes(' - ')) {
+      datePart = rawDateStr.split(' - ')[1].trim();
+    }
+    if (datePart.includes('-')) {
+      let dp = datePart.split('-');
+      if (dp.length === 3 && dp[0].length === 4) {
+        datePart = `${dp[2]}/${dp[1]}/${dp[0]}`;
+      }
+    }
+    if (!datePart) return false;
+    let pieces = datePart.split('/');
+    if (pieces.length === 3) {
+      let m = parseInt(pieces[1], 10);
+      let y = parseInt(pieces[2], 10);
+      return (m === targetM && y === targetY);
+    }
+    return false;
+  });
+}
+
+function updateTaxExportSummary() {
+  const selM = document.getElementById('taxExportMonth');
+  const selY = document.getElementById('taxExportYear');
+  const summaryEl = document.getElementById('taxExportSummaryText');
+  if (!summaryEl) return;
+
+  const m = selM ? parseInt(selM.value, 10) : (new Date().getMonth() + 1);
+  const y = selY ? parseInt(selY.value, 10) : new Date().getFullYear();
+
+  const items = getSalesItemsForTaxMonth(m, y);
+  if (items.length === 0) {
+    summaryEl.innerHTML = `<span style="color: #f87171;">Không có đơn bán hàng nào trong <strong>Tháng ${String(m).padStart(2, '0')}/${y}</strong> để xuất.</span>`;
+    return;
+  }
+
+  // Gom theo ngày
+  const daysMap = {};
+  items.forEach(it => {
+    let raw = it.dateTime || it.date || '';
+    let datePart = raw.includes(' - ') ? raw.split(' - ')[1].trim() : raw;
+    if (datePart.includes('-')) {
+      let dp = datePart.split('-');
+      if (dp.length === 3 && dp[0].length === 4) datePart = `${dp[2]}/${dp[1]}/${dp[0]}`;
+    }
+    daysMap[datePart] = (daysMap[datePart] || 0) + 1;
+  });
+
+  const totalDays = Object.keys(daysMap).length;
+  summaryEl.innerHTML = `Tìm thấy <strong style="color: #10b981; font-size: 1.05rem;">${items.length}</strong> mặt hàng phát sinh trong <strong style="color: #38bdf8;">${totalDays} ngày</strong> (tương ứng ${totalDays} trang Sheet).`;
+}
+window.updateTaxExportSummary = updateTaxExportSummary;
+
+function executeTaxExportS1a() {
+  const selM = document.getElementById('taxExportMonth');
+  const selY = document.getElementById('taxExportYear');
+  const m = selM ? parseInt(selM.value, 10) : (new Date().getMonth() + 1);
+  const y = selY ? parseInt(selY.value, 10) : new Date().getFullYear();
+
+  const items = getSalesItemsForTaxMonth(m, y);
+  if (items.length === 0) {
+    alert(`Không tìm thấy đơn bán hàng nào trong Tháng ${String(m).padStart(2, '0')}/${y} để xuất sổ S1a-HKD!`);
+    return;
+  }
+
+  if (typeof XLSX === 'undefined') {
+    alert('Thư viện Excel (SheetJS) chưa sẵn sàng. Vui lòng thử lại sau giây lát!');
+    return;
+  }
+
+  // Nhóm các mặt hàng theo từng ngày (dd/mm/yyyy)
+  const groupedByDay = {};
+  items.forEach(it => {
+    let raw = it.dateTime || it.date || '';
+    let datePart = raw.includes(' - ') ? raw.split(' - ')[1].trim() : raw;
+    if (datePart.includes('-')) {
+      let dp = datePart.split('-');
+      if (dp.length === 3 && dp[0].length === 4) datePart = `${dp[2]}/${dp[1]}/${dp[0]}`;
+    }
+    if (!datePart) datePart = `${String(new Date().getDate()).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+    if (!groupedByDay[datePart]) {
+      groupedByDay[datePart] = [];
+    }
+    groupedByDay[datePart].push(it);
+  });
+
+  // Sắp xếp các ngày tăng dần từ ngày 1 đến cuối tháng
+  const sortedDays = Object.keys(groupedByDay).sort((a, b) => {
+    let [d1, m1, y1] = a.split('/').map(n => parseInt(n, 10) || 0);
+    let [d2, m2, y2] = b.split('/').map(n => parseInt(n, 10) || 0);
+    return new Date(y1, m1 - 1, d1).getTime() - new Date(y2, m2 - 1, d2).getTime();
+  });
+
+  const wb = XLSX.utils.book_new();
+
+  sortedDays.forEach(dayStr => {
+    const dayItems = groupedByDay[dayStr];
+    const dp = dayStr.split('/');
+    const dd = dp[0];
+    const sheetName = `Ngay_${dd}`;
+
+    // Xây dựng nội dung AOA cho từng ngày theo chuẩn mẫu S1a-HKD
+    const aoa = [
+      ["HỘ, CÁ NHÂN KINH DOANH: Cao Thị Huyền", "", "", "Mẫu số S1a-HKD", ""],
+      ["Địa chỉ: Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng", "", "", "(Kèm theo Thông tư số 152/2025/TT-BTC", ""],
+      ["Mã số thuế: 030195011647", "", "", "ngày 31 tháng 12 năm 2025 của Bộ trưởng", ""],
+      ["", "", "", "Bộ Tài chính)", ""],
+      ["", "", "", "", ""],
+      ["SỔ DOANH THU BÁN HÀNG HÓA, DỊCH VỤ", "", "", "", ""],
+      [`Địa điểm kinh doanh: Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng`, "", "", "", ""],
+      [`Kỳ kê khai: Tháng ${String(m).padStart(2, '0')} Năm ${y} (Ngày ${dayStr})`, "", "", "", ""],
+      ["", "", "", "Đơn vị tính: Đồng", ""],
+      ["Ngày tháng", "Diễn giải", "Số tiền", "Chuyển tiền", "Tiền mặt"],
+      ["A", "B", "1", "2", "3"]
+    ];
+
+    let dayTotalAmount = 0;
+    let dayTotalCk = 0;
+    let dayTotalTm = 0;
+
+    dayItems.forEach(it => {
+      let name = String(it.name || '').trim();
+      let totalNum = parsePriceNum(it.total || it.price);
+      let method = String(it.method || '').toLowerCase().trim();
+
+      let isCk = (method === 'chuyển khoản' || method === 'ck' || method === 'chuyển tiền');
+      let isTm = (method === 'tiền mặt' || method === 'tm');
+      if (!isCk && !isTm) isTm = true; // Mặc định nếu không ghi rõ
+
+      let ckNum = isCk ? totalNum : 0;
+      let tmNum = isTm ? totalNum : 0;
+
+      dayTotalAmount += totalNum;
+      dayTotalCk += ckNum;
+      dayTotalTm += tmNum;
+
+      let desc = name ? `Doanh thu bán lẻ ${name}` : 'Doanh thu bán lẻ hàng hóa, dịch vụ';
+      aoa.push([dayStr, desc, totalNum, ckNum > 0 ? ckNum : "", tmNum > 0 ? tmNum : ""]);
+    });
+
+    // Dòng tổng cộng của ngày
+    aoa.push(["", "Tổng cộng", dayTotalAmount, dayTotalCk, dayTotalTm]);
+
+    // Dòng trống và phần chữ ký
+    aoa.push(["", "", "", "", ""]);
+    aoa.push(["", "", "", `Ngày ${dd} tháng ${String(m).padStart(2, '0')} năm ${y}`, ""]);
+    aoa.push(["", "", "", "NGƯỜI ĐẠI DIỆN HỘ KINH DOANH/", ""]);
+    aoa.push(["", "", "", "CÁ NHÂN KINH DOANH", ""]);
+    aoa.push(["", "", "", "(Ký, ghi rõ họ tên, đóng dấu nếu có)", ""]);
+    aoa.push(["", "", "", "", ""]);
+    aoa.push(["", "", "", "", ""]);
+    aoa.push(["", "", "", "Cao Thị Huyền", ""]);
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+    // Định độ rộng cột (Column widths)
+    ws['!cols'] = [
+      { wch: 14 }, // Ngày tháng
+      { wch: 42 }, // Diễn giải
+      { wch: 18 }, // Số tiền
+      { wch: 18 }, // Chuyển tiền
+      { wch: 18 }  // Tiền mặt
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+
+  const fileName = `So_Doanh_Thu_S1a_HKD_Thang_${String(m).padStart(2, '0')}_${y}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+  closeTaxReportModal();
+  alert(`✓ Đã xuất thành công Sổ doanh thu mẫu S1a-HKD Tháng ${String(m).padStart(2, '0')}/${y} (${sortedDays.length} ngày - mỗi ngày 1 sheet) ra file: ${fileName}!`);
+}
+window.executeTaxExportS1a = executeTaxExportS1a;
+
 function triggerImportSalesExcel() {
   const fileInput = document.getElementById('salesExcelFileInput');
   if (fileInput) {

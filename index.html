@@ -2638,6 +2638,11 @@
               KÝ</button>
             <button type="button" class="brand-btn-h" id="btnRepSubAccount"
               onclick="switchReportSection('account', this)">👤 TÀI KHOẢN</button>
+            <button type="button" class="brand-btn-h" id="btnRepSubTax"
+              onclick="openTaxReportModal()" title="Xuất sổ doanh thu bán hàng hóa, dịch vụ mẫu S1a-HKD"
+              style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; border-color: #10b981; font-weight: 800;">
+              📑 BÁO CÁO THUẾ
+            </button>
 
             <!-- HỘP THEO DÕI HẠN MỨC FIRESTORE ĐỌC / GHI TRONG NGÀY (SÁT BÊN PHẢI TÀI KHOẢN) -->
             <div id="firestoreQuotaTracker" onclick="if(confirm('Bạn có muốn đặt lại bộ đếm lượt Đọc / Ghi chu kỳ này về 0 không?')){resetFsDailyUsage();}" title="Theo dõi hạn ngạch Firestore (Tự động reset lúc 15:00 hàng ngày theo giờ VN). Click để đặt lại về 0." style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px; margin-left: 8px; vertical-align: middle; background: rgba(15, 23, 42, 0.85); border: 1px solid #1e293b; border-radius: 9px; padding: 4px 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.35);">
@@ -4280,6 +4285,100 @@
       <!-- FOOTER ĐÓNG -->
       <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
         <button type="button" onclick="closeSalesExportModal()"
+          style="background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-weight: 800; font-size: 0.88rem; padding: 8px 22px; border-radius: 8px; cursor: pointer;">
+          Đóng
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL XUẤT BÁO CÁO THUẾ MẪU S1a-HKD -->
+  <div class="modal-overlay" id="taxReportModal" style="z-index: 100000; display: none;"
+    onclick="if(event.target === this) closeTaxReportModal()">
+    <div class="modal-ticket-box"
+      style="max-width: 560px; padding: 1.5rem; width: 95%; border: 1.5px solid #10b981; box-shadow: 0 20px 50px rgba(0,0,0,0.85), 0 0 25px rgba(16,185,129,0.3);"
+      onclick="event.stopPropagation()">
+
+      <!-- TIÊU ĐỀ -->
+      <div
+        style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.5rem;">📑</span>
+          <div>
+            <div style="font-size: 1.15rem; font-weight: 900; color: #10b981; letter-spacing: 0.3px;">XUẤT BÁO CÁO THUẾ (MẪU S1a-HKD)</div>
+            <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">Sổ doanh thu bán hàng hóa, dịch vụ theo Thông tư Bộ Tài Chính</div>
+          </div>
+        </div>
+        <button type="button" onclick="closeTaxReportModal()"
+          style="background:none; border:none; color:#94a3b8; font-size:1.5rem; cursor:pointer; line-height: 1; padding: 0 4px;"
+          title="Đóng">✕</button>
+      </div>
+
+      <!-- THÔNG TIN HỘ KINH DOANH -->
+      <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid #1e293b; border-radius: 12px; padding: 1rem; margin-bottom: 1.2rem;">
+        <div style="font-size: 0.85rem; font-weight: 800; color: #facc15; margin-bottom: 6px; text-transform: uppercase;">
+          🏛️ Thông tin kê khai:
+        </div>
+        <div style="font-size: 0.85rem; color: #e2e8f0; line-height: 1.6;">
+          <div>• <strong>Hộ Kinh Doanh:</strong> Cao Thị Huyền</div>
+          <div>• <strong>Mã số thuế:</strong> 030195011647</div>
+          <div>• <strong>Địa chỉ:</strong> Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng</div>
+        </div>
+      </div>
+
+      <!-- CHỌN THÁNG XUẤT -->
+      <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid #1e293b; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.82rem; font-weight: 800; color: #cbd5e1; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+          📅 Chọn Tháng & Năm xuất sổ:
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: #0b0f19; border: 1.5px solid #334155; border-radius: 10px; padding: 6px 12px;">
+            <span style="font-size: 1.1rem;">🗓️</span>
+            <select id="taxExportMonth" onchange="updateTaxExportSummary()"
+              style="background: transparent; border: none; color: #facc15; font-weight: 900; font-size: 1rem; cursor: pointer; outline: none;">
+              <option value="1" style="background: #0d121d; color: #fff;">Tháng 01</option>
+              <option value="2" style="background: #0d121d; color: #fff;">Tháng 02</option>
+              <option value="3" style="background: #0d121d; color: #fff;">Tháng 03</option>
+              <option value="4" style="background: #0d121d; color: #fff;">Tháng 04</option>
+              <option value="5" style="background: #0d121d; color: #fff;">Tháng 05</option>
+              <option value="6" style="background: #0d121d; color: #fff;">Tháng 06</option>
+              <option value="7" style="background: #0d121d; color: #fff;">Tháng 07</option>
+              <option value="8" style="background: #0d121d; color: #fff;">Tháng 08</option>
+              <option value="9" style="background: #0d121d; color: #fff;">Tháng 09</option>
+              <option value="10" style="background: #0d121d; color: #fff;">Tháng 10</option>
+              <option value="11" style="background: #0d121d; color: #fff;">Tháng 11</option>
+              <option value="12" style="background: #0d121d; color: #fff;">Tháng 12</option>
+            </select>
+            <span style="color: #64748b; font-weight: 900;">/</span>
+            <select id="taxExportYear" onchange="updateTaxExportSummary()"
+              style="background: transparent; border: none; color: #facc15; font-weight: 900; font-size: 1rem; cursor: pointer; outline: none;">
+              <option value="2025" style="background: #0d121d; color: #fff;">2025</option>
+              <option value="2026" style="background: #0d121d; color: #fff;" selected>2026</option>
+              <option value="2027" style="background: #0d121d; color: #fff;">2027</option>
+            </select>
+          </div>
+
+          <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">
+            (Xuất mỗi ngày 1 Sheet riêng trong 1 file Excel)
+          </div>
+        </div>
+
+        <div id="taxExportSummaryText" style="margin-top: 10px; font-size: 0.88rem; color: #94a3b8; font-weight: 700;">
+          Đang kiểm tra dữ liệu bán hàng...
+        </div>
+      </div>
+
+      <!-- NÚT BẤM XUẤT FILE -->
+      <button type="button" onclick="executeTaxExportS1a()"
+        style="width: 100%; background: linear-gradient(135deg, #059669 0%, #047857 100%); border: 1.5px solid #10b981; border-radius: 12px; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45); transition: all 0.2s; font-size: 1.05rem; font-weight: 900; color: #ffffff;">
+        <span>📥</span> XUẤT EXCEL MẪU S1a-HKD (MỖI NGÀY 1 TRANG)
+      </button>
+
+      <!-- FOOTER ĐÓNG -->
+      <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
+        <button type="button" onclick="closeTaxReportModal()"
           style="background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-weight: 800; font-size: 0.88rem; padding: 8px 22px; border-radius: 8px; cursor: pointer;">
           Đóng
         </button>
