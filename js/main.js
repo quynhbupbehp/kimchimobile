@@ -115,7 +115,10 @@ function formatSalesShortDeviceName(name, item) {
     /^(?:iphone|samsung|oppo|xiaomi|redmi|vivo|realme|nokia|huawei|ipad|sony|vsmart|google|pixel|máy ngoài|❤️❤️❤️)\s*[-–]/i.test(str);
 
   if (!isPhoneItem) {
-    return (item && item.name) ? item.name.replace(/\s*\(x1\)/gi, '').trim() : str;
+    let nm = (item && item.name) ? item.name : str;
+    nm = nm.replace(/\s*\(x1\)/gi, '').replace(/\s*\(1\)/g, '').trim();
+    nm = nm.replace(/\(x(\d+)\)/gi, '($1)');
+    return nm;
   }
 
   if (item && item.phoneName) {
@@ -4492,7 +4495,7 @@ function setSalesPaymentFilter(method) {
 
 // Hàm kiểm tra xem đơn bán hàng có thiếu 1 trong 3 thông tin bắt buộc: Tên phụ kiện, Giá bán, Giá nhập
 function isMissingRequiredSalesInfo(name, totalVal, priceInVal) {
-  let cleanName = (name || '').replace(/\s*\(x\d+\)/gi, '').trim();
+  let cleanName = (name || '').replace(/\s*\(x?\d+\)/gi, '').trim();
   let hasName = (cleanName !== '' && cleanName !== 'Chưa nhập tên phụ kiện' && cleanName !== 'Chưa nhập tên');
   let pOut = parsePriceNum(totalVal);
   let pIn = parsePriceNum(priceInVal);
@@ -4847,7 +4850,8 @@ function renderSalesTable(items) {
   tbody.innerHTML = filtered.map(item => {
     let isCash = (item.method === 'Tiền mặt' || item.method === 'Tiền Mặt');
     let methodColor = isCash ? '#10b981' : '#f87171';
-    let rawName = (item.name || '').replace(/\s*\(x1\)/gi, '').trim();
+    let rawName = (item.name || '').replace(/\s*\(x1\)/gi, '').replace(/\s*\(1\)/g, '').trim();
+    rawName = rawName.replace(/\(x(\d+)\)/gi, '($1)');
     let displayName = formatSalesShortDeviceName(rawName, item);
     displayName = formatBrandDeviceName(displayName);
 
@@ -6470,7 +6474,7 @@ function updateCartUI() {
     return `
           <div class="cart-row-item" style="display: flex; align-items: center; justify-content: space-between; background: #0d121d; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 8px; margin-bottom: 8px; gap: 4px; box-sizing: border-box; width: 100%;">
             <div class="cart-col-name" style="display: flex; align-items: center; gap: 4px; min-width: 0; flex: 1;">
-              <span class="cart-item-name" style="font-weight: 800; font-size: 0.95rem; color: #fff; word-break: break-word; line-height: 1.25;">${item.name}${item.qty > 1 ? ` <span style="color: var(--text-sub); font-size: 0.85rem;">(x${item.qty})</span>` : ''}</span>
+              <span class="cart-item-name" style="font-weight: 800; font-size: 0.95rem; color: #fff; word-break: break-word; line-height: 1.25;">${item.name}${item.qty > 1 ? ` <span style="color: var(--text-sub); font-size: 0.85rem;">(${item.qty})</span>` : ''}</span>
             </div>
 
             <div class="cart-col-inputs" style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
@@ -6602,7 +6606,7 @@ function saveTicket(e) {
     // KHI THÊM VÀO GIỎ HÀNG TỪ 2 SẢN PHẨM TRỞ LÊN:
     // Gộp toàn bộ thành 1 phiếu hiển thị duy nhất: Tên 1 + Tên 2 (kèm số lượng nếu có), tổng giá bán và tổng giá nhập
     let combinedNames = tempCart.map(item => {
-      let qtyLabel = (item.qty && Number(item.qty) > 1) ? ` (x${item.qty})` : '';
+      let qtyLabel = (item.qty && Number(item.qty) > 1) ? ` (${item.qty})` : '';
       return `${item.name}${qtyLabel}`;
     }).join(' + ');
 
@@ -6653,7 +6657,7 @@ function saveTicket(e) {
   } else {
     // Trường hợp 1 sản phẩm: lưu bình thường
     tempCart.forEach(item => {
-      let qtyLabel = (item.qty && Number(item.qty) > 1) ? ` (x${item.qty})` : '';
+      let qtyLabel = (item.qty && Number(item.qty) > 1) ? ` (${item.qty})` : '';
       let totalVal = formatPriceStr(parsePriceNum(item.total));
       let priceInVal = formatPriceStr(parsePriceNum(item.priceIn));
       let profitVal = formatPriceStr(parsePriceNum(item.profit));
