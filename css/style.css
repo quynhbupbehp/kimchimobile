@@ -2297,7 +2297,7 @@
       box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
     }
 
-    /* MODAL TẠO PHIẾU BÁN HÀNG: TIÊU ĐỀ & LƯU LẠI NỀN HỒNG, NHÃN CHỮ XANH LÁ */
+    /* MODAL TẠO PHIẾU BÁN HÀNG: TIÊU ĐỀ & LƯU LẠI NỀN HỒNG, NHÃN CHỮ VÀNG, Ô NHẬP LIỆU CHỮ TRẮNG */
     #ticketModal .ticket-header span {
       background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important;
       border: 1px solid #f472b6 !important;
@@ -2311,9 +2311,22 @@
     }
 
     #ticketModal .form-ticket-label,
-    #ticketModal .ticket-footer label,
+    #ticketModal .ticket-footer label {
+      color: #facc15 !important;
+      font-weight: 800 !important;
+    }
+
     #ticketModal #ticketTotalSummary {
       color: #10b981 !important;
+      font-weight: 800 !important;
+    }
+
+    #ticketModal .ticket-input,
+    #ticketModal select.ticket-input,
+    #ticketModal .qty-input,
+    #ticketModal #tTimeVal,
+    #ticketModal #tDateVal {
+      color: #ffffff !important;
       font-weight: 800 !important;
     }
 
@@ -9370,7 +9383,7 @@
 
         /* 3. ĐỊNH DẠNG CHUNG CHO CÁC NHÃN VÀ INPUT */
         #ticketModal .form-ticket-label {
-          color: #10b981 !important; /* Xanh lá nổi bật như ảnh mẫu */
+          color: #facc15 !important; /* Chữ vàng nổi bật đồng bộ */
           font-weight: 900 !important;
           font-size: 0.8rem !important;
           margin-bottom: 3px !important;
@@ -9556,7 +9569,7 @@
           background: #0b111e !important;
           border: 1.5px solid #1e293b !important;
           border-radius: 6px !important;
-          color: #f59e0b !important;
+          color: #ffffff !important;
           font-weight: 900 !important;
           font-size: 0.8rem !important;
           text-align: center !important;
