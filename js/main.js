@@ -17026,6 +17026,7 @@ function openSwAccountsModal() {
   if (modal) {
     modal.style.display = 'flex';
     renderSwAccountsList();
+    startSwAccountsTimerTicker();
   }
 }
 
@@ -17033,6 +17034,7 @@ function closeSwAccountsModal() {
   const modal = document.getElementById('swAccountsModal');
   if (modal) modal.style.display = 'none';
   cancelSwAccountForm();
+  stopSwAccountsTimerTicker();
 }
 
 function toggleSwAccountForm() {
@@ -17096,8 +17098,25 @@ function renderSwAccountsList() {
 
   listEl.innerHTML = filtered.map((acc) => {
     const realIndex = list.indexOf(acc);
+    const accKey = (acc.name || '') + '__' + (acc.user || '');
+    const timerData = getSwAccountTimerData(accKey);
+    const durationMinutes = timerData.durationMinutes || 360;
+    const isRunning = !!timerData.startedAt;
+    const now = Date.now();
+    let elapsedSec = 0;
+    if (isRunning) {
+      elapsedSec = Math.max(0, Math.floor((now - timerData.startedAt) / 1000));
+    }
+    const forwardStr = formatSwTimerHMS(elapsedSec);
+    const totalDurationSec = durationMinutes * 60;
+    const remainSec = totalDurationSec - elapsedSec;
+    const isExpired = isRunning && (remainSec <= 0);
+    const backwardStr = isRunning
+      ? (remainSec > 0 ? formatSwTimerHMS(remainSec) : 'HẾT GIỜ (' + formatSwTimerHMS(Math.abs(remainSec)) + ')')
+      : formatSwTimerHMS(totalDurationSec);
+
     return `
-          <div class="sw-acc-card">
+          <div class="sw-acc-card" data-acc-key="${escapeHtml(accKey)}">
             <!-- HÀNG 1: TIÊU ĐỀ + ACTIONS -->
             <div class="sw-acc-section">
               <div class="sw-acc-meta">
@@ -17141,9 +17160,36 @@ function renderSwAccountsList() {
                 <div class="sw-acc-val" title="${escapeHtml(acc.pass)}">${escapeHtml(acc.pass)}</div>
               </div>
               <div class="sw-acc-actions">
-                <button type="button" class="sw-acc-icon-btn" onclick="copyText('${escapeHtml(acc.pass)}', 'Mật khẩu')" title="Sao chép mật khẩu">
+                <button type="button" class="sw-acc-icon-btn" onclick="handleCopySwAccountPassword('${escapeHtml(acc.pass)}', '${escapeHtml(accKey)}')" title="Sao chép mật khẩu và kích hoạt bộ đếm thời gian">
                   <svg viewBox="0 0 24 24" class="sw-acc-svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
+              </div>
+            </div>
+
+            <!-- HÀNG 4: BỘ ĐẾM THỜI GIAN (ĐẾM TIẾN & ĐẾM LÙI) -->
+            <div class="sw-acc-timer-row">
+              <!-- Ô 1: ĐẾM TIẾN (NỀN ĐEN CHỮ XANH) -->
+              <div class="sw-acc-timer-box timer-forward" title="Thời gian chạy tiến từ lúc sao chép mật khẩu">
+                <div class="sw-acc-timer-info">
+                  <span class="sw-acc-timer-label">ĐÃ CHẠY</span>
+                  <span class="sw-acc-timer-val val-forward" id="swTimerForward_${realIndex}">${forwardStr}</span>
+                </div>
+              </div>
+
+              <!-- Ô 2: ĐẾM LÙI (CÓ NÚT SỬA & RESET) -->
+              <div class="sw-acc-timer-box timer-backward" title="Thời gian đếm lùi còn lại">
+                <div class="sw-acc-timer-info">
+                  <span class="sw-acc-timer-label">CÒN LẠI</span>
+                  <span class="sw-acc-timer-val ${isExpired ? 'val-expired' : 'val-backward'}" id="swTimerBackward_${realIndex}">${backwardStr}</span>
+                </div>
+                <div class="sw-acc-timer-btns">
+                  <button type="button" class="sw-acc-timer-mini-btn" onclick="editSwAccountTimerDuration('${escapeHtml(accKey)}', ${durationMinutes})" title="Cài đặt thời gian đếm lùi">
+                    <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  </button>
+                  <button type="button" class="sw-acc-timer-mini-btn" onclick="resetSwAccountTimer('${escapeHtml(accKey)}')" title="Reset đặt lại bộ đếm">
+                    <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -17154,6 +17200,153 @@ function renderSwAccountsList() {
 function showSwToast(msg) {
   showToast(msg, 2000);
 }
+
+// ============================================================
+// BỘ ĐẾM THỜI GIAN KHI SAO CHÉP MẬT KHẨU TÀI KHOẢN (ĐẾM TIẾN & ĐẾM LÙI)
+// ============================================================
+let swAccountTimerTicker = null;
+
+function getSwAccountTimersMap() {
+  try {
+    const raw = localStorage.getItem('sw_account_timers_map');
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveSwAccountTimersMap(map) {
+  try {
+    localStorage.setItem('sw_account_timers_map', JSON.stringify(map));
+  } catch (e) { }
+}
+
+function getSwAccountTimerData(accKey) {
+  const map = getSwAccountTimersMap();
+  return map[accKey] || { durationMinutes: 360, startedAt: null };
+}
+
+function formatSwTimerHMS(totalSec) {
+  totalSec = Math.max(0, Math.floor(totalSec));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function handleCopySwAccountPassword(password, accKey) {
+  copyText(password, 'Mật khẩu');
+  const map = getSwAccountTimersMap();
+  const current = map[accKey] || { durationMinutes: 360 };
+  current.startedAt = Date.now();
+  map[accKey] = current;
+  saveSwAccountTimersMap(map);
+  updateSwAccountTimersDisplay();
+  startSwAccountsTimerTicker();
+}
+
+function editSwAccountTimerDuration(accKey, currentMinutes) {
+  const currentHours = (currentMinutes / 60).toFixed(1).replace('.0', '');
+  const input = prompt(
+    `CÀI ĐẶT THỜI GIAN ĐẾM LÙI CHO TÀI KHOẢN NÀY:\n\n` +
+    `• Nhập số GIỜ (VD: 6 hoặc 12 hoặc 24)\n` +
+    `• Hoặc nhập số PHÚT kèm chữ m (VD: 30m, 90m)\n\n` +
+    `Hiện tại: ${currentHours} giờ (${currentMinutes} phút)`,
+    currentHours
+  );
+  if (input === null) return;
+  const val = input.trim().toLowerCase();
+  if (!val) return;
+
+  let newMinutes = 360;
+  if (val.endsWith('m') || val.endsWith('p')) {
+    newMinutes = parseInt(val, 10);
+  } else {
+    const h = parseFloat(val);
+    if (!isNaN(h) && h > 0) newMinutes = Math.round(h * 60);
+  }
+
+  if (isNaN(newMinutes) || newMinutes <= 0) {
+    alert('Thời gian nhập vào không hợp lệ!');
+    return;
+  }
+
+  const map = getSwAccountTimersMap();
+  const current = map[accKey] || {};
+  current.durationMinutes = newMinutes;
+  map[accKey] = current;
+  saveSwAccountTimersMap(map);
+  updateSwAccountTimersDisplay();
+  showSwToast(`Đã cài thời gian đếm lùi: ${(newMinutes / 60).toFixed(1).replace('.0', '')} giờ!`);
+}
+
+function resetSwAccountTimer(accKey) {
+  if (!confirm('Bạn có chắc muốn RESET đặt lại bộ đếm thời gian cho tài khoản này?')) return;
+  const map = getSwAccountTimersMap();
+  if (map[accKey]) {
+    map[accKey].startedAt = null;
+    saveSwAccountTimersMap(map);
+  }
+  updateSwAccountTimersDisplay();
+  showSwToast('Đã reset bộ đếm thời gian!');
+}
+
+function updateSwAccountTimersDisplay() {
+  const cards = document.querySelectorAll('.sw-acc-card[data-acc-key]');
+  if (!cards || cards.length === 0) return;
+  const now = Date.now();
+  const map = getSwAccountTimersMap();
+
+  cards.forEach((card, idx) => {
+    const key = card.getAttribute('data-acc-key');
+    const timerData = map[key] || { durationMinutes: 360, startedAt: null };
+    const durationMinutes = timerData.durationMinutes || 360;
+    const isRunning = !!timerData.startedAt;
+    let elapsedSec = 0;
+    if (isRunning) {
+      elapsedSec = Math.max(0, Math.floor((now - timerData.startedAt) / 1000));
+    }
+    const forwardStr = formatSwTimerHMS(elapsedSec);
+    const totalDurationSec = durationMinutes * 60;
+    const remainSec = totalDurationSec - elapsedSec;
+    const isExpired = isRunning && (remainSec <= 0);
+    const backwardStr = isRunning
+      ? (remainSec > 0 ? formatSwTimerHMS(remainSec) : 'HẾT GIỜ (' + formatSwTimerHMS(Math.abs(remainSec)) + ')')
+      : formatSwTimerHMS(totalDurationSec);
+
+    const fEl = card.querySelector('.val-forward');
+    if (fEl) fEl.innerText = forwardStr;
+
+    const bEl = card.querySelector('.val-backward, .val-expired');
+    if (bEl) {
+      bEl.innerText = backwardStr;
+      if (isExpired) {
+        bEl.classList.remove('val-backward');
+        bEl.classList.add('val-expired');
+      } else {
+        bEl.classList.remove('val-expired');
+        bEl.classList.add('val-backward');
+      }
+    }
+  });
+}
+
+function startSwAccountsTimerTicker() {
+  if (swAccountTimerTicker) return;
+  updateSwAccountTimersDisplay();
+  swAccountTimerTicker = setInterval(updateSwAccountTimersDisplay, 1000);
+}
+
+function stopSwAccountsTimerTicker() {
+  if (swAccountTimerTicker) {
+    clearInterval(swAccountTimerTicker);
+    swAccountTimerTicker = null;
+  }
+}
+
+window.handleCopySwAccountPassword = handleCopySwAccountPassword;
+window.editSwAccountTimerDuration = editSwAccountTimerDuration;
+window.resetSwAccountTimer = resetSwAccountTimer;
 
 function copyText(text, label) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
