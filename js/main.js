@@ -7093,24 +7093,22 @@ function executeTaxExportS1a() {
     const dd = dp[0];
     const sheetName = `Ngay_${dd}`;
 
-    // Xây dựng nội dung AOA cho từng ngày theo chuẩn mẫu S1a-HKD
+    // Xây dựng nội dung AOA cho từng ngày theo chuẩn mẫu S1a-HKD (4 cột)
     const aoa = [
-      ["HỘ, CÁ NHÂN KINH DOANH: Cao Thị Huyền", "", "", "Mẫu số S1a-HKD", ""],
-      ["Địa chỉ: Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng", "", "", "(Kèm theo Thông tư số 152/2025/TT-BTC", ""],
-      ["Mã số thuế: 030195011647", "", "", "ngày 31 tháng 12 năm 2025 của Bộ trưởng", ""],
-      ["", "", "", "Bộ Tài chính)", ""],
-      ["", "", "", "", ""],
-      ["SỔ DOANH THU BÁN HÀNG HÓA, DỊCH VỤ", "", "", "", ""],
-      [`Địa điểm kinh doanh: Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng`, "", "", "", ""],
-      [`Kỳ kê khai: Tháng ${String(m).padStart(2, '0')} Năm ${y} (Ngày ${dayStr})`, "", "", "", ""],
-      ["", "", "", "Đơn vị tính: Đồng", ""],
-      ["Ngày tháng", "Diễn giải", "Số tiền", "Chuyển tiền", "Tiền mặt"],
-      ["A", "B", "1", "2", "3"]
+      ["HỘ, CÁ NHÂN KINH DOANH: Cao Thị Huyền", "", "Mẫu số S1a-HKD", ""],
+      ["Địa chỉ: Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng", "", "(Kèm theo Thông tư số 152/2025/TT-BTC", ""],
+      ["Mã số thuế: 030195011647", "", "ngày 31 tháng 12 năm 2025 của Bộ trưởng", ""],
+      ["", "", "Bộ Tài chính)", ""],
+      ["", "", "", ""],
+      ["SỔ DOANH THU BÁN HÀNG HÓA, DỊCH VỤ", "", "", ""],
+      [`Địa điểm kinh doanh: Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng`, "", "", ""],
+      [`Kỳ kê khai: Tháng ${String(m).padStart(2, '0')} Năm ${y} (Ngày ${dayStr})`, "", "", ""],
+      ["", "", "Đơn vị tính: Đồng", ""],
+      ["Ngày tháng", "Diễn giải", "Số tiền", "Hình thức"],
+      ["A", "B", "1", "2"]
     ];
 
     let dayTotalAmount = 0;
-    let dayTotalCk = 0;
-    let dayTotalTm = 0;
 
     dayItems.forEach(it => {
       let name = String(it.name || '').trim();
@@ -7118,42 +7116,35 @@ function executeTaxExportS1a() {
       let method = String(it.method || '').toLowerCase().trim();
 
       let isCk = (method === 'chuyển khoản' || method === 'ck' || method === 'chuyển tiền');
-      let isTm = (method === 'tiền mặt' || method === 'tm');
-      if (!isCk && !isTm) isTm = true; // Mặc định nếu không ghi rõ
-
-      let ckNum = isCk ? totalNum : 0;
-      let tmNum = isTm ? totalNum : 0;
+      let methodLabel = isCk ? 'Chuyển Tiền' : 'Tiền mặt';
 
       dayTotalAmount += totalNum;
-      dayTotalCk += ckNum;
-      dayTotalTm += tmNum;
 
       let desc = name ? `Doanh thu bán lẻ ${name}` : 'Doanh thu bán lẻ hàng hóa, dịch vụ';
-      aoa.push([dayStr, desc, totalNum, ckNum > 0 ? ckNum : "", tmNum > 0 ? tmNum : ""]);
+      aoa.push([dayStr, desc, totalNum, methodLabel]);
     });
 
     // Dòng tổng cộng của ngày
-    aoa.push(["", "Tổng cộng", dayTotalAmount, dayTotalCk, dayTotalTm]);
+    aoa.push(["", "Tổng cộng", dayTotalAmount, ""]);
 
     // Dòng trống và phần chữ ký
-    aoa.push(["", "", "", "", ""]);
-    aoa.push(["", "", "", `Ngày ${dd} tháng ${String(m).padStart(2, '0')} năm ${y}`, ""]);
-    aoa.push(["", "", "", "NGƯỜI ĐẠI DIỆN HỘ KINH DOANH/", ""]);
-    aoa.push(["", "", "", "CÁ NHÂN KINH DOANH", ""]);
-    aoa.push(["", "", "", "(Ký, ghi rõ họ tên, đóng dấu nếu có)", ""]);
-    aoa.push(["", "", "", "", ""]);
-    aoa.push(["", "", "", "", ""]);
-    aoa.push(["", "", "", "Cao Thị Huyền", ""]);
+    aoa.push(["", "", "", ""]);
+    aoa.push(["", "", `Ngày ${dd} tháng ${String(m).padStart(2, '0')} năm ${y}`, ""]);
+    aoa.push(["", "", "NGƯỜI ĐẠI DIỆN HỘ KINH DOANH/", ""]);
+    aoa.push(["", "", "CÁ NHÂN KINH DOANH", ""]);
+    aoa.push(["", "", "(Ký, ghi rõ họ tên, đóng dấu nếu có)", ""]);
+    aoa.push(["", "", "", ""]);
+    aoa.push(["", "", "", ""]);
+    aoa.push(["", "", "Cao Thị Huyền", ""]);
 
     const ws = XLSX.utils.aoa_to_sheet(aoa);
 
     // Định độ rộng cột (Column widths)
     ws['!cols'] = [
-      { wch: 14 }, // Ngày tháng
-      { wch: 42 }, // Diễn giải
+      { wch: 15 }, // Ngày tháng
+      { wch: 45 }, // Diễn giải
       { wch: 18 }, // Số tiền
-      { wch: 18 }, // Chuyển tiền
-      { wch: 18 }  // Tiền mặt
+      { wch: 18 }  // Hình thức
     ];
 
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
@@ -7165,6 +7156,271 @@ function executeTaxExportS1a() {
   alert(`✓ Đã xuất thành công Sổ doanh thu mẫu S1a-HKD Tháng ${String(m).padStart(2, '0')}/${y} (${sortedDays.length} ngày - mỗi ngày 1 sheet) ra file: ${fileName}!`);
 }
 window.executeTaxExportS1a = executeTaxExportS1a;
+
+function executeTaxExportPDF() {
+  const selM = document.getElementById('taxExportMonth');
+  const selY = document.getElementById('taxExportYear');
+  const m = selM ? parseInt(selM.value, 10) : (new Date().getMonth() + 1);
+  const y = selY ? parseInt(selY.value, 10) : new Date().getFullYear();
+
+  const items = getSalesItemsForTaxMonth(m, y);
+  if (items.length === 0) {
+    alert(`Không tìm thấy đơn bán hàng nào trong Tháng ${String(m).padStart(2, '0')}/${y} để xuất sổ S1a-HKD!`);
+    return;
+  }
+
+  // Nhóm các mặt hàng theo từng ngày (dd/mm/yyyy)
+  const groupedByDay = {};
+  items.forEach(it => {
+    let raw = it.dateTime || it.date || '';
+    let datePart = raw.includes(' - ') ? raw.split(' - ')[1].trim() : raw;
+    if (datePart.includes('-')) {
+      let dp = datePart.split('-');
+      if (dp.length === 3 && dp[0].length === 4) datePart = `${dp[2]}/${dp[1]}/${dp[0]}`;
+    }
+    if (!datePart) datePart = `${String(new Date().getDate()).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+    if (!groupedByDay[datePart]) {
+      groupedByDay[datePart] = [];
+    }
+    groupedByDay[datePart].push(it);
+  });
+
+  // Sắp xếp các ngày tăng dần từ ngày 1 đến cuối tháng
+  const sortedDays = Object.keys(groupedByDay).sort((a, b) => {
+    let [d1, m1, y1] = a.split('/').map(n => parseInt(n, 10) || 0);
+    let [d2, m2, y2] = b.split('/').map(n => parseInt(n, 10) || 0);
+    return new Date(y1, m1 - 1, d1).getTime() - new Date(y2, m2 - 1, d2).getTime();
+  });
+
+  // Tạo cửa sổ in tài liệu chuẩn A4
+  const printWin = window.open('', '_blank');
+  if (!printWin) {
+    alert('Trình duyệt đang chặn cửa sổ bật lên (popup). Vui lòng cho phép popup để xuất PDF!');
+    return;
+  }
+
+  let pagesHtml = '';
+
+  sortedDays.forEach((dayStr, idx) => {
+    const dayItems = groupedByDay[dayStr];
+    const dp = dayStr.split('/');
+    const dd = dp[0];
+    let dayTotal = 0;
+
+    let rowsHtml = '';
+    dayItems.forEach(it => {
+      let name = String(it.name || '').trim();
+      let totalNum = parsePriceNum(it.total || it.price);
+      let method = String(it.method || '').toLowerCase().trim();
+      let isCk = (method === 'chuyển khoản' || method === 'ck' || method === 'chuyển tiền');
+      let methodLabel = isCk ? 'Chuyển Tiền' : 'Tiền mặt';
+      let desc = name ? `Doanh thu bán lẻ ${name}` : 'Doanh thu bán lẻ hàng hóa, dịch vụ';
+      dayTotal += totalNum;
+
+      rowsHtml += `
+        <tr>
+          <td style="text-align: center;">${dayStr}</td>
+          <td>${escapeHtml(desc)}</td>
+          <td style="text-align: right; font-weight: 700;">${formatNumberDisplay(totalNum)}</td>
+          <td style="text-align: center; font-weight: 600;">${methodLabel}</td>
+        </tr>
+      `;
+    });
+
+    const isLastPage = (idx === sortedDays.length - 1);
+    const pageBreakStyle = isLastPage ? '' : 'page-break-after: always;';
+
+    pagesHtml += `
+      <div class="a4-page" style="${pageBreakStyle}">
+        <div class="header-container">
+          <div class="header-left">
+            <div><strong>HỘ, CÁ NHÂN KINH DOANH:</strong> Cao Thị Huyền</div>
+            <div><strong>Địa chỉ:</strong> Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng</div>
+            <div><strong>Mã số thuế:</strong> 030195011647</div>
+          </div>
+          <div class="header-right">
+            <div><strong>Mẫu số S1a-HKD</strong></div>
+            <div style="font-style: italic;">(Kèm theo Thông tư số 152/2025/TT-BTC</div>
+            <div style="font-style: italic;">ngày 31 tháng 12 năm 2025 của Bộ trưởng</div>
+            <div style="font-style: italic;">Bộ Tài chính)</div>
+          </div>
+        </div>
+
+        <div class="title-container">
+          <div class="main-title">SỔ DOANH THU BÁN HÀNG HÓA, DỊCH VỤ</div>
+          <div class="sub-title">Địa điểm kinh doanh: Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng</div>
+          <div class="sub-title">Kỳ kê khai: Tháng ${String(m).padStart(2, '0')} Năm ${y} (Ngày ${dayStr})</div>
+        </div>
+
+        <div class="unit-text">Đơn vị tính: Đồng</div>
+
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Ngày tháng</th>
+              <th style="width: 50%;">Diễn giải</th>
+              <th style="width: 20%;">Số tiền</th>
+              <th style="width: 15%;">Hình thức</th>
+            </tr>
+            <tr class="col-num-row">
+              <th>A</th>
+              <th>B</th>
+              <th>1</th>
+              <th>2</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+            <tr class="total-row">
+              <td colspan="2" style="text-align: center; font-weight: bold;">Tổng cộng</td>
+              <td style="text-align: right; font-weight: bold; color: #000;">${formatNumberDisplay(dayTotal)}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="footer-container">
+          <div class="footer-sign">
+            <div style="font-style: italic;">Ngày ${dd} tháng ${String(m).padStart(2, '0')} năm ${y}</div>
+            <div style="font-weight: bold; text-transform: uppercase; margin-top: 4px;">NGƯỜI ĐẠI DIỆN HỘ KINH DOANH/</div>
+            <div style="font-weight: bold; text-transform: uppercase;">CÁ NHÂN KINH DOANH</div>
+            <div style="font-style: italic; font-size: 0.85rem; margin-top: 2px;">(Ký, ghi rõ họ tên, đóng dấu nếu có)</div>
+            <div class="sign-space"></div>
+            <div style="font-weight: bold; font-size: 1.05rem;">Cao Thị Huyền</div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  const fullDocHtml = `
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+      <meta charset="UTF-8">
+      <title>So_Doanh_Thu_S1a_HKD_Thang_${String(m).padStart(2, '0')}_${y}</title>
+      <style>
+        @page {
+          size: A4 portrait;
+          margin: 15mm 15mm 15mm 15mm;
+        }
+        * {
+          box-sizing: border-box;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        body {
+          font-family: 'Times New Roman', Times, serif;
+          font-size: 13pt;
+          line-height: 1.35;
+          color: #000;
+          background: #fff;
+          margin: 0;
+          padding: 0;
+        }
+        .a4-page {
+          width: 100%;
+          min-height: 260mm;
+          padding: 10px 0;
+        }
+        .header-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 20px;
+        }
+        .header-left {
+          width: 58%;
+          font-size: 11pt;
+          line-height: 1.4;
+        }
+        .header-right {
+          width: 40%;
+          text-align: center;
+          font-size: 11pt;
+          line-height: 1.3;
+        }
+        .title-container {
+          text-align: center;
+          margin-bottom: 12px;
+        }
+        .main-title {
+          font-size: 16pt;
+          font-weight: bold;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+        }
+        .sub-title {
+          font-size: 11pt;
+          margin-bottom: 4px;
+        }
+        .unit-text {
+          text-align: right;
+          font-style: italic;
+          font-size: 11pt;
+          margin-bottom: 6px;
+        }
+        .report-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 24px;
+        }
+        .report-table th, .report-table td {
+          border: 1px solid #000;
+          padding: 7px 8px;
+          font-size: 11.5pt;
+        }
+        .report-table thead th {
+          background-color: #f2f2f2;
+          text-align: center;
+          font-weight: bold;
+        }
+        .col-num-row th {
+          font-weight: normal;
+          font-size: 10.5pt;
+          background-color: #fafafa;
+        }
+        .total-row td {
+          background-color: #f9f9f9;
+        }
+        .footer-container {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 15px;
+        }
+        .footer-sign {
+          width: 48%;
+          text-align: center;
+          font-size: 11.5pt;
+          line-height: 1.35;
+        }
+        .sign-space {
+          height: 70px;
+        }
+        @media print {
+          body { padding: 0; }
+          .a4-page { page-break-inside: avoid; }
+        }
+      </style>
+    </head>
+    <body>
+      ${pagesHtml}
+      <script>
+        window.onload = function() {
+          window.focus();
+          window.print();
+        };
+      <\/script>
+    </body>
+    </html>
+  `;
+
+  printWin.document.open();
+  printWin.document.write(fullDocHtml);
+  printWin.document.close();
+  closeTaxReportModal();
+}
+window.executeTaxExportPDF = executeTaxExportPDF;
 
 function triggerImportSalesExcel() {
   const fileInput = document.getElementById('salesExcelFileInput');
