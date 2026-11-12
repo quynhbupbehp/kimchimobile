@@ -20086,6 +20086,50 @@ function initRepairTimeSelectors() {
   }
 }
 
+
+// Lấy danh sách người mình nợ duy nhất từ tab Công Nợ - Mình Nợ
+function getMyDebtCreditorList() {
+  const list = [];
+  const set = new Set();
+  if (typeof myDebtDatabase !== 'undefined' && Array.isArray(myDebtDatabase)) {
+    myDebtDatabase.forEach(item => {
+      const c = (item.creditor || '').trim();
+      if (c && !set.has(c.toLowerCase())) {
+        set.add(c.toLowerCase());
+        list.push(c);
+      }
+    });
+  }
+  // Thêm các gợi ý mặc định nếu chưa có
+  const defaults = ['Hiệp Bùi', 'Linh Kiện Quốc Cường', 'Anh Đức Main', 'Kho Màn Hình Sài Gòn'];
+  defaults.forEach(d => {
+    if (!set.has(d.toLowerCase())) {
+      set.add(d.toLowerCase());
+      list.push(d);
+    }
+  });
+  return list;
+}
+
+function populateRepairCreditorDropdown(selectedValue = '') {
+  const selectEl = document.getElementById('rFormCreditor');
+  if (!selectEl) return;
+  const creditors = getMyDebtCreditorList();
+  let html = '<option value="" style="background: #0f172a; color: #94a3b8;">-- Không --</option>';
+  creditors.forEach(c => {
+    const isSel = (selectedValue && selectedValue.trim().toLowerCase() === c.trim().toLowerCase()) ? ' selected' : '';
+    html += `<option value="${escapeHtml(c)}"${isSel} style="background: #0f172a; color: #ffffff;">${escapeHtml(c)}</option>`;
+  });
+  selectEl.innerHTML = html;
+  if (selectedValue) {
+    selectEl.value = selectedValue;
+  } else {
+    selectEl.value = '';
+  }
+}
+window.getMyDebtCreditorList = getMyDebtCreditorList;
+window.populateRepairCreditorDropdown = populateRepairCreditorDropdown;
+
 function openRepairModal(editId = null) {
   try {
     if (typeof initRepairTimeSelectors === 'function') initRepairTimeSelectors();
@@ -20151,6 +20195,7 @@ function openRepairModal(editId = null) {
       if (document.getElementById('rFormCost')) document.getElementById('rFormCost').value = formatNumberDisplay(item.cost);
       if (document.getElementById('rFormPaymentStatus')) document.getElementById('rFormPaymentStatus').value = item.status || 'Đã thanh toán';
       if (document.getElementById('rFormPaymentMethod')) document.getElementById('rFormPaymentMethod').value = item.method || 'Tiền mặt';
+      populateRepairCreditorDropdown(item.creditor || '');
 
       if (item.dateFormatted && document.getElementById('rFormDate')) {
         const dp = item.dateFormatted.split('/');
@@ -20174,6 +20219,7 @@ function openRepairModal(editId = null) {
     if (document.getElementById('rFormWarranty')) document.getElementById('rFormWarranty').value = '';
     if (document.getElementById('rFormPaymentStatus')) document.getElementById('rFormPaymentStatus').value = 'Đã thanh toán';
     if (document.getElementById('rFormPaymentMethod')) document.getElementById('rFormPaymentMethod').value = 'Tiền mặt';
+    populateRepairCreditorDropdown('');
     const disp = document.getElementById('rFormProfitDisplay');
     if (disp) disp.innerText = '';
   }
@@ -20351,6 +20397,55 @@ function saveRepairItem(e) {
     (method || '').toLowerCase().trim() === 'ck';
 
   const targetRepairId = editId ? String(editId) : String(newItem.id);
+  // ============================================================
+  // ĐỒNG BỘ SANG TAB CÔNG NỢ - MÌNH NỢ NẾU CHỌN "MÌNH NỢ"
+  // - Người mình nợ: theo tên người nợ được chọn
+  // - Loại món nợ: Tên Máy + Đã Sửa (ví dụ: "8 Plus Thay Màn")
+  // - Số tiền nợ: Giá vốn (costRaw)
+  // - Ngày nợ: Ngày sửa chữa (dateFormatted)
+  // - Trạng thái: Đang nợ
+  // ============================================================
+  const debtItemType = `${device} ${issue}`.trim();
+  if (creditor) {
+    if (typeof myDebtDatabase !== 'undefined' && Array.isArray(myDebtDatabase)) {
+      let existingDebt = myDebtDatabase.find(d => String(d.repairId) === targetRepairId);
+      if (existingDebt) {
+        existingDebt.creditor = creditor;
+        existingDebt.itemType = debtItemType;
+        existingDebt.amount = costRaw;
+        existingDebt.date = dateFormatted;
+        existingDebt.shop = 'Kim Chi Mobile';
+      } else {
+        const newDebtRecord = {
+          id: Date.now() + 2,
+          shop: 'Kim Chi Mobile',
+          creditor: creditor,
+          itemType: debtItemType,
+          amount: costRaw,
+          note: `Đơn sửa chữa: ${customer} - ${device}`,
+          date: dateFormatted,
+          status: 'Đang nợ',
+          repairId: targetRepairId
+        };
+        myDebtDatabase.unshift(newDebtRecord);
+      }
+      if (typeof saveMyDebtDb === 'function') saveMyDebtDb();
+      if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
+      if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+    }
+  } else if (editId) {
+    // Nếu sửa đơn mà bỏ chọn Mình Nợ thì xóa khoản nợ tương ứng
+    if (typeof myDebtDatabase !== 'undefined' && Array.isArray(myDebtDatabase)) {
+      const prevDebtLen = myDebtDatabase.length;
+      myDebtDatabase = myDebtDatabase.filter(d => String(d.repairId) !== targetRepairId);
+      if (myDebtDatabase.length !== prevDebtLen) {
+        if (typeof saveMyDebtDb === 'function') saveMyDebtDb();
+        if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
+        if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+      }
+    }
+  }
+
 
   if (isTransfer) {
     let cleanDev = (device || 'Máy').replace(/^iphone\s+/i, '').trim();
