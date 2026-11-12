@@ -6670,7 +6670,10 @@ function closeAllExcelDropdowns() {
   ];
   dropdownIds.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+    if (el) {
+      el.classList.remove('show');
+      el.style.display = 'none';
+    }
   });
   document.querySelectorAll('.btn-excel-toggle-custom').forEach(btn => btn.classList.remove('active'));
 }
@@ -6689,9 +6692,10 @@ function toggleSalesExcelActions(event) {
   const box = document.getElementById('salesExcelActionsBox');
   const btn = document.getElementById('btnSalesExcelToggle');
   if (!box) return;
-  const isHidden = (box.style.display === 'none' || box.style.display === '');
+  const isShown = box.classList.contains('show') || box.style.display === 'flex';
   closeAllExcelDropdowns();
-  if (isHidden) {
+  if (!isShown) {
+    box.classList.add('show');
     box.style.display = 'flex';
     if (btn) btn.classList.add('active');
   }
@@ -7315,9 +7319,10 @@ function toggleSoftwareExcelActions(event) {
   const box = document.getElementById('swExcelActionsBox');
   const btn = document.getElementById('btnSwExcelToggle');
   if (!box) return;
-  const isHidden = (box.style.display === 'none' || box.style.display === '');
+  const isShown = box.classList.contains('show') || box.style.display === 'flex';
   closeAllExcelDropdowns();
-  if (isHidden) {
+  if (!isShown) {
+    box.classList.add('show');
     box.style.display = 'flex';
     if (btn) btn.classList.add('active');
   }
@@ -7788,9 +7793,10 @@ function toggleRepairExcelActions(event) {
   const box = document.getElementById('repairExcelActionsBox');
   const btn = document.getElementById('btnRepairExcelToggle');
   if (!box) return;
-  const isHidden = (box.style.display === 'none' || box.style.display === '');
+  const isShown = box.classList.contains('show') || box.style.display === 'flex';
   closeAllExcelDropdowns();
-  if (isHidden) {
+  if (!isShown) {
+    box.classList.add('show');
     box.style.display = 'flex';
     if (btn) btn.classList.add('active');
   }
@@ -8063,9 +8069,10 @@ function togglePhoneExcelActions(event) {
   const box = document.getElementById('phoneExcelActionsBox');
   const btn = document.getElementById('btnPhoneExcelToggle');
   if (!box) return;
-  const isHidden = (box.style.display === 'none' || box.style.display === '');
+  const isShown = box.classList.contains('show') || box.style.display === 'flex';
   closeAllExcelDropdowns();
-  if (isHidden) {
+  if (!isShown) {
+    box.classList.add('show');
     box.style.display = 'flex';
     if (btn) btn.classList.add('active');
   }
@@ -8607,9 +8614,10 @@ function toggleBangaExcelActions(event) {
   const box = document.getElementById('bangaExcelActionsBox');
   const btn = document.getElementById('btnBangaExcelToggle');
   if (!box) return;
-  const isHidden = (box.style.display === 'none' || box.style.display === '');
+  const isShown = box.classList.contains('show') || box.style.display === 'flex';
   closeAllExcelDropdowns();
-  if (isHidden) {
+  if (!isShown) {
+    box.classList.add('show');
     box.style.display = 'flex';
     if (btn) btn.classList.add('active');
   }
@@ -8887,9 +8895,10 @@ function toggleSoldPhoneExcelActions(event) {
   const box = document.getElementById('soldPhoneActionsBox');
   const btn = document.getElementById('btnSoldPhoneExcelToggle');
   if (!box) return;
-  const isHidden = (box.style.display === 'none' || box.style.display === '');
+  const isShown = box.classList.contains('show') || box.style.display === 'flex';
   closeAllExcelDropdowns();
-  if (isHidden) {
+  if (!isShown) {
+    box.classList.add('show');
     box.style.display = 'flex';
     if (btn) btn.classList.add('active');
   }
@@ -22955,9 +22964,10 @@ function toggleMainXacExcelActions(event) {
   const box = document.getElementById('mainXacActionsBox');
   const btn = document.getElementById('btnMainXacExcelToggle');
   if (!box) return;
-  const isHidden = (box.style.display === 'none' || box.style.display === '');
+  const isShown = box.classList.contains('show') || box.style.display === 'flex';
   closeAllExcelDropdowns();
-  if (isHidden) {
+  if (!isShown) {
+    box.classList.add('show');
     box.style.display = 'flex';
     if (btn) btn.classList.add('active');
   }

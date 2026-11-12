@@ -10788,13 +10788,17 @@
   border: 1.5px solid #1e293b !important;
   border-radius: 10px !important;
   padding: 6px !important;
-  display: flex !important;
+  display: none !important;
   flex-direction: column !important;
   gap: 4px !important;
   min-width: 145px !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.2) !important;
   backdrop-filter: blur(8px) !important;
   animation: excelMenuDropFadeIn 0.18s ease-out forwards !important;
+}
+
+.excel-dropdown-actions-menu.show {
+  display: flex !important;
 }
 
 @keyframes excelMenuDropFadeIn {
