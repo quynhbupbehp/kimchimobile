@@ -3502,11 +3502,7 @@
       scrollbar-width: thin;
       scrollbar-color: #1f293d transparent;
     }
-    .sw-dropdown-menu.open { display: block; animation: swDropIn 0.15s ease; }
-    @keyframes swDropIn {
-      from { opacity: 0; transform: translateY(-6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    .sw-dropdown-menu.open { display: block; }
     .sw-dropdown-item {
       padding: 7px 12px;
       font-size: 0.88rem;

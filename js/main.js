@@ -14798,11 +14798,17 @@ function openSwDropdown(type) {
   if (window.innerWidth <= 768 && (type === 'price' || type === 'fee')) {
     return; // Trên mobile: chỉ nhập giá/phí, không mở dropdown chọn
   }
-  closeAllSwDropdowns(type);
   const meta = SW_DROPDOWN_META[type];
   if (!meta) return;
   const menu = document.getElementById(meta.menuId);
   if (!menu) return;
+
+  // Nếu menu này đã mở rồi thì không vẽ lại (chống nháy)
+  if (menu.classList.contains('open')) {
+    return;
+  }
+
+  closeAllSwDropdowns(type);
   renderSwDropdownMenu(type, '');
   menu.classList.add('open');
   // Cuộn đến item đang active
