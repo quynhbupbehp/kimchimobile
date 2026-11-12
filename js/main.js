@@ -7233,8 +7233,7 @@ function executeTaxExportPDF() {
       `;
     });
 
-    const isLastPage = (idx === sortedDays.length - 1);
-    const pageBreakStyle = isLastPage ? '' : 'page-break-after: always;';
+    const pageBreakStyle = 'page-break-after: always;';
 
     pagesHtml += `
       <div class="a4-page" style="${pageBreakStyle}">
@@ -7298,6 +7297,111 @@ function executeTaxExportPDF() {
       </div>
     `;
   });
+
+  // TẠO THÊM TRANG CUỐI: BẢNG TỔNG HỢP DOANH THU CẢ THÁNG ĐỂ BÁO CÁO THUẾ
+  let monthTotalAmount = 0;
+  let monthTotalCk = 0;
+  let monthTotalTm = 0;
+  let summaryRowsHtml = '';
+
+  sortedDays.forEach((dayStr, sIdx) => {
+    const dayItems = groupedByDay[dayStr];
+    let dTotal = 0;
+    let dCk = 0;
+    let dTm = 0;
+
+    dayItems.forEach(it => {
+      let totalNum = parsePriceNum(it.total || it.price) * 1000;
+      let method = String(it.method || '').toLowerCase().trim();
+      let isCk = (method === 'chuyển khoản' || method === 'ck' || method === 'chuyển tiền');
+
+      dTotal += totalNum;
+      if (isCk) dCk += totalNum;
+      else dTm += totalNum;
+    });
+
+    monthTotalAmount += dTotal;
+    monthTotalCk += dCk;
+    monthTotalTm += dTm;
+
+    summaryRowsHtml += `
+      <tr>
+        <td style="text-align: center;">${sIdx + 1}</td>
+        <td style="text-align: center; font-weight: 600;">${dayStr}</td>
+        <td>Doanh thu bán hàng hóa, dịch vụ ngày ${dayStr}</td>
+        <td style="text-align: right; font-weight: 700;">${formatNumberDisplay(dTotal)}</td>
+        <td style="text-align: right;">${dCk > 0 ? formatNumberDisplay(dCk) : '-'}</td>
+        <td style="text-align: right;">${dTm > 0 ? formatNumberDisplay(dTm) : '-'}</td>
+      </tr>
+    `;
+  });
+
+  // Xác định ngày cuối tháng
+  const lastDayOfMonth = new Date(y, m, 0).getDate();
+
+  pagesHtml += `
+    <div class="a4-page">
+      <div class="header-container">
+        <div class="header-left">
+          <div><strong>HỘ, CÁ NHÂN KINH DOANH:</strong> Cao Thị Huyền</div>
+          <div><strong>Địa chỉ:</strong> Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng</div>
+          <div><strong>Mã số thuế:</strong> 030195011647</div>
+        </div>
+        <div class="header-right">
+          <div><strong>Mẫu số S1a-HKD</strong></div>
+          <div style="font-style: italic;">(Kèm theo Thông tư số 152/2025/TT-BTC</div>
+          <div style="font-style: italic;">ngày 31 tháng 12 năm 2025 của Bộ trưởng</div>
+          <div style="font-style: italic;">Bộ Tài chính)</div>
+        </div>
+      </div>
+
+      <div class="title-container">
+        <div class="main-title">BẢNG TỔNG HỢP DOANH THU THÁNG ${String(m).padStart(2, '0')} NĂM ${y}</div>
+        <div class="sub-title" style="font-weight: bold; color: #1e3a8a;">(DÙNG CHO KÊ KHAI VÀ QUYẾT TOÁN THUẾ HỘ KINH DOANH)</div>
+        <div class="sub-title">Địa điểm kinh doanh: Xóm 5 - Thôn Thượng Đáp - Xã Nam Sách - TP Hải Phòng</div>
+      </div>
+
+      <div class="unit-text">Đơn vị tính: Đồng</div>
+
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th style="width: 8%;">STT</th>
+            <th style="width: 14%;">Ngày bán</th>
+            <th style="width: 38%;">Diễn giải nội dung</th>
+            <th style="width: 16%;">Tổng doanh thu</th>
+            <th style="width: 12%;">Chuyển Tiền</th>
+            <th style="width: 12%;">Tiền Mặt</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${summaryRowsHtml}
+          <tr class="total-row" style="background-color: #f1f5f9; font-weight: bold; font-size: 12pt;">
+            <td colspan="3" style="text-align: center; text-transform: uppercase;">TỔNG CỘNG DOANH THU TOÀN THÁNG</td>
+            <td style="text-align: right; color: #b91c1c; font-size: 13pt;">${formatNumberDisplay(monthTotalAmount)}</td>
+            <td style="text-align: right;">${formatNumberDisplay(monthTotalCk)}</td>
+            <td style="text-align: right;">${formatNumberDisplay(monthTotalTm)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 10px; font-size: 11pt; font-style: italic; line-height: 1.6;">
+        <div>• <strong>Tổng số ngày phát sinh doanh thu:</strong> ${sortedDays.length} ngày</div>
+        <div>• <strong>Tổng doanh thu kê khai thuế:</strong> ${formatNumberDisplay(monthTotalAmount)} đồng</div>
+      </div>
+
+      <div class="footer-container" style="margin-top: 25px;">
+        <div class="footer-sign">
+          <div style="font-style: italic;">Ngày ${lastDayOfMonth} tháng ${String(m).padStart(2, '0')} năm ${y}</div>
+          <div style="font-weight: bold; text-transform: uppercase; margin-top: 4px;">NGƯỜI ĐẠI DIỆN HỘ KINH DOANH/</div>
+          <div style="font-weight: bold; text-transform: uppercase;">CÁ NHÂN KINH DOANH</div>
+          <div style="font-style: italic; font-size: 0.85rem; margin-top: 2px;">(Ký, ghi rõ họ tên, đóng dấu nếu có)</div>
+          <div class="sign-space" style="height: 75px;"></div>
+          <div style="font-weight: bold; font-size: 1.1rem;">Cao Thị Huyền</div>
+        </div>
+      </div>
+    </div>
+  `;
 
   const fullDocHtml = `
     <!DOCTYPE html>
