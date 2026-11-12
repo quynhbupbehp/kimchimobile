@@ -20089,28 +20089,67 @@ function initRepairTimeSelectors() {
 }
 
 
-// Lấy danh sách người mình nợ duy nhất từ tab Công Nợ - Mình Nợ
-function getMyDebtCreditorList() {
-  const list = [];
-  const set = new Set();
+// Lấy danh sách tùy chọn (người nợ hoặc loại món nợ) từ localStorage và database
+function getDebtOptionsList(type) {
+  const storageKey = type === 'creditor' ? 'KIMCHI_DEBT_CREDITORS' : 'KIMCHI_DEBT_ITEM_TYPES';
+  const defaults = type === 'creditor'
+    ? ['Hiệp Bùi', 'Linh Kiện Quốc Cường', 'Anh Đức Main', 'Kho Màn Hình Sài Gòn']
+    : ['Kính X', 'Face ID XSM', '8 Plus', 'S6 Lite', '8P WIFI', 'A23 Nguồn', 'Cảm XS', '7 Plus', '7P Chập'];
+
+  let list = [];
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      list = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.warn(`Lỗi đọc ${storageKey}:`, e);
+  }
+
+  if (!Array.isArray(list) || list.length === 0) {
+    list = [...defaults];
+  }
+
+  const set = new Set(list.map(x => (x || '').trim().toLowerCase()));
+
+  // Hợp nhất dữ liệu đã có trong myDebtDatabase
   if (typeof myDebtDatabase !== 'undefined' && Array.isArray(myDebtDatabase)) {
     myDebtDatabase.forEach(item => {
-      const c = (item.creditor || '').trim();
-      if (c && !set.has(c.toLowerCase())) {
-        set.add(c.toLowerCase());
-        list.push(c);
+      const val = type === 'creditor' ? (item.creditor || '').trim() : (item.itemType || '').trim();
+      if (val && !set.has(val.toLowerCase())) {
+        set.add(val.toLowerCase());
+        list.push(val);
       }
     });
   }
-  // Thêm các gợi ý mặc định nếu chưa có
-  const defaults = ['Hiệp Bùi', 'Linh Kiện Quốc Cường', 'Anh Đức Main', 'Kho Màn Hình Sài Gòn'];
-  defaults.forEach(d => {
-    if (!set.has(d.toLowerCase())) {
-      set.add(d.toLowerCase());
-      list.push(d);
-    }
-  });
+
   return list;
+}
+
+function saveDebtOptionsList(type, list) {
+  const storageKey = type === 'creditor' ? 'KIMCHI_DEBT_CREDITORS' : 'KIMCHI_DEBT_ITEM_TYPES';
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(list));
+  } catch (e) {
+    console.error(`Lỗi lưu ${storageKey}:`, e);
+  }
+  renderDebtDatalist(type);
+  if (type === 'creditor' && typeof populateRepairCreditorDropdown === 'function') {
+    populateRepairCreditorDropdown();
+  }
+}
+
+function renderDebtDatalist(type) {
+  const dlId = type === 'creditor' ? 'creditorDatalist' : 'debtItemDatalist';
+  const dl = document.getElementById(dlId);
+  if (!dl) return;
+  const list = getDebtOptionsList(type);
+  dl.innerHTML = list.map(v => `<option value="${escapeHtml(v)}">`).join('');
+}
+
+// Lấy danh sách người mình nợ duy nhất từ tab Công Nợ - Mình Nợ
+function getMyDebtCreditorList() {
+  return getDebtOptionsList('creditor');
 }
 
 function populateRepairCreditorDropdown(selectedValue = '') {
@@ -20706,6 +20745,11 @@ function openMyDebtModal(editId = null) {
   form.reset();
   document.getElementById('debtEditId').value = '';
 
+  if (typeof renderDebtDatalist === 'function') {
+    renderDebtDatalist('creditor');
+    renderDebtDatalist('item');
+  }
+
   const now = new Date();
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -20814,32 +20858,99 @@ function saveMyDebtItem(e) {
 function addNewDebtOption(field, inputId, promptText) {
   const input = document.getElementById(inputId);
   const currentVal = input ? input.value.trim() : '';
-  let clean = '';
+  const label = field === 'creditor' ? 'Người mình nợ' : 'Loại món nợ';
+  
+  const val = prompt(promptText || `Thêm ${label} mới:`, currentVal);
+  if (val === null) return;
+  const clean = val.trim();
+  if (!clean) return;
 
-  if (currentVal !== '') {
-    clean = currentVal;
-  } else {
-    const val = prompt(promptText || 'Thêm mục mới:', '');
-    if (val && val.trim()) clean = val.trim();
+  const list = getDebtOptionsList(field);
+  const exists = list.some(x => x.toLowerCase() === clean.toLowerCase());
+  if (!exists) {
+    list.push(clean);
+    saveDebtOptionsList(field, list);
   }
 
-  if (clean) {
-    if (input) input.value = clean;
-    alert(`✓ Đã thêm "${clean}" thành công!`);
-  }
+  if (input) input.value = clean;
+  alert(`✓ Đã thêm "${clean}" vào danh sách ${label} thành công!`);
 }
 
 function editDebtOption(field, inputId, promptText) {
   const input = document.getElementById(inputId);
   if (!input) return;
-  const val = prompt(promptText, input.value);
-  if (val !== null) input.value = val.trim();
+  const oldVal = input.value.trim();
+  const label = field === 'creditor' ? 'Người mình nợ' : 'Loại món nợ';
+  
+  if (!oldVal) {
+    alert(`Vui lòng chọn hoặc nhập tên ${label} cần sửa!`);
+    return;
+  }
+
+  const newVal = prompt(promptText || `Sửa ${label}:`, oldVal);
+  if (newVal === null) return;
+  const cleanNew = newVal.trim();
+  if (!cleanNew || cleanNew === oldVal) return;
+
+  let list = getDebtOptionsList(field);
+  const idx = list.findIndex(x => x.toLowerCase() === oldVal.toLowerCase());
+  if (idx !== -1) {
+    list[idx] = cleanNew;
+  } else {
+    list.push(cleanNew);
+  }
+  saveDebtOptionsList(field, list);
+
+  // Cập nhật các bản ghi trong myDebtDatabase nếu người dùng muốn
+  if (field === 'creditor' && typeof myDebtDatabase !== 'undefined' && Array.isArray(myDebtDatabase)) {
+    const affected = myDebtDatabase.filter(x => (x.creditor || '').trim().toLowerCase() === oldVal.toLowerCase());
+    if (affected.length > 0) {
+      if (confirm(`Bạn có muốn đổi tên "${oldVal}" thành "${cleanNew}" trong ${affected.length} đơn nợ hiện có không?`)) {
+        affected.forEach(x => { x.creditor = cleanNew; });
+        if (typeof saveMyDebtDb === 'function') saveMyDebtDb();
+        if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
+      }
+    }
+  }
+
+  input.value = cleanNew;
+  alert(`✓ Đã đổi "${oldVal}" thành "${cleanNew}" thành công!`);
+}
+
+function deleteDebtOption(field, inputId) {
+  const input = document.getElementById(inputId);
+  const currentVal = input ? input.value.trim() : '';
+  const label = field === 'creditor' ? 'Người mình nợ' : 'Loại món nợ';
+
+  if (!currentVal) {
+    alert(`Vui lòng chọn tên ${label} cần xóa!`);
+    return;
+  }
+
+  if (!confirm(`Bạn có chắc muốn xóa "${currentVal}" khỏi danh sách gợi ý ${label}?`)) {
+    return;
+  }
+
+  let list = getDebtOptionsList(field);
+  const filtered = list.filter(x => x.toLowerCase() !== currentVal.toLowerCase());
+  saveDebtOptionsList(field, filtered);
+
+  if (input) input.value = '';
+  alert(`✓ Đã xóa "${currentVal}" khỏi danh sách gợi ý ${label}!`);
 }
 
 function clearDebtInput(inputId) {
   const input = document.getElementById(inputId);
   if (input) input.value = '';
 }
+
+window.getDebtOptionsList = getDebtOptionsList;
+window.saveDebtOptionsList = saveDebtOptionsList;
+window.renderDebtDatalist = renderDebtDatalist;
+window.addNewDebtOption = addNewDebtOption;
+window.editDebtOption = editDebtOption;
+window.deleteDebtOption = deleteDebtOption;
+window.clearDebtInput = clearDebtInput;
 
 // Tự động thêm nút X màu đỏ để xóa tìm kiếm cho TẤT CẢ các ô tìm kiếm trên toàn trang web
 function initUniversalSearchClearButtons() {
