@@ -20549,6 +20549,7 @@ function deleteRepairItem(id) {
     if (typeof db !== 'undefined' && db && id) {
       db.collection('repairs').doc(String(id)).delete().catch(console.error);
     }
+    saveRepairDb();
 
     // Tự động xóa đơn bán hàng liên kết (nếu có đơn chuyển khoản đồng bộ sang bán hàng)
     const prevSalesLen = salesDatabase.length;
@@ -20556,6 +20557,17 @@ function deleteRepairItem(id) {
     if (salesDatabase.length !== prevSalesLen) {
       saveSalesStorage();
       if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+    }
+
+    // Tự động xóa khoản nợ liên kết bên tab Mình Nợ (nếu đơn có gắn Mình Nợ)
+    if (typeof myDebtDatabase !== 'undefined' && Array.isArray(myDebtDatabase)) {
+      const prevDebtLen = myDebtDatabase.length;
+      myDebtDatabase = myDebtDatabase.filter(d => String(d.repairId) !== String(id));
+      if (myDebtDatabase.length !== prevDebtLen) {
+        if (typeof saveMyDebtDb === 'function') saveMyDebtDb();
+        if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
+        if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+      }
     }
 
     if (typeof logActivity === 'function') {
