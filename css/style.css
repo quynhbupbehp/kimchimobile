@@ -2344,7 +2344,7 @@
       box-shadow: 0 4px 14px rgba(244, 63, 94, 0.6) !important;
     }
 
-    /* MODAL THÊM / SỬA THÔNG TIN MÁY MỚI (phoneModal & mainXacModal): TIÊU ĐỀ & LƯU DỮ LIỆU NỀN HỒNG, CHỮ TRẮNG; NHÃN CHỮ XANH LÁ */
+    /* MODAL THÊM / SỬA THÔNG TIN MÁY MỚI (phoneModal & mainXacModal): TIÊU ĐỀ & LƯU DỮ LIỆU NỀN HỒNG, CHỮ TRẮNG; NHÃN CHỮ VÀNG, Ô NHẬP LIỆU CHỮ TRẮNG */
     #phoneModal .ticket-header span,
     #mainXacModal .ticket-header span {
       background: linear-gradient(180deg, #ec4899 0%, #db2777 100%) !important;
@@ -2360,7 +2360,17 @@
 
     #phoneModal .form-ticket-label,
     #mainXacModal .form-ticket-label {
-      color: #10b981 !important;
+      color: #facc15 !important;
+      font-weight: 800 !important;
+    }
+
+    #phoneModal .ticket-input,
+    #phoneModal select.ticket-input,
+    #phoneModal #mDateVal,
+    #mainXacModal .ticket-input,
+    #mainXacModal select.ticket-input,
+    #mainXacModal #mxDateVal {
+      color: #ffffff !important;
       font-weight: 800 !important;
     }
 
