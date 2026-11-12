@@ -1269,6 +1269,11 @@ function openUniversalSmartDropdown(input, filterText = null) {
     return;
   }
 
+  // Nếu dropdown của chính input này đang mở và không có filter mới thì không vẽ lại (chống nháy)
+  if (activeUniversalDropdown && currentUniversalInput === input && filterText === null) {
+    return;
+  }
+
   // Nếu input đang nằm trong một modal bị ẩn thì không mở
   const modal = input.closest('.modal-overlay, .modal, .sw-modal-overlay');
   if (modal && (modal.style.display === 'none' || (modal.classList && !modal.classList.contains('active') && !modal.classList.contains('show') && getComputedStyle(modal).display === 'none'))) {
@@ -1445,11 +1450,15 @@ function openUniversalSmartDropdown(input, filterText = null) {
     }
   }
 
-  document.body.appendChild(dropdownEl);
+  positionUniversalSmartDropdown(input, dropdownEl);
+  if (window.innerWidth <= 768) {
+    const targetEl = input.closest('.input-with-actions') || input;
+    targetEl.appendChild(dropdownEl);
+  } else {
+    document.body.appendChild(dropdownEl);
+  }
   activeUniversalDropdown = dropdownEl;
   currentUniversalInput = input;
-
-  positionUniversalSmartDropdown(input, dropdownEl);
 
   // Định vị lại sau khi bàn phím ảo đẩy viewport trên điện thoại (iOS / Android)
   setTimeout(() => {

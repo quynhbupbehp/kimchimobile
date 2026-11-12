@@ -6643,12 +6643,6 @@
       display: flex !important;
       flex-direction: column !important;
       gap: 2px !important;
-      animation: smartDropdownFadeIn 0.12s ease-out;
-    }
-
-    @keyframes smartDropdownFadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .universal-smart-dropdown::-webkit-scrollbar {
