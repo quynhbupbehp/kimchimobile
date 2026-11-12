@@ -7041,7 +7041,7 @@ function updateTaxExportSummary() {
   });
 
   const totalDays = Object.keys(daysMap).length;
-  summaryEl.innerHTML = `Tìm thấy <strong style="color: #10b981; font-size: 1.05rem;">${items.length}</strong> mặt hàng phát sinh trong <strong style="color: #38bdf8;">${totalDays} ngày</strong> (tương ứng ${totalDays} trang Sheet).`;
+  summaryEl.innerHTML = `Tìm thấy <strong style="color: #10b981; font-size: 1.05rem;">${items.length}</strong> mặt hàng phát sinh trong <strong style="color: #38bdf8;">${totalDays} ngày</strong>.`;
 }
 window.updateTaxExportSummary = updateTaxExportSummary;
 
