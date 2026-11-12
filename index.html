@@ -447,35 +447,39 @@
                 title="Doanh thu Ngày">0</span>
             </div>
 
-            <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL -->
-            <div class="sales-excel-wrapper"
-              style="display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            <!-- CỤM ICON EXCEL & MENU SỔ DỌC BÁN HÀNG -->
+            <div class="sales-excel-wrapper excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnSalesExcelToggle" class="btn-excel-toggle-custom"
-                onclick="toggleSalesExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel"
-                style="height: 36px; width: 36px; min-width: 36px; box-sizing: border-box; border-radius: 8px; font-size: 0.92rem; display: inline-flex; align-items: center; justify-content: center;">
-                <span id="salesExcelArrowIcon" style="display: inline-block; transition: transform 0.25s ease;">❯</span>
+                onclick="toggleSalesExcelActions(event)" title="Menu Nhập / Xuất Excel Bán Hàng">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="8" y1="13" x2="16" y2="13"></line>
+                  <line x1="8" y1="17" x2="16" y2="17"></line>
+                  <line x1="10" y1="9" x2="12" y2="9"></line>
+                </svg>
               </button>
 
-              <div id="salesExcelActionsBox" style="display: none; align-items: center; gap: 6px;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportSalesExcel()"
+              <div id="salesExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
+                <button type="button" class="btn-action-sales" onclick="triggerImportSalesExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Bán Hàng từ file Excel (.csv, .xlsx)"
-                  style="height: 36px; background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer; box-sizing: border-box;">
-                  📥 Nhập
+                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
+                  📥 Nhập Excel
                 </button>
-                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportSalesToExcel()"
+                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportSalesToExcel(); closeAllExcelDropdowns();"
                   title="Xuất danh sách Bán Hàng ra file Excel"
-                  style="height: 36px; background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer; box-sizing: border-box;">
-                  📤 Xuất
+                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
+                  📤 Xuất Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="removeDuplicateSalesItems()"
+                <button type="button" class="btn-action-sales" onclick="removeDuplicateSalesItems(); closeAllExcelDropdowns();"
                   title="Xóa các đơn bán hàng trùng lặp, chỉ giữ lại duy nhất 1 đơn"
-                  style="height: 36px; background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; font-weight: 800; font-size: 0.88rem; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245,158,11,0.25); cursor: pointer; box-sizing: border-box;">
+                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
                   🧹 Lọc Trùng
                 </button>
-                <button type="button" class="btn-action-sales" onclick="clearAllSalesData()"
-                  title="Xóa danh sách Bán Hàng theo phạm vi thời gian đang chọn (Ngày, Tháng, Năm, Tất Cả)"
-                  style="height: 36px; background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer; box-sizing: border-box;">
-                  🗑️ Xóa
+                <button type="button" class="btn-action-sales" onclick="clearAllSalesData(); closeAllExcelDropdowns();"
+                  title="Xóa danh sách Bán Hàng theo phạm vi thời gian đang chọn"
+                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
+                  🗑️ Xóa Dữ Liệu
                 </button>
                 <input type="file" id="salesExcelFileInput" accept=".csv, .xlsx, .xls, text/csv" style="display: none;"
                   onchange="handleImportSalesExcelFile(event)">
@@ -801,33 +805,38 @@
                 title="Doanh Thu Ngày">0</span>
             </div>
 
-            <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL PHẦN MỀM -->
-            <div style="display: inline-flex; align-items: center; gap: 8px;">
+            <!-- CỤM ICON EXCEL & MENU SỔ DỌC PHẦN MỀM -->
+            <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnSwExcelToggle" class="btn-excel-toggle-custom"
-                onclick="toggleSoftwareExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
-                <span id="swExcelArrowIcon" style="display: inline-block; transition: transform 0.25s ease;">❯</span>
+                onclick="toggleSoftwareExcelActions(event)" title="Menu Nhập / Xuất Excel Phần Mềm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="8" y1="13" x2="16" y2="13"></line>
+                  <line x1="8" y1="17" x2="16" y2="17"></line>
+                  <line x1="10" y1="9" x2="12" y2="9"></line>
+                </svg>
               </button>
 
-              <div id="swExcelActionsBox" style="display: none; align-items: center; gap: 8px;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportSoftwareExcel()"
+              <div id="swExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
+                <button type="button" class="btn-action-sales" onclick="triggerImportSoftwareExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Phần Mềm từ file Excel (.csv, .xlsx)"
-                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
-                  📥 Nhập
+                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
+                  📥 Nhập Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="exportSoftwareToExcel()"
-                  class="btn-action-sales btn-export-excel-action"
+                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportSoftwareToExcel(); closeAllExcelDropdowns();"
                   title="Xuất danh sách Phần Mềm ra file Excel"
-                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
-                  📤 Xuất
+                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
+                  📤 Xuất Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="removeDuplicateSoftwareItems()"
-                  title="Xóa các đơn trùng lặp trong cùng 1 ngày (cùng khách, máy, giá), chỉ giữ lại duy nhất 1 đơn"
-                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245,158,11,0.25); cursor: pointer;">
+                <button type="button" class="btn-action-sales" onclick="removeDuplicateSoftwareItems(); closeAllExcelDropdowns();"
+                  title="Xóa các đơn trùng lặp trong cùng 1 ngày, chỉ giữ lại duy nhất 1 đơn"
+                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
                   🧹 Xóa Trùng
                 </button>
-                <button type="button" class="btn-action-sales" onclick="clearAllSoftwareData()"
+                <button type="button" class="btn-action-sales" onclick="clearAllSoftwareData(); closeAllExcelDropdowns();"
                   title="Xóa toàn bộ danh sách Phần Mềm để nhập lại từ đầu"
-                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
+                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
                   🗑️ Xóa Hết
                 </button>
                 <input type="file" id="swExcelFileInput" accept=".csv, .xlsx, .xls, text/csv" style="display: none;"
@@ -1188,28 +1197,33 @@
                 <option value="Nợ">Nợ</option>
               </select>
 
-              <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL SỬA CHỮA -->
-              <div style="display: inline-flex; align-items: center; gap: 8px;">
+              <!-- CỤM ICON EXCEL & MENU SỔ DỌC SỬA CHỮA -->
+              <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
                 <button type="button" id="btnRepairExcelToggle" class="btn-excel-toggle-custom"
-                  onclick="toggleRepairExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
-                  <span id="repairExcelArrowIcon"
-                    style="display: inline-block; transition: transform 0.25s ease;">❯</span>
+                  onclick="toggleRepairExcelActions(event)" title="Menu Nhập / Xuất Excel Sửa Chữa">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="8" y1="13" x2="16" y2="13"></line>
+                  <line x1="8" y1="17" x2="16" y2="17"></line>
+                  <line x1="10" y1="9" x2="12" y2="9"></line>
+                </svg>
                 </button>
 
-                <div id="repairExcelActionsBox" style="display: none; align-items: center; gap: 8px;">
-                  <button type="button" class="btn-action-sales" onclick="triggerImportRepairExcel()"
+                <div id="repairExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
+                  <button type="button" class="btn-action-sales" onclick="triggerImportRepairExcel(); closeAllExcelDropdowns();"
                     title="Nhập dữ liệu Sửa Chữa từ file Excel (.csv, .xlsx)"
-                    style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
-                    📥 Nhập
+                    style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
+                    📥 Nhập Excel
                   </button>
-                  <button type="button" class="btn-action-sales" onclick="exportRepairToExcel()"
+                  <button type="button" class="btn-action-sales" onclick="exportRepairToExcel(); closeAllExcelDropdowns();"
                     title="Xuất danh sách Sửa Chữa ra file Excel"
-                    style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
-                    📤 Xuất
+                    style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
+                    📤 Xuất Excel
                   </button>
-                  <button type="button" class="btn-action-sales" onclick="clearAllRepairData()"
+                  <button type="button" class="btn-action-sales" onclick="clearAllRepairData(); closeAllExcelDropdowns();"
                     title="Xóa toàn bộ danh sách Sửa Chữa để nhập lại từ đầu"
-                    style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
+                    style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
                     🗑️ Xóa Hết
                   </button>
                   <input type="file" id="repairExcelFileInput" accept=".csv, .xlsx, .xls, text/csv"
@@ -1430,28 +1444,36 @@
               BÁN MÁY NGOÀI KHO
             </button>
 
-            <!-- NÚT MỞ ẨN NHẬP XUẤT -->
-            <button type="button" id="btnPhoneExcelToggle" class="btn-excel-toggle-custom"
-              onclick="togglePhoneExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
-              <span id="phoneExcelArrowIcon" style="display: inline-block; transition: transform 0.25s ease;">❯</span>
-            </button>
+            <!-- CỤM ICON EXCEL & MENU SỔ DỌC BÁN MÁY -->
+            <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
+              <button type="button" id="btnPhoneExcelToggle" class="btn-excel-toggle-custom"
+                onclick="togglePhoneExcelActions(event)" title="Menu Nhập / Xuất Excel Bán Máy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="8" y1="13" x2="16" y2="13"></line>
+                  <line x1="8" y1="17" x2="16" y2="17"></line>
+                  <line x1="10" y1="9" x2="12" y2="9"></line>
+                </svg>
+              </button>
 
-            <div id="phoneExcelActionsBox" style="display: none; align-items: center; gap: 8px;">
-              <button type="button" class="btn-action-sales" onclick="triggerImportPhoneExcel()"
-                title="Nhập dữ liệu Bán Máy từ file Excel (.csv, .xlsx)"
-                style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
-                📥 Nhập
-              </button>
-              <button type="button" class="btn-action-sales" onclick="exportPhoneToExcel()"
-                title="Xuất danh sách Bán Máy ra file Excel"
-                style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
-                📤 Xuất
-              </button>
-              <button type="button" class="btn-action-sales" onclick="clearAllPhoneData()"
-                title="Xóa toàn bộ danh sách Bán Máy để nhập lại từ đầu"
-                style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
-                🗑️ Xóa Hết
-              </button>
+              <div id="phoneExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
+                <button type="button" class="btn-action-sales" onclick="triggerImportPhoneExcel(); closeAllExcelDropdowns();"
+                  title="Nhập dữ liệu Bán Máy từ file Excel (.csv, .xlsx)"
+                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
+                  📥 Nhập Excel
+                </button>
+                <button type="button" class="btn-action-sales" onclick="exportPhoneToExcel(); closeAllExcelDropdowns();"
+                  title="Xuất danh sách Bán Máy ra file Excel"
+                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
+                  📤 Xuất Excel
+                </button>
+                <button type="button" class="btn-action-sales" onclick="clearAllPhoneData(); closeAllExcelDropdowns();"
+                  title="Xóa toàn bộ danh sách Bán Máy để nhập lại từ đầu"
+                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
+                  🗑️ Xóa Hết
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1574,32 +1596,38 @@
                 title="Doanh thu Ngày">0</span>
             </div>
 
-            <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL BÁN GÀ -->
-            <div style="display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            <!-- CỤM ICON EXCEL & MENU SỔ DỌC BÁN GÀ -->
+            <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnBangaExcelToggle" class="btn-excel-toggle-custom"
-                onclick="toggleBangaExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
-                <span id="bangaExcelArrowIcon" style="display: inline-block; transition: transform 0.25s ease;">❯</span>
+                onclick="toggleBangaExcelActions(event)" title="Menu Nhập / Xuất Excel Bán Gà">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="8" y1="13" x2="16" y2="13"></line>
+                  <line x1="8" y1="17" x2="16" y2="17"></line>
+                  <line x1="10" y1="9" x2="12" y2="9"></line>
+                </svg>
               </button>
 
-              <div id="bangaExcelActionsBox" style="display: none; align-items: center; gap: 6px;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportBangaExcel()"
+              <div id="bangaExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
+                <button type="button" class="btn-action-sales" onclick="triggerImportBangaExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Bán Gà từ file Excel (.csv, .xlsx)"
-                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.97rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
-                  📥 Nhập
+                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
+                  📥 Nhập Excel
                 </button>
-                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportBangaToExcel()"
+                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportBangaToExcel(); closeAllExcelDropdowns();"
                   title="Xuất danh sách Bán Gà ra file Excel"
-                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.97rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
-                  📤 Xuất
+                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
+                  📤 Xuất Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="removeDuplicateBangaItems()"
+                <button type="button" class="btn-action-sales" onclick="removeDuplicateBangaItems(); closeAllExcelDropdowns();"
                   title="Xóa các đơn bán gà trùng lặp, chỉ giữ lại duy nhất 1 đơn"
-                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; font-weight: 800; font-size: 0.97rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245,158,11,0.25); cursor: pointer;">
+                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
                   🧹 Lọc Trùng
                 </button>
-                <button type="button" class="btn-action-sales" onclick="clearAllBangaData()"
+                <button type="button" class="btn-action-sales" onclick="clearAllBangaData(); closeAllExcelDropdowns();"
                   title="Xóa toàn bộ danh sách Bán Gà để nhập lại từ đầu"
-                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.97rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
+                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
                   🗑️ Xóa Hết
                 </button>
                 <input type="file" id="bangaExcelFileInput" accept=".csv, .xlsx, .xls, text/csv" multiple
@@ -1796,33 +1824,38 @@
               style="background: #059669; color: #ffffff; font-size: 1.05rem; font-weight: 900; padding: 7px 26px; border-radius: 9px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.45); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">MÁY
               ĐÃ BÁN & BẢO HÀNH</span>
 
-            <!-- Nút mũi tên mở Nhập/Xuất Excel chuyển sang bên phải MÁY ĐÃ BÁN & BẢO HÀNH -->
-            <button type="button" id="btnSoldPhoneExcelToggle" onclick="toggleSoldPhoneExcelActions()"
-              title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel"
-              style="background: #000000; border: 1.5px solid #0284c7; color: #38bdf8; width: 34px; height: 38px; min-width: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; font-size: 0.95rem; font-weight: 900; box-shadow: 0 0 10px rgba(56, 189, 248, 0.35); transition: all 0.2s ease;">
-              <span id="soldPhoneExcelArrowIcon"
-                style="display: inline-block; transition: transform 0.25s ease;">❯</span>
-            </button>
+            <!-- CỤM ICON EXCEL & MENU SỔ DỌC BẢO HÀNH -->
+            <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
+              <button type="button" id="btnSoldPhoneExcelToggle" class="btn-excel-toggle-custom"
+                onclick="toggleSoldPhoneExcelActions(event)" title="Menu Nhập / Xuất Excel Bảo Hành">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="8" y1="13" x2="16" y2="13"></line>
+                  <line x1="8" y1="17" x2="16" y2="17"></line>
+                  <line x1="10" y1="9" x2="12" y2="9"></line>
+                </svg>
+              </button>
 
-            <!-- Khối nút Nhập / Xuất Excel ẩn/hiện -->
-            <div id="soldPhoneActionsBox" style="display: none; align-items: center; gap: 6px;">
-              <button type="button" class="btn-action-sales" onclick="triggerImportSoldPhoneExcel()"
-                title="Nhập dữ liệu Bảo Hành từ file Excel (.csv, .xlsx)"
-                style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.82rem; padding: 5px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
-                📥 Nhập
-              </button>
-              <button type="button" class="btn-action-sales" onclick="exportSoldPhoneToExcel()"
-                title="Xuất danh sách Bảo Hành ra file Excel"
-                style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.82rem; padding: 5px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
-                📤 Xuất
-              </button>
-              <button type="button" class="btn-action-sales" onclick="clearAllSoldPhoneData()"
-                title="Xóa toàn bộ danh sách Bảo Hành để nhập lại từ đầu"
-                style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.82rem; padding: 5px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
-                🗑️ Xóa Hết
-              </button>
-              <input type="file" id="soldPhoneExcelFileInput" accept=".csv, .xlsx, .xls, text/csv"
-                style="display: none;" onchange="handleImportSoldPhoneExcelFile(event)">
+              <div id="soldPhoneActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
+                <button type="button" class="btn-action-sales" onclick="triggerImportSoldPhoneExcel(); closeAllExcelDropdowns();"
+                  title="Nhập dữ liệu Bảo Hành từ file Excel (.csv, .xlsx)"
+                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
+                  📥 Nhập Excel
+                </button>
+                <button type="button" class="btn-action-sales" onclick="exportSoldPhoneToExcel(); closeAllExcelDropdowns();"
+                  title="Xuất danh sách Bảo Hành ra file Excel"
+                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
+                  📤 Xuất Excel
+                </button>
+                <button type="button" class="btn-action-sales" onclick="clearAllSoldPhoneData(); closeAllExcelDropdowns();"
+                  title="Xóa toàn bộ danh sách Bảo Hành để nhập lại từ đầu"
+                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
+                  🗑️ Xóa Hết
+                </button>
+                <input type="file" id="soldPhoneExcelFileInput" accept=".csv, .xlsx, .xls, text/csv"
+                  style="display: none;" onchange="handleImportSoldPhoneExcelFile(event)">
+              </div>
             </div>
           </div>
 
@@ -2382,33 +2415,38 @@
               style="background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%); color: #ffffff; font-size: 1.16rem; font-weight: 900; padding: 7px 18px; border-radius: 8px; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">QUẢN
               LÝ MAIN - XÁC</span>
 
-            <!-- CỤM MŨI TÊN & NHẬP / XUẤT EXCEL MAIN XÁC -->
-            <div style="display: inline-flex; align-items: center; gap: 8px;">
+            <!-- CỤM ICON EXCEL & MENU SỔ DỌC MAIN XÁC -->
+            <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnMainXacExcelToggle" class="btn-excel-toggle-custom"
-                onclick="toggleMainXacExcelActions()" title="Bấm để mở hoặc ẩn mục Nhập / Xuất Excel">
-                <span id="mainXacExcelArrowIcon"
-                  style="display: inline-block; transition: transform 0.25s ease;">❯</span>
+                onclick="toggleMainXacExcelActions(event)" title="Menu Nhập / Xuất Excel Main Xác">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="8" y1="13" x2="16" y2="13"></line>
+                  <line x1="8" y1="17" x2="16" y2="17"></line>
+                  <line x1="10" y1="9" x2="12" y2="9"></line>
+                </svg>
               </button>
 
-              <div id="mainXacActionsBox" style="display: none; align-items: center; gap: 8px;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportMainXacExcel()"
+              <div id="mainXacActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
+                <button type="button" class="btn-action-sales" onclick="triggerImportMainXacExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Main Xác từ file Excel (.csv, .xlsx)"
-                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16,185,129,0.25); cursor: pointer;">
-                  📥 Nhập
+                  style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
+                  📥 Nhập Excel
                 </button>
-                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportMainXacToExcel()"
+                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportMainXacToExcel(); closeAllExcelDropdowns();"
                   title="Xuất danh sách Main Xác ra file Excel"
-                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56,189,248,0.25); cursor: pointer;">
-                  📤 Xuất
+                  style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
+                  📤 Xuất Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="removeDuplicateMainXacItems()"
+                <button type="button" class="btn-action-sales" onclick="removeDuplicateMainXacItems(); closeAllExcelDropdowns();"
                   title="Xóa máy main xác trùng lặp, chỉ giữ lại duy nhất 1 máy"
-                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(245,158,11,0.25); cursor: pointer;">
+                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
                   🧹 Lọc Trùng
                 </button>
-                <button type="button" class="btn-action-sales" onclick="clearAllMainXacData()"
+                <button type="button" class="btn-action-sales" onclick="clearAllMainXacData(); closeAllExcelDropdowns();"
                   title="Xóa toàn bộ danh sách Main Xác để nhập lại từ đầu"
-                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; font-weight: 800; font-size: 0.88rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); cursor: pointer;">
+                  style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
                   🗑️ Xóa Hết
                 </button>
                 <input type="file" id="mainXacExcelFileInput" accept=".csv, .xlsx, .xls, text/csv"

@@ -10733,3 +10733,98 @@
     display: none !important;
   }
 }
+
+
+/* ============================================================
+   NÚT ICON EXCEL & MENU SỔ DỌC (DROPDOWN VERTICAL)
+   ============================================================ */
+.excel-menu-dropdown-wrapper {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
+}
+
+.btn-excel-toggle-custom {
+  background: #0f172a !important;
+  border: 1.5px solid #10b981 !important;
+  color: #10b981 !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-excel-toggle-custom:hover {
+  background: #1e293b !important;
+  border-color: #34d399 !important;
+  color: #34d399 !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.6) !important;
+  transform: translateY(-1px) scale(1.05) !important;
+}
+
+.btn-excel-toggle-custom svg {
+  width: 18px !important;
+  height: 18px !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+/* KHỐI MENU SỔ DỌC XUỐNG DƯỚI */
+.excel-dropdown-actions-menu {
+  position: absolute !important;
+  top: calc(100% + 6px) !important;
+  right: 0 !important;
+  z-index: 99999 !important;
+  background: #090d16 !important;
+  border: 1.5px solid #1e293b !important;
+  border-radius: 10px !important;
+  padding: 6px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  min-width: 145px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(8px) !important;
+  animation: excelMenuDropFadeIn 0.18s ease-out forwards !important;
+}
+
+@keyframes excelMenuDropFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.excel-dropdown-actions-menu .btn-action-sales {
+  width: 100% !important;
+  justify-content: flex-start !important;
+  box-sizing: border-box !important;
+  padding: 8px 12px !important;
+  font-size: 0.86rem !important;
+  font-weight: 800 !important;
+  border-radius: 6px !important;
+  border: 1px solid transparent !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+  text-align: left !important;
+  margin: 0 !important;
+}
+
+.excel-dropdown-actions-menu .btn-action-sales:hover {
+  transform: translateX(3px) !important;
+  filter: brightness(1.15) !important;
+}
+

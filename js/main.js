@@ -6656,17 +6656,44 @@ function saveTicket(e) {
 /* ============================================================
    CHỨC NĂNG NHẬP / XUẤT EXCEL TAB BÁN HÀNG
    ============================================================ */
-function toggleSalesExcelActions() {
+
+// Đóng tất cả dropdown menu Excel khi bấm ra ngoài hoặc chọn xong tác vụ
+function closeAllExcelDropdowns() {
+  const dropdownIds = [
+    'salesExcelActionsBox',
+    'swExcelActionsBox',
+    'repairExcelActionsBox',
+    'phoneExcelActionsBox',
+    'bangaExcelActionsBox',
+    'soldPhoneActionsBox',
+    'mainXacActionsBox'
+  ];
+  dropdownIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.querySelectorAll('.btn-excel-toggle-custom').forEach(btn => btn.classList.remove('active'));
+}
+
+if (typeof window !== 'undefined') {
+  window.closeAllExcelDropdowns = closeAllExcelDropdowns;
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.excel-menu-dropdown-wrapper')) {
+      closeAllExcelDropdowns();
+    }
+  });
+}
+
+function toggleSalesExcelActions(event) {
+  if (event && event.stopPropagation) event.stopPropagation();
   const box = document.getElementById('salesExcelActionsBox');
-  const arrow = document.getElementById('salesExcelArrowIcon');
+  const btn = document.getElementById('btnSalesExcelToggle');
   if (!box) return;
   const isHidden = (box.style.display === 'none' || box.style.display === '');
+  closeAllExcelDropdowns();
   if (isHidden) {
-    box.style.display = 'inline-flex';
-    if (arrow) arrow.style.transform = 'rotate(180deg)';
-  } else {
-    box.style.display = 'none';
-    if (arrow) arrow.style.transform = 'rotate(0deg)';
+    box.style.display = 'flex';
+    if (btn) btn.classList.add('active');
   }
 }
 window.toggleSalesExcelActions = toggleSalesExcelActions;
@@ -7283,17 +7310,16 @@ function exportAoaToExcelOrCsv(headerArr, rowsArr, defaultFileName, sheetTitle) 
 /* ============================================================
    1. CHỨC NĂNG EXCEL TAB PHẦN MỀM
    ============================================================ */
-function toggleSoftwareExcelActions() {
+function toggleSoftwareExcelActions(event) {
+  if (event && event.stopPropagation) event.stopPropagation();
   const box = document.getElementById('swExcelActionsBox');
-  const arrow = document.getElementById('swExcelArrowIcon');
+  const btn = document.getElementById('btnSwExcelToggle');
   if (!box) return;
   const isHidden = (box.style.display === 'none' || box.style.display === '');
+  closeAllExcelDropdowns();
   if (isHidden) {
-    box.style.display = 'inline-flex';
-    if (arrow) arrow.style.transform = 'rotate(180deg)';
-  } else {
-    box.style.display = 'none';
-    if (arrow) arrow.style.transform = 'rotate(0deg)';
+    box.style.display = 'flex';
+    if (btn) btn.classList.add('active');
   }
 }
 window.toggleSoftwareExcelActions = toggleSoftwareExcelActions;
@@ -7757,17 +7783,16 @@ window.handleImportSoftwareExcelFile = handleImportSoftwareExcelFile;
 /* ============================================================
    2. CHỨC NĂNG EXCEL TAB SỬA CHỮA
    ============================================================ */
-function toggleRepairExcelActions() {
+function toggleRepairExcelActions(event) {
+  if (event && event.stopPropagation) event.stopPropagation();
   const box = document.getElementById('repairExcelActionsBox');
-  const arrow = document.getElementById('repairExcelArrowIcon');
+  const btn = document.getElementById('btnRepairExcelToggle');
   if (!box) return;
   const isHidden = (box.style.display === 'none' || box.style.display === '');
+  closeAllExcelDropdowns();
   if (isHidden) {
-    box.style.display = 'inline-flex';
-    if (arrow) arrow.style.transform = 'rotate(180deg)';
-  } else {
-    box.style.display = 'none';
-    if (arrow) arrow.style.transform = 'rotate(0deg)';
+    box.style.display = 'flex';
+    if (btn) btn.classList.add('active');
   }
 }
 window.toggleRepairExcelActions = toggleRepairExcelActions;
@@ -8033,17 +8058,16 @@ window.handleImportRepairExcelFile = handleImportRepairExcelFile;
 /* ============================================================
    3. CHỨC NĂNG EXCEL TAB BÁN MÁY
    ============================================================ */
-function togglePhoneExcelActions() {
+function togglePhoneExcelActions(event) {
+  if (event && event.stopPropagation) event.stopPropagation();
   const box = document.getElementById('phoneExcelActionsBox');
-  const arrow = document.getElementById('phoneExcelArrowIcon');
+  const btn = document.getElementById('btnPhoneExcelToggle');
   if (!box) return;
   const isHidden = (box.style.display === 'none' || box.style.display === '');
+  closeAllExcelDropdowns();
   if (isHidden) {
-    box.style.display = 'inline-flex';
-    if (arrow) arrow.style.transform = 'rotate(180deg)';
-  } else {
-    box.style.display = 'none';
-    if (arrow) arrow.style.transform = 'rotate(0deg)';
+    box.style.display = 'flex';
+    if (btn) btn.classList.add('active');
   }
 }
 window.togglePhoneExcelActions = togglePhoneExcelActions;
@@ -8578,17 +8602,16 @@ window.handleImportPhoneExcelFile = handleImportPhoneExcelFile;
 /* ============================================================
    4. CHỨC NĂNG EXCEL TAB BÁN GÀ
    ============================================================ */
-function toggleBangaExcelActions() {
+function toggleBangaExcelActions(event) {
+  if (event && event.stopPropagation) event.stopPropagation();
   const box = document.getElementById('bangaExcelActionsBox');
-  const arrow = document.getElementById('bangaExcelArrowIcon');
+  const btn = document.getElementById('btnBangaExcelToggle');
   if (!box) return;
   const isHidden = (box.style.display === 'none' || box.style.display === '');
+  closeAllExcelDropdowns();
   if (isHidden) {
-    box.style.display = 'inline-flex';
-    if (arrow) arrow.style.transform = 'rotate(180deg)';
-  } else {
-    box.style.display = 'none';
-    if (arrow) arrow.style.transform = 'rotate(0deg)';
+    box.style.display = 'flex';
+    if (btn) btn.classList.add('active');
   }
 }
 window.toggleBangaExcelActions = toggleBangaExcelActions;
@@ -8859,17 +8882,16 @@ window.handleImportBangaExcelFile = handleImportBangaExcelFile;
 /* ============================================================
    5. CHỨC NĂNG EXCEL TAB BẢO HÀNH
    ============================================================ */
-function toggleSoldPhoneExcelActions() {
+function toggleSoldPhoneExcelActions(event) {
+  if (event && event.stopPropagation) event.stopPropagation();
   const box = document.getElementById('soldPhoneActionsBox');
-  const arrow = document.getElementById('soldPhoneExcelArrowIcon');
+  const btn = document.getElementById('btnSoldPhoneExcelToggle');
   if (!box) return;
   const isHidden = (box.style.display === 'none' || box.style.display === '');
+  closeAllExcelDropdowns();
   if (isHidden) {
-    box.style.display = 'inline-flex';
-    if (arrow) arrow.style.transform = 'rotate(180deg)';
-  } else {
-    box.style.display = 'none';
-    if (arrow) arrow.style.transform = 'rotate(0deg)';
+    box.style.display = 'flex';
+    if (btn) btn.classList.add('active');
   }
 }
 window.toggleSoldPhoneExcelActions = toggleSoldPhoneExcelActions;
@@ -22928,17 +22950,16 @@ function changeMainXacFilterYear(delta) {
 }
 window.changeMainXacFilterYear = changeMainXacFilterYear;
 
-function toggleMainXacExcelActions() {
+function toggleMainXacExcelActions(event) {
+  if (event && event.stopPropagation) event.stopPropagation();
   const box = document.getElementById('mainXacActionsBox');
-  const arrow = document.getElementById('mainXacExcelArrowIcon');
+  const btn = document.getElementById('btnMainXacExcelToggle');
   if (!box) return;
   const isHidden = (box.style.display === 'none' || box.style.display === '');
+  closeAllExcelDropdowns();
   if (isHidden) {
-    box.style.display = 'inline-flex';
-    if (arrow) arrow.style.transform = 'rotate(180deg)';
-  } else {
-    box.style.display = 'none';
-    if (arrow) arrow.style.transform = 'rotate(0deg)';
+    box.style.display = 'flex';
+    if (btn) btn.classList.add('active');
   }
 }
 window.toggleMainXacExcelActions = toggleMainXacExcelActions;
