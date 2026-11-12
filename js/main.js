@@ -5044,7 +5044,7 @@ function updateSidebarOverallProfits() {
 window.updateSidebarOverallProfits = updateSidebarOverallProfits;
 
 // ==================== BẢNG SỐ LIỆU / BẢNG THEO DÕI DOANH THU TRÊN MOBILE & WEB/DESKTOP ====================
-let currentMobileStatsMode = 'day'; // 'day' (Ngày), 'month' (Tháng), 'all' (Tất Cả)
+let currentMobileStatsMode = 'day'; // 'day' (Ngày), 'month' (Tháng), 'year' (Năm), 'all' (Tất Cả)
 window.currentMobileStatsMode = currentMobileStatsMode;
 
 let mStatsSelectedDate = null;  // Date object riêng cho modal Doanh Thu (Ngày/Tháng/Năm)
@@ -5083,7 +5083,7 @@ window.setMobileStatsMode = setMobileStatsMode;
 function changeMobileStatsDate(delta) {
   initMobileStatsDates();
   mStatsSelectedDate.setDate(mStatsSelectedDate.getDate() + delta);
-  // Cập nhật cả tháng tương ứng
+  // Cập nhật cả tháng và năm tương ứng
   mStatsSelectedMonth = { month: mStatsSelectedDate.getMonth(), year: mStatsSelectedDate.getFullYear() };
   renderMobileRevenueStats();
 }
@@ -5103,6 +5103,14 @@ function changeMobileStatsMonth(delta) {
   renderMobileRevenueStats();
 }
 window.changeMobileStatsMonth = changeMobileStatsMonth;
+
+function changeMobileStatsYear(delta) {
+  initMobileStatsDates();
+  mStatsSelectedMonth.year += delta;
+  mStatsSelectedDate.setFullYear(mStatsSelectedMonth.year);
+  renderMobileRevenueStats();
+}
+window.changeMobileStatsYear = changeMobileStatsYear;
 
 function resetMobileStatsToCurrentDate() {
   const vnNow = (typeof getVietnamDate === 'function') ? getVietnamDate() : new Date();
@@ -5142,7 +5150,7 @@ function renderMobileRevenueStats() {
 
   const targetD = mStatsSelectedDate.getDate();
   const targetM = (mode === 'month') ? mStatsSelectedMonth.month : mStatsSelectedDate.getMonth();
-  const targetY = (mode === 'month') ? mStatsSelectedMonth.year : mStatsSelectedDate.getFullYear();
+  const targetY = (mode === 'month' || mode === 'year') ? mStatsSelectedMonth.year : mStatsSelectedDate.getFullYear();
 
   const dd = String(targetD).padStart(2, '0');
   const mm = String(targetM + 1).padStart(2, '0');
@@ -5154,26 +5162,40 @@ function renderMobileRevenueStats() {
   const dateNavLabel = document.getElementById('mStatsDateNavLabel');
   const monthNavBox = document.getElementById('mStatsMonthNavBox');
   const monthNavLabel = document.getElementById('mStatsMonthNavLabel');
+  const yearNavBox = document.getElementById('mStatsYearNavBox');
+  const yearNavLabel = document.getElementById('mStatsYearNavLabel');
 
   if (mode === 'day') {
     if (titleLabelEl) titleLabelEl.innerHTML = `Ngày: ${dd}/${mm}/${yyyy}`;
     if (dateNavBox) dateNavBox.style.display = 'inline-flex';
     if (dateNavLabel) dateNavLabel.innerText = `${dd}/${mm}/${yyyy}`;
     if (monthNavBox) monthNavBox.style.display = 'none';
+    if (yearNavBox) yearNavBox.style.display = 'none';
   } else if (mode === 'month') {
     if (titleLabelEl) titleLabelEl.innerHTML = `Tháng: ${mm}/${yyyy}`;
     if (dateNavBox) dateNavBox.style.display = 'none';
     if (monthNavBox) monthNavBox.style.display = 'inline-flex';
     if (monthNavLabel) monthNavLabel.innerText = `Tháng ${mm}/${yyyy}`;
+    if (yearNavBox) yearNavBox.style.display = 'none';
+  } else if (mode === 'year') {
+    if (titleLabelEl) titleLabelEl.innerHTML = `Năm: ${yyyy}`;
+    if (dateNavBox) dateNavBox.style.display = 'none';
+    if (monthNavBox) monthNavBox.style.display = 'none';
+    if (yearNavBox) yearNavBox.style.display = 'inline-flex';
+    if (yearNavLabel) yearNavLabel.innerText = `Năm ${yyyy}`;
   } else {
     if (titleLabelEl) titleLabelEl.innerHTML = `📊 Toàn Bộ Thời Gian`;
     if (dateNavBox) dateNavBox.style.display = 'none';
     if (monthNavBox) monthNavBox.style.display = 'none';
+    if (yearNavBox) yearNavBox.style.display = 'none';
   }
 
   function isItemMatchPeriod(dmy) {
     if (!dmy) return false;
     if (mode === 'all') return true;
+    if (mode === 'year') {
+      return dmy.y === targetY;
+    }
     if (mode === 'month') {
       return dmy.m === targetM && dmy.y === targetY;
     }
@@ -5249,6 +5271,11 @@ function renderMobileRevenueStats() {
       if (mode === 'all') {
         countPhanmem++;
         profitPhanmem += parsePriceNum(item.profit || 0);
+      } else if (mode === 'year') {
+        if (itemYear === targetY) {
+          countPhanmem++;
+          profitPhanmem += parsePriceNum(item.profit || 0);
+        }
       } else if (mode === 'month') {
         if (dmy && dmy.m === targetM && itemYear === targetY) {
           countPhanmem++;
@@ -5277,6 +5304,8 @@ function renderMobileRevenueStats() {
   const elTotalProfit = document.getElementById('mStatsTotalProfit');
   const elTargetStatus = document.getElementById('mStatsTargetStatus');
   const elTargetLabelVal = document.getElementById('mStatsTargetLabelVal');
+  const elRemainingDiffWrapper = document.getElementById('mStatsRemainingDiffWrapper');
+  const elRemainingDiffText = document.getElementById('mStatsRemainingDiffText');
 
   if (elCountBanhang) elCountBanhang.textContent = countBanhang;
   if (elProfitBanhang) elProfitBanhang.textContent = formatPriceStr(profitBanhang);
@@ -5288,24 +5317,62 @@ function renderMobileRevenueStats() {
   if (elProfitPhanmem) elProfitPhanmem.textContent = formatPriceStr(profitPhanmem);
   if (elTotalProfit) elTotalProfit.textContent = formatPriceStr(totalProfit);
 
-  // Đánh giá chỉ tiêu: ngày (2.500K), tháng (75.000K), tất cả (75.000K)
+  // ĐÁNH GIÁ CHỈ TIÊU & TÍNH CÒN THIẾU:
+  // - Theo Ngày: 2.500
+  // - Theo Tháng: Số ngày trong tháng (28, 29, 30, 31) x 2.500
+  // - Theo Năm: Số ngày trong năm (365 hoặc 366 nếu nhuận) x 2.500
+  // - Tất cả: 75.000
   let targetK = 2500;
-  if (mode === 'month') targetK = 75000;
-  else if (mode === 'all') targetK = 75000;
-
-  if (elTargetLabelVal) {
-    elTargetLabelVal.textContent = mode === 'month' ? '75.000K' : (mode === 'all' ? 'TỔNG' : '2.500K');
+  if (mode === 'day') {
+    targetK = 2500;
+  } else if (mode === 'month') {
+    const daysInMonth = new Date(targetY, targetM + 1, 0).getDate();
+    targetK = daysInMonth * 2500;
+  } else if (mode === 'year') {
+    const isLeap = (targetY % 4 === 0 && targetY % 100 !== 0) || (targetY % 400 === 0);
+    const daysInYear = isLeap ? 366 : 365;
+    targetK = daysInYear * 2500;
+  } else {
+    targetK = 75000;
   }
 
+  if (elTargetLabelVal) {
+    if (mode === 'all') {
+      elTargetLabelVal.textContent = 'TỔNG';
+    } else {
+      elTargetLabelVal.textContent = formatPriceStr(targetK) + 'K';
+    }
+  }
+
+  const isTargetReached = totalProfit >= targetK;
   if (elTargetStatus) {
-    const thresholdVal = targetK >= 1000 ? targetK : targetK;
-    const isTargetReached = totalProfit >= thresholdVal * 1000 || (totalProfit >= thresholdVal && totalProfit < 1000000);
     if (isTargetReached) {
       elTargetStatus.textContent = 'XUẤT SẮC (Cần Phát Huy)';
       elTargetStatus.style.color = '#10b981';
     } else {
       elTargetStatus.textContent = 'CHƯA ĐẠT (Cần Cố Gắng)';
       elTargetStatus.style.color = '#ef4444';
+    }
+  }
+
+  // HIỂN THỊ CÒN THIẾU (CHỮ MÀU TRẮNG):
+  // Còn Thiếu = Chỉ Tiêu (targetK) - Tổng Lãi (totalProfit)
+  if (elRemainingDiffWrapper && elRemainingDiffText) {
+    if (mode === 'all') {
+      elRemainingDiffWrapper.style.display = 'none';
+    } else {
+      elRemainingDiffWrapper.style.display = 'inline-flex';
+      const remainingVal = targetK - totalProfit;
+      if (remainingVal > 0) {
+        elRemainingDiffText.textContent = `Còn Thiếu : ${formatPriceStr(remainingVal)}`;
+        elRemainingDiffText.style.color = '#ffffff';
+      } else if (remainingVal === 0) {
+        elRemainingDiffText.textContent = `Đạt Chuẩn Chỉ Tiêu`;
+        elRemainingDiffText.style.color = '#38bdf8';
+      } else {
+        elRemainingDiffText.textContent = `Vượt Chỉ Tiêu : +${formatPriceStr(Math.abs(remainingVal))}`;
+        elRemainingDiffText.style.color = '#4ade80';
+      }
     }
   }
 }

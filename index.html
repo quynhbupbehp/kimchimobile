@@ -6042,23 +6042,29 @@
           <span id="mStatsTargetStatus" style="color: #f87171; font-weight: 900;">CHƯA ĐẠT (Cần Cố Gắng)</span>
         </div>
 
-        <!-- DÒNG TỔNG LỢI NHUẬN (Y CHANG MẪU: Tổng Lợi Nhuận = 1.857) -->
-        <div class="stats-total-row" style="margin-top: 10px; margin-bottom: 12px; text-align: center;">
-          <span style="color: #f59e0b; font-weight: 900; font-size: 1.25rem;">Tổng Lợi Nhuận = </span>
+        <!-- DÒNG TỔNG LỢI NHUẬN & CÒN THIẾU (Y CHANG MẪU: Tổng Lãi : 990 - Còn Thiếu : 1.510) -->
+        <div class="stats-total-row" style="margin-top: 10px; margin-bottom: 12px; text-align: center; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px;">
+          <span style="color: #f59e0b; font-weight: 900; font-size: 1.25rem;">Tổng Lãi : </span>
           <span id="mStatsTotalProfit"
-            style="color: #facc15; font-weight: 900; font-size: 1.55rem; letter-spacing: 0.5px;">0</span>
+            style="color: #facc15; font-weight: 900; font-size: 1.45rem; letter-spacing: 0.5px;">0</span>
+          <span id="mStatsRemainingDiffWrapper"
+            style="color: #ffffff; font-weight: 900; font-size: 1.25rem; display: inline-flex; align-items: center; gap: 4px;">
+            <span> - </span>
+            <span id="mStatsRemainingDiffText" style="color: #ffffff; font-weight: 900;">Còn Thiếu : 2.500</span>
+          </span>
         </div>
       </div>
 
       <!-- HÀNG ĐIỀU KHIỂN DƯỚI CÙNG (FOOTER): TẤT CẢ NẰM TRÊN 1 HÀNG DUY NHẤT -->
       <div class="stats-footer-controls"
         style="padding: 0 14px 16px 14px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: nowrap; box-sizing: border-box; width: 100%;">
-        <!-- Ô LỌC THEO NGÀY/THÁNG: TĂNG KÍCH THƯỚC Ô 10% (110px), CỠ CHỮ TĂNG 10% (0.88rem) -->
+        <!-- Ô LỌC THEO NGÀY/THÁNG/NĂM: TĂNG KÍCH THƯỚC Ô 10% (110px), CỠ CHỮ TĂNG 10% (0.88rem) -->
         <div style="position: relative; display: inline-flex; align-items: center; height: 34px; max-height: 34px; min-height: 34px; flex: 0 0 110px; width: 110px; min-width: 110px; box-sizing: border-box;">
           <select id="mStatsPeriodSelect" onchange="setMobileStatsMode(this.value)"
             style="appearance: none; -webkit-appearance: none; background: #0284c7; border: 1.5px solid #38bdf8; color: #ffffff; height: 34px; max-height: 34px; min-height: 34px; line-height: 31px; width: 100%; padding: 0 20px 0 8px; border-radius: 6px; font-size: 0.88rem; font-weight: 900; cursor: pointer; outline: none; text-transform: uppercase; box-sizing: border-box; text-overflow: clip; white-space: nowrap; overflow: visible; text-align: center; margin: 0; letter-spacing: 0.3px;">
             <option value="day" selected style="background: #0f172a; color: #ffffff;">NGÀY</option>
             <option value="month" style="background: #0f172a; color: #ffffff;">THÁNG</option>
+            <option value="year" style="background: #0f172a; color: #ffffff;">NĂM</option>
             <option value="all" style="background: #0f172a; color: #ffffff;">TẤT CẢ</option>
           </select>
           <span
@@ -6102,6 +6108,27 @@
             style="color: #ffffff; font-weight: 900; font-size: 1.01rem; padding: 0 2px; user-select: none; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;">Tháng 11/2026</span>
           <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsMonth(1)"
             title="Tiến 1 tháng" style="flex: 0 0 22px; width: 22px; height: 26px;">
+            <svg viewBox="0 0 24 24"
+              style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- BỘ CHỌN NĂM (KHI CHỌN CHẾ ĐỘ NĂM) -->
+        <div id="mStatsYearNavBox"
+          style="display: none; align-items: center; justify-content: space-between; gap: 4px; background: rgba(5, 150, 105, 0.12); border: 1.5px solid #10b981; border-radius: 6px; padding: 0 4px; height: 34px; max-height: 34px; min-height: 34px; flex: 0 1 190px; min-width: 145px; box-sizing: border-box;">
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsYear(-1)"
+            title="Lùi 1 năm" style="flex: 0 0 22px; width: 22px; height: 26px;">
+            <svg viewBox="0 0 24 24"
+              style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <span id="mStatsYearNavLabel"
+            style="color: #ffffff; font-weight: 900; font-size: 1.01rem; padding: 0 2px; user-select: none; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;">Năm 2026</span>
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsYear(1)"
+            title="Tiến 1 năm" style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
               style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M9 18l6-6-6-6" />
