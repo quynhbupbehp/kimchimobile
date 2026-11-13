@@ -852,7 +852,8 @@
             { id: 'samsung', label: 'Samsung' },
             { id: 'oppo-realme', label: 'OPPO - Realme' },
             { id: 'xiaomi-poco', label: 'MI' },
-            { id: 'vivo-vsmart', label: 'Vivo - Vsmart' }
+            { id: 'vivo', label: 'Vivo' },
+            { id: 'vsmart', label: 'Vsmart' }
         ];
 
         const MAN_IPHONE_DATA = [
@@ -980,7 +981,7 @@
             { model: 'RENO 6Z - 7Z - 8Z - A95', price: '' }
         ];
 
-        const VIVO_VSMART_DATA = [
+        const VIVO_DATA = [
             { model: 'Y11 - Y12 - Y15 - Y17 - U10 - Y3', price: '400' },
             { model: 'Y91 - 91C - Y93 - Y95 - Y1S', price: '400' },
             { model: 'Y15A - Y15S - Y3S - Y20 - Y01 - Y02 - Y12S', price: '450' },
@@ -988,6 +989,13 @@
             { model: 'Y19 - Y5S - U3 - V11x', price: '450' },
             { model: 'Y03 - Y03T - Y18', price: '450' },
             { model: 'Y30 - Y50 - Y50s - Y51 - Y70s', price: '450' }
+        ];
+
+        const VSMART_DATA = [
+            { model: 'JOY 3', price: '300' },
+            { model: 'JOY 4', price: '450' },
+            { model: 'LIVE 4', price: '250' },
+            { model: 'STAR 5', price: '450' }
         ];
 
         const XIAOMI_POCO_DATA = [
@@ -1013,14 +1021,16 @@
         const DEFAULT_PIN_IPHONE_DATA = PIN_IPHONE_DATA;
         const DEFAULT_SAMSUNG_DATA = SAMSUNG_DATA;
         const DEFAULT_OPPO_REALME_DATA = OPPO_REALME_DATA;
-        const DEFAULT_VIVO_VSMART_DATA = VIVO_VSMART_DATA;
+        const DEFAULT_VIVO_DATA = VIVO_DATA;
+        const DEFAULT_VSMART_DATA = VSMART_DATA;
         const DEFAULT_XIAOMI_POCO_DATA = XIAOMI_POCO_DATA;
 
         let MAN_IPHONE_LIST = [];
         let PIN_IPHONE_LIST = [];
         let SAMSUNG_LIST = [];
         let OPPO_REALME_LIST = [];
-        let VIVO_VSMART_LIST = [];
+        let VIVO_LIST = [];
+        let VSMART_LIST = [];
         let XIAOMI_POCO_LIST = [];
 
         const STORAGE_KEY = 'kimchi_baogia_data';
@@ -1055,7 +1065,9 @@
                         if (data.pinIphone) PIN_IPHONE_LIST = data.pinIphone;
                         if (data.samsung) SAMSUNG_LIST = data.samsung;
                         if (data.oppo) OPPO_REALME_LIST = data.oppo;
-                        if (data.vivo) VIVO_VSMART_LIST = data.vivo;
+                        if (data.vivo) VIVO_LIST = data.vivo;
+                        if (data.vsmart) VSMART_LIST = data.vsmart;
+                        else if (!VSMART_LIST || VSMART_LIST.length === 0) VSMART_LIST = JSON.parse(JSON.stringify(DEFAULT_VSMART_DATA));
                         if (data.xiaomi) XIAOMI_POCO_LIST = data.xiaomi;
                         if (data.brandTitles) BRAND_TITLES = Object.assign({}, DEFAULT_BRAND_TITLES, data.brandTitles);
                         if (data.customColumns) CUSTOM_COLUMNS = Object.assign({
@@ -1064,6 +1076,7 @@
                             samsung: [],
                             oppo: [],
                             vivo: [],
+                            vsmart: [],
                             xiaomi: []
                         }, data.customColumns);
 
@@ -1073,7 +1086,8 @@
                             pinIphone: PIN_IPHONE_LIST,
                             samsung: SAMSUNG_LIST,
                             oppo: OPPO_REALME_LIST,
-                            vivo: VIVO_VSMART_LIST,
+                            vivo: VIVO_LIST,
+                            vsmart: VSMART_LIST,
                             xiaomi: XIAOMI_POCO_LIST,
                             brandTitles: BRAND_TITLES,
                             customColumns: CUSTOM_COLUMNS,
@@ -1120,7 +1134,8 @@
                             pinIphone: PIN_IPHONE_LIST,
                             samsung: SAMSUNG_LIST,
                             oppo: OPPO_REALME_LIST,
-                            vivo: VIVO_VSMART_LIST,
+                            vivo: VIVO_LIST,
+                            vsmart: VSMART_LIST,
                             xiaomi: XIAOMI_POCO_LIST,
                             brandTitles: BRAND_TITLES,
                             customColumns: CUSTOM_COLUMNS,
@@ -1143,7 +1158,8 @@
             'samsung': 'SAMSUNG',
             'samsung-sub': 'Màn LCD (Rẻ)',
             'oppo-realme': 'OPPO - REALME',
-            'vivo-vsmart': 'VIVO - VSMART',
+            'vivo': 'VIVO',
+            'vsmart': 'VSMART',
             'xiaomi-poco': 'MI'
         };
 
@@ -1154,6 +1170,7 @@
             'samsung': [],
             'oppo': [],
             'vivo': [],
+            'vsmart': [],
             'xiaomi': []
         };
 
@@ -1166,7 +1183,8 @@
                     PIN_IPHONE_LIST = parsed.pinIphone || JSON.parse(JSON.stringify(DEFAULT_PIN_IPHONE_DATA));
                     SAMSUNG_LIST = parsed.samsung || JSON.parse(JSON.stringify(DEFAULT_SAMSUNG_DATA));
                     OPPO_REALME_LIST = parsed.oppo || JSON.parse(JSON.stringify(DEFAULT_OPPO_REALME_DATA));
-                    VIVO_VSMART_LIST = parsed.vivo || JSON.parse(JSON.stringify(DEFAULT_VIVO_VSMART_DATA));
+                    VIVO_LIST = parsed.vivo || JSON.parse(JSON.stringify(DEFAULT_VIVO_DATA));
+                    VSMART_LIST = parsed.vsmart || JSON.parse(JSON.stringify(DEFAULT_VSMART_DATA));
                     XIAOMI_POCO_LIST = parsed.xiaomi || JSON.parse(JSON.stringify(DEFAULT_XIAOMI_POCO_DATA));
                     BRAND_TITLES = Object.assign({}, DEFAULT_BRAND_TITLES, parsed.brandTitles || {});
                     if (parsed.customColumns) {
@@ -1176,6 +1194,7 @@
                             samsung: [],
                             oppo: [],
                             vivo: [],
+                            vsmart: [],
                             xiaomi: []
                         }, parsed.customColumns);
                     }
@@ -1194,7 +1213,8 @@
             PIN_IPHONE_LIST = JSON.parse(JSON.stringify(DEFAULT_PIN_IPHONE_DATA));
             SAMSUNG_LIST = JSON.parse(JSON.stringify(DEFAULT_SAMSUNG_DATA));
             OPPO_REALME_LIST = JSON.parse(JSON.stringify(DEFAULT_OPPO_REALME_DATA));
-            VIVO_VSMART_LIST = JSON.parse(JSON.stringify(DEFAULT_VIVO_VSMART_DATA));
+            VIVO_LIST = JSON.parse(JSON.stringify(DEFAULT_VIVO_DATA));
+            VSMART_LIST = JSON.parse(JSON.stringify(DEFAULT_VSMART_DATA));
             XIAOMI_POCO_LIST = JSON.parse(JSON.stringify(DEFAULT_XIAOMI_POCO_DATA));
             BRAND_TITLES = Object.assign({}, DEFAULT_BRAND_TITLES);
         }
@@ -1206,7 +1226,8 @@
                     pinIphone: PIN_IPHONE_LIST,
                     samsung: SAMSUNG_LIST,
                     oppo: OPPO_REALME_LIST,
-                    vivo: VIVO_VSMART_LIST,
+                    vivo: VIVO_LIST,
+                    vsmart: VSMART_LIST,
                     xiaomi: XIAOMI_POCO_LIST,
                     brandTitles: BRAND_TITLES,
                     customColumns: CUSTOM_COLUMNS,
@@ -1320,7 +1341,8 @@
                     else if (datasetKey === 'pinIphone') list = PIN_IPHONE_LIST;
                     else if (datasetKey === 'samsung') list = SAMSUNG_LIST;
                     else if (datasetKey === 'oppo') list = OPPO_REALME_LIST;
-                    else if (datasetKey === 'vivo') list = VIVO_VSMART_LIST;
+                    else if (datasetKey === 'vivo') list = VIVO_LIST;
+                    else if (datasetKey === 'vsmart') list = VSMART_LIST;
                     else if (datasetKey === 'xiaomi') list = XIAOMI_POCO_LIST;
 
                     if (list && list[rowIndex]) {
@@ -1350,7 +1372,8 @@
             else if (datasetKey === 'pinIphone') { list = PIN_IPHONE_LIST; titlePrompt = 'Pin iPhone'; }
             else if (datasetKey === 'samsung') { list = SAMSUNG_LIST; titlePrompt = 'Samsung'; }
             else if (datasetKey === 'oppo') { list = OPPO_REALME_LIST; titlePrompt = 'OPPO - Realme'; }
-            else if (datasetKey === 'vivo') { list = VIVO_VSMART_LIST; titlePrompt = 'Vivo - Vsmart'; }
+            else if (datasetKey === 'vivo') { list = VIVO_LIST; titlePrompt = 'Vivo'; }
+            else if (datasetKey === 'vsmart') { list = VSMART_LIST; titlePrompt = 'Vsmart'; }
             else if (datasetKey === 'xiaomi') { list = XIAOMI_POCO_LIST; titlePrompt = 'Xiaomi - Poco'; }
 
             if (!list) return;
@@ -1423,7 +1446,8 @@
             else if (datasetKey === 'pinIphone') list = PIN_IPHONE_LIST;
             else if (datasetKey === 'samsung') list = SAMSUNG_LIST;
             else if (datasetKey === 'oppo') list = OPPO_REALME_LIST;
-            else if (datasetKey === 'vivo') list = VIVO_VSMART_LIST;
+            else if (datasetKey === 'vivo') list = VIVO_LIST;
+            else if (datasetKey === 'vsmart') list = VSMART_LIST;
             else if (datasetKey === 'xiaomi') list = XIAOMI_POCO_LIST;
 
             if (!list || !list[rowIndex]) return;
@@ -1542,7 +1566,8 @@
                 'pin-iphone': PIN_IPHONE_LIST.filter(r => matchesQuery(`pin iphone ${r.model}`, searchQuery)),
                 'samsung': SAMSUNG_LIST.filter(r => matchesQuery(`samsung lcd ${r.model}`, searchQuery)),
                 'oppo-realme': OPPO_REALME_LIST.filter(r => matchesQuery(`oppo realme ${r.model}`, searchQuery)),
-                'vivo-vsmart': VIVO_VSMART_LIST.filter(r => matchesQuery(`vivo vsmart ${r.model}`, searchQuery)),
+                'vivo': VIVO_LIST.filter(r => matchesQuery(`vivo ${r.model}`, searchQuery)),
+                'vsmart': VSMART_LIST.filter(r => matchesQuery(`vsmart joy star live active ${r.model}`, searchQuery)),
                 'xiaomi-poco': XIAOMI_POCO_LIST.filter(r => matchesQuery(`xiaomi poco redmi ${r.model}`, searchQuery))
             };
         }
@@ -1825,7 +1850,8 @@
             let targetList = [];
             if (datasetKey === 'samsung') targetList = SAMSUNG_LIST;
             else if (datasetKey === 'oppo') targetList = OPPO_REALME_LIST;
-            else if (datasetKey === 'vivo') targetList = VIVO_VSMART_LIST;
+            else if (datasetKey === 'vivo') targetList = VIVO_LIST;
+            else if (datasetKey === 'vsmart') targetList = VSMART_LIST;
             else if (datasetKey === 'xiaomi') targetList = XIAOMI_POCO_LIST;
 
             const addBtnHtml = isEditingMode
@@ -1915,7 +1941,8 @@
             const pinIp = isSearching ? filteredMap['pin-iphone'] : (activeTab === 'pin-iphone' ? PIN_IPHONE_LIST : []);
             const samsung = isSearching ? filteredMap['samsung'] : (activeTab === 'samsung' ? SAMSUNG_LIST : []);
             const oppo = isSearching ? filteredMap['oppo-realme'] : (activeTab === 'oppo-realme' ? OPPO_REALME_LIST : []);
-            const vivo = isSearching ? filteredMap['vivo-vsmart'] : (activeTab === 'vivo-vsmart' ? VIVO_VSMART_LIST : []);
+            const vivo = isSearching ? filteredMap['vivo'] : (activeTab === 'vivo' ? VIVO_LIST : []);
+            const vsmart = isSearching ? filteredMap['vsmart'] : (activeTab === 'vsmart' ? VSMART_LIST : []);
             const xiaomi = isSearching ? filteredMap['xiaomi-poco'] : (activeTab === 'xiaomi-poco' ? XIAOMI_POCO_LIST : []);
 
             if (isSearching) {
@@ -1926,7 +1953,7 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <h3>Không tìm thấy "${searchQuery}"</h3>
-                        <p>Thử nhập tên ngắn gọn hơn (vd: 12 prm, a12, redmi 9, y15...)</p>
+                        <p>Thử nhập tên ngắn gọn hơn (vd: 12 prm, a12, redmi 9, y15, joy 3...)</p>
                         <button class="btn-reset-search" onclick="clearSearch()">Xóa tìm kiếm</button>
                     </div>
                 `;
@@ -1961,12 +1988,20 @@
                     datasetKey: 'xiaomi'
                 }),
                 renderBrandTable({
-                    titleKey: 'vivo-vsmart',
-                    defaultTitle: 'VIVO - VSMART',
+                    titleKey: 'vivo',
+                    defaultTitle: 'VIVO',
                     subtitle: '',
                     prefixName: 'Màn Vivo',
                     rows: vivo,
                     datasetKey: 'vivo'
+                }),
+                renderBrandTable({
+                    titleKey: 'vsmart',
+                    defaultTitle: 'VSMART',
+                    subtitle: '',
+                    prefixName: 'Màn Vsmart',
+                    rows: vsmart,
+                    datasetKey: 'vsmart'
                 })
             ].filter(Boolean);
 
