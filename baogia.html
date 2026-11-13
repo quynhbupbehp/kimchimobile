@@ -292,12 +292,12 @@
                     <!-- CỤM 2 NÚT: BÁO GIÁ NHANH & BÁO GIÁ CHI TIẾT -->
                     <div class="inline-flex items-center p-1 bg-[#0b0f19] border border-[#1e293b] rounded-xl shadow-inner gap-1">
                         <button type="button" id="btn-mode-quick" onclick="switchPriceMode('quick')"
-                            class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-black transition-all flex items-center gap-1.5 text-gray-400 hover:text-white cursor-pointer select-none">
+                            class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-black transition-all flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md cursor-pointer select-none">
                             <i class="fa-solid fa-bolt text-xs"></i>
                             <span>BÁO GIÁ NHANH</span>
                         </button>
                         <button type="button" id="btn-mode-detail" onclick="switchPriceMode('detail')"
-                            class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-black transition-all flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md cursor-pointer select-none">
+                            class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-black transition-all flex items-center gap-1.5 text-gray-400 hover:text-white cursor-pointer select-none">
                             <i class="fa-solid fa-list-check text-xs"></i>
                             <span>BÁO GIÁ CHI TIẾT</span>
                         </button>
@@ -351,7 +351,7 @@
 
             <!-- THANH BỘ LỌC CÁC CẤP (TABS HÃNG, LINH KIỆN, KIỂU, TÌM KIẾM) -->
             <div id="detail-filters-box"
-                class="bg-[#0b0f19] p-3 md:p-4 rounded-2xl border border-[#151d2f] flex flex-col gap-3 shadow-2xl w-full">
+                class="hidden bg-[#0b0f19] p-3 md:p-4 rounded-2xl border border-[#151d2f] flex-col gap-3 shadow-2xl w-full">
                 <!-- HÀNG 1: TABS HÃNG + BADGE SỐ LK : SỐ TIỀN -->
                 <div class="flex items-center justify-between gap-2 w-full">
                     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 min-w-0" id="brand-tabs">
@@ -452,7 +452,7 @@
                 </div>
             </div>
             <!-- TIÊU ĐỀ BẢNG CHO DESKTOP -->
-            <div id="detail-desktop-header-wrap" class="hidden md:block card-dark rounded-t-2xl overflow-hidden shadow-md">
+            <div id="detail-desktop-header-wrap" class="hidden card-dark rounded-t-2xl overflow-hidden shadow-md">
                 <table class="w-full text-center border-collapse table-fixed">
                     <thead>
                         <tr id="desktop-table-header"
@@ -464,7 +464,7 @@
         </div>
 
         <!-- BẢNG NỘI DUNG DỮ LIỆU CUỘN -->
-        <div id="detail-price-table-wrap" class="card-dark rounded-2xl md:rounded-t-none overflow-hidden shadow-xl w-full">
+        <div id="detail-price-table-wrap" class="hidden card-dark rounded-2xl md:rounded-t-none overflow-hidden shadow-xl w-full">
             <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-center border-collapse table-fixed">
                     <tbody id="device-table-body" class="text-base"></tbody>
@@ -492,7 +492,7 @@
         </div>
 
         <!-- KHUNG BÁO GIÁ NHANH (ĐỒNG BỘ REALTIME TỪ QUYNHBUPBEHP / TONGHOP) -->
-        <div id="quick-price-wrapper" class="hidden w-full flex flex-col bg-[#0b0f19] border border-[#151d2f] rounded-2xl overflow-hidden shadow-2xl" style="height: calc(100vh - 80px);">
+        <div id="quick-price-wrapper" class="w-full flex flex-col bg-[#0b0f19] border border-[#151d2f] rounded-2xl overflow-hidden shadow-2xl" style="height: calc(100vh - 80px);">
             <iframe id="quickPriceFrame" src="baogia-nhanh.html" class="w-full h-full border-0 rounded-2xl" title="BÁO GIÁ NHANH"></iframe>
         </div>
     </div>
@@ -847,7 +847,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let currentPriceMode = 'detail'; // 'detail' | 'quick'
+        let currentPriceMode = 'quick'; // 'quick' | 'detail' (mặc định chọn Báo Giá Nhanh)
 
         function switchPriceMode(mode) {
             currentPriceMode = mode;
@@ -865,18 +865,38 @@
                 if (btnQuick) btnQuick.className = activeBtnClass;
                 if (btnDetail) btnDetail.className = inactiveBtnClass;
 
-                if (detailFilters) detailFilters.classList.add('hidden');
-                if (detailHeader) detailHeader.classList.add('hidden');
-                if (detailTable) detailTable.classList.add('hidden');
-                if (quickWrap) quickWrap.classList.remove('hidden');
+                if (detailFilters) {
+                    detailFilters.classList.add('hidden');
+                    detailFilters.classList.remove('flex');
+                }
+                if (detailHeader) {
+                    detailHeader.classList.add('hidden');
+                    detailHeader.classList.remove('md:block');
+                }
+                if (detailTable) {
+                    detailTable.classList.add('hidden');
+                }
+                if (quickWrap) {
+                    quickWrap.classList.remove('hidden');
+                }
             } else {
                 if (btnDetail) btnDetail.className = activeBtnClass;
                 if (btnQuick) btnQuick.className = inactiveBtnClass;
 
-                if (detailFilters) detailFilters.classList.remove('hidden');
-                if (detailHeader) detailHeader.classList.remove('hidden');
-                if (detailTable) detailTable.classList.remove('hidden');
-                if (quickWrap) quickWrap.classList.add('hidden');
+                if (detailFilters) {
+                    detailFilters.classList.remove('hidden');
+                    detailFilters.classList.add('flex');
+                }
+                if (detailHeader) {
+                    detailHeader.classList.remove('hidden');
+                    detailHeader.classList.add('md:block');
+                }
+                if (detailTable) {
+                    detailTable.classList.remove('hidden');
+                }
+                if (quickWrap) {
+                    quickWrap.classList.add('hidden');
+                }
             }
         }
 

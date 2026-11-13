@@ -721,6 +721,49 @@
                 cursor: default !important;
             }
         }
+
+        /* PHÓNG TO BẢNG LÊN 50% TRÊN MÀN HÌNH MÁY TÍNH (WEB DESKTOP >= 769PX) */
+        @media (min-width: 769px) {
+            .header-inner,
+            .tabs-nav,
+            .main-container {
+                max-width: 840px !important; /* 560px * 1.5 = 840px (tăng 50%) */
+            }
+            .brand-title {
+                font-size: 19px !important;
+            }
+            .brand-icon {
+                width: 36px !important;
+                height: 36px !important;
+            }
+            .search-input {
+                font-size: 17px !important;
+                padding: 11px 75px 11px 40px !important;
+            }
+            .tab-btn {
+                font-size: 15px !important;
+                padding: 8px 16px !important;
+            }
+            .tab-count {
+                font-size: 12px !important;
+            }
+            .price-table th {
+                font-size: 16px !important;
+                padding: 10px 8px !important;
+            }
+            .price-table td {
+                font-size: 16px !important;
+                height: 36px !important;
+                padding: 5px 8px !important;
+            }
+            .price-text,
+            .multi-price-item {
+                font-size: 16px !important;
+            }
+            .model-cell {
+                font-size: 16px !important;
+            }
+        }
     </style>
 </head>
 
