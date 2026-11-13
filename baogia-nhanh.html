@@ -22,7 +22,8 @@
             --primary-purple: #7c3aed;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             overflow: hidden;
             width: 100%;
@@ -257,7 +258,8 @@
         }
 
         .card-header {
-            display: none !important; /* Ẩn dòng màu hồng ở các tab */
+            display: none !important;
+            /* Ẩn dòng màu hồng ở các tab */
             flex-shrink: 0;
             padding: 6px 10px;
             color: #ffffff;
@@ -335,8 +337,10 @@
             padding: 7px 6px;
             font-size: 12px;
             font-weight: 900;
-            background: #2563eb !important; /* Nền Xanh Dương cố định */
-            color: #ffffff !important; /* Chữ Trắng */
+            background: #2563eb !important;
+            /* Nền Xanh Dương cố định */
+            color: #ffffff !important;
+            /* Chữ Trắng */
             border-bottom: 1px solid #1d4ed8;
             border-right: 1px solid #3b82f6;
             text-align: center;
@@ -707,11 +711,17 @@
         /* VÔ HIỆU HÓA CHỈNH SỬA TRÊN MOBILE, TRÊN MOBILE CHỈ ĐƯỢC XEM */
         @media (max-width: 768px) {
             .header-actions {
-                display: none !important; /* Ẩn nút SỬA */
+                display: none !important;
+                /* Ẩn nút SỬA */
             }
-            .btn-add-row, .btn-add-col, .edit-notice-bar {
-                display: none !important; /* Ẩn các nút thêm dòng, thêm cột */
+
+            .btn-add-row,
+            .btn-add-col,
+            .edit-notice-bar {
+                display: none !important;
+                /* Ẩn các nút thêm dòng, thêm cột */
             }
+
             body.is-editing .price-cell,
             body.is-editing .multi-price-item,
             body.is-editing .model-cell,
@@ -724,42 +734,53 @@
 
         /* PHÓNG TO BẢNG LÊN 50% TRÊN MÀN HÌNH MÁY TÍNH (WEB DESKTOP >= 769PX) */
         @media (min-width: 769px) {
+
             .header-inner,
             .tabs-nav,
             .main-container {
-                max-width: 840px !important; /* 560px * 1.5 = 840px (tăng 50%) */
+                max-width: 840px !important;
+                /* 560px * 1.5 = 840px (tăng 50%) */
             }
+
             .brand-title {
                 font-size: 19px !important;
             }
+
             .brand-icon {
                 width: 36px !important;
                 height: 36px !important;
             }
+
             .search-input {
                 font-size: 17px !important;
                 padding: 11px 75px 11px 40px !important;
             }
+
             .tab-btn {
                 font-size: 15px !important;
                 padding: 8px 16px !important;
             }
+
             .tab-count {
                 font-size: 12px !important;
             }
+
             .price-table th {
                 font-size: 16px !important;
                 padding: 10px 8px !important;
             }
+
             .price-table td {
                 font-size: 16px !important;
                 height: 36px !important;
                 padding: 5px 8px !important;
             }
+
             .price-text,
             .multi-price-item {
                 font-size: 16px !important;
             }
+
             .model-cell {
                 font-size: 16px !important;
             }
@@ -977,7 +998,6 @@
             { model: 'Note 7', price: '450' },
             { model: 'Note 8', price: '450' },
             { model: 'Note 8 PRO', price: '450' },
-            { model: 'Redmi 10 5G', price: '' },
             { model: 'Note 9S - Note 9 Pro', price: '450' },
             { model: 'Redmi 12', price: '450' },
             { model: 'Poco C65 (Cáp L) - Redmi 13C', price: '450' },
@@ -1304,10 +1324,17 @@
                     else if (datasetKey === 'xiaomi') list = XIAOMI_POCO_LIST;
 
                     if (list && list[rowIndex]) {
-                        list[rowIndex].model = newModel.trim();
+                        const trimmedNewModel = newModel.trim();
+                        // Chặn trùng tên máy (ngoại trừ chính dòng đang sửa)
+                        const isDuplicate = list.some((r, idx) => idx !== rowIndex && r.model.trim().toLowerCase() === trimmedNewModel.toLowerCase());
+                        if (isDuplicate) {
+                            alert(`Lỗi: Tên máy "${trimmedNewModel}" đã tồn tại trong bảng! Vui lòng không đặt trùng tên.`);
+                            return;
+                        }
+                        list[rowIndex].model = trimmedNewModel;
                         saveAppData();
                         renderTables();
-                        showToast(`Đã đổi tên máy: ${newModel.trim()}`);
+                        showToast(`Đã đổi tên máy: ${trimmedNewModel}`);
                     }
                 }
                 return;
@@ -1332,6 +1359,13 @@
             if (!modelName || !modelName.trim()) return;
 
             const trimmedModel = modelName.trim();
+
+            // Chặn trùng tên máy khi thêm mới
+            const isDuplicate = list.some(r => r.model.trim().toLowerCase() === trimmedModel.toLowerCase());
+            if (isDuplicate) {
+                alert(`Lỗi: Tên máy "${trimmedModel}" đã tồn tại trong bảng! Vui lòng không đặt trùng tên.`);
+                return;
+            }
 
             if (datasetKey === 'manIphone') {
                 const zin = prompt(`Nhập giá Zin cho ${trimmedModel}: (hoặc để trống)`, '') || '';
@@ -1671,35 +1705,35 @@
                             </thead>
                             <tbody>
                                 ${rows.map((row) => {
-                    const originalIdx = MAN_IPHONE_LIST.indexOf(row);
-                    const actualIdx = originalIdx >= 0 ? originalIdx : 0;
-                    const rowCls = getRowClass(row.highlight, actualIdx);
-                    let zinCellHtml = '';
-                    if (row.multiZin) {
-                        const safeTitle = `${brandTitle} ${row.model} Zin`.replace(/'/g, "\\'");
-                        zinCellHtml = `
+                const originalIdx = MAN_IPHONE_LIST.indexOf(row);
+                const actualIdx = originalIdx >= 0 ? originalIdx : 0;
+                const rowCls = getRowClass(row.highlight, actualIdx);
+                let zinCellHtml = '';
+                if (row.multiZin) {
+                    const safeTitle = `${brandTitle} ${row.model} Zin`.replace(/'/g, "\\'");
+                    zinCellHtml = `
                                             <td style="padding:0;">
                                                 <div class="multi-price-stack">
                                                     ${row.multiZin.map((v, mIdx) => {
-                            const safeVal = (v || '').replace(/'/g, "\\'");
-                            const clickAttr = isEditingMode ? `onclick="handleCellClick(this, '${safeTitle}', '${safeVal}', 'manIphone', ${actualIdx}, 'zin', ${mIdx})"` : '';
-                            const titleTooltip = isEditingMode ? "Bấm để sửa giá" : "";
-                            return `<div class="multi-price-item p-red" ${clickAttr} title="${titleTooltip}">${v}</div>`;
-                        }).join('')}
+                        const safeVal = (v || '').replace(/'/g, "\\'");
+                        const clickAttr = isEditingMode ? `onclick="handleCellClick(this, '${safeTitle}', '${safeVal}', 'manIphone', ${actualIdx}, 'zin', ${mIdx})"` : '';
+                        const titleTooltip = isEditingMode ? "Bấm để sửa giá" : "";
+                        return `<div class="multi-price-item p-red" ${clickAttr} title="${titleTooltip}">${v}</div>`;
+                    }).join('')}
                                                 </div>
                                             </td>
                                         `;
-                    } else {
-                        zinCellHtml = renderPriceCell(`${brandTitle} ${row.model} Zin`, row.zin, 'p-red', 'manIphone', actualIdx, 'zin');
-                    }
-                    const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
-                    const safeModel = row.model.replace(/'/g, "\\'");
-                    const customCellsHtml = customCols.map(col => {
-                        const val = row[col.key] || '-';
-                        return renderPriceCell(`${brandTitle} ${row.model} ${col.label}`, val, 'p-blue', 'manIphone', actualIdx, col.key);
-                    }).join('');
+                } else {
+                    zinCellHtml = renderPriceCell(`${brandTitle} ${row.model} Zin`, row.zin, 'p-red', 'manIphone', actualIdx, 'zin');
+                }
+                const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
+                const safeModel = row.model.replace(/'/g, "\\'");
+                const customCellsHtml = customCols.map(col => {
+                    const val = row[col.key] || '-';
+                    return renderPriceCell(`${brandTitle} ${row.model} ${col.label}`, val, 'p-blue', 'manIphone', actualIdx, col.key);
+                }).join('');
 
-                    return `
+                return `
                                         <tr class="${rowCls}">
                                             <td class="text-model-dark model-cell" onclick="handleModelClick(this, 'manIphone', ${actualIdx}, '${safeModel}')" title="${modelTooltip}">${highlightSearchText(row.model, searchQuery)}</td>
                                             ${zinCellHtml}
@@ -1708,7 +1742,7 @@
                                             ${customCellsHtml}
                                         </tr>
                                     `;
-                }).join('')}
+            }).join('')}
                             </tbody>
                         </table>
                     </div>
@@ -1759,17 +1793,17 @@
                             </thead>
                             <tbody>
                                 ${rows.map((row) => {
-                    const originalIdx = PIN_IPHONE_LIST.indexOf(row);
-                    const actualIdx = originalIdx >= 0 ? originalIdx : 0;
-                    const rowCls = getRowClass(row.highlight, actualIdx);
-                    const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
-                    const safeModel = row.model.replace(/'/g, "\\'");
-                    const customCellsHtml = customCols.map(col => {
-                        const val = row[col.key] || '-';
-                        return renderPriceCell(`${brandTitle} ${row.model} ${col.label}`, val, 'p-blue', 'pinIphone', actualIdx, col.key);
-                    }).join('');
+                const originalIdx = PIN_IPHONE_LIST.indexOf(row);
+                const actualIdx = originalIdx >= 0 ? originalIdx : 0;
+                const rowCls = getRowClass(row.highlight, actualIdx);
+                const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
+                const safeModel = row.model.replace(/'/g, "\\'");
+                const customCellsHtml = customCols.map(col => {
+                    const val = row[col.key] || '-';
+                    return renderPriceCell(`${brandTitle} ${row.model} ${col.label}`, val, 'p-blue', 'pinIphone', actualIdx, col.key);
+                }).join('');
 
-                    return `
+                return `
                                         <tr class="${rowCls}">
                                             <td class="text-model-dark model-cell" onclick="handleModelClick(this, 'pinIphone', ${actualIdx}, '${safeModel}')" title="${modelTooltip}">${highlightSearchText(row.model, searchQuery)}</td>
                                             ${renderPriceCell(`${brandTitle} ${row.model} Rẻ`, row.re, 'p-red', 'pinIphone', actualIdx, 're')}
@@ -1778,7 +1812,7 @@
                                             ${customCellsHtml}
                                         </tr>
                                     `;
-                }).join('')}
+            }).join('')}
                             </tbody>
                         </table>
                     </div>
@@ -1835,29 +1869,29 @@
                             </thead>
                             <tbody>
                                 ${rows.map((row, idx) => {
-                    const originalIdx = targetList.indexOf(row);
-                    const actualIdx = originalIdx >= 0 ? originalIdx : idx;
-                    const rowCls = idx % 2 === 0 ? 'row-odd' : 'row-even';
-                    const modelColor = idx % 2 === 0 ? 'text-model-red' : 'text-model-blue';
-                    const hasPrice = isValidPrice(row.price);
-                    const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
-                    const safeModel = row.model.replace(/'/g, "\\'");
-                    const customCellsHtml = customCols.map(col => {
-                        const val = row[col.key] || '-';
-                        return renderPriceCell(`${prefixName} ${row.model} ${col.label}`, val, 'p-blue', datasetKey, actualIdx, col.key);
-                    }).join('');
+                const originalIdx = targetList.indexOf(row);
+                const actualIdx = originalIdx >= 0 ? originalIdx : idx;
+                const rowCls = idx % 2 === 0 ? 'row-odd' : 'row-even';
+                const modelColor = idx % 2 === 0 ? 'text-model-red' : 'text-model-blue';
+                const hasPrice = isValidPrice(row.price);
+                const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
+                const safeModel = row.model.replace(/'/g, "\\'");
+                const customCellsHtml = customCols.map(col => {
+                    const val = row[col.key] || '-';
+                    return renderPriceCell(`${prefixName} ${row.model} ${col.label}`, val, 'p-blue', datasetKey, actualIdx, col.key);
+                }).join('');
 
-                    return `
+                return `
                                         <tr class="${rowCls}">
                                             <td class="${modelColor} model-cell" onclick="handleModelClick(this, '${datasetKey}', ${actualIdx}, '${safeModel}')" title="${modelTooltip}">${highlightSearchText(row.model, searchQuery)}</td>
                                             ${hasPrice || isEditingMode
-                            ? renderPriceCell(`${prefixName} ${row.model}`, row.price, idx % 2 === 0 ? 'p-red' : 'p-blue', datasetKey, actualIdx, 'price')
-                            : `<td><span class="contact-badge">Liên hệ</span></td>`
-                        }
+                        ? renderPriceCell(`${prefixName} ${row.model}`, row.price, idx % 2 === 0 ? 'p-red' : 'p-blue', datasetKey, actualIdx, 'price')
+                        : `<td><span class="contact-badge">Liên hệ</span></td>`
+                    }
                                             ${customCellsHtml}
                                         </tr>
                                     `;
-                }).join('')}
+            }).join('')}
                             </tbody>
                         </table>
                     </div>
