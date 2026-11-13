@@ -1671,7 +1671,7 @@
                             </thead>
                             <tbody>
                                 ${rows.map((row) => {
-                    const originalIdx = MAN_IPHONE_LIST.findIndex(r => r.model === row.model);
+                    const originalIdx = MAN_IPHONE_LIST.indexOf(row);
                     const actualIdx = originalIdx >= 0 ? originalIdx : 0;
                     const rowCls = getRowClass(row.highlight, actualIdx);
                     let zinCellHtml = '';
@@ -1759,7 +1759,7 @@
                             </thead>
                             <tbody>
                                 ${rows.map((row) => {
-                    const originalIdx = PIN_IPHONE_LIST.findIndex(r => r.model === row.model);
+                    const originalIdx = PIN_IPHONE_LIST.indexOf(row);
                     const actualIdx = originalIdx >= 0 ? originalIdx : 0;
                     const rowCls = getRowClass(row.highlight, actualIdx);
                     const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
@@ -1835,7 +1835,7 @@
                             </thead>
                             <tbody>
                                 ${rows.map((row, idx) => {
-                    const originalIdx = targetList.findIndex(r => r.model === row.model);
+                    const originalIdx = targetList.indexOf(row);
                     const actualIdx = originalIdx >= 0 ? originalIdx : idx;
                     const rowCls = idx % 2 === 0 ? 'row-odd' : 'row-even';
                     const modelColor = idx % 2 === 0 ? 'text-model-red' : 'text-model-blue';
