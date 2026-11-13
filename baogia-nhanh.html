@@ -1682,17 +1682,18 @@
                 }
                 return;
             }
-            // Không copy giá ở chế độ thông thường theo yêu cầu của user
+            // Chế độ xem: Bấm vào ô giá cũng tô màu cả hàng ngang
+            if (el) handleRowSelect(el.closest('tr'));
         }
 
         function renderPriceCell(itemTitle, rawVal, colorClass = 'p-red', datasetKey = '', rowIndex = -1, fieldKey = '') {
             const hasPrice = isValidPrice(rawVal);
             if (!hasPrice && !isEditingMode) {
-                return `<td><span class="empty-val">${rawVal || ''}</span></td>`;
+                return `<td onclick="handleCellClick(this, '', '', '', -1, '')"><span class="empty-val">${rawVal || ''}</span></td>`;
             }
             const safeTitle = itemTitle.replace(/'/g, "\\'");
             const safeVal = (rawVal || '').replace(/'/g, "\\'");
-            const clickAttr = isEditingMode ? `onclick="handleCellClick(this, '${safeTitle}', '${safeVal}', '${datasetKey}', ${rowIndex}, '${fieldKey}')"` : '';
+            const clickAttr = `onclick="handleCellClick(this, '${safeTitle}', '${safeVal}', '${datasetKey}', ${rowIndex}, '${fieldKey}')"`;
             const titleTooltip = isEditingMode ? "Bấm để sửa giá" : "";
 
             return `
@@ -1758,11 +1759,11 @@
                 if (row.multiZin) {
                     const safeTitle = `${brandTitle} ${row.model} Zin`.replace(/'/g, "\\'");
                     zinCellHtml = `
-                                            <td style="padding:0;">
+                                            <td style="padding:0;" onclick="handleCellClick(this, '', '', '', -1, '')">
                                                 <div class="multi-price-stack">
                                                     ${row.multiZin.map((v, mIdx) => {
                         const safeVal = (v || '').replace(/'/g, "\\'");
-                        const clickAttr = isEditingMode ? `onclick="handleCellClick(this, '${safeTitle}', '${safeVal}', 'manIphone', ${actualIdx}, 'zin', ${mIdx})"` : '';
+                        const clickAttr = isEditingMode ? `onclick="event.stopPropagation(); handleCellClick(this, '${safeTitle}', '${safeVal}', 'manIphone', ${actualIdx}, 'zin', ${mIdx})"` : '';
                         const titleTooltip = isEditingMode ? "Bấm để sửa giá" : "";
                         return `<div class="multi-price-item p-red" ${clickAttr} title="${titleTooltip}">${v}</div>`;
                     }).join('')}
@@ -1933,7 +1934,7 @@
                                             <td class="${modelColor} model-cell" onclick="handleModelClick(this, '${datasetKey}', ${actualIdx}, '${safeModel}')" title="${modelTooltip}">${highlightSearchText(row.model, searchQuery)}</td>
                                             ${hasPrice || isEditingMode
                         ? renderPriceCell(`${prefixName} ${row.model}`, row.price, idx % 2 === 0 ? 'p-red' : 'p-blue', datasetKey, actualIdx, 'price')
-                        : `<td><span class="contact-badge">Liên hệ</span></td>`
+                        : `<td onclick="handleCellClick(this, '', '', '', -1, '')"><span class="contact-badge">Liên hệ</span></td>`
                     }
                                             ${customCellsHtml}
                                         </tr>
