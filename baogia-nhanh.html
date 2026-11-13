@@ -1375,7 +1375,7 @@
             } else if (datasetKey === 'pinIphone') {
                 const re = prompt(`Nhập giá Pin Rẻ cho ${trimmedModel}: (hoặc để trống)`, '') || '';
                 const dlc = prompt(`Nhập giá Pin DLC cho ${trimmedModel}: (hoặc để trống)`, '') || '';
-                const cddlc = prompt(`Nhập giá Pin CD,DLC cho ${trimmedModel}: (hoặc để trống)`, '') || '';
+                const cddlc = prompt(`Nhập giá Pin CĐ-DLC cho ${trimmedModel}: (hoặc để trống)`, '') || '';
                 list.push({ model: trimmedModel, re: re.trim(), dlc: dlc.trim(), cddlc: cddlc.trim(), highlight: '' });
             } else {
                 const price = prompt(`Nhập giá cho ${trimmedModel}: (hoặc để trống nếu 'Liên hệ')`, '') || '';
@@ -1693,11 +1693,11 @@
                             <thead>
                                 <tr>
                                     <th>iPhone</th>
-                                    <th style="width:62px">Zin</th>
-                                    <th style="width:54px">Lô</th>
-                                    <th style="width:58px">GX</th>
+                                    <th style="width:120px">Zin</th>
+                                    <th style="width:100px">Lô</th>
+                                    <th style="width:105px">GX</th>
                                     ${customCols.map(col => `
-                                        <th style="min-width:58px;" class="th-removable" title="${isEditingMode ? 'Bấm để xóa cột này' : ''}" ${isEditingMode ? `onclick="removeColumn('manIphone', '${col.key}', '${col.label}')"` : ''}>
+                                        <th style="min-width:110px;" class="th-removable" title="${isEditingMode ? 'Bấm để xóa cột này' : ''}" ${isEditingMode ? `onclick="removeColumn('manIphone', '${col.key}', '${col.label}')"` : ''}>
                                             ${col.label}${isEditingMode ? ' ✕' : ''}
                                         </th>
                                     `).join('')}
@@ -1781,11 +1781,11 @@
                             <thead>
                                 <tr>
                                     <th>iPhone</th>
-                                    <th style="width:56px">RẺ</th>
-                                    <th style="width:56px">DLC</th>
-                                    <th style="width:62px">CD,DLC</th>
+                                    <th style="width:100px">RẺ</th>
+                                    <th style="width:100px">DLC</th>
+                                    <th style="width:120px">CĐ-DLC</th>
                                     ${customCols.map(col => `
-                                        <th style="min-width:58px;" class="th-removable" title="${isEditingMode ? 'Bấm để xóa cột này' : ''}" ${isEditingMode ? `onclick="removeColumn('pinIphone', '${col.key}', '${col.label}')"` : ''}>
+                                        <th style="min-width:110px;" class="th-removable" title="${isEditingMode ? 'Bấm để xóa cột này' : ''}" ${isEditingMode ? `onclick="removeColumn('pinIphone', '${col.key}', '${col.label}')"` : ''}>
                                             ${col.label}${isEditingMode ? ' ✕' : ''}
                                         </th>
                                     `).join('')}
@@ -1808,7 +1808,7 @@
                                             <td class="text-model-dark model-cell" onclick="handleModelClick(this, 'pinIphone', ${actualIdx}, '${safeModel}')" title="${modelTooltip}">${highlightSearchText(row.model, searchQuery)}</td>
                                             ${renderPriceCell(`${brandTitle} ${row.model} Rẻ`, row.re, 'p-red', 'pinIphone', actualIdx, 're')}
                                             ${renderPriceCell(`${brandTitle} ${row.model} DLC`, row.dlc, 'p-blue', 'pinIphone', actualIdx, 'dlc')}
-                                            ${renderPriceCell(`${brandTitle} ${row.model} CD,DLC`, row.cddlc, 'p-purple', 'pinIphone', actualIdx, 'cddlc')}
+                                            ${renderPriceCell(`${brandTitle} ${row.model} CĐ-DLC`, row.cddlc, 'p-purple', 'pinIphone', actualIdx, 'cddlc')}
                                             ${customCellsHtml}
                                         </tr>
                                     `;
@@ -1859,9 +1859,9 @@
                             <thead>
                                 <tr>
                                     <th>Dòng máy</th>
-                                    <th style="width:72px">Giá</th>
+                                    <th style="width:140px">Giá</th>
                                     ${customCols.map(col => `
-                                        <th style="min-width:65px;" class="th-removable" title="${isEditingMode ? 'Bấm để xóa cột này' : ''}" ${isEditingMode ? `onclick="removeColumn('${datasetKey}', '${col.key}', '${col.label}')"` : ''}>
+                                        <th style="min-width:110px;" class="th-removable" title="${isEditingMode ? 'Bấm để xóa cột này' : ''}" ${isEditingMode ? `onclick="removeColumn('${datasetKey}', '${col.key}', '${col.label}')"` : ''}>
                                             ${col.label}${isEditingMode ? ' ✕' : ''}
                                         </th>
                                     `).join('')}
