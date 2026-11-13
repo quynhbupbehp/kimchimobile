@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bảng Báo Giá Nhanh - Màn Hình & Pin Điện Thoại</title>
+    <!-- FIREBASE COMPAT SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-body: #f8fafc;
+            --primary-purple: #7c3aed;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            height: 100dvh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: #0f172a;
+            line-height: 1.35;
+            padding-bottom: 0;
+            -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
+        }
+
+        button,
+        input {
+            font-family: inherit;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            flex-shrink: 0;
+            background: #ffffff;
+            border-bottom: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.08);
+            z-index: 30;
+        }
+
+        .header-inner {
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 8px 10px 6px;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: var(--primary-purple);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .brand-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--primary-purple);
+        }
+
+        .search-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            color: #64748b;
+            pointer-events: none;
+            display: flex;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 66px 8px 34px;
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+            outline: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+
+        .search-input:focus {
+            background: #ffffff;
+            border-color: var(--primary-purple);
+        }
+
+        .btn-clear-search {
+            position: absolute;
+            right: 6px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: none;
+            background: #cbd5e1;
+            color: #1e293b;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .search-scope-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 6px;
+            padding-top: 5px;
+            border-top: 1px solid #f1f5f9;
+            font-size: 11px;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .tabs-nav {
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 0 10px 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tabs-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 11px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tab-btn.active {
+            border-color: transparent;
+            color: #ffffff;
+            background: var(--primary-purple) !important;
+            box-shadow: 0 2px 4px rgba(124, 58, 237, 0.25);
+        }
+
+        .tab-btn.has-match:not(.active) {
+            background: #f3e8ff;
+            border-color: #d8b4fe;
+            color: #6b21a8;
+        }
+
+        .tab-count {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        .tab-btn.active .tab-count {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 6px 8px 6px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .tables-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .tables-grid.is-search-mode {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-card {
+            display: flex;
+            flex-direction: column;
+            background: #000000;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            flex: 1;
+            min-height: 0;
+        }
+
+        .tables-grid.is-search-mode .table-card {
+            flex: 0 0 auto;
+            max-height: 380px;
+        }
+
+        .card-header {
+            display: none !important; /* Ẩn dòng màu hồng ở các tab */
+            flex-shrink: 0;
+            padding: 6px 10px;
+            color: #ffffff;
+            align-items: center;
+            justify-content: space-between;
+            background: #ec4899;
+            border-bottom: 1px solid #db2777;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+            z-index: 20;
+        }
+
+        /* Khi tìm kiếm: hiển thị tiêu đề để phân biệt các hãng */
+        .tables-grid.is-search-mode .card-header {
+            display: flex !important;
+        }
+
+        /* Khi ở chế độ chỉnh sửa trên PC: hiển thị để thao tác Thêm dòng / Thêm cột */
+        body.is-editing .card-header {
+            display: flex !important;
+        }
+
+        .card-header-title {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .card-header h2 {
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            color: #ffffff !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-badge {
+            font-size: 11px;
+            font-weight: 800;
+            background: rgba(0, 0, 0, 0.25);
+            color: #ffffff;
+            padding: 2px 8px;
+            border-radius: 999px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .table-scroll-wrap {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .price-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: fixed;
+            background: #000000;
+        }
+
+        .price-table thead {
+            z-index: 15;
+        }
+
+        .price-table th {
+            position: sticky;
+            top: 0;
+            z-index: 15;
+            padding: 7px 6px;
+            font-size: 12px;
+            font-weight: 900;
+            background: #2563eb !important; /* Nền Xanh Dương cố định */
+            color: #ffffff !important; /* Chữ Trắng */
+            border-bottom: 1px solid #1d4ed8;
+            border-right: 1px solid #3b82f6;
+            text-align: center;
+            line-height: 1.2;
+            overflow: hidden;
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .price-table th:first-child {
+            text-align: left;
+            padding-left: 8px;
+        }
+
+        .price-table th:last-child {
+            border-right: none;
+        }
+
+        .price-table td {
+            padding: 3px 6px;
+            font-size: 13px;
+            height: 27px;
+            background: #000000;
+            border-bottom: 1px solid #27272a;
+            border-right: 1px solid #27272a;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1.2;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .price-table td:first-child {
+            text-align: left;
+            padding-left: 8px;
+            font-weight: 800;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        .price-table td:last-child {
+            border-right: none;
+        }
+
+        .price-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* DÒNG 1 (LẺ): CHỮ VÀNG ĐẬM TOÀN BỘ Ô */
+        .price-table tr.row-odd td,
+        .price-table tr.row-odd .price-text,
+        .price-table tr.row-odd .multi-price-item,
+        .price-table tr.row-odd .text-model-dark,
+        .price-table tr.row-odd .text-model-red,
+        .price-table tr.row-odd .text-model-blue,
+        .price-table tr.row-odd .p-red,
+        .price-table tr.row-odd .p-blue,
+        .price-table tr.row-odd .p-purple {
+            color: #facc15 !important;
+            font-weight: 800 !important;
+        }
+
+        /* DÒNG 2 (CHẴN): CHỮ TRẮNG ĐẬM TOÀN BỘ Ô */
+        .price-table tr.row-even td,
+        .price-table tr.row-even .price-text,
+        .price-table tr.row-even .multi-price-item,
+        .price-table tr.row-even .text-model-dark,
+        .price-table tr.row-even .text-model-red,
+        .price-table tr.row-even .text-model-blue,
+        .price-table tr.row-even .p-red,
+        .price-table tr.row-even .p-blue,
+        .price-table tr.row-even .p-purple {
+            color: #ffffff !important;
+            font-weight: 800 !important;
+        }
+
+        .model-cell {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s ease;
+        }
+
+        .model-cell:hover {
+            opacity: 0.85;
+            text-decoration: underline;
+        }
+
+        /* KHI HÀNG ĐƯỢC CHỌN (TÔ MÀU XANH LÁ NEON NỔI BẬT RỰC RỠ TRÊN NỀN ĐEN) */
+        .price-table tr.row-selected,
+        .price-table tr.row-selected td {
+            background-color: #052e16 !important;
+            outline: 1.5px solid #22c55e !important;
+            outline-offset: -1.5px;
+        }
+
+        .price-table tr.row-selected td,
+        .price-table tr.row-selected .text-model-dark,
+        .price-table tr.row-selected .text-model-red,
+        .price-table tr.row-selected .text-model-blue,
+        .price-table tr.row-selected .p-red,
+        .price-table tr.row-selected .p-blue,
+        .price-table tr.row-selected .p-purple,
+        .price-table tr.row-selected .price-text,
+        .price-table tr.row-selected .multi-price-item {
+            color: #4ade80 !important;
+            font-weight: 900 !important;
+            text-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
+        }
+
+        .price-cell {
+            font-weight: 800;
+            user-select: none;
+        }
+
+        .price-text {
+            display: block;
+            width: 100%;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+
+        .multi-price-stack {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .multi-price-item {
+            padding: 2px 4px;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.2;
+            user-select: none;
+        }
+
+        .multi-price-item+.multi-price-item {
+            border-top: 1px solid #27272a;
+        }
+
+        .empty-val {
+            color: #52525b;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .contact-badge {
+            color: #a1a1aa;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        mark {
+            background: #fde047;
+            color: #0f172a;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .empty-state {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 28px 16px;
+            text-align: center;
+        }
+
+        .empty-state h3 {
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .btn-reset-search {
+            padding: 7px 14px;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary-purple);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 60;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .toast-check {
+            color: #34d399;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .btn-edit-mode {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #f8fafc;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-edit-mode:hover {
+            background: #334155;
+            border-color: #64748b;
+        }
+
+        .btn-edit-mode.active {
+            background: #e11d48;
+            border-color: #f43f5e;
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(225, 29, 72, 0.4);
+            animation: pulse-edit 2s infinite;
+        }
+
+        @keyframes pulse-edit {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.85;
+            }
+        }
+
+        .btn-reset-data {
+            padding: 5px 9px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-reset-data:hover {
+            background: #1e293b;
+            color: #f1f5f9;
+        }
+
+        .btn-add-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid #eab308;
+            background: rgba(234, 179, 8, 0.2);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-add-row:hover {
+            background: #eab308;
+            color: #78350f;
+        }
+
+        .btn-add-col {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid #06b6d4;
+            background: rgba(6, 182, 212, 0.2);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-add-col:hover {
+            background: #06b6d4;
+            color: #083344;
+        }
+
+        .th-removable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .card-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        body.is-editing .price-cell,
+        body.is-editing .multi-price-item,
+        body.is-editing .model-cell,
+        body.is-editing .editable-brand-title {
+            cursor: text !important;
+            outline: 1.5px dashed #f59e0b !important;
+            outline-offset: -2px;
+            background-color: rgba(245, 158, 11, 0.08) !important;
+        }
+
+        body.is-editing .price-text:hover,
+        body.is-editing .multi-price-item:hover,
+        body.is-editing .model-cell:hover,
+        body.is-editing .editable-brand-title:hover {
+            background-color: rgba(245, 158, 11, 0.25) !important;
+        }
+
+        .editable-brand-title {
+            border-radius: 4px;
+            padding: 1px 4px;
+            transition: all 0.15s ease;
+        }
+
+        .edit-notice-bar {
+            background: #d97706;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+            padding: 5px 10px;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* VÔ HIỆU HÓA CHỈNH SỬA TRÊN MOBILE, TRÊN MOBILE CHỈ ĐƯỢC XEM */
+        @media (max-width: 768px) {
+            .header-actions {
+                display: none !important; /* Ẩn nút SỬA */
+            }
+            .btn-add-row, .btn-add-col, .edit-notice-bar {
+                display: none !important; /* Ẩn các nút thêm dòng, thêm cột */
+            }
+            body.is-editing .price-cell,
+            body.is-editing .multi-price-item,
+            body.is-editing .model-cell,
+            body.is-editing .editable-brand-title {
+                outline: none !important;
+                background-color: transparent !important;
+                cursor: default !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="top-bar">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <div class="brand-title">BẢNG BÁO GIÁ NHANH</div>
+                </div>
+                <div class="header-actions">
+                    <button id="btnToggleEdit" class="btn-edit-mode" onclick="toggleEditMode()"
+                        title="Bật/Tắt chế độ sửa">
+                        <span>✏️</span> <span id="btnEditText">SỬA</span>
+                    </button>
+                </div>
+            </div>
+            <div id="editNoticeBar" class="edit-notice-bar hidden">
+                ⚠️ Đang ở chế độ chỉnh sửa: Bấm trực tiếp vào Tên máy, Tên hãng hoặc Giá để sửa!
+            </div>
+
+            <div class="search-wrap">
+                <span class="search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm..."
+                    oninput="handleSearch()">
+                <button id="clearSearchBtn" class="btn-clear-search hidden" onclick="clearSearch()">✕ Xóa</button>
+            </div>
+
+            <div id="searchScopeBar" class="search-scope-bar hidden">
+                <span id="searchResultCount">Tìm thấy 0 kết quả</span>
+            </div>
+        </div>
+
+        <nav class="tabs-nav" id="tabContainer"></nav>
+    </header>
+
+    <main class="main-container">
+        <div id="tablesContainer" class="tables-grid"></div>
+    </main>
+
+    <div id="toast" class="toast hidden">
+        <span class="toast-check">✔</span>
+        <span id="toastMsg">Đã copy!</span>
+    </div>
+
+    <textarea id="clipboardHelper" style="position:fixed;top:-999px;left:0;opacity:0;"></textarea>
+
+    <script>
+        const TABS_CONFIG = [
+            { id: 'man-iphone', label: 'Màn iPhone' },
+            { id: 'pin-iphone', label: 'Pin iPhone' },
+            { id: 'samsung', label: 'Samsung' },
+            { id: 'oppo-realme', label: 'OPPO - Realme' },
+            { id: 'xiaomi-poco', label: 'MI' },
+            { id: 'vivo-vsmart', label: 'Vivo - Vsmart' }
+        ];
+
+        const MAN_IPHONE_DATA = [
+            { model: '5S', zin: '-', lo: '', gx: '', highlight: '' },
+            { model: '6', zin: '350', lo: '300', gx: '', highlight: 'green' },
+            { model: '6S', zin: '400', lo: '300', gx: '', highlight: '' },
+            { model: '6P', zin: '400', lo: '350', gx: '', highlight: 'purple' },
+            { model: '6SP', zin: '450', lo: '350', gx: '', highlight: '' },
+            { model: '7', zin: '450', lo: '350', gx: '', highlight: 'blue' },
+            { model: '7P', zin: 'C 500 / 650', lo: '400', gx: '', highlight: 'green', multiZin: ['C 500', '650'] },
+            { model: '8', zin: '550', lo: '350', gx: '', highlight: '' },
+            { model: '8P', zin: '550 / 650', lo: '400', gx: '', highlight: 'yellow', multiZin: ['550', '650'] },
+            { model: 'X', zin: '1.550', lo: '500', gx: '750', highlight: 'green' },
+            { model: 'XR', zin: '900', lo: '0', gx: '550', highlight: '' },
+            { model: 'XS', zin: '1.600', lo: '500', gx: '750', highlight: 'purple' },
+            { model: 'XSM', zin: '1.800', lo: '550', gx: '900', highlight: '' },
+            { model: '11', zin: '950', lo: '0', gx: '550', highlight: 'blue' },
+            { model: '11 Pro', zin: '0', lo: '600', gx: '850', highlight: '' },
+            { model: '11 PRM', zin: '1.800', lo: '600', gx: '950', highlight: 'orange' },
+            { model: '12-12 Pro', zin: '-', lo: '600', gx: '1.100', highlight: '' },
+            { model: '12 PRM', zin: '3.000', lo: '800', gx: '1.400', highlight: 'purple' },
+            { model: '13', zin: '-', lo: '700', gx: '1200', highlight: '' },
+            { model: '13 Pro', zin: '-', lo: '800', gx: '1500', highlight: 'red' },
+            { model: '13 PRM', zin: '-', lo: '850', gx: '1500', highlight: '' },
+            { model: '14', zin: '-', lo: '700', gx: '1300', highlight: 'purple' },
+            { model: '14 Plus', zin: '', lo: '750', gx: '1.550', highlight: '' },
+            { model: '14 PRO', zin: '', lo: '850', gx: '1.500', highlight: 'green' },
+            { model: '14 PRM', zin: '', lo: '900', gx: '1.600', highlight: '' },
+            { model: '15', zin: '', lo: '', gx: '0', highlight: 'purple' },
+            { model: '15 PLUS', zin: '', lo: '', gx: '0', highlight: '' },
+            { model: '15 PRO', zin: '', lo: '', gx: '0', highlight: 'blue' },
+            { model: '15 PRM', zin: '', lo: '', gx: '', highlight: '' }
+        ];
+
+        const PIN_IPHONE_DATA = [
+            { model: '5S', re: '170', dlc: '200', cddlc: '', highlight: '' },
+            { model: '6G', re: '200', dlc: '', cddlc: '', highlight: 'green' },
+            { model: '6P', re: '200', dlc: '300', cddlc: '', highlight: '' },
+            { model: '6S', re: '200', dlc: '250', cddlc: '', highlight: 'blue' },
+            { model: '6SP', re: '250', dlc: '300', cddlc: '-', highlight: '' },
+            { model: '7G', re: '250', dlc: '300', cddlc: '-', highlight: 'yellow' },
+            { model: '7P', re: '250', dlc: '300', cddlc: '-', highlight: '' },
+            { model: '8G', re: '250', dlc: '300', cddlc: '-', highlight: 'red' },
+            { model: '8P', re: '300', dlc: '350', cddlc: '-', highlight: '' },
+            { model: 'X', re: '350', dlc: '400', cddlc: '-', highlight: 'yellow' },
+            { model: 'XR', re: '350', dlc: '400', cddlc: '-', highlight: '' },
+            { model: 'XS', re: '400', dlc: '450', cddlc: '-', highlight: 'green' },
+            { model: 'XSM', re: '400', dlc: '450', cddlc: '-', highlight: '' },
+            { model: '11', re: '400', dlc: '450', cddlc: '-', highlight: 'blue' },
+            { model: '11 PRO', re: '450', dlc: '500', cddlc: '-', highlight: '' },
+            { model: '11 PRM', re: '450', dlc: '500', cddlc: '-', highlight: 'red' },
+            { model: '12 - 12 Pro', re: '400', dlc: '450', cddlc: '550', highlight: '' },
+            { model: '12 PRM', re: '450', dlc: '', cddlc: '600', highlight: 'yellow' },
+            { model: '13', re: '450', dlc: '500', cddlc: '550', highlight: '' },
+            { model: '13 Pro', re: '500', dlc: '550', cddlc: '', highlight: 'yellow' },
+            { model: '13 PRM', re: '550', dlc: '550', cddlc: '650', highlight: '' },
+            { model: '14', re: '450', dlc: '500', cddlc: '', highlight: 'blue' },
+            { model: '14 Plus', re: '550', dlc: '600', cddlc: '', highlight: '' },
+            { model: '14 PRO', re: '600', dlc: '600', cddlc: '', highlight: 'yellow' },
+            { model: '14 PRM', re: '650', dlc: '600', cddlc: '650', highlight: '' },
+            { model: '15', re: '', dlc: '', cddlc: '', highlight: '' },
+            { model: '15 PRO', re: '', dlc: '', cddlc: '', highlight: 'green' },
+            { model: '15 Plus', re: '', dlc: '', cddlc: '', highlight: '' },
+            { model: '15 PRM', re: '', dlc: '', cddlc: '750', highlight: 'blue' },
+            { model: '12 Mini', re: '', dlc: '450', cddlc: '', highlight: '' },
+            { model: '13 Mini', re: '', dlc: '450', cddlc: '-', highlight: '' }
+        ];
+
+        const SAMSUNG_DATA = [
+            { model: 'A10 - M10', price: '400' },
+            { model: 'A11 - M11', price: '450' },
+            { model: 'A02 - M02 - A12 - M12 - M32 5G', price: '450' },
+            { model: 'A13', price: '450' },
+            { model: 'A14 - M14', price: '450' },
+            { model: 'A10s', price: '450' },
+            { model: 'A03 Core', price: '400' },
+            { model: 'A02s - A03 - A03s', price: '450' },
+            { model: 'A04', price: '450' },
+            { model: 'A04S - A13 (5G)', price: '450' },
+            { model: 'A04E', price: '450' },
+            { model: 'A05', price: '450' },
+            { model: 'A05S', price: '450' },
+            { model: 'A06 4G - (A06 5G 190)', price: '450' },
+            { model: 'A07', price: '450' },
+            { model: 'A20s', price: '450' },
+            { model: 'A21', price: '450' },
+            { model: 'A21s', price: '450' },
+            { model: 'M20', price: '450' },
+            { model: 'A23 - M23 5G - M33 5G', price: '450' },
+            { model: 'J4+ J6+', price: '400' },
+            { model: 'J7 Prime Trắng', price: '400' },
+            { model: 'J7 Prime Đen', price: '400' },
+            { model: 'M12', price: '450' }
+        ];
+
+        const OPPO_REALME_DATA = [
+            { model: 'A3S - A5 - C1 - C2', price: '400' },
+            { model: 'A5S - A7 - A12 - RM3', price: '400' },
+            { model: 'A15 - 15S - 16K - C11 - C12', price: '450' },
+            { model: 'A17 - 17K - A57 - A58 - A78 - A18 - A38', price: '450' },
+            { model: 'A52 - A72 - A92', price: '450' },
+            { model: 'A56 5G', price: '450' },
+            { model: 'A53 - A53s - A32 - A33 - 7i - C17', price: '450' },
+            { model: 'A31 - (A5-A9 2020) Realme 5 - 5i - C3 - C3i', price: '450' },
+            { model: '(A53 - A72 - A73 - A92 - Q2 - RM7 - A74) 5G', price: '450' },
+            { model: 'F1s', price: '400' },
+            { model: 'F7', price: '450' },
+            { model: 'F9', price: '450' },
+            { model: 'F11', price: '450' },
+            { model: 'F11 PRO', price: '500' },
+            { model: 'A16 - A16S - A54S - A56 4G - C25S', price: '450' },
+            { model: 'A1k', price: '450' },
+            { model: 'A3x - A3 Pro - A5 Pro - A60 - Realme C65', price: '450' },
+            { model: 'A54 5G - A75 5G - A93 - A94', price: '500' },
+            { model: 'A36 - A76', price: '450' },
+            { model: 'Realme 6 - Realme 7', price: '500' },
+            { model: 'A54 - A55 (4G)', price: '450' },
+            { model: 'C15 - C25', price: '450' },
+            { model: 'C20 - C11', price: '450' },
+            { model: 'C21y - C25y', price: '450' },
+            { model: 'C30 - C30S - C33', price: '450' },
+            { model: 'Realme C35 - NARZO 50A PRIME', price: '450' },
+            { model: 'C51 - C53 - C60 - Note 50 - Nazro N53', price: '450' },
+            { model: 'Realme 8i - 9i, Narzo 50 - A96-4G', price: '' },
+            { model: 'RENO 6Z - 7Z - 8Z - A95', price: '' }
+        ];
+
+        const VIVO_VSMART_DATA = [
+            { model: 'Y11 - Y12 - Y15 - Y17 - U10 - Y3', price: '400' },
+            { model: 'Y91 - 91C - Y93 - Y95 - Y1S', price: '400' },
+            { model: 'Y15A - Y15S - Y3S - Y20 - Y01 - Y02 - Y12S', price: '450' },
+            { model: 'Y81 - Y81S - Y83 - Y85', price: '400' },
+            { model: 'Y19 - Y5S - U3 - V11x', price: '450' },
+            { model: 'Y03 - Y03T - Y18', price: '450' },
+            { model: 'Y30 - Y50 - Y50s - Y51 - Y70s', price: '450' }
+        ];
+
+        const XIAOMI_POCO_DATA = [
+            { model: 'Redmi 9 - 9A - 9C - 10A', price: '400' },
+            { model: 'Redmi 9T - Note 9 - POCO M3', price: '200' },
+            { model: 'Redmi 10 5G', price: '450' },
+            { model: 'A1 - A2 - A2 Plus', price: '' },
+            { model: 'Note 7', price: '450' },
+            { model: 'Note 8', price: '450' },
+            { model: 'Note 8 PRO', price: '450' },
+            { model: 'Redmi 10 5G', price: '' },
+            { model: 'Note 9S - Note 9 Pro', price: '450' },
+            { model: 'Redmi 12', price: '450' },
+            { model: 'Poco C65 (Cáp L) - Redmi 13C', price: '450' },
+            { model: 'Redmi 10C - POCO C40 - C50', price: '450' },
+            { model: 'Redmi 14C - 14r - C71', price: '500' },
+            { model: 'Redmi 12C', price: '450' },
+            { model: 'Redmi A3', price: '' },
+            { model: 'C75', price: '450' },
+            { model: 'Redmi 10 4G', price: '450' }
+        ];
+
+        const DEFAULT_MAN_IPHONE_DATA = MAN_IPHONE_DATA;
+        const DEFAULT_PIN_IPHONE_DATA = PIN_IPHONE_DATA;
+        const DEFAULT_SAMSUNG_DATA = SAMSUNG_DATA;
+        const DEFAULT_OPPO_REALME_DATA = OPPO_REALME_DATA;
+        const DEFAULT_VIVO_VSMART_DATA = VIVO_VSMART_DATA;
+        const DEFAULT_XIAOMI_POCO_DATA = XIAOMI_POCO_DATA;
+
+        let MAN_IPHONE_LIST = [];
+        let PIN_IPHONE_LIST = [];
+        let SAMSUNG_LIST = [];
+        let OPPO_REALME_LIST = [];
+        let VIVO_VSMART_LIST = [];
+        let XIAOMI_POCO_LIST = [];
+
+        const STORAGE_KEY = 'kimchi_baogia_data';
+
+        // --- FIREBASE FIRESTORE SYNC (ĐỒNG BỘ 2 CHIỀU REALTIME) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLC4dPLEP84yj6vkvf--DM8u_dN9YPJEs",
+            authDomain: "bao-gia-sua-chua.firebaseapp.com",
+            projectId: "bao-gia-sua-chua",
+            storageBucket: "bao-gia-sua-chua.firebasestorage.app",
+            messagingSenderId: "775400571262",
+            appId: "1:775400571262:web:b264070746f5fbb6fbf32f"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        let isSyncingFromRemote = false;
+        let isSavingToCloud = false;
+        let saveDebounceTimer = null;
+        let hasInitializedRemote = false;
+
+        function initRealtimeSync() {
+            db.collection("quick_baogia").doc("data").onSnapshot((doc) => {
+                isSyncingFromRemote = true;
+                try {
+                    if (doc.exists) {
+                        hasInitializedRemote = true;
+                        const data = doc.data();
+                        if (data.manIphone) MAN_IPHONE_LIST = data.manIphone;
+                        if (data.pinIphone) PIN_IPHONE_LIST = data.pinIphone;
+                        if (data.samsung) SAMSUNG_LIST = data.samsung;
+                        if (data.oppo) OPPO_REALME_LIST = data.oppo;
+                        if (data.vivo) VIVO_VSMART_LIST = data.vivo;
+                        if (data.xiaomi) XIAOMI_POCO_LIST = data.xiaomi;
+                        if (data.brandTitles) BRAND_TITLES = Object.assign({}, DEFAULT_BRAND_TITLES, data.brandTitles);
+                        if (data.customColumns) CUSTOM_COLUMNS = Object.assign({
+                            manIphone: [],
+                            pinIphone: [],
+                            samsung: [],
+                            oppo: [],
+                            vivo: [],
+                            xiaomi: []
+                        }, data.customColumns);
+
+                        // Cập nhật LocalStorage dự phòng
+                        const payload = {
+                            manIphone: MAN_IPHONE_LIST,
+                            pinIphone: PIN_IPHONE_LIST,
+                            samsung: SAMSUNG_LIST,
+                            oppo: OPPO_REALME_LIST,
+                            vivo: VIVO_VSMART_LIST,
+                            xiaomi: XIAOMI_POCO_LIST,
+                            brandTitles: BRAND_TITLES,
+                            customColumns: CUSTOM_COLUMNS,
+                            updatedAt: new Date().toISOString()
+                        };
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+
+                        // Đồng bộ nhãn tabs
+                        TABS_CONFIG.forEach(tab => {
+                            if (BRAND_TITLES[tab.id]) {
+                                tab.label = BRAND_TITLES[tab.id];
+                            }
+                        });
+
+                        renderTabs();
+                        renderTables();
+                    } else if (!hasInitializedRemote) {
+                        // Khởi tạo lần đầu lên Cloud
+                        hasInitializedRemote = true;
+                        saveAppDataToCloud();
+                    }
+                } catch (e) {
+                    console.error("Lỗi đồng bộ Realtime Báo Giá Nhanh:", e);
+                } finally {
+                    setTimeout(() => { isSyncingFromRemote = false; }, 150);
+                }
+            }, (err) => {
+                console.error("Lỗi Firestore Báo Giá Nhanh:", err);
+                isSyncingFromRemote = false;
+            });
+        }
+
+        async function saveAppDataToCloud() {
+            if (isSyncingFromRemote) return;
+            if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+
+            return new Promise((resolve) => {
+                saveDebounceTimer = setTimeout(async () => {
+                    if (isSavingToCloud) return resolve();
+                    isSavingToCloud = true;
+                    try {
+                        const payload = {
+                            manIphone: MAN_IPHONE_LIST,
+                            pinIphone: PIN_IPHONE_LIST,
+                            samsung: SAMSUNG_LIST,
+                            oppo: OPPO_REALME_LIST,
+                            vivo: VIVO_VSMART_LIST,
+                            xiaomi: XIAOMI_POCO_LIST,
+                            brandTitles: BRAND_TITLES,
+                            customColumns: CUSTOM_COLUMNS,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        };
+                        await db.collection("quick_baogia").doc("data").set(payload, { merge: true });
+                    } catch (e) {
+                        console.error("Lỗi lưu Cloud Báo Giá Nhanh:", e);
+                    } finally {
+                        isSavingToCloud = false;
+                        resolve();
+                    }
+                }, 400);
+            });
+        }
+
+        const DEFAULT_BRAND_TITLES = {
+            'man-iphone': 'Màn iPhone',
+            'pin-iphone': 'Pin iPhone',
+            'samsung': 'SAMSUNG',
+            'samsung-sub': 'Màn LCD (Rẻ)',
+            'oppo-realme': 'OPPO - REALME',
+            'vivo-vsmart': 'VIVO - VSMART',
+            'xiaomi-poco': 'MI'
+        };
+
+        let BRAND_TITLES = {};
+        let CUSTOM_COLUMNS = {
+            'manIphone': [],
+            'pinIphone': [],
+            'samsung': [],
+            'oppo': [],
+            'vivo': [],
+            'xiaomi': []
+        };
+
+        function loadAppData() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    MAN_IPHONE_LIST = parsed.manIphone || JSON.parse(JSON.stringify(DEFAULT_MAN_IPHONE_DATA));
+                    PIN_IPHONE_LIST = parsed.pinIphone || JSON.parse(JSON.stringify(DEFAULT_PIN_IPHONE_DATA));
+                    SAMSUNG_LIST = parsed.samsung || JSON.parse(JSON.stringify(DEFAULT_SAMSUNG_DATA));
+                    OPPO_REALME_LIST = parsed.oppo || JSON.parse(JSON.stringify(DEFAULT_OPPO_REALME_DATA));
+                    VIVO_VSMART_LIST = parsed.vivo || JSON.parse(JSON.stringify(DEFAULT_VIVO_VSMART_DATA));
+                    XIAOMI_POCO_LIST = parsed.xiaomi || JSON.parse(JSON.stringify(DEFAULT_XIAOMI_POCO_DATA));
+                    BRAND_TITLES = Object.assign({}, DEFAULT_BRAND_TITLES, parsed.brandTitles || {});
+                    if (parsed.customColumns) {
+                        CUSTOM_COLUMNS = Object.assign({
+                            manIphone: [],
+                            pinIphone: [],
+                            samsung: [],
+                            oppo: [],
+                            vivo: [],
+                            xiaomi: []
+                        }, parsed.customColumns);
+                    }
+                    // Đồng bộ nhãn tabs
+                    TABS_CONFIG.forEach(tab => {
+                        if (BRAND_TITLES[tab.id]) {
+                            tab.label = BRAND_TITLES[tab.id];
+                        }
+                    });
+                    return;
+                }
+            } catch (e) {
+                console.error("Lỗi đọc dữ liệu từ localStorage:", e);
+            }
+            MAN_IPHONE_LIST = JSON.parse(JSON.stringify(DEFAULT_MAN_IPHONE_DATA));
+            PIN_IPHONE_LIST = JSON.parse(JSON.stringify(DEFAULT_PIN_IPHONE_DATA));
+            SAMSUNG_LIST = JSON.parse(JSON.stringify(DEFAULT_SAMSUNG_DATA));
+            OPPO_REALME_LIST = JSON.parse(JSON.stringify(DEFAULT_OPPO_REALME_DATA));
+            VIVO_VSMART_LIST = JSON.parse(JSON.stringify(DEFAULT_VIVO_VSMART_DATA));
+            XIAOMI_POCO_LIST = JSON.parse(JSON.stringify(DEFAULT_XIAOMI_POCO_DATA));
+            BRAND_TITLES = Object.assign({}, DEFAULT_BRAND_TITLES);
+        }
+
+        function saveAppData() {
+            try {
+                const payload = {
+                    manIphone: MAN_IPHONE_LIST,
+                    pinIphone: PIN_IPHONE_LIST,
+                    samsung: SAMSUNG_LIST,
+                    oppo: OPPO_REALME_LIST,
+                    vivo: VIVO_VSMART_LIST,
+                    xiaomi: XIAOMI_POCO_LIST,
+                    brandTitles: BRAND_TITLES,
+                    customColumns: CUSTOM_COLUMNS,
+                    updatedAt: new Date().toISOString()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+                saveAppDataToCloud();
+            } catch (e) {
+                console.error("Lỗi lưu localStorage:", e);
+            }
+        }
+
+        function isMobileDevice() {
+            return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // --- CƠ CHẾ NHẤN GIỮ (LONG-PRESS) ĐỂ SỬA TÊN TAB & HÃNG ---
+        let longPressTimer = null;
+        let isLongPressTriggered = false;
+
+        function startLongPress(e, type, id) {
+            // Trên Mobile vô hiệu hóa chỉnh sửa hoàn toàn
+            if (isMobileDevice() || !isEditingMode) return;
+            isLongPressTriggered = false;
+            if (longPressTimer) clearTimeout(longPressTimer);
+            longPressTimer = setTimeout(() => {
+                isLongPressTriggered = true;
+                if (navigator.vibrate) navigator.vibrate(50);
+                triggerRename(type, id);
+            }, 600);
+        }
+
+        function cancelLongPress() {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        }
+
+        function triggerRename(type, id) {
+            if (!isEditingMode) return;
+            if (type === 'tab' || type === 'brand') {
+                const currentName = BRAND_TITLES[id] || (TABS_CONFIG.find(t => t.id === id) || {}).label || '';
+                const newName = prompt(`Nhập tên mới cho mục này:\n(Đang sửa: ${currentName})`, currentName);
+                if (newName !== null && newName.trim() !== '' && newName !== currentName) {
+                    const cleanName = newName.trim();
+                    BRAND_TITLES[id] = cleanName;
+                    const matchedTab = TABS_CONFIG.find(t => t.id === id);
+                    if (matchedTab) {
+                        matchedTab.label = cleanName;
+                    }
+                    saveAppData();
+                    renderTabs();
+                    renderTables();
+                    showToast(`Đã đổi tên thành: ${cleanName}`);
+                }
+            }
+        }
+
+        function handleTabClick(tabId) {
+            if (isLongPressTriggered) {
+                isLongPressTriggered = false;
+                return;
+            }
+            switchTab(tabId);
+        }
+
+        function handleEditBrandTitle(titleKey) {
+            if (!isEditingMode) return;
+            triggerRename('brand', titleKey);
+        }
+
+        // --- THÊM CỘT MỚI & SỬA / XÓA CỘT ---
+        function addNewColumn(datasetKey) {
+            const colName = prompt("Nhập tên cột mới muốn thêm:\n(Ví dụ: Linh kiện, OLED, Oled GX, BH 12T...)", "");
+            if (!colName || !colName.trim()) return;
+
+            const trimmedColName = colName.trim();
+            const colKey = 'col_' + Date.now();
+
+            if (!CUSTOM_COLUMNS[datasetKey]) {
+                CUSTOM_COLUMNS[datasetKey] = [];
+            }
+            CUSTOM_COLUMNS[datasetKey].push({
+                key: colKey,
+                label: trimmedColName
+            });
+
+            saveAppData();
+            renderTables();
+            showToast(`Đã thêm cột mới: ${trimmedColName}`);
+        }
+
+        function removeColumn(datasetKey, colKey, colLabel) {
+            if (!isEditingMode) return;
+            const confirmDelete = confirm(`Bạn có muốn xóa cột [${colLabel}] không?`);
+            if (confirmDelete && CUSTOM_COLUMNS[datasetKey]) {
+                CUSTOM_COLUMNS[datasetKey] = CUSTOM_COLUMNS[datasetKey].filter(c => c.key !== colKey);
+                saveAppData();
+                renderTables();
+                showToast(`Đã xóa cột: ${colLabel}`);
+            }
+        }
+
+        function handleModelClick(el, datasetKey, rowIndex, currentModel) {
+            if (isEditingMode) {
+                const newModel = prompt(`Sửa tên dòng máy:`, currentModel);
+                if (newModel !== null && newModel.trim() !== '' && newModel !== currentModel) {
+                    let list = null;
+                    if (datasetKey === 'manIphone') list = MAN_IPHONE_LIST;
+                    else if (datasetKey === 'pinIphone') list = PIN_IPHONE_LIST;
+                    else if (datasetKey === 'samsung') list = SAMSUNG_LIST;
+                    else if (datasetKey === 'oppo') list = OPPO_REALME_LIST;
+                    else if (datasetKey === 'vivo') list = VIVO_VSMART_LIST;
+                    else if (datasetKey === 'xiaomi') list = XIAOMI_POCO_LIST;
+
+                    if (list && list[rowIndex]) {
+                        list[rowIndex].model = newModel.trim();
+                        saveAppData();
+                        renderTables();
+                        showToast(`Đã đổi tên máy: ${newModel.trim()}`);
+                    }
+                }
+                return;
+            }
+            // Chế độ xem: Chọn hàng tô màu xanh lá
+            handleRowSelect(el.closest('tr'));
+        }
+
+        function addNewRow(datasetKey) {
+            let list = null;
+            let titlePrompt = '';
+            if (datasetKey === 'manIphone') { list = MAN_IPHONE_LIST; titlePrompt = 'Màn iPhone'; }
+            else if (datasetKey === 'pinIphone') { list = PIN_IPHONE_LIST; titlePrompt = 'Pin iPhone'; }
+            else if (datasetKey === 'samsung') { list = SAMSUNG_LIST; titlePrompt = 'Samsung'; }
+            else if (datasetKey === 'oppo') { list = OPPO_REALME_LIST; titlePrompt = 'OPPO - Realme'; }
+            else if (datasetKey === 'vivo') { list = VIVO_VSMART_LIST; titlePrompt = 'Vivo - Vsmart'; }
+            else if (datasetKey === 'xiaomi') { list = XIAOMI_POCO_LIST; titlePrompt = 'Xiaomi - Poco'; }
+
+            if (!list) return;
+
+            const modelName = prompt(`Nhập tên dòng máy cần thêm vào [${titlePrompt}]:`, '');
+            if (!modelName || !modelName.trim()) return;
+
+            const trimmedModel = modelName.trim();
+
+            if (datasetKey === 'manIphone') {
+                const zin = prompt(`Nhập giá Zin cho ${trimmedModel}: (hoặc để trống)`, '') || '';
+                const lo = prompt(`Nhập giá Lô cho ${trimmedModel}: (hoặc để trống)`, '') || '';
+                const gx = prompt(`Nhập giá GX cho ${trimmedModel}: (hoặc để trống)`, '') || '';
+                list.push({ model: trimmedModel, zin: zin.trim(), lo: lo.trim(), gx: gx.trim(), highlight: '' });
+            } else if (datasetKey === 'pinIphone') {
+                const re = prompt(`Nhập giá Pin Rẻ cho ${trimmedModel}: (hoặc để trống)`, '') || '';
+                const dlc = prompt(`Nhập giá Pin DLC cho ${trimmedModel}: (hoặc để trống)`, '') || '';
+                const cddlc = prompt(`Nhập giá Pin CD,DLC cho ${trimmedModel}: (hoặc để trống)`, '') || '';
+                list.push({ model: trimmedModel, re: re.trim(), dlc: dlc.trim(), cddlc: cddlc.trim(), highlight: '' });
+            } else {
+                const price = prompt(`Nhập giá cho ${trimmedModel}: (hoặc để trống nếu 'Liên hệ')`, '') || '';
+                list.push({ model: trimmedModel, price: price.trim() });
+            }
+
+            saveAppData();
+            renderTabs();
+            renderTables();
+            showToast(`Đã thêm dòng: ${trimmedModel}`);
+        }
+
+        let isEditingMode = false;
+
+        function toggleEditMode() {
+            if (isMobileDevice()) {
+                showToast("Trên điện thoại chỉ hỗ trợ chế độ xem!");
+                return;
+            }
+            isEditingMode = !isEditingMode;
+            const btn = document.getElementById('btnToggleEdit');
+            const btnText = document.getElementById('btnEditText');
+            const noticeBar = document.getElementById('editNoticeBar');
+
+            if (isEditingMode) {
+                document.body.classList.add('is-editing');
+                btn.classList.add('active');
+                btnText.textContent = 'XONG';
+                noticeBar.classList.remove('hidden');
+                showToast("Chế độ sửa: Bấm vào Tên máy, Hãng hoặc Giá để sửa");
+            } else {
+                document.body.classList.remove('is-editing');
+                btn.classList.remove('active');
+                btnText.textContent = 'SỬA';
+                noticeBar.classList.add('hidden');
+                saveAppData();
+                showToast("Đã lưu bảng giá mới!");
+            }
+            renderTables();
+        }
+
+        function updatePriceValue(datasetKey, rowIndex, fieldKey, multiIndex, newValue) {
+            let list = null;
+            if (datasetKey === 'manIphone') list = MAN_IPHONE_LIST;
+            else if (datasetKey === 'pinIphone') list = PIN_IPHONE_LIST;
+            else if (datasetKey === 'samsung') list = SAMSUNG_LIST;
+            else if (datasetKey === 'oppo') list = OPPO_REALME_LIST;
+            else if (datasetKey === 'vivo') list = VIVO_VSMART_LIST;
+            else if (datasetKey === 'xiaomi') list = XIAOMI_POCO_LIST;
+
+            if (!list || !list[rowIndex]) return;
+            const clean = newValue.trim();
+
+            if (multiIndex !== null && multiIndex !== undefined) {
+                if (list[rowIndex].multiZin && list[rowIndex].multiZin[multiIndex] !== undefined) {
+                    list[rowIndex].multiZin[multiIndex] = clean;
+                }
+            } else {
+                list[rowIndex][fieldKey] = clean;
+            }
+            saveAppData();
+        }
+
+        let activeTab = 'man-iphone';
+        let searchQuery = '';
+        let toastTimeout = null;
+
+        function removeVietnameseTones(str) {
+            return str
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
+                .toLowerCase()
+                .trim();
+        }
+
+        function isValidPrice(val) {
+            return val && val !== '-' && val !== '0' && val.trim() !== '';
+        }
+
+        function matchesQuery(text, query) {
+            if (!query || !query.trim()) return true;
+            const normText = removeVietnameseTones(text);
+            const normQuery = removeVietnameseTones(query);
+            const tokens = normQuery.split(/\s+/).filter(Boolean);
+            return tokens.every(token => normText.includes(token));
+        }
+
+        function highlightSearchText(text, query) {
+            if (!query || !query.trim()) return text;
+            const escaped = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            try {
+                const regex = new RegExp(`(${escaped})`, 'gi');
+                return text.replace(regex, '<mark>$1</mark>');
+            } catch (e) {
+                return text;
+            }
+        }
+
+        async function copyToClipboard(text, customMsg) {
+            let success = false;
+            // 1. Cách 1: Thử Clipboard API hiện đại
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    success = true;
+                } catch (e) {
+                    console.warn("Clipboard API failed, falling back to textarea:", e);
+                }
+            }
+
+            // 2. Cách 2: Fallback textarea execCommand (chạy tốt trong iframe)
+            if (!success) {
+                const helper = document.getElementById('clipboardHelper');
+                helper.value = text;
+                helper.style.position = 'fixed';
+                helper.style.top = '10px';
+                helper.style.left = '10px';
+                helper.style.opacity = '0.01';
+                helper.focus();
+                helper.select();
+                helper.setSelectionRange(0, 99999);
+                try {
+                    success = document.execCommand('copy');
+                } catch (err) {
+                    console.error("execCommand copy error:", err);
+                }
+            }
+
+            if (success) {
+                showToast(customMsg || `Đã copy: ${text}`);
+            } else {
+                // Fallback cuối cùng hiển thị hộp thoại prompt để copy thủ công nếu mọi cơ chế bảo mật chặn
+                prompt("Hãy bấm Ctrl+C (hoặc giữ ngón tay để sao chép):", text);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.remove('hidden');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 2000);
+        }
+
+        function handlePriceClick(el, itemTitle, rawPrice) {
+            if (!isValidPrice(rawPrice)) return;
+            if (el) {
+                el.classList.remove('cell-clicked');
+                void el.offsetWidth;
+                el.classList.add('cell-clicked');
+            }
+            const cleanPrice = rawPrice.trim();
+            const formattedQuote = `${itemTitle}: ${cleanPrice}k`;
+            copyToClipboard(formattedQuote, `Đã copy: ${formattedQuote}`);
+        }
+
+        function getFilteredDataByTab() {
+            return {
+                'man-iphone': MAN_IPHONE_LIST.filter(r => matchesQuery(`man iphone ${r.model}`, searchQuery)),
+                'pin-iphone': PIN_IPHONE_LIST.filter(r => matchesQuery(`pin iphone ${r.model}`, searchQuery)),
+                'samsung': SAMSUNG_LIST.filter(r => matchesQuery(`samsung lcd ${r.model}`, searchQuery)),
+                'oppo-realme': OPPO_REALME_LIST.filter(r => matchesQuery(`oppo realme ${r.model}`, searchQuery)),
+                'vivo-vsmart': VIVO_VSMART_LIST.filter(r => matchesQuery(`vivo vsmart ${r.model}`, searchQuery)),
+                'xiaomi-poco': XIAOMI_POCO_LIST.filter(r => matchesQuery(`xiaomi poco redmi ${r.model}`, searchQuery))
+            };
+        }
+
+        function switchTab(tabId) {
+            activeTab = tabId;
+            renderTabs();
+            renderTables();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value;
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const scopeBar = document.getElementById('searchScopeBar');
+
+            if (searchQuery.trim().length > 0) {
+                clearBtn.classList.remove('hidden');
+                scopeBar.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+                scopeBar.classList.add('hidden');
+            }
+            renderTabs();
+            renderTables();
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            searchQuery = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            document.getElementById('searchScopeBar').classList.add('hidden');
+            input.focus();
+            renderTabs();
+            renderTables();
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('tabContainer');
+            const isSearching = searchQuery.trim().length > 0;
+            const filteredMap = isSearching ? getFilteredDataByTab() : null;
+
+            container.innerHTML = TABS_CONFIG.map(tab => {
+                const isActive = activeTab === tab.id;
+                const matchCount = isSearching ? filteredMap[tab.id].length : 0;
+                const hasMatchClass = (isSearching && matchCount > 0) ? 'has-match' : '';
+                const countHtml = isSearching ? `<span class="tab-count">${matchCount}</span>` : '';
+
+                const tabTitle = isEditingMode ? "Nhấn giữ để sửa tên tab" : "Bấm để chuyển tab";
+
+                return `
+                    <button
+                        class="tab-btn ${isActive ? 'active' : ''} ${hasMatchClass}"
+                        onclick="handleTabClick('${tab.id}')"
+                        onpointerdown="startLongPress(event, 'tab', '${tab.id}')"
+                        onpointerup="cancelLongPress()"
+                        onpointerleave="cancelLongPress()"
+                        title="${tabTitle}"
+                    >
+                        <span>${tab.label}</span>
+                        ${countHtml}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function handleRowSelect(trEl) {
+            if (!trEl) return;
+            const isCurrentlySelected = trEl.classList.contains('row-selected');
+            // Bỏ chọn tất cả các dòng khác trong bảng
+            document.querySelectorAll('.price-table tr.row-selected').forEach(r => {
+                if (r !== trEl) r.classList.remove('row-selected');
+            });
+            // Bật/tắt dòng hiện tại
+            if (isCurrentlySelected) {
+                trEl.classList.remove('row-selected');
+            } else {
+                trEl.classList.add('row-selected');
+            }
+        }
+
+        function handleCellClick(el, itemTitle, rawVal, datasetKey, rowIndex, fieldKey, multiIndex) {
+            if (isEditingMode) {
+                // Đang ở chế độ sửa giá: Hiện prompt chỉnh sửa
+                const currentText = rawVal || '';
+                const newPrice = prompt(`Chỉnh sửa giá cho [${itemTitle}]:\n(Để trống hoặc '-' nếu hết hàng)`, currentText);
+                if (newPrice !== null && newPrice !== currentText) {
+                    updatePriceValue(datasetKey, rowIndex, fieldKey, multiIndex, newPrice);
+                    renderTables();
+                    showToast(`Đã đổi giá: ${newPrice}`);
+                }
+                return;
+            }
+            // Không copy giá ở chế độ thông thường theo yêu cầu của user
+        }
+
+        function renderPriceCell(itemTitle, rawVal, colorClass = 'p-red', datasetKey = '', rowIndex = -1, fieldKey = '') {
+            const hasPrice = isValidPrice(rawVal);
+            if (!hasPrice && !isEditingMode) {
+                return `<td><span class="empty-val">${rawVal || ''}</span></td>`;
+            }
+            const safeTitle = itemTitle.replace(/'/g, "\\'");
+            const safeVal = (rawVal || '').replace(/'/g, "\\'");
+            const clickAttr = isEditingMode ? `onclick="handleCellClick(this, '${safeTitle}', '${safeVal}', '${datasetKey}', ${rowIndex}, '${fieldKey}')"` : '';
+            const titleTooltip = isEditingMode ? "Bấm để sửa giá" : "";
+
+            return `
+                <td class="price-cell ${colorClass}" ${clickAttr} title="${titleTooltip}">
+                    <span class="price-text">${rawVal || '-'}</span>
+                </td>
+            `;
+        }
+
+        function getRowClass(highlight, idx) {
+            // Hàng 1 (idx=0) là lẻ -> row-odd (chữ VÀNG)
+            // Hàng 2 (idx=1) là chẵn -> row-even (chữ TRẮNG)
+            return idx % 2 === 0 ? 'row-odd' : 'row-even';
+        }
+
+        function renderManIphoneTable(rows) {
+            if (rows.length === 0) return '';
+            const addBtnHtml = isEditingMode
+                ? `<button class="btn-add-row" onclick="addNewRow('manIphone')">+ Thêm dòng</button>
+                   <button class="btn-add-col" onclick="addNewColumn('manIphone')">+ Thêm cột</button>`
+                : '';
+            const brandTitle = BRAND_TITLES['man-iphone'] || 'Màn iPhone';
+            const brandAttr = isEditingMode ? `onclick="handleEditBrandTitle('man-iphone')"` : '';
+            const brandClass = isEditingMode ? 'editable-brand-title' : '';
+            const brandTooltip = isEditingMode ? 'title="Bấm để đổi tên hãng"' : 'title="Nhấn giữ để sửa tên hãng"';
+            const customCols = CUSTOM_COLUMNS['manIphone'] || [];
+
+            return `
+                <section class="table-card">
+                    <div class="card-header">
+                        <div class="card-header-title">
+                            <h2 class="${brandClass}" ${brandAttr} ${brandTooltip}
+                                onpointerdown="startLongPress(event, 'brand', 'man-iphone')"
+                                onpointerup="cancelLongPress()"
+                                onpointerleave="cancelLongPress()">${brandTitle}</h2>
+                        </div>
+                        <div class="card-header-actions">
+                            ${addBtnHtml}
+                            <span class="card-badge">${rows.length} dòng</span>
+                        </div>
+                    </div>
+                    <div class="table-scroll-wrap">
+                        <table class="price-table">
+                            <thead>
+                                <tr>
+                                    <th>iPhone</th>
+                                    <th style="width:62px">Zin</th>
+                                    <th style="width:54px">Lô</th>
+                                    <th style="width:58px">GX</th>
+                                    ${customCols.map(col => `
+                                        <th style="min-width:58px;" class="th-removable" title="${isEditingMode ? 'Bấm để xóa cột này' : ''}" ${isEditingMode ? `onclick="removeColumn('manIphone', '${col.key}', '${col.label}')"` : ''}>
+                                            ${col.label}${isEditingMode ? ' ✕' : ''}
+                                        </th>
+                                    `).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.map((row) => {
+                    const originalIdx = MAN_IPHONE_LIST.findIndex(r => r.model === row.model);
+                    const actualIdx = originalIdx >= 0 ? originalIdx : 0;
+                    const rowCls = getRowClass(row.highlight, actualIdx);
+                    let zinCellHtml = '';
+                    if (row.multiZin) {
+                        const safeTitle = `${brandTitle} ${row.model} Zin`.replace(/'/g, "\\'");
+                        zinCellHtml = `
+                                            <td style="padding:0;">
+                                                <div class="multi-price-stack">
+                                                    ${row.multiZin.map((v, mIdx) => {
+                            const safeVal = (v || '').replace(/'/g, "\\'");
+                            const clickAttr = isEditingMode ? `onclick="handleCellClick(this, '${safeTitle}', '${safeVal}', 'manIphone', ${actualIdx}, 'zin', ${mIdx})"` : '';
+                            const titleTooltip = isEditingMode ? "Bấm để sửa giá" : "";
+                            return `<div class="multi-price-item p-red" ${clickAttr} title="${titleTooltip}">${v}</div>`;
+                        }).join('')}
+                                                </div>
+                                            </td>
+                                        `;
+                    } else {
+                        zinCellHtml = renderPriceCell(`${brandTitle} ${row.model} Zin`, row.zin, 'p-red', 'manIphone', actualIdx, 'zin');
+                    }
+                    const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
+                    const safeModel = row.model.replace(/'/g, "\\'");
+                    const customCellsHtml = customCols.map(col => {
+                        const val = row[col.key] || '-';
+                        return renderPriceCell(`${brandTitle} ${row.model} ${col.label}`, val, 'p-blue', 'manIphone', actualIdx, col.key);
+                    }).join('');
+
+                    return `
+                                        <tr class="${rowCls}">
+                                            <td class="text-model-dark model-cell" onclick="handleModelClick(this, 'manIphone', ${actualIdx}, '${safeModel}')" title="${modelTooltip}">${highlightSearchText(row.model, searchQuery)}</td>
+                                            ${zinCellHtml}
+                                            ${renderPriceCell(`${brandTitle} ${row.model} Lô`, row.lo, 'p-blue', 'manIphone', actualIdx, 'lo')}
+                                            ${renderPriceCell(`${brandTitle} ${row.model} GX`, row.gx, 'p-purple', 'manIphone', actualIdx, 'gx')}
+                                            ${customCellsHtml}
+                                        </tr>
+                                    `;
+                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderPinIphoneTable(rows) {
+            if (rows.length === 0) return '';
+            const addBtnHtml = isEditingMode
+                ? `<button class="btn-add-row" onclick="addNewRow('pinIphone')">+ Thêm dòng</button>
+                   <button class="btn-add-col" onclick="addNewColumn('pinIphone')">+ Thêm cột</button>`
+                : '';
+            const brandTitle = BRAND_TITLES['pin-iphone'] || 'Pin iPhone';
+            const brandAttr = isEditingMode ? `onclick="handleEditBrandTitle('pin-iphone')"` : '';
+            const brandClass = isEditingMode ? 'editable-brand-title' : '';
+            const brandTooltip = isEditingMode ? 'title="Bấm để đổi tên hãng"' : 'title="Nhấn giữ để sửa tên hãng"';
+            const customCols = CUSTOM_COLUMNS['pinIphone'] || [];
+
+            return `
+                <section class="table-card">
+                    <div class="card-header">
+                        <div class="card-header-title">
+                            <h2 class="${brandClass}" ${brandAttr} ${brandTooltip}
+                                onpointerdown="startLongPress(event, 'brand', 'pin-iphone')"
+                                onpointerup="cancelLongPress()"
+                                onpointerleave="cancelLongPress()">${brandTitle}</h2>
+                        </div>
+                        <div class="card-header-actions">
+                            ${addBtnHtml}
+                            <span class="card-badge">${rows.length} dòng</span>
+                        </div>
+                    </div>
+                    <div class="table-scroll-wrap">
+                        <table class="price-table">
+                            <thead>
+                                <tr>
+                                    <th>iPhone</th>
+                                    <th style="width:56px">RẺ</th>
+                                    <th style="width:56px">DLC</th>
+                                    <th style="width:62px">CD,DLC</th>
+                                    ${customCols.map(col => `
+                                        <th style="min-width:58px;" class="th-removable" title="${isEditingMode ? 'Bấm để xóa cột này' : ''}" ${isEditingMode ? `onclick="removeColumn('pinIphone', '${col.key}', '${col.label}')"` : ''}>
+                                            ${col.label}${isEditingMode ? ' ✕' : ''}
+                                        </th>
+                                    `).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.map((row) => {
+                    const originalIdx = PIN_IPHONE_LIST.findIndex(r => r.model === row.model);
+                    const actualIdx = originalIdx >= 0 ? originalIdx : 0;
+                    const rowCls = getRowClass(row.highlight, actualIdx);
+                    const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
+                    const safeModel = row.model.replace(/'/g, "\\'");
+                    const customCellsHtml = customCols.map(col => {
+                        const val = row[col.key] || '-';
+                        return renderPriceCell(`${brandTitle} ${row.model} ${col.label}`, val, 'p-blue', 'pinIphone', actualIdx, col.key);
+                    }).join('');
+
+                    return `
+                                        <tr class="${rowCls}">
+                                            <td class="text-model-dark model-cell" onclick="handleModelClick(this, 'pinIphone', ${actualIdx}, '${safeModel}')" title="${modelTooltip}">${highlightSearchText(row.model, searchQuery)}</td>
+                                            ${renderPriceCell(`${brandTitle} ${row.model} Rẻ`, row.re, 'p-red', 'pinIphone', actualIdx, 're')}
+                                            ${renderPriceCell(`${brandTitle} ${row.model} DLC`, row.dlc, 'p-blue', 'pinIphone', actualIdx, 'dlc')}
+                                            ${renderPriceCell(`${brandTitle} ${row.model} CD,DLC`, row.cddlc, 'p-purple', 'pinIphone', actualIdx, 'cddlc')}
+                                            ${customCellsHtml}
+                                        </tr>
+                                    `;
+                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderBrandTable({ titleKey, defaultTitle, subtitle, prefixName, rows, datasetKey }) {
+            if (rows.length === 0) return '';
+            let targetList = [];
+            if (datasetKey === 'samsung') targetList = SAMSUNG_LIST;
+            else if (datasetKey === 'oppo') targetList = OPPO_REALME_LIST;
+            else if (datasetKey === 'vivo') targetList = VIVO_VSMART_LIST;
+            else if (datasetKey === 'xiaomi') targetList = XIAOMI_POCO_LIST;
+
+            const addBtnHtml = isEditingMode
+                ? `<button class="btn-add-row" onclick="addNewRow('${datasetKey}')">+ Thêm dòng</button>
+                   <button class="btn-add-col" onclick="addNewColumn('${datasetKey}')">+ Thêm cột</button>`
+                : '';
+
+            const brandTitle = BRAND_TITLES[titleKey] || defaultTitle;
+            const brandAttr = isEditingMode ? `onclick="handleEditBrandTitle('${titleKey}')"` : '';
+            const brandClass = isEditingMode ? 'editable-brand-title' : '';
+            const brandTooltip = isEditingMode ? 'title="Bấm để đổi tên hãng"' : 'title="Nhấn giữ để sửa tên hãng"';
+            const customCols = CUSTOM_COLUMNS[datasetKey] || [];
+
+            return `
+                <section class="table-card">
+                    <div class="card-header">
+                        <div class="card-header-title">
+                            <h2 class="${brandClass}" ${brandAttr} ${brandTooltip}
+                                onpointerdown="startLongPress(event, 'brand', '${titleKey}')"
+                                onpointerup="cancelLongPress()"
+                                onpointerleave="cancelLongPress()">${brandTitle}</h2>
+                            ${subtitle ? `<span style="font-size:11px;opacity:0.9;">(${subtitle})</span>` : ''}
+                        </div>
+                        <div class="card-header-actions">
+                            ${addBtnHtml}
+                            <span class="card-badge">${rows.length} mục</span>
+                        </div>
+                    </div>
+                    <div class="table-scroll-wrap">
+                        <table class="price-table">
+                            <thead>
+                                <tr>
+                                    <th>Dòng máy</th>
+                                    <th style="width:72px">Giá</th>
+                                    ${customCols.map(col => `
+                                        <th style="min-width:65px;" class="th-removable" title="${isEditingMode ? 'Bấm để xóa cột này' : ''}" ${isEditingMode ? `onclick="removeColumn('${datasetKey}', '${col.key}', '${col.label}')"` : ''}>
+                                            ${col.label}${isEditingMode ? ' ✕' : ''}
+                                        </th>
+                                    `).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.map((row, idx) => {
+                    const originalIdx = targetList.findIndex(r => r.model === row.model);
+                    const actualIdx = originalIdx >= 0 ? originalIdx : idx;
+                    const rowCls = idx % 2 === 0 ? 'row-odd' : 'row-even';
+                    const modelColor = idx % 2 === 0 ? 'text-model-red' : 'text-model-blue';
+                    const hasPrice = isValidPrice(row.price);
+                    const modelTooltip = isEditingMode ? "Bấm để sửa tên máy" : "Bấm để chọn dòng";
+                    const safeModel = row.model.replace(/'/g, "\\'");
+                    const customCellsHtml = customCols.map(col => {
+                        const val = row[col.key] || '-';
+                        return renderPriceCell(`${prefixName} ${row.model} ${col.label}`, val, 'p-blue', datasetKey, actualIdx, col.key);
+                    }).join('');
+
+                    return `
+                                        <tr class="${rowCls}">
+                                            <td class="${modelColor} model-cell" onclick="handleModelClick(this, '${datasetKey}', ${actualIdx}, '${safeModel}')" title="${modelTooltip}">${highlightSearchText(row.model, searchQuery)}</td>
+                                            ${hasPrice || isEditingMode
+                            ? renderPriceCell(`${prefixName} ${row.model}`, row.price, idx % 2 === 0 ? 'p-red' : 'p-blue', datasetKey, actualIdx, 'price')
+                            : `<td><span class="contact-badge">Liên hệ</span></td>`
+                        }
+                                            ${customCellsHtml}
+                                        </tr>
+                                    `;
+                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderTables() {
+            const container = document.getElementById('tablesContainer');
+            const isSearching = searchQuery.trim().length > 0;
+            if (isSearching) {
+                container.classList.add('is-search-mode');
+            } else {
+                container.classList.remove('is-search-mode');
+            }
+            const filteredMap = getFilteredDataByTab();
+
+            const totalGlobalMatches = Object.values(filteredMap).reduce((sum, arr) => sum + arr.length, 0);
+
+            const manIp = isSearching ? filteredMap['man-iphone'] : (activeTab === 'man-iphone' ? MAN_IPHONE_LIST : []);
+            const pinIp = isSearching ? filteredMap['pin-iphone'] : (activeTab === 'pin-iphone' ? PIN_IPHONE_LIST : []);
+            const samsung = isSearching ? filteredMap['samsung'] : (activeTab === 'samsung' ? SAMSUNG_LIST : []);
+            const oppo = isSearching ? filteredMap['oppo-realme'] : (activeTab === 'oppo-realme' ? OPPO_REALME_LIST : []);
+            const vivo = isSearching ? filteredMap['vivo-vsmart'] : (activeTab === 'vivo-vsmart' ? VIVO_VSMART_LIST : []);
+            const xiaomi = isSearching ? filteredMap['xiaomi-poco'] : (activeTab === 'xiaomi-poco' ? XIAOMI_POCO_LIST : []);
+
+            if (isSearching) {
+                document.getElementById('searchResultCount').textContent = `Tìm thấy ${totalGlobalMatches} kết quả trên toàn bộ bảng giá`;
+            }
+
+            if (isSearching && totalGlobalMatches === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Không tìm thấy "${searchQuery}"</h3>
+                        <p>Thử nhập tên ngắn gọn hơn (vd: 12 prm, a12, redmi 9, y15...)</p>
+                        <button class="btn-reset-search" onclick="clearSearch()">Xóa tìm kiếm</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const blocks = [
+                renderManIphoneTable(manIp),
+                renderPinIphoneTable(pinIp),
+                renderBrandTable({
+                    titleKey: 'samsung',
+                    defaultTitle: 'SAMSUNG',
+                    subtitle: 'Màn LCD (Rẻ)',
+                    prefixName: 'Màn Samsung',
+                    rows: samsung,
+                    datasetKey: 'samsung'
+                }),
+                renderBrandTable({
+                    titleKey: 'oppo-realme',
+                    defaultTitle: 'OPPO - REALME',
+                    subtitle: '',
+                    prefixName: 'Màn',
+                    rows: oppo,
+                    datasetKey: 'oppo'
+                }),
+                renderBrandTable({
+                    titleKey: 'xiaomi-poco',
+                    defaultTitle: 'MI',
+                    subtitle: '',
+                    prefixName: 'Màn Xiaomi',
+                    rows: xiaomi,
+                    datasetKey: 'xiaomi'
+                }),
+                renderBrandTable({
+                    titleKey: 'vivo-vsmart',
+                    defaultTitle: 'VIVO - VSMART',
+                    subtitle: '',
+                    prefixName: 'Màn Vivo',
+                    rows: vivo,
+                    datasetKey: 'vivo'
+                })
+            ].filter(Boolean);
+
+            container.innerHTML = blocks.join('');
+        }
+
+        loadAppData();
+        renderTabs();
+        renderTables();
+        initRealtimeSync();
+    </script>
+</body>
+
+</html>

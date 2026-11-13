@@ -281,12 +281,28 @@
     <div class="w-full max-w-[1450px] mx-auto space-y-3 flex flex-col items-center px-1 md:px-3">
 
         <!-- CỤM CỐ ĐỊNH KHI CUỘN -->
-        <div class="sticky top-0 z-40 w-full flex flex-col gap-2 pt-1 bg-[#060913]">
+        <div id="detail-price-controls" class="sticky top-0 z-40 w-full flex flex-col gap-2 pt-1 bg-[#060913]">
             <!-- THANH TIÊU ĐỀ CHÍNH & NÚT TIỆN ÍCH TRÊN CÙNG -->
-            <div class="flex items-center justify-between w-full px-1 py-1">
-                <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white uppercase m-0 flex items-center">
-                    BÁO GIÁ SỬA CHỮA
-                </h1>
+            <div class="flex flex-wrap items-center justify-between w-full px-1 py-1 gap-2">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white uppercase m-0 flex items-center">
+                        BÁO GIÁ SỬA CHỮA
+                    </h1>
+
+                    <!-- CỤM 2 NÚT: BÁO GIÁ NHANH & BÁO GIÁ CHI TIẾT -->
+                    <div class="inline-flex items-center p-1 bg-[#0b0f19] border border-[#1e293b] rounded-xl shadow-inner gap-1">
+                        <button type="button" id="btn-mode-quick" onclick="switchPriceMode('quick')"
+                            class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-black transition-all flex items-center gap-1.5 text-gray-400 hover:text-white cursor-pointer select-none">
+                            <i class="fa-solid fa-bolt text-xs"></i>
+                            <span>BÁO GIÁ NHANH</span>
+                        </button>
+                        <button type="button" id="btn-mode-detail" onclick="switchPriceMode('detail')"
+                            class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-black transition-all flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md cursor-pointer select-none">
+                            <i class="fa-solid fa-list-check text-xs"></i>
+                            <span>BÁO GIÁ CHI TIẾT</span>
+                        </button>
+                    </div>
+                </div>
 
                 <div class="flex items-center gap-2">
                     <button id="btn-toggle-privacy" onclick="togglePrivacyMode()"
@@ -334,7 +350,7 @@
             </div>
 
             <!-- THANH BỘ LỌC CÁC CẤP (TABS HÃNG, LINH KIỆN, KIỂU, TÌM KIẾM) -->
-            <div
+            <div id="detail-filters-box"
                 class="bg-[#0b0f19] p-3 md:p-4 rounded-2xl border border-[#151d2f] flex flex-col gap-3 shadow-2xl w-full">
                 <!-- HÀNG 1: TABS HÃNG + BADGE SỐ LK : SỐ TIỀN -->
                 <div class="flex items-center justify-between gap-2 w-full">
@@ -436,7 +452,7 @@
                 </div>
             </div>
             <!-- TIÊU ĐỀ BẢNG CHO DESKTOP -->
-            <div class="hidden md:block card-dark rounded-t-2xl overflow-hidden shadow-md">
+            <div id="detail-desktop-header-wrap" class="hidden md:block card-dark rounded-t-2xl overflow-hidden shadow-md">
                 <table class="w-full text-center border-collapse table-fixed">
                     <thead>
                         <tr id="desktop-table-header"
@@ -448,7 +464,7 @@
         </div>
 
         <!-- BẢNG NỘI DUNG DỮ LIỆU CUỘN -->
-        <div class="card-dark rounded-2xl md:rounded-t-none overflow-hidden shadow-xl w-full">
+        <div id="detail-price-table-wrap" class="card-dark rounded-2xl md:rounded-t-none overflow-hidden shadow-xl w-full">
             <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-center border-collapse table-fixed">
                     <tbody id="device-table-body" class="text-base"></tbody>
@@ -473,6 +489,11 @@
                     KIM CHI MOBILE
                 </div>
             </div>
+        </div>
+
+        <!-- KHUNG BÁO GIÁ NHANH (ĐỒNG BỘ REALTIME TỪ QUYNHBUPBEHP / TONGHOP) -->
+        <div id="quick-price-wrapper" class="hidden w-full flex flex-col bg-[#0b0f19] border border-[#151d2f] rounded-2xl overflow-hidden shadow-2xl" style="height: calc(100vh - 80px);">
+            <iframe id="quickPriceFrame" src="baogia-nhanh.html" class="w-full h-full border-0 rounded-2xl" title="BÁO GIÁ NHANH"></iframe>
         </div>
     </div>
 
@@ -825,6 +846,39 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        let currentPriceMode = 'detail'; // 'detail' | 'quick'
+
+        function switchPriceMode(mode) {
+            currentPriceMode = mode;
+            const btnQuick = document.getElementById('btn-mode-quick');
+            const btnDetail = document.getElementById('btn-mode-detail');
+            const detailFilters = document.getElementById('detail-filters-box');
+            const detailHeader = document.getElementById('detail-desktop-header-wrap');
+            const detailTable = document.getElementById('detail-price-table-wrap');
+            const quickWrap = document.getElementById('quick-price-wrapper');
+
+            const activeBtnClass = 'px-3 py-1.5 rounded-lg text-xs md:text-sm font-black transition-all flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md cursor-pointer select-none';
+            const inactiveBtnClass = 'px-3 py-1.5 rounded-lg text-xs md:text-sm font-black transition-all flex items-center gap-1.5 text-gray-400 hover:text-white cursor-pointer select-none';
+
+            if (mode === 'quick') {
+                if (btnQuick) btnQuick.className = activeBtnClass;
+                if (btnDetail) btnDetail.className = inactiveBtnClass;
+
+                if (detailFilters) detailFilters.classList.add('hidden');
+                if (detailHeader) detailHeader.classList.add('hidden');
+                if (detailTable) detailTable.classList.add('hidden');
+                if (quickWrap) quickWrap.classList.remove('hidden');
+            } else {
+                if (btnDetail) btnDetail.className = activeBtnClass;
+                if (btnQuick) btnQuick.className = inactiveBtnClass;
+
+                if (detailFilters) detailFilters.classList.remove('hidden');
+                if (detailHeader) detailHeader.classList.remove('hidden');
+                if (detailTable) detailTable.classList.remove('hidden');
+                if (quickWrap) quickWrap.classList.add('hidden');
+            }
+        }
 
         let devices = [];
         let importOrders = JSON.parse(localStorage.getItem('local_import_orders') || '[]');
