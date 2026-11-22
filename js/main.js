@@ -25398,8 +25398,8 @@ function openKimchiBankModal() {
     modal.style.setProperty('display', 'flex', 'important');
     modal.style.zIndex = '99999999';
     if (frame) {
-      if (!frame.src || frame.src === '' || frame.src.indexOf('kimchimobile-bank') === -1) {
-        frame.src = 'https://kimchimobile-bank.vercel.app/?v=' + Date.now();
+      if (!frame.src || frame.src === '' || frame.src.indexOf('kimchibank') === -1) {
+        frame.src = 'https://kimchibank.vercel.app/?v=' + Date.now();
       }
     }
   }
@@ -25418,7 +25418,7 @@ window.closeKimchiBankModal = closeKimchiBankModal;
 function reloadKimchiBankFrame() {
   const frame = document.getElementById('kimchiBankFrame');
   if (frame) {
-    frame.src = 'https://kimchimobile-bank.vercel.app/?v=' + Date.now();
+    frame.src = 'https://kimchibank.vercel.app/?v=' + Date.now();
   }
 }
 window.reloadKimchiBankFrame = reloadKimchiBankFrame;
