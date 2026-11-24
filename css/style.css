@@ -1622,16 +1622,17 @@
     }
 
     .phone-horizontal-table tbody tr {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      border-bottom: 1px solid #141c2e;
       cursor: pointer;
+      transition: background-color 0.15s ease;
     }
 
     .phone-horizontal-table tbody tr:hover {
-      background: #141f33 !important;
+      background-color: rgba(31, 41, 55, 0.5) !important;
     }
 
     .phone-horizontal-table tbody tr:active {
-      background: #1e293b !important;
+      background-color: rgba(31, 41, 55, 0.8) !important;
     }
 
     .phone-horizontal-table td {
@@ -1714,7 +1715,7 @@
       flex-direction: column;
       gap: 5px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45) !important;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
       cursor: pointer;
       user-select: none;
       box-sizing: border-box;
@@ -1724,8 +1725,9 @@
     }
 
     .phone-card:hover {
-      border: 1.5px solid #ef4444 !important;
-      box-shadow: 0 0 16px rgba(239, 68, 68, 0.6), 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+      background-color: rgba(31, 41, 55, 0.5) !important;
+      border: 1.5px solid #1e3a5f !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45) !important;
       transform: none !important;
     }
 
@@ -1912,7 +1914,6 @@
     .phone-card-name:focus,
     .phone-card-name:active,
     .phone-card:hover .phone-card-name {
-      color: #38bdf8 !important;
       text-decoration: none !important;
       -webkit-text-decoration: none !important;
     }
