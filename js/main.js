@@ -11060,20 +11060,10 @@ function mergeWithSeedSoldPhones(list) {
 window.mergeWithSeedSoldPhones = mergeWithSeedSoldPhones;
 
 function mergeWithSeedPhones(list) {
-  const soldIds = getSoldPhoneIds();
-  const deletedPhoneIds = getDeletedPhoneIds();
+  // Lấy các máy hiện có từ list
+  let combined = Array.isArray(list) ? list.filter(item => !!item) : [];
 
-  // Bắt đầu từ danh sách hiện tại (lọc bỏ máy đã bán/xóa vĩnh viễn)
-  let combined = Array.isArray(list) ? list.filter(item => {
-    if (!item) return false;
-    const sId = String(item.id || '');
-    const sImeiKey = item.imei ? ('imei_' + String(item.imei).trim().toLowerCase()) : '';
-    if (sId && (soldIds.has(sId) || deletedPhoneIds.has(sId))) return false;
-    if (sImeiKey && (soldIds.has(sImeiKey) || deletedPhoneIds.has(sImeiKey))) return false;
-    return true;
-  }) : [];
-
-  // Tự động bổ sung các máy từ SEED chuẩn (154 máy) nếu danh sách chưa có (so theo ID hoặc IMEI)
+  // Tự động bổ sung đầy đủ 100% các máy từ SEED chuẩn (154 máy) nếu danh sách chưa có (so theo ID và IMEI)
   if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
     const existIdSet = new Set(combined.map(s => String(s.id)));
     const existImeiSet = new Set(combined.filter(s => s.imei).map(s => String(s.imei).trim().toLowerCase()));
@@ -11082,22 +11072,22 @@ function mergeWithSeedPhones(list) {
       if (!seed || !seed.id) return;
       const sId = String(seed.id);
       const sImei = seed.imei ? String(seed.imei).trim() : '';
-      const sImeiKey = sImei ? ('imei_' + sImei.toLowerCase()) : '';
 
-      if (soldIds.has(sId) || deletedPhoneIds.has(sId)) return;
-      if (sImeiKey && (soldIds.has(sImeiKey) || deletedPhoneIds.has(sImeiKey))) return;
+      // Nếu máy đã có trong danh sách thì bỏ qua
       if (existIdSet.has(sId)) return;
       if (sImei && existImeiSet.has(sImei.toLowerCase())) return;
 
-      combined.push(seed);
+      combined.push(JSON.parse(JSON.stringify(seed)));
       existIdSet.add(sId);
       if (sImei) existImeiSet.add(sImei.toLowerCase());
     });
   }
 
-  if (typeof applyPhoneStatusOverrides === 'function') {
-    combined = applyPhoneStatusOverrides(combined);
-  }
+  // Luôn đảm bảo trạng thái các máy trong kho là 'Còn Hàng' trừ khi máy có trạng thái cụ thể khác
+  combined.forEach(p => {
+    if (!p.status || !String(p.status).trim()) p.status = 'Còn Hàng';
+  });
+
   return combined;
 }
 window.mergeWithSeedPhones = mergeWithSeedPhones;
@@ -11130,10 +11120,12 @@ function loadInitialPhones() {
 let soldPhoneDatabase = loadInitialSoldPhones();
 let phoneDatabase = loadInitialPhones();
 
-// Tự động lưu và đồng bộ lại nếu phát hiện số lượng máy được bổ sung đủ 154 máy
-if (Array.isArray(phoneDatabase) && Array.isArray(window.SEED_PHONES_DATA) && phoneDatabase.length < window.SEED_PHONES_DATA.length) {
-  phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : window.SEED_PHONES_DATA;
-  try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
+// Tự động lưu và đồng bộ lại nếu phát hiện số lượng máy trong kho chưa đủ 154 máy chuẩn
+if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length >= 154) {
+  if (!Array.isArray(phoneDatabase) || phoneDatabase.length < window.SEED_PHONES_DATA.length) {
+    phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : window.SEED_PHONES_DATA;
+    try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
+  }
 }
 
 // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
@@ -14121,19 +14113,14 @@ function renderPhoneGrid() {
   }
 
   const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 768;
+  // Khi ở chế độ CHUA_XU_LY: Lọc riêng các máy Chưa Xử Lý
+  // Khi ở chế độ bình thường: Hiển thị đầy đủ tất cả các máy trong kho Bán Máy (không giấu máy)
   let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
     ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
-    : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
-
-  // TRÊN MOBILE & DESKTOP: TAB BÁN MÁY CHỈ HIỂN THỊ DUY NHẤT CÁC MÁY CÒN HÀNG KHI Ở CHẾ ĐỘ CON_HANG
-  if (isMobileScreen && currentPhoneStatusFilter !== 'CHUA_XU_LY') {
-    filtered = filtered.filter(p => {
+    : phoneDatabase.filter(p => {
       let st = (p.status || '').toLowerCase().trim();
-      if (!st || st === 'còn hàng' || st === 'con hang') return true;
-      if (st.includes('chưa xử lý') || st.includes('đã bán') || st.includes('da ban') || st.includes('main xác')) return false;
-      return true;
+      return !st.includes('đã bán') && !st.includes('da ban');
     });
-  }
   if (currentBrandFilter !== 'ALL') {
     const cbf = (currentBrandFilter || '').toUpperCase().trim();
     filtered = filtered.filter(p => {
