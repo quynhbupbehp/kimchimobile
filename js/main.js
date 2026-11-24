@@ -2743,11 +2743,9 @@ function fetchDirectCloudSync(showToastMsg) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          var isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
-          if (isSoftwareCleared) return;
           var list = data.list;
           list.sort(function (a, b) { return getItemTimestamp(b) - getItemTimestamp(a); });
-          softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(list) : list;
+          softwareDatabase = list;
           if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
           if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
           if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
@@ -3165,11 +3163,9 @@ function initFirebaseRealtimeSync() {
       if (doc && doc.exists) {
         const data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
-          if (isSoftwareCleared) return;
           let list = data.list;
           list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
-          softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(list) : list;
+          softwareDatabase = list;
           if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
           if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
           if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
@@ -3570,8 +3566,8 @@ function mergeWithSeedSoftware(list) {
 }
 window.mergeWithSeedSoftware = mergeWithSeedSoftware;
 
-// Dữ liệu Phần Mềm: Khởi tạo Pure Firestore (hợp nhất cùng 1.415 đơn gốc chuẩn)
-let softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware([]) : ((typeof window.SEED_SOFTWARE_DATA !== 'undefined' && Array.isArray(window.SEED_SOFTWARE_DATA)) ? JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA)) : DEFAULT_SOFTWARE_DATA);
+// Dữ liệu Phần Mềm: Khởi tạo Pure Firestore (đồng bộ 100% realtime giữa Web và Mobile)
+let softwareDatabase = [];
 
 // Dữ liệu Bán Hàng & Bán Gà: Khởi tạo an toàn (Tab Bán Hàng chạy Pure Firestore, không dùng localStorage)
 let salesDatabase = [];
@@ -18620,13 +18616,7 @@ function filterDebtByCustomer(custName) {
 }
 
 function renderSoftwareTable(database) {
-  if (!Array.isArray(database) || database.length === 0) {
-    if (Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
-      database = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(softwareDatabase) : JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA));
-      softwareDatabase = database;
-      saveSoftwareStorage();
-    }
-  }
+  if (!Array.isArray(database)) database = softwareDatabase || [];
   updateSoftwareProfits();
 
   const tbody = document.getElementById('softwareTableBody');
