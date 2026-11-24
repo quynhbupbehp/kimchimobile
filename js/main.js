@@ -2277,6 +2277,23 @@ function handleLogin(e) {
   const pass = passEl ? passEl.value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() : '';
   const masterPassList = ["250991", "250995", "Huyen@95", "123456"];
 
+  if (!user) {
+    const err = document.getElementById('loginError');
+    if (err) {
+      err.innerText = 'Vui lòng nhập tài khoản!';
+      err.style.display = 'block';
+    }
+    return false;
+  }
+  if (!pass) {
+    const err = document.getElementById('loginError');
+    if (err) {
+      err.innerText = 'Vui lòng nhập mật khẩu!';
+      err.style.display = 'block';
+    }
+    return false;
+  }
+
   // Lấy danh sách tài khoản hệ thống từ biến systemAccountsDb hoặc mặc định
   let accountsList = (typeof systemAccountsDb !== 'undefined' && Array.isArray(systemAccountsDb) && systemAccountsDb.length > 0) ? systemAccountsDb : (typeof DEFAULT_SYSTEM_ACCOUNTS !== 'undefined' ? DEFAULT_SYSTEM_ACCOUNTS : []);
 

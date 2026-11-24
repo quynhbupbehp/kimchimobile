@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261112_073302";
+    var CURRENT_PAGE_VERSION = "20261112_200500";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -79,6 +79,14 @@
         .catch(function () { /* Lỗi network → bỏ qua, không reload */ });
 
       function doHardReload() {
+        // Tuyệt đối không tự động reload nếu người dùng đang ở màn hình đăng nhập hoặc đang gõ tài khoản/mật khẩu
+        try {
+          var uIn = document.getElementById('loginUser');
+          var pIn = document.getElementById('loginPass');
+          if ((uIn && uIn.value) || (pIn && pIn.value) || document.activeElement === uIn || document.activeElement === pIn) {
+            return;
+          }
+        } catch (e) { }
         var u = new URL(window.location.href);
         u.searchParams.set('_v', Date.now());
         window.location.replace(u.toString());
@@ -308,7 +316,7 @@
           </label>
         </div>
 
-        <button type="submit" class="login-btn" onclick="handleLogin(event)">ĐĂNG NHẬP NGAY</button>
+        <button type="button" class="login-btn" id="btnLoginSubmit" onclick="handleLogin(event)">ĐĂNG NHẬP NGAY</button>
         <button type="button" onclick="hardRefreshApp()"
           style="margin-top: 10px; width: 100%; background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #94a3b8; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
           <span>🔄</span> <span>Làm mới & Tải bản mới nhất (Xóa Cache)</span>
