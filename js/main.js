@@ -11649,15 +11649,9 @@ function checkPhoneModalValidity() {
 
   const nameVal = document.getElementById('mName') ? document.getElementById('mName').value.trim() : '';
   const imeiVal = document.getElementById('mImei') ? document.getElementById('mImei').value.trim() : '';
-  const colorVal = document.getElementById('mColor') ? document.getElementById('mColor').value.trim() : '';
-  const storageVal = document.getElementById('mStorage') ? document.getElementById('mStorage').value.trim() : '';
-  const conditionVal = document.getElementById('mCondition') ? document.getElementById('mCondition').value.trim() : '';
-  const statusVal = document.getElementById('mStatus') ? document.getElementById('mStatus').value.trim() : '';
-  const priceInVal = document.getElementById('mPriceIn') ? document.getElementById('mPriceIn').value.trim() : '';
-  const priceOutVal = document.getElementById('mPriceOut') ? document.getElementById('mPriceOut').value.trim() : '';
 
-  // IMEI chỉ cần có ghi là được (tối đa 4 số)
-  const isValid = Boolean(nameVal && imeiVal && colorVal && storageVal && conditionVal && statusVal && priceInVal && priceOutVal);
+  // Nút Lưu Dữ Liệu luôn sẵn sàng bấm, chỉ cần có tên máy
+  const isValid = Boolean(nameVal);
 
   if (isValid) {
     saveBtn.disabled = false;
@@ -11665,10 +11659,11 @@ function checkPhoneModalValidity() {
     saveBtn.style.cursor = 'pointer';
     saveBtn.style.pointerEvents = 'auto';
   } else {
-    saveBtn.disabled = true;
-    saveBtn.style.opacity = '0.45';
-    saveBtn.style.cursor = 'not-allowed';
-    saveBtn.style.pointerEvents = 'none';
+    // Không khóa cứng pointerEvents='none' để khi người dùng bấm vào vẫn phản hồi hoặc focus ô thiếu
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = '1';
+    saveBtn.style.cursor = 'pointer';
+    saveBtn.style.pointerEvents = 'auto';
   }
 }
 window.checkPhoneModalValidity = checkPhoneModalValidity;
@@ -14470,7 +14465,7 @@ function renderPhoneGrid() {
       }
 
       return `
-                  <tr class="phone-table-row" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
+                  <tr class="phone-table-row" onclick="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
                     <td style="text-align: left; padding-left: 12px; max-width: 280px;">
                       <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;">
                         <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px;">
@@ -14579,7 +14574,7 @@ function renderPhoneGrid() {
       let desktopDotSize = isDesktop ? 36 : 25;
 
       return `
-            <div class="phone-card" ondblclick="viewPhone('${p.id}')" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
+            <div class="phone-card" onclick="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}'); } this._lastTap=now;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
               <div class="phone-card-header">
                 <div class="phone-header-left">
@@ -14608,6 +14603,35 @@ function renderPhoneGrid() {
     }).join('');
   }
 }
+
+// Hiệu ứng highlight hàng / thẻ máy khi click hoặc chạm như bên Báo Giá Chi Tiết
+let activePhoneRowElement = null;
+let activePhoneRowTimeout = null;
+
+function handlePhoneRowClick(rowElement) {
+  if (!rowElement) return;
+  if (window.event && window.event.target && (window.event.target.closest('button') || window.event.target.closest('.action-btn-group') || window.event.target.closest('.phone-card-actions-row'))) return;
+
+  if (activePhoneRowElement && activePhoneRowElement !== rowElement) {
+    activePhoneRowElement.classList.remove('clicked-pink-row');
+  }
+  if (activePhoneRowTimeout) {
+    clearTimeout(activePhoneRowTimeout);
+  }
+
+  activePhoneRowElement = rowElement;
+  activePhoneRowElement.classList.remove('clicked-pink-row');
+  void activePhoneRowElement.offsetWidth;
+  activePhoneRowElement.classList.add('clicked-pink-row');
+
+  activePhoneRowTimeout = setTimeout(() => {
+    if (activePhoneRowElement) {
+      activePhoneRowElement.classList.remove('clicked-pink-row');
+      activePhoneRowElement = null;
+    }
+  }, 4000);
+}
+window.handlePhoneRowClick = handlePhoneRowClick;
 
 // Toggle hiển thị 3 nút Bán, Sửa, Xóa khi click vào ô máy
 function togglePhoneCardActions(cardEl, e) {

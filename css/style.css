@@ -1621,6 +1621,12 @@
       box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
     }
 
+    /* HIGHLIGHT HÀNG / THẺ KHI CHẠM / CLICK NHƯ BÁO GIÁ CHI TIẾT */
+    .clicked-pink-row {
+      background-color: rgba(236, 72, 153, 0.4) !important;
+      transition: background-color 0.3s ease;
+    }
+
     .phone-horizontal-table tbody tr {
       border-bottom: 1px solid #141c2e;
       cursor: pointer;
