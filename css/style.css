@@ -1724,7 +1724,8 @@
       contain: layout style;
     }
 
-    .phone-card:hover {
+    .phone-card:hover,
+    .phone-card:active {
       background-color: rgba(31, 41, 55, 0.5) !important;
       border: 1.5px solid #1e3a5f !important;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45) !important;
@@ -8590,6 +8591,11 @@
           overflow: hidden !important;
           transform: none !important;
           contain: layout style !important;
+          transition: background-color 0.15s ease !important;
+        }
+        .phone-card:hover,
+        .phone-card:active {
+          background-color: rgba(31, 41, 55, 0.5) !important;
         }
         .phone-card-header {
           display: flex !important;
