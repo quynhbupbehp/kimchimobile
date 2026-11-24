@@ -2785,9 +2785,18 @@ function fetchDirectCloudSync(showToastMsg) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          var rawList = data.list;
-          phoneDatabase = rawList;
-          if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
+          // Bảo vệ chống dữ liệu rác cũ (> 500 máy) từ bundle cũ đè lên
+          if (data.list.length > 500 && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length < 300) {
+            console.warn('Phát hiện bundle phones cũ bị phình to (' + data.list.length + ' máy). Tự động chuẩn hóa về seed chuẩn.');
+            phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+            if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+          } else {
+            // Đồng bộ trực tiếp 100% từ Cloud: Thiết bị này (Web/Mobile) nhận đúng những gì thiết bị kia đã tạo/sửa/xóa
+            // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
+            phoneDatabase = rawList;
+            if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
+          }
+          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -2798,7 +2807,15 @@ function fetchDirectCloudSync(showToastMsg) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          soldPhoneDatabase = data.list;
+          // Bảo vệ chống dữ liệu rác cũ (> 300 máy) từ bundle cũ đè lên
+          if (data.list.length > 300 && Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length < 200) {
+            console.warn('Phát hiện bundle sold_phones cũ bị phình to (' + data.list.length + ' máy). Tự động chuẩn hóa về seed chuẩn.');
+            soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
+            if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+          } else {
+            soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
+            try { localStorage.setItem('KIMCHI_SOLD_PHONES_LOCAL', JSON.stringify(soldPhoneDatabase)); } catch (e) { }
+          }
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
       }
@@ -3190,9 +3207,16 @@ function initFirebaseRealtimeSync() {
       if (doc && doc.exists) {
         const data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
+          if (data.list.length > 500 && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length < 300) {
+            console.warn('Bỏ qua sync_bundles phones bị phình to từ cloud cũ');
+            return;
+          }
+          // Đồng bộ trực tiếp 100% từ Cloud Realtime: Web hay Mobile thêm/sửa/xóa là bên kia cập nhật tức thì
+          // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
           const rawList = Array.isArray(data.list) ? data.list : [];
           phoneDatabase = rawList;
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
+          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -3204,7 +3228,12 @@ function initFirebaseRealtimeSync() {
       if (doc && doc.exists) {
         const data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
+          if (data.list.length > 300 && Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length < 200) {
+            console.warn('Bỏ qua sync_bundles sold_phones bị phình to từ cloud cũ');
+            return;
+          }
           soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
+          try { localStorage.setItem('KIMCHI_SOLD_PHONES_LOCAL', JSON.stringify(soldPhoneDatabase)); } catch (e) { }
           if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
         }
       }
@@ -11055,9 +11084,33 @@ function mergeWithSeedPhones(list) {
 }
 window.mergeWithSeedPhones = mergeWithSeedPhones;
 
-// Dữ liệu Bán Máy & Bảo Hành: Khởi tạo Pure Firestore 100% giống Bán Hàng & Phần Mềm
-let soldPhoneDatabase = [];
-let phoneDatabase = [];
+// Dữ liệu Bán Máy & Bảo Hành: Khởi tạo từ Local Cache + Pure Firestore (kèm hợp nhất 188 máy gốc + 96 máy bảo hành)
+function loadInitialSoldPhones() {
+  try {
+    const localRaw = localStorage.getItem('KIMCHI_SOLD_PHONES_LOCAL');
+    if (localRaw) {
+      const parsed = JSON.parse(localRaw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones(parsed) : parsed;
+      }
+    }
+  } catch (e) { }
+  return (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : (window.SEED_SOLD_DATA || []);
+}
+function loadInitialPhones() {
+  try {
+    const localRaw = localStorage.getItem('KIMCHI_PHONES_LOCAL');
+    if (localRaw) {
+      const parsed = JSON.parse(localRaw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(parsed) : parsed;
+      }
+    }
+  } catch (e) { }
+  return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
+}
+let soldPhoneDatabase = loadInitialSoldPhones();
+let phoneDatabase = loadInitialPhones();
 
 // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
 function autoSyncPhonesToWarranty() {
