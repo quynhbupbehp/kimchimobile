@@ -16079,14 +16079,8 @@ function saveSoftwareTicket(e) {
   // ĐỒNG BỘ SANG TAB BÁN HÀNG NẾU CHỌN THANH TOÁN LÀ "BÁN HÀNG"
   const targetSoftwareId = editId ? String(editId) : String(targetItem.id);
   if (paymentStatus === 'BÁN HÀNG') {
-    let rawCust = (customer || '').trim();
-    let shortCust = rawCust;
-    if (shortCust.includes(' ')) {
-      let cParts = shortCust.split(/\s+/).filter(Boolean);
-      shortCust = cParts[cParts.length - 1]; // Lấy tên cuối, ví dụ "Bùi Văn Bình" -> "Bình"
-    }
-    let serviceName = (device || 'Phần Mềm').trim();
-    let salesCommodityName = shortCust ? `${shortCust} : ${serviceName}` : serviceName;
+    let devName = (device || 'Máy').trim();
+    let salesCommodityName = `Phá Mật Khẩu : ${devName}`;
 
     let pNum = parseFloat(price.replace(/\D/g, '')) || 0;
     let salesPriceFormatted = formatPriceStr(pNum);
