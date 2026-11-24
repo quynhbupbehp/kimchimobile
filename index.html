@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261125_011200">
+  <link rel="stylesheet" href="css/style.css?v=20261125_065000">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261125_011200";
+    var CURRENT_PAGE_VERSION = "20261125_065000";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -3186,14 +3186,14 @@
           style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
 
-      <form onsubmit="saveNewPhone(event)" novalidate>
+      <form onsubmit="saveNewPhone(event); return false;" novalidate>
         <input type="hidden" id="mEditId" value="">
 
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Tên Máy *</label>
             <div class="input-with-actions">
-              <input type="text" list="mNameList" class="ticket-input" id="mName" required autocomplete="off"
+              <input type="text" list="mNameList" class="ticket-input" id="mName" autocomplete="off"
                 oninput="formatTitleCaseInput(this); checkPhoneModalValidity();">
               <datalist id="mNameList"></datalist>
               <div class="icon-btn-set">
@@ -3221,7 +3221,7 @@
           <div style="flex: 1; display: flex; gap: 6px;">
             <div class="form-ticket-group" style="width: 58px; flex-shrink: 0;">
               <label class="form-ticket-label" style="text-align: center;">IMEI *</label>
-              <input type="text" class="ticket-input" id="mImei" required maxlength="4" inputmode="numeric"
+              <input type="text" class="ticket-input" id="mImei" maxlength="4" inputmode="numeric"
                 placeholder=""
                 oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4); checkPhoneModalValidity();"
                 style="text-align: center; font-weight: 800; padding: 9px 4px; letter-spacing: 0.5px;">
@@ -3230,7 +3230,7 @@
             <div class="form-ticket-group" style="flex: 1; min-width: 0;">
               <label class="form-ticket-label">Màu Sắc *</label>
               <div class="input-with-actions">
-                <input type="text" list="mColorList" class="ticket-input" id="mColor" required autocomplete="off"
+                <input type="text" list="mColorList" class="ticket-input" id="mColor" autocomplete="off"
                   oninput="formatTitleCaseInput(this); checkPhoneModalValidity();">
                 <datalist id="mColorList"></datalist>
                 <div class="icon-btn-set">
@@ -3261,7 +3261,7 @@
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Dung Lượng Máy *</label>
             <div class="input-with-actions">
-              <input type="text" list="mStorageList" class="ticket-input" id="mStorage" required autocomplete="off"
+              <input type="text" list="mStorageList" class="ticket-input" id="mStorage" autocomplete="off"
                 oninput="formatTitleCaseInput(this); checkPhoneModalValidity();"
                 onblur="formatStorageInput(this); checkPhoneModalValidity();">
               <datalist id="mStorageList"></datalist>
@@ -3290,7 +3290,7 @@
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Tình Trạng Máy *</label>
             <div class="input-with-actions">
-              <input type="text" list="mConditionList" class="ticket-input" id="mCondition" required autocomplete="off"
+              <input type="text" list="mConditionList" class="ticket-input" id="mCondition" autocomplete="off"
                 oninput="formatTitleCaseInput(this); checkPhoneModalValidity();">
               <datalist id="mConditionList"></datalist>
               <div class="icon-btn-set">
@@ -3405,7 +3405,7 @@
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Trạng Thái <span style="color: #ef4444;">*</span></label>
-            <select class="ticket-input" id="mStatus" required onchange="checkPhoneModalValidity();"
+            <select class="ticket-input" id="mStatus" onchange="checkPhoneModalValidity();"
               style="cursor: pointer; font-weight: 800; background: #1e293b; color: #fff; border: 1px solid var(--border-color);">
               <option value="Còn Hàng" selected>Còn Hàng</option>
               <option value="Chưa Xử Lý">Chưa Xử Lý</option>
@@ -3416,14 +3416,14 @@
         <div class="form-ticket-row">
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá Nhập *</label>
-            <input type="text" class="ticket-input" id="mPriceIn" inputmode="numeric" required
+            <input type="text" class="ticket-input" id="mPriceIn" inputmode="numeric"
               oninput="formatCurrencyInput(this); calcModalProfit(); checkPhoneModalValidity();">
           </div>
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label">Giá Bán *</label>
             <input type="text" class="ticket-input" id="mPriceOut" inputmode="numeric"
-              oninput="formatCurrencyInput(this); calcModalProfit(); checkPhoneModalValidity();" required>
+              oninput="formatCurrencyInput(this); calcModalProfit(); checkPhoneModalValidity();">
           </div>
         </div>
 
@@ -3455,7 +3455,7 @@
             <input type="hidden" id="mProfit" value="">
           </div>
 
-          <button type="submit" onclick="saveNewPhone(event)" id="btnSavePhoneModal" class="btn-save-ticket active" style="font-weight: 900;">LƯU DỮ LIỆU</button>
+          <button type="button" onclick="saveNewPhone(event)" id="btnSavePhoneModal" class="btn-save-ticket active" style="font-weight: 900; cursor: pointer; pointer-events: auto !important;">LƯU DỮ LIỆU</button>
         </div>
       </form>
     </div>
@@ -6509,7 +6509,7 @@
   <script src="js/seed_data.js?v=20261125_002000"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261125_011200"></script>
+  <script src="js/main.js?v=20261125_065000"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

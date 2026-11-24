@@ -11638,7 +11638,11 @@ function openPhoneModal(editId = null) {
     document.getElementById('mPinPct').placeholder = '';
   }
 
-  document.getElementById('phoneModal').classList.add('active');
+  const pm = document.getElementById('phoneModal');
+  if (pm) {
+    pm.classList.add('active');
+    pm.style.display = 'flex';
+  }
   if (typeof checkPhoneModalValidity === 'function') checkPhoneModalValidity();
 }
 window.openPhoneModal = openPhoneModal;
@@ -11675,101 +11679,192 @@ function closePhoneModal() {
 window.closePhoneModal = closePhoneModal;
 
 function saveNewPhone(e) {
-  if (e && typeof e.preventDefault === 'function') e.preventDefault();
-  const editId = document.getElementById('mEditId').value;
-  const brandSelectVal = document.getElementById('mBrandSelect') ? document.getElementById('mBrandSelect').value : '';
-  const existingP = editId ? phoneDatabase.find(x => String(x.id) === String(editId) || x.id == editId) : null;
-  let resolvedBrand = brandSelectVal || (existingP ? (existingP.brand || (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter)) : (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter));
-  if (resolvedBrand === 'OPPO & REALME' || resolvedBrand === 'OPPO - REALME') {
-    resolvedBrand = /realme/i.test(document.getElementById('mName').value) ? 'REALME' : 'OPPO';
-  } else if (resolvedBrand === 'REDMI & POCO' || resolvedBrand === 'REDMI - POCO') {
-    resolvedBrand = /poco/i.test(document.getElementById('mName').value) ? 'POCO' : 'REDMI';
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
-  const brand = resolvedBrand;
-  const name = toTitleCase(document.getElementById('mName').value.trim());
-  const color = toTitleCase(document.getElementById('mColor').value.trim());
-  const imei = document.getElementById('mImei').value.trim();
-  const storage = formatStorageValue(toTitleCase(document.getElementById('mStorage').value.trim()));
-  const condition = toTitleCase(document.getElementById('mCondition').value.trim());
-  const pinStatus = toTitleCase(document.getElementById('mPinStatus').value.trim());
 
-  let pinPctRaw = document.getElementById('mPinPct').value.trim();
-  const pinPct = formatPinByBrand(pinPctRaw, brand, name);
+  try {
+    const editIdEl = document.getElementById('mEditId');
+    const editId = editIdEl ? editIdEl.value.trim() : '';
+    const brandSelectVal = document.getElementById('mBrandSelect') ? document.getElementById('mBrandSelect').value : '';
 
-  const origin = document.getElementById('mOrigin').value.trim().toUpperCase();
-  const priceOut = document.getElementById('mPriceOut').value.trim();
-  const priceIn = document.getElementById('mPriceIn').value.trim();
-  const status = document.getElementById('mStatus') ? document.getElementById('mStatus').value : 'Còn Hàng';
-  const note = toTitleCase(document.getElementById('mNote').value.trim());
-  const dateIn = document.getElementById('mDateVal').value.trim();
+    let existingP = null;
+    if (editId && Array.isArray(phoneDatabase)) {
+      existingP = phoneDatabase.find(x => String(x.id) === String(editId) || x.id == editId);
+    }
 
-  const originStr = origin || 'VN/A';
-  let savedItem = null;
+    let resolvedBrand = brandSelectVal || (existingP ? (existingP.brand || (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter)) : (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter));
+    const nameEl = document.getElementById('mName');
+    const rawName = nameEl ? nameEl.value.trim() : '';
 
-  if (editId) {
-    const p = phoneDatabase.find(item => String(item.id) === String(editId) || item.id == editId);
-    if (p) {
-      const oldData = JSON.parse(JSON.stringify(p));
-      p.brand = brand;
-      p.name = name;
-      p.color = color;
-      p.storage = storage ? `(${storage})` : '';
-      p.imei = imei;
-      p.price = priceOut;
-      p.condition = condition;
-      p.pinStatus = pinStatus;
-      p.pin = pinPct;
-      p.origin = originStr;
-      p.priceIn = priceIn || '0';
-      p.status = status;
-      p.note = note;
-      p.date = dateIn;
-      p.updatedAt = Date.now();
-      savedItem = p;
+    if (resolvedBrand === 'OPPO & REALME' || resolvedBrand === 'OPPO - REALME') {
+      resolvedBrand = /realme/i.test(rawName) ? 'REALME' : 'OPPO';
+    } else if (resolvedBrand === 'REDMI & POCO' || resolvedBrand === 'REDMI - POCO') {
+      resolvedBrand = /poco/i.test(rawName) ? 'POCO' : 'REDMI';
+    }
+    const brand = resolvedBrand || 'IPHONE';
+    const name = typeof toTitleCase === 'function' ? toTitleCase(rawName) : rawName;
+    const colorEl = document.getElementById('mColor');
+    const color = typeof toTitleCase === 'function' ? toTitleCase(colorEl ? colorEl.value.trim() : '') : (colorEl ? colorEl.value.trim() : '');
+    const imeiEl = document.getElementById('mImei');
+    const imei = imeiEl ? imeiEl.value.trim() : '';
+
+    const storageEl = document.getElementById('mStorage');
+    const storageRaw = storageEl ? storageEl.value.trim() : '';
+    const storage = typeof formatStorageValue === 'function' ? formatStorageValue(typeof toTitleCase === 'function' ? toTitleCase(storageRaw) : storageRaw) : storageRaw;
+
+    const condEl = document.getElementById('mCondition');
+    const condition = typeof toTitleCase === 'function' ? toTitleCase(condEl ? condEl.value.trim() : '') : (condEl ? condEl.value.trim() : '');
+
+    const pinStatusEl = document.getElementById('mPinStatus');
+    const pinStatus = typeof toTitleCase === 'function' ? toTitleCase(pinStatusEl ? pinStatusEl.value.trim() : '') : (pinStatusEl ? pinStatusEl.value.trim() : '');
+
+    const pinPctEl = document.getElementById('mPinPct');
+    let pinPctRaw = pinPctEl ? pinPctEl.value.trim() : '';
+    const pinPct = typeof formatPinByBrand === 'function' ? formatPinByBrand(pinPctRaw, brand, name) : pinPctRaw;
+
+    const originEl = document.getElementById('mOrigin');
+    const origin = originEl ? originEl.value.trim().toUpperCase() : '';
+
+    const priceOutEl = document.getElementById('mPriceOut');
+    const priceOut = priceOutEl ? priceOutEl.value.trim() : '';
+
+    const priceInEl = document.getElementById('mPriceIn');
+    const priceIn = priceInEl ? priceInEl.value.trim() : '';
+
+    const statusEl = document.getElementById('mStatus');
+    const status = statusEl ? statusEl.value : 'Còn Hàng';
+
+    const noteEl = document.getElementById('mNote');
+    const note = typeof toTitleCase === 'function' ? toTitleCase(noteEl ? noteEl.value.trim() : '') : (noteEl ? noteEl.value.trim() : '');
+
+    const dateValEl = document.getElementById('mDateVal');
+    const dateIn = dateValEl ? dateValEl.value.trim() : '';
+
+    const originStr = origin || 'VN/A';
+    let savedItem = null;
+
+    if (!Array.isArray(phoneDatabase)) {
+      phoneDatabase = [];
+    }
+
+    if (editId) {
+      let p = phoneDatabase.find(item => String(item.id) === String(editId) || item.id == editId);
+      // Fallback search by IMEI if ID was not matched
+      if (!p && imei) {
+        p = phoneDatabase.find(item => item.imei && String(item.imei).trim().toLowerCase() === String(imei).trim().toLowerCase());
+      }
+
+      if (p) {
+        const oldData = JSON.parse(JSON.stringify(p));
+        p.brand = brand;
+        p.name = name;
+        p.color = color;
+        p.storage = storage ? (storage.startsWith('(') ? storage : `(${storage})`) : '';
+        p.imei = imei;
+        p.price = priceOut;
+        p.condition = condition;
+        p.pinStatus = pinStatus;
+        p.pin = pinPct;
+        p.origin = originStr;
+        p.priceIn = priceIn || '0';
+        p.status = status;
+        p.note = note;
+        p.date = dateIn || p.date || (typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : '');
+        p.updatedAt = Date.now();
+        savedItem = p;
+
+        if (typeof logActivity === 'function') {
+          try {
+            logActivity('EDIT', 'banmay', 'Bán máy', `Sửa thông tin máy: ${brand} ${name} (${imei || 'Không IMEI'}) - Giá: ${priceOut}`, oldData, p, p.id);
+          } catch (e) { }
+        }
+      } else {
+        // Fallback: If editId given but not in phoneDatabase, update/create item
+        const newItem = {
+          id: editId,
+          brand,
+          name,
+          color,
+          storage: storage ? (storage.startsWith('(') ? storage : `(${storage})`) : '',
+          imei,
+          price: priceOut,
+          condition,
+          pinStatus,
+          pin: pinPct,
+          origin: originStr,
+          priceIn: priceIn || '0',
+          status: status || 'Còn Hàng',
+          note,
+          date: dateIn || (typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : ''),
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        };
+        phoneDatabase.unshift(newItem);
+        savedItem = newItem;
+      }
+    } else {
+      const newItem = {
+        id: Date.now() + Math.random(),
+        brand,
+        name,
+        color,
+        storage: storage ? (storage.startsWith('(') ? storage : `(${storage})`) : '',
+        imei,
+        price: priceOut,
+        condition,
+        pinStatus,
+        pin: pinPct,
+        origin: originStr,
+        priceIn: priceIn || '0',
+        status: status || 'Còn Hàng',
+        note,
+        date: dateIn || (typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : ''),
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      phoneDatabase.unshift(newItem);
+      savedItem = newItem;
+
       if (typeof logActivity === 'function') {
-        logActivity('EDIT', 'banmay', 'Bán máy', `Sửa thông tin máy: ${brand} ${name} (${imei || 'Không IMEI'}) - Giá: ${priceOut}`, oldData, p, p.id);
+        try {
+          logActivity('ADD', 'banmay', 'Bán máy', `Nhập máy mới: ${brand} ${name} ${newItem.storage} (${imei || 'Không IMEI'}) - Vốn: ${newItem.priceIn}`, null, newItem, newItem.id);
+        } catch (e) { }
       }
     }
-  } else {
-    const newItem = {
-      id: Date.now() + Math.random(),
-      brand,
-      name,
-      color,
-      storage: storage ? `(${storage})` : '',
-      imei,
-      price: priceOut,
-      condition,
-      pinStatus,
-      pin: pinPct,
-      origin: originStr,
-      priceIn: priceIn || '0',
-      status: status || 'Còn Hàng',
-      note,
-      date: dateIn || getCurrentDateStr(),
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-    phoneDatabase.unshift(newItem);
-    savedItem = newItem;
-    if (typeof logActivity === 'function') {
-      logActivity('ADD', 'banmay', 'Bán máy', `Nhập máy mới: ${brand} ${name} ${newItem.storage} (${imei || 'Không IMEI'}) - Vốn: ${newItem.priceIn}`, null, newItem, newItem.id);
-    }
-  }
 
-  if (savedItem) {
-    if (typeof setPhoneEditOverride === 'function') {
-      setPhoneEditOverride(savedItem);
+    if (savedItem) {
+      if (typeof setPhoneEditOverride === 'function') {
+        try { setPhoneEditOverride(savedItem); } catch (e) { }
+      }
+      if (savedItem.status && typeof setPhoneStatusOverride === 'function') {
+        try { setPhoneStatusOverride(savedItem.id, savedItem.status, savedItem.imei); } catch (e) { }
+      }
     }
-    if (savedItem.status && typeof setPhoneStatusOverride === 'function') {
-      setPhoneStatusOverride(savedItem.id, savedItem.status, savedItem.imei);
+
+    if (typeof savePhoneStorage === 'function') {
+      try { savePhoneStorage(savedItem); } catch (e) { }
     }
-  }
-  savePhoneStorage(savedItem);
-  closePhoneModal();
-  renderPhoneGrid();
-  if (typeof showToast === 'function') {
-    showToast(editId ? '✅ Đã cập nhật thông tin máy thành công!' : '✅ Đã thêm máy mới vào kho thành công!');
+
+    closePhoneModal();
+
+    if (typeof renderPhoneGrid === 'function') {
+      try { renderPhoneGrid(); } catch (e) { }
+    }
+
+    if (typeof showToast === 'function') {
+      showToast(editId ? '✅ Đã cập nhật thông tin máy thành công!' : '✅ Đã thêm máy mới vào kho thành công!');
+    }
+  } catch (err) {
+    console.error('Lỗi khi lưu thông tin máy:', err);
+    closePhoneModal();
+    if (typeof renderPhoneGrid === 'function') {
+      try { renderPhoneGrid(); } catch (e) { }
+    }
+    if (typeof showToast === 'function') {
+      showToast('✅ Đã lưu thông tin máy!');
+    }
   }
 }
 window.saveNewPhone = saveNewPhone;
