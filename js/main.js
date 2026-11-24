@@ -11669,11 +11669,13 @@ function checkPhoneModalValidity() {
 window.checkPhoneModalValidity = checkPhoneModalValidity;
 
 function closePhoneModal() {
-  document.getElementById('phoneModal').classList.remove('active');
+  const modal = document.getElementById('phoneModal');
+  if (modal) modal.classList.remove('active');
 }
+window.closePhoneModal = closePhoneModal;
 
 function saveNewPhone(e) {
-  e.preventDefault();
+  if (e && typeof e.preventDefault === 'function') e.preventDefault();
   const editId = document.getElementById('mEditId').value;
   const brandSelectVal = document.getElementById('mBrandSelect') ? document.getElementById('mBrandSelect').value : '';
   const existingP = editId ? phoneDatabase.find(x => String(x.id) === String(editId) || x.id == editId) : null;
@@ -11770,6 +11772,7 @@ function saveNewPhone(e) {
     showToast(editId ? '✅ Đã cập nhật thông tin máy thành công!' : '✅ Đã thêm máy mới vào kho thành công!');
   }
 }
+window.saveNewPhone = saveNewPhone;
 
 function viewPhone(id, fromSold = false) {
   let p = null;
@@ -14465,7 +14468,7 @@ function renderPhoneGrid() {
       }
 
       return `
-                  <tr class="phone-table-row" onclick="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
+                  <tr class="phone-table-row" onclick="handlePhoneRowClick(this)" ontouchstart="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
                     <td style="text-align: left; padding-left: 12px; max-width: 280px;">
                       <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;">
                         <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px;">
@@ -14574,7 +14577,7 @@ function renderPhoneGrid() {
       let desktopDotSize = isDesktop ? 36 : 25;
 
       return `
-            <div class="phone-card" onclick="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}'); } this._lastTap=now;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
+            <div class="phone-card" onclick="handlePhoneRowClick(this)" ontouchstart="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}'); } this._lastTap=now;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
               <div class="phone-card-header">
                 <div class="phone-header-left">
@@ -15123,7 +15126,7 @@ function renderSoldPhoneTable() {
       let formattedPrice = isSoldPhonePricesHidden ? '*****' : (formatPriceStr(p.price || p.total) || '0');
 
       return `
-            <div class="phone-card sold-phone-card" ondblclick="viewPhone('${p.id}', true)" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}', true); } this._lastTap=now;" title="Nháy 2 lần để xem chi tiết máy">
+            <div class="phone-card sold-phone-card" onclick="handlePhoneRowClick(this)" ontouchstart="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}', true)" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}', true); } this._lastTap=now;" title="Nháy 2 lần để xem chi tiết máy">
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
               <div class="phone-card-header">
                 <div class="phone-header-left">
