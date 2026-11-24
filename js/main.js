@@ -2691,39 +2691,8 @@ async function manualSyncAllToFirestore() {
 window.manualSyncAllToFirestore = manualSyncAllToFirestore;
 
 function autoPushLocalDataToFirestore() {
-  // Tự động chuẩn hóa đè 1 lần duy nhất lên sync_bundles cho Bán Máy & Bảo Hành nếu chưa chuẩn hóa
-  try {
-    if (typeof db === 'undefined' || !db) return;
-    const isCleaned = localStorage.getItem('KIMCHI_PHONES_CLEAN_150_V2');
-    if (isCleaned !== 'true') {
-      try {
-        localStorage.removeItem('KIMCHI_SOLD_OUT_IDS');
-        localStorage.removeItem('KIMCHI_PHONES_DELETED_IDS');
-        localStorage.removeItem('KIMCHI_PHONE_STATUS_OVERRIDES');
-        localStorage.removeItem('KIMCHI_PHONE_EDIT_OVERRIDES');
-      } catch (e) { }
-
-      if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-        phoneDatabase = JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
-        try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
-      }
-
-      if (Array.isArray(phoneDatabase) && phoneDatabase.length > 0 && phoneDatabase.length <= 300) {
-        db.collection('sync_bundles').doc('phones').set({
-          list: sanitizeForFirestore(phoneDatabase),
-          updatedAt: Date.now()
-        }, { merge: true }).catch(function () { });
-      }
-      if (Array.isArray(soldPhoneDatabase) && soldPhoneDatabase.length > 0 && soldPhoneDatabase.length <= 200) {
-        db.collection('sync_bundles').doc('sold_phones').set({
-          list: sanitizeForFirestore(soldPhoneDatabase),
-          updatedAt: Date.now()
-        }, { merge: true }).catch(function () { });
-      }
-      localStorage.setItem('KIMCHI_PHONES_CLEAN_150_V2', 'true');
-      if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
-    }
-  } catch (e) { }
+  // ĐÃ VÔ HIỆU HÓA: Không tự động đẩy seed_data lên Cloud khi mở app trên thiết bị mới
+  // Giữ nguyên dữ liệu đám mây thực tế 100%, bảo vệ dữ liệu đã có trên Web
   return;
 }
 window.autoPushLocalDataToFirestore = autoPushLocalDataToFirestore;
@@ -2795,17 +2764,7 @@ function fetchDirectCloudSync(showToastMsg) {
           } else {
             // Đồng bộ trực tiếp 100% từ Cloud: Thiết bị này (Web/Mobile) nhận đúng những gì thiết bị kia đã tạo/sửa/xóa
             // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
-            var rawList = Array.isArray(data.list) ? data.list : [];
-            var soldIds = typeof getSoldPhoneIds === 'function' ? getSoldPhoneIds() : new Set();
-            var deletedIds = typeof getDeletedPhoneIds === 'function' ? getDeletedPhoneIds() : new Set();
-            phoneDatabase = rawList.filter(function (p) {
-              if (!p) return false;
-              var pId = String(p.id || '');
-              var pImeiKey = p.imei ? ('imei_' + String(p.imei).trim().toLowerCase()) : '';
-              if (pId && (soldIds.has(pId) || deletedIds.has(pId))) return false;
-              if (pImeiKey && (soldIds.has(pImeiKey) || deletedIds.has(pImeiKey))) return false;
-              return true;
-            });
+            phoneDatabase = rawList;
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
@@ -2878,6 +2837,10 @@ function fetchDirectCloudSync(showToastMsg) {
     }
   } catch (e) {
     console.warn('Lỗi fetchDirectCloudSync:', e);
+    if (showToastMsg) alert('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng!');
+  }
+  if (showToastMsg) {
+    alert('Đã tải và làm mới dữ liệu mới nhất từ đám mây thành công!');
   }
 }
 window.fetchDirectCloudSync = fetchDirectCloudSync;
@@ -3189,16 +3152,7 @@ function initFirebaseRealtimeSync() {
           // Đồng bộ trực tiếp 100% từ Cloud Realtime: Web hay Mobile thêm/sửa/xóa là bên kia cập nhật tức thì
           // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
           const rawList = Array.isArray(data.list) ? data.list : [];
-          const soldIds = typeof getSoldPhoneIds === 'function' ? getSoldPhoneIds() : new Set();
-          const deletedIds = typeof getDeletedPhoneIds === 'function' ? getDeletedPhoneIds() : new Set();
-          phoneDatabase = rawList.filter(p => {
-            if (!p) return false;
-            const pId = String(p.id || '');
-            const pImeiKey = p.imei ? ('imei_' + String(p.imei).trim().toLowerCase()) : '';
-            if (pId && (soldIds.has(pId) || deletedIds.has(pId))) return false;
-            if (pImeiKey && (soldIds.has(pImeiKey) || deletedIds.has(pImeiKey))) return false;
-            return true;
-          });
+          phoneDatabase = rawList;
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
