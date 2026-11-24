@@ -14303,11 +14303,49 @@ function renderPhoneGrid() {
       return aDiff - bDiff;
     });
   } else {
-    // Sắp xếp theo thứ tự thêm mới hoặc sửa thông tin gần nhất lên đầu
+    // Helper lấy timestamp ngày thêm máy chuẩn xác (hỗ trợ cả DD/MM/YYYY, YYYY-MM-DD, và timestamp)
+    const parsePhoneDateTimestamp = (p) => {
+      if (!p) return 0;
+      let dStr = (p.date || p.dateIn || '').trim();
+      if (dStr) {
+        if (dStr.includes('/')) {
+          const parts = dStr.split('/');
+          if (parts.length === 3) {
+            const d = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const y = parseInt(parts[2], 10);
+            const t = new Date(y, m, d).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+        } else if (dStr.includes('-')) {
+          const parts = dStr.split('-');
+          if (parts.length === 3) {
+            let y, m, d;
+            if (parts[0].length === 4) {
+              y = parseInt(parts[0], 10);
+              m = parseInt(parts[1], 10) - 1;
+              d = parseInt(parts[2], 10);
+            } else {
+              d = parseInt(parts[0], 10);
+              m = parseInt(parts[1], 10) - 1;
+              y = parseInt(parts[2], 10);
+            }
+            const t = new Date(y, m, d).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+        }
+      }
+      return Number(p.updatedAt) || Number(p.createdAt) || Number(p.id) || 0;
+    };
+
+    // Sắp xếp theo thứ tự ngày nhập / ngày thêm gần nhất lên trước (như trên Web)
     filtered.sort((a, b) => {
-      let tB = Number(b.updatedAt) || Number(b.createdAt) || Number(b.id) || 0;
-      let tA = Number(a.updatedAt) || Number(a.createdAt) || Number(a.id) || 0;
-      return tB - tA;
+      let tB = parsePhoneDateTimestamp(b);
+      let tA = parsePhoneDateTimestamp(a);
+      if (tB !== tA) return tB - tA;
+      let idB = Number(b.updatedAt) || Number(b.createdAt) || Number(b.id) || 0;
+      let idA = Number(a.updatedAt) || Number(a.createdAt) || Number(a.id) || 0;
+      return idB - idA;
     });
   }
 
