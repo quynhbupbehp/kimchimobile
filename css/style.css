@@ -1714,18 +1714,19 @@
       flex-direction: column;
       gap: 5px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45) !important;
-      transition: transform 0.15s ease, border-color 0.15s ease, border-width 0.15s ease, box-shadow 0.15s ease;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
       cursor: pointer;
       user-select: none;
       box-sizing: border-box;
       min-width: 0;
       overflow: hidden;
+      contain: layout style;
     }
 
     .phone-card:hover {
       border: 1.5px solid #ef4444 !important;
       box-shadow: 0 0 16px rgba(239, 68, 68, 0.6), 0 4px 16px rgba(0, 0, 0, 0.6) !important;
-      transform: translateY(-2px);
+      transform: none !important;
     }
 
     /* HÀNG 1: TÊN MÁY + CHẤM MÀU + DUNG LƯỢNG | GIÁ BÁN Ở GIỮA | ĐÓNG KHUNG IMEI */
@@ -8586,6 +8587,8 @@
           gap: 6px !important;
           box-sizing: border-box !important;
           overflow: hidden !important;
+          transform: none !important;
+          contain: layout style !important;
         }
         .phone-card-header {
           display: flex !important;
