@@ -15130,6 +15130,16 @@ function getSwDropdownItems(type) {
     list = [...cfg.defaults];
   }
 
+  // Tự động gom thêm danh sách Khách hàng từ dữ liệu Phần Mềm thực tế để Mobile và Web luôn có đầy đủ 100% khách
+  if (type === 'customer' && typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
+    softwareDatabase.forEach(item => {
+      if (item && item.customer) {
+        let cName = String(item.customer).trim();
+        if (cName) list.push(cName);
+      }
+    });
+  }
+
   // Loại bỏ trùng lặp và khoảng trắng thừa (chuẩn hóa cả không dấu và viết hoa/thường)
   let cleanMap = new Map();
   list.forEach(item => {
@@ -15288,13 +15298,19 @@ function renderSwDropdownMenu(type, keyword) {
 
   let filtered = items;
   if (keyword && typeof keyword === 'string' && keyword.trim()) {
-    const kw = keyword.trim().toLowerCase();
-    filtered = items.filter(v => v.toLowerCase().includes(kw));
+    const rawKw = keyword.trim().toLowerCase();
+    const normKw = rawKw.replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    filtered = items.filter(v => {
+      if (!v) return false;
+      const rawV = String(v).toLowerCase();
+      const normV = rawV.replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return rawV.includes(rawKw) || normV.includes(normKw);
+    });
   }
 
   if (filtered.length === 0) {
     if (window.innerWidth <= 768) {
-      closeSwDropdown();
+      closeAllSwDropdowns(null);
       return;
     }
     const cleanKw = keyword ? keyword.trim() : '';
@@ -15345,8 +15361,8 @@ function openSwDropdown(type) {
   }, 50);
 }
 
-// Event delegation: bắt mousedown trên TẤT CẢ sw-dropdown-item & nút thêm nhanh qua document
-document.addEventListener('mousedown', function (e) {
+// Event delegation: bắt mousedown & pointerdown trên TẤT CẢ sw-dropdown-item & nút thêm nhanh qua document (hỗ trợ cả Web & Mobile cảm ứng)
+function handleSwDropdownSelectionEvent(e) {
   const quickBtn = e.target.closest('.sw-btn-quick-add');
   if (quickBtn && quickBtn.dataset.type && quickBtn.dataset.val) {
     e.preventDefault();
@@ -15365,16 +15381,20 @@ document.addEventListener('mousedown', function (e) {
     e.preventDefault(); // Ngăn input blur
     selectSwDropdownItem(item.dataset.type, item.dataset.value);
   }
-});
+}
+document.addEventListener('mousedown', handleSwDropdownSelectionEvent);
+document.addEventListener('pointerdown', handleSwDropdownSelectionEvent);
 
-// Đóng dropdown khi click ra ngoài (dùng mousedown để đồng bộ thứ tự event)
-document.addEventListener('mousedown', function (e) {
+// Đóng dropdown khi click ra ngoài (dùng mousedown & pointerdown để đồng bộ thứ tự event)
+function handleSwDropdownOutsideClick(e) {
   if (e.target.closest('.sw-dropdown-item')) return; // Item đã được xử lý ở trên
   const isInsideCol = e.target.closest('.sw-input-col');
   if (!isInsideCol) {
     closeAllSwDropdowns(null);
   }
-});
+}
+document.addEventListener('mousedown', handleSwDropdownOutsideClick);
+document.addEventListener('pointerdown', handleSwDropdownOutsideClick);
 
 function toggleSwDropdown(type) {
   const meta = SW_DROPDOWN_META[type];
@@ -15395,9 +15415,12 @@ function filterSwDropdown(type, keyword) {
   if (!meta) return;
   const menu = document.getElementById(meta.menuId);
   if (!menu) return;
-  if (menu.classList.contains('open')) {
-    renderSwDropdownMenu(type, keyword);
+  // Đảm bảo dropdown mở ra khi gõ để hiển thị gợi ý tức thì giống như trên Web
+  if (!menu.classList.contains('open')) {
+    closeAllSwDropdowns(type);
+    menu.classList.add('open');
   }
+  renderSwDropdownMenu(type, keyword);
 }
 
 function handleSwDeviceChange(val) {
