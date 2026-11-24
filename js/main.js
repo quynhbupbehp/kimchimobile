@@ -2832,6 +2832,41 @@ function fetchDirectCloudSync(showToastMsg) {
       }
     }).catch(function (e) { console.warn('fetchDirectCloudSync activity_logs:', e); });
 
+    // 9. Tải Báo Giá Linh Kiện (parts) Bundle
+    db.collection('sync_bundles').doc('parts').get().then(function (doc) {
+      if (doc && doc.exists) {
+        var data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          partsDatabase = data.list;
+          if (typeof renderPartsTable === 'function') renderPartsTable();
+        }
+      }
+    }).catch(function (e) { console.warn('fetchDirectCloudSync parts:', e); });
+
+    // 10. Tải Mình Nợ (my_debt) Bundle
+    db.collection('sync_bundles').doc('my_debt').get().then(function (doc) {
+      if (doc && doc.exists) {
+        var data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          myDebtDatabase = data.list;
+          if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
+          if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+        }
+      }
+    }).catch(function (e) { console.warn('fetchDirectCloudSync my_debt:', e); });
+
+    // 11. Tải Nợ Khác (other_debt) Bundle
+    db.collection('sync_bundles').doc('other_debt').get().then(function (doc) {
+      if (doc && doc.exists) {
+        var data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          otherDebtDatabase = data.list;
+          if (typeof renderDebtOtherList === 'function') renderDebtOtherList();
+          if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+        }
+      }
+    }).catch(function (e) { console.warn('fetchDirectCloudSync other_debt:', e); });
+
     if (showToastMsg && typeof showToast === 'function') {
       showToast('⚡ Đã đồng bộ dữ liệu đám mây mới nhất!');
     }
@@ -3222,6 +3257,47 @@ function initFirebaseRealtimeSync() {
         }
       }
     }, err => console.warn('Bundle sync activity_logs notice:', err.code || err));
+  } catch (e) { }
+
+  // Đồng bộ Báo Giá Linh Kiện (parts) siêu tốc qua sync_bundles
+  try {
+    db.collection('sync_bundles').doc('parts').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          partsDatabase = data.list;
+          if (typeof renderPartsTable === 'function') renderPartsTable();
+        }
+      }
+    }, err => console.warn('Bundle sync parts notice:', err.code || err));
+  } catch (e) { }
+
+  // Đồng bộ Mình Nợ (my_debt) siêu tốc qua sync_bundles
+  try {
+    db.collection('sync_bundles').doc('my_debt').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          myDebtDatabase = data.list;
+          if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
+          if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+        }
+      }
+    }, err => console.warn('Bundle sync my_debt notice:', err.code || err));
+  } catch (e) { }
+
+  // Đồng bộ Nợ Khác (other_debt) siêu tốc qua sync_bundles
+  try {
+    db.collection('sync_bundles').doc('other_debt').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          otherDebtDatabase = data.list;
+          if (typeof renderDebtOtherList === 'function') renderDebtOtherList();
+          if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+        }
+      }
+    }, err => console.warn('Bundle sync other_debt notice:', err.code || err));
   } catch (e) { }
 
   // ĐÃ CHUYỂN TOÀN BỘ CÁC TAB SANG CƠ CHẾ SYNC_BUNDLES SIÊU TIẾT KIỆM QUOTA (RULE 6)
@@ -25796,7 +25872,7 @@ function removeDuplicateMainXacItems() {
   if (typeof db !== 'undefined' && db) {
     duplicates.forEach(item => {
       if (item && item.id) {
-        db.collection('main_xac').doc(String(item.id)).delete().catch(console.error);
+        db.collection('mainxac').doc(String(item.id)).delete().catch(console.error);
       }
     });
   }
