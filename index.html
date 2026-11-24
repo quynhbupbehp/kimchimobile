@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -11,7 +11,7 @@
   <title>Kim Chi Mobile</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='21.5' font-family='Arial, sans-serif' font-size='14' font-weight='900' fill='white' text-anchor='middle'%3EKC%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261125_011316">
+  <link rel="stylesheet" href="css/style.css?v=20261125_011200">
   <!-- Thư viện SheetJS đọc/ghi Excel .xlsx chuẩn Microsoft Excel -->
   <script src="js/xlsx.full.min.js"></script>
   <script>
@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261125_011316";
+    var CURRENT_PAGE_VERSION = "20261125_011200";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -79,6 +79,14 @@
         .catch(function () { /* Lỗi network → bỏ qua, không reload */ });
 
       function doHardReload() {
+        // Tuyệt đối không tự động reload nếu người dùng đang ở màn hình đăng nhập hoặc đang gõ tài khoản/mật khẩu
+        try {
+          var uIn = document.getElementById('loginUser');
+          var pIn = document.getElementById('loginPass');
+          if ((uIn && uIn.value) || (pIn && pIn.value) || document.activeElement === uIn || document.activeElement === pIn) {
+            return;
+          }
+        } catch (e) { }
         var u = new URL(window.location.href);
         u.searchParams.set('_v', Date.now());
         window.location.replace(u.toString());
@@ -131,15 +139,21 @@
       function checkLoginEarly() {
         var isLogged = false;
         try {
-          var token = sessionStorage.getItem('KIMCHI_AUTH_TOKEN') || localStorage.getItem('KIMCHI_AUTH_TOKEN');
-          var loggedFlag = sessionStorage.getItem('KIMCHI_LOGGED') || localStorage.getItem('KIMCHI_LOGGED');
-          var validTokens = ['250991', '250995', 'Huyen@95', '123456', 'logged'];
-          if (loggedFlag === 'true') {
+          if (window.KIMCHI_IN_MEMORY_LOGGED === true) {
             isLogged = true;
-          } else if (token) {
-            isLogged = validTokens.indexOf(token) !== -1 || token.length >= 4;
+          } else {
+            var token = sessionStorage.getItem('KIMCHI_AUTH_TOKEN') || localStorage.getItem('KIMCHI_AUTH_TOKEN');
+            var loggedFlag = sessionStorage.getItem('KIMCHI_LOGGED') || localStorage.getItem('KIMCHI_LOGGED');
+            var validTokens = ['250991', '250995', 'Huyen@95', '123456', 'logged'];
+            if (loggedFlag === 'true') {
+              isLogged = true;
+            } else if (token) {
+              isLogged = validTokens.indexOf(token) !== -1 || token.length >= 4;
+            }
           }
-        } catch (e) { }
+        } catch (e) {
+          if (window.KIMCHI_IN_MEMORY_LOGGED === true) isLogged = true;
+        }
 
         var sc = document.getElementById('loginScreen');
         if (isLogged) {
@@ -148,7 +162,7 @@
             document.body.style.pointerEvents = 'auto';
             document.body.style.touchAction = 'auto';
           }
-          if (sc) sc.style.display = 'none';
+          if (sc) sc.style.setProperty('display', 'none', 'important');
           document.documentElement.classList.add('user-is-logged');
         } else {
           if (document.body) {
@@ -161,6 +175,93 @@
       checkLoginEarly();
       window.addEventListener('DOMContentLoaded', checkLoginEarly);
       window.addEventListener('load', checkLoginEarly);
+
+      // CUNG CẤP HÀM XÁC THỰC NGAY TẠI HEAD (HOẠT ĐỘNG 100% KỂ CẢ KHI SCRIPT CHÍNH ĐANG TẢI)
+      window.handleLogin = function (e) {
+        if (e) {
+          if (typeof e.preventDefault === 'function') e.preventDefault();
+          if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        }
+        var userEl = document.getElementById('loginUser');
+        var passEl = document.getElementById('loginPass');
+        var user = userEl ? userEl.value.trim().toLowerCase() : '';
+        var pass = passEl ? passEl.value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() : '';
+        var err = document.getElementById('loginError');
+
+        if (!user) {
+          if (err) { err.innerText = 'Vui lòng nhập tài khoản!'; err.style.display = 'block'; }
+          return false;
+        }
+        if (!pass) {
+          if (err) { err.innerText = 'Vui lòng nhập mật khẩu!'; err.style.display = 'block'; }
+          return false;
+        }
+
+        var masterPassList = ["250991", "250995", "Huyen@95", "123456"];
+        var isMaster = masterPassList.indexOf(pass) !== -1;
+        var isValidUser = (user === 'admin' || user === 'quynhbupbe' || user === 'huyenxinh');
+
+        // Kiểm tra với systemAccountsDb nếu đã nạp
+        var isAccountMatch = false;
+        if (typeof systemAccountsDb !== 'undefined' && Array.isArray(systemAccountsDb)) {
+          var acc = systemAccountsDb.find(function (a) {
+            return (a.username || '').trim().toLowerCase() === user || (a.id || '').trim().toLowerCase() === user;
+          });
+          if (acc) {
+            if (acc.status === 'Inactive') {
+              if (err) { err.innerText = 'Tài khoản này đã bị tạm khóa (Inactive)!'; err.style.display = 'block'; }
+              return false;
+            }
+            if (acc.password && pass === acc.password) isAccountMatch = true;
+          }
+        }
+
+        if (isMaster || isAccountMatch || (isValidUser && pass === '123456')) {
+          window.KIMCHI_IN_MEMORY_LOGGED = true;
+          window.KIMCHI_CURRENT_USER = user;
+          var sc = document.getElementById('loginScreen');
+          if (sc) sc.style.setProperty('display', 'none', 'important');
+          if (document.body) {
+            document.body.classList.remove('login-locked', 'login-active');
+            document.body.style.pointerEvents = 'auto';
+            document.body.style.touchAction = 'auto';
+          }
+          document.documentElement.classList.add('user-is-logged');
+          if (err) err.style.display = 'none';
+
+          try {
+            sessionStorage.setItem('KIMCHI_AUTH_TOKEN', pass || 'logged');
+            sessionStorage.setItem('KIMCHI_LOGGED', 'true');
+            sessionStorage.setItem('KIMCHI_CURRENT_USER', user);
+            var rem = document.getElementById('rememberMe');
+            if (rem && rem.checked) {
+              localStorage.setItem('KIMCHI_AUTH_TOKEN', pass || 'logged');
+              localStorage.setItem('KIMCHI_LOGGED', 'true');
+              localStorage.setItem('KIMCHI_CURRENT_USER', user);
+            }
+          } catch (storageErr) { }
+
+          // Kích hoạt render lại dữ liệu nếu main.js đã tải xong
+          setTimeout(function () {
+            try {
+              if (typeof renderSalesTable === 'function' && typeof salesDatabase !== 'undefined') renderSalesTable(salesDatabase);
+              if (typeof renderBangaTable === 'function' && typeof bangaDatabase !== 'undefined') renderBangaTable(bangaDatabase);
+              if (typeof renderSoftwareTable === 'function' && typeof softwareDatabase !== 'undefined') renderSoftwareTable(softwareDatabase);
+              if (typeof renderRepairTable === 'function' && typeof repairDatabase !== 'undefined') renderRepairTable(repairDatabase);
+              if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+              if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+            } catch (e) { }
+          }, 200);
+
+          return false;
+        } else {
+          if (err) {
+            err.innerText = 'Mật khẩu hoặc tài khoản không chính xác! Vui lòng thử lại.';
+            err.style.display = 'block';
+          }
+          return false;
+        }
+      };
 
 
       function removeNetlifyBadge() {
@@ -275,7 +376,7 @@
       <div class="login-title">KIM CHI MOBILE</div>
       <div class="login-sub">ĐĂNG NHẬP HỆ THỐNG QUẢN LÝ</div>
 
-      <form onsubmit="handleLogin(event)">
+      <form onsubmit="handleLogin(event); return false;" novalidate>
         <div class="login-field">
           <label class="login-label">Tài Khoản Đăng Nhập</label>
           <input type="text" id="loginUser" class="login-input" placeholder="Nhập tài khoản" required
@@ -302,7 +403,7 @@
           </label>
         </div>
 
-        <button type="submit" class="login-btn">ĐĂNG NHẬP NGAY</button>
+        <button type="button" class="login-btn" id="btnLoginSubmit" onclick="handleLogin(event)">ĐĂNG NHẬP NGAY</button>
         <button type="button" onclick="hardRefreshApp()"
           style="margin-top: 10px; width: 100%; background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #94a3b8; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
           <span>🔄</span> <span>Làm mới & Tải bản mới nhất (Xóa Cache)</span>
@@ -451,7 +552,8 @@
             <div class="sales-excel-wrapper excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnSalesExcelToggle" class="btn-excel-toggle-custom"
                 onclick="toggleSalesExcelActions(event)" title="Menu Nhập / Xuất Excel Bán Hàng">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="8" y1="13" x2="16" y2="13"></line>
@@ -461,17 +563,20 @@
               </button>
 
               <div id="salesExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportSalesExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="triggerImportSalesExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Bán Hàng từ file Excel (.csv, .xlsx)"
                   style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
                   📥 Nhập Excel
                 </button>
-                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportSalesToExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales btn-export-excel-action"
+                  onclick="exportSalesToExcel(); closeAllExcelDropdowns();"
                   title="Xuất danh sách Bán Hàng ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
                   📤 Xuất Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="removeDuplicateSalesItems(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="removeDuplicateSalesItems(); closeAllExcelDropdowns();"
                   title="Xóa các đơn bán hàng trùng lặp, chỉ giữ lại duy nhất 1 đơn"
                   style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
                   🧹 Lọc Trùng
@@ -537,8 +642,8 @@
             <span class="search-label-single-line">TÌM KIẾM</span>
             <input type="text" id="salesSearchInput" class="search-input-field search-sales-input" inputmode="text"
               placeholder="🔍 Tìm khách / hàng..." oninput="handleSalesSearchInput(this)"
-              onfocus="handleSalesSearchInput(this)" onkeydown="handleSalesSearchKeydown(event)"
-              autocomplete="off" style="width: 200px;">
+              onfocus="handleSalesSearchInput(this)" onkeydown="handleSalesSearchKeydown(event)" autocomplete="off"
+              style="width: 200px;">
             <button type="button" id="btnClearSalesSearch" class="btn-clear-search" onclick="clearSalesSearch()"
               title="Xóa tìm kiếm">✕</button>
             <div id="salesSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;"></div>
@@ -565,21 +670,20 @@
         <div class="sales-actions-row"
           style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: nowrap; white-space: nowrap; width: 100%;">
           <!-- CỤM 1: DANH SÁCH BÁN HÀNG NỀN HỒNG CHỮ TRẮNG + ICON HÓA ĐƠN + ICON CÂY BÚT GHI CHÚ -->
-          <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex: 1 1 0; min-width: 0;">
+          <div
+            style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex: 1 1 0; min-width: 0;">
             <button type="button" class="sw-pill-btn sw-btn-pink active" id="salesMainTitleBar"
               style="height: 32px; padding: 0 14px; border-radius: 8px; font-weight: 900; font-size: 0.92rem; letter-spacing: 0.5px; white-space: nowrap; cursor: default; text-transform: uppercase; box-shadow: 0 0 14px rgba(236,72,153,0.5); flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">DANH
               SÁCH BÁN HÀNG</button>
             <!-- ICON HÓA ĐƠN (TO BẰNG NÚT BIDV 32x32, CLICK ĐỂ MỞ LINK, NHẤN GIỮ ĐỂ CHÈN LINK) -->
             <button type="button" id="btnSalesInvoiceLink" class="btn-sales-invoice-link"
               title="Click để mở Link Hóa Đơn (Nhấn giữ để chèn/sửa Link)"
-              onmousedown="handleSalesInvoicePressStart(event)"
-              onmouseup="handleSalesInvoicePressEnd(event)"
-              onmouseleave="handleSalesInvoicePressEnd(event)"
-              ontouchstart="handleSalesInvoicePressStart(event)"
-              ontouchend="handleSalesInvoicePressEnd(event)"
-              onclick="handleSalesInvoiceClick(event)"
+              onmousedown="handleSalesInvoicePressStart(event)" onmouseup="handleSalesInvoicePressEnd(event)"
+              onmouseleave="handleSalesInvoicePressEnd(event)" ontouchstart="handleSalesInvoicePressStart(event)"
+              ontouchend="handleSalesInvoicePressEnd(event)" onclick="handleSalesInvoiceClick(event)"
               style="width: 32px; height: 32px; min-width: 32px; padding: 0; background: #0f172a; border: 1.5px solid #38bdf8; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35); flex-shrink: 0; transition: all 0.15s ease; user-select: none;">
-              <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: #38bdf8; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block; pointer-events: none;">
+              <svg viewBox="0 0 24 24"
+                style="width: 20px; height: 20px; fill: none; stroke: #38bdf8; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block; pointer-events: none;">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16l2.5-1.5L9 20l2.5-1.5L14 20l2.5-1.5L19 20l1-0.6V8z"></path>
                 <path d="M14 2v6h6"></path>
                 <line x1="8" y1="11" x2="16" y2="11"></line>
@@ -588,10 +692,10 @@
             </button>
             <!-- ICON CÂY BÚT (TO BẰNG NÚT BIDV 32x32, BẤM ĐỂ MỞ BẢNG GHI CHÚ BÁN HÀNG) -->
             <button type="button" id="btnSalesNotePad" class="btn-sales-notepad"
-              title="Bấm để mở Sổ Tay Ghi Chú Bán Hàng"
-              onclick="openSalesNotePadModal()"
+              title="Bấm để mở Sổ Tay Ghi Chú Bán Hàng" onclick="openSalesNotePadModal()"
               style="width: 32px; height: 32px; min-width: 32px; padding: 0; background: #0f172a; border: 1.5px solid #f59e0b; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35); flex-shrink: 0; transition: all 0.15s ease;">
-              <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: none; stroke: #f59e0b; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block;">
+              <svg viewBox="0 0 24 24"
+                style="width: 18px; height: 18px; fill: none; stroke: #f59e0b; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block;">
                 <path d="M12 20h9"></path>
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
               </svg>
@@ -722,10 +826,9 @@
             style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 1 1 0; min-width: 0;">
             <!-- 1. NÚT VIẾT GHI CHÚ (SỔ TAY) TRÊN MOBILE -->
             <button type="button" id="btnSalesNotePadMobile" class="btn-sales-notepad-mobile"
-              title="Bấm để mở Sổ Tay Ghi Chú Bán Hàng"
-              onclick="openSalesNotePadModal()"
-              style="display: none;">
-              <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: #f59e0b; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block;">
+              title="Bấm để mở Sổ Tay Ghi Chú Bán Hàng" onclick="openSalesNotePadModal()" style="display: none;">
+              <svg viewBox="0 0 24 24"
+                style="width: 20px; height: 20px; fill: none; stroke: #f59e0b; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block;">
                 <path d="M12 20h9"></path>
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
               </svg>
@@ -809,7 +912,8 @@
             <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnSwExcelToggle" class="btn-excel-toggle-custom"
                 onclick="toggleSoftwareExcelActions(event)" title="Menu Nhập / Xuất Excel Phần Mềm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="8" y1="13" x2="16" y2="13"></line>
@@ -819,22 +923,26 @@
               </button>
 
               <div id="swExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportSoftwareExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="triggerImportSoftwareExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Phần Mềm từ file Excel (.csv, .xlsx)"
                   style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
                   📥 Nhập Excel
                 </button>
-                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportSoftwareToExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales btn-export-excel-action"
+                  onclick="exportSoftwareToExcel(); closeAllExcelDropdowns();"
                   title="Xuất danh sách Phần Mềm ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
                   📤 Xuất Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="removeDuplicateSoftwareItems(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="removeDuplicateSoftwareItems(); closeAllExcelDropdowns();"
                   title="Xóa các đơn trùng lặp trong cùng 1 ngày, chỉ giữ lại duy nhất 1 đơn"
                   style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
                   🧹 Xóa Trùng
                 </button>
-                <button type="button" class="btn-action-sales" onclick="clearAllSoftwareData(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="clearAllSoftwareData(); closeAllExcelDropdowns();"
                   title="Xóa toàn bộ danh sách Phần Mềm để nhập lại từ đầu"
                   style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
                   🗑️ Xóa Hết
@@ -907,7 +1015,8 @@
 
           <!-- Cột 3 (Phải): THẺ LÃI THÁNG & NGÀY (GIẢM 30% TRÊN WEB) -->
           <div style="display: flex; align-items: center; justify-content: flex-end;">
-            <div class="sw-stat-pill sw-stat-pill-lg" id="swProfitBadge" title="Bên trái: Lãi Tháng | Bên phải: Lãi Ngày"
+            <div class="sw-stat-pill sw-stat-pill-lg" id="swProfitBadge"
+              title="Bên trái: Lãi Tháng | Bên phải: Lãi Ngày"
               style="cursor: default; background: #000000 !important; border: 1.5px solid #334155 !important; box-shadow: 0 3px 12px rgba(0,0,0,0.6) !important; display: flex; align-items: center; gap: 8px; padding: 6px 14px; height: auto !important; border-radius: 8px; flex-shrink: 0;">
               <span class="sw-stat-v" id="swMonthProfitText"
                 style="color: #4ade80 !important; font-weight: 900; font-size: 1.6rem !important; line-height: 1 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.6);"
@@ -1186,7 +1295,8 @@
                   autocomplete="off" style="width: 200px;">
                 <button type="button" id="btnClearRepairSearch" class="btn-clear-search" onclick="clearRepairSearch()"
                   title="Xóa tìm kiếm">✕</button>
-                <div id="repairSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;"></div>
+                <div id="repairSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;">
+                </div>
               </div>
 
               <!-- Dropdown Trạng thái -->
@@ -1201,27 +1311,31 @@
               <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
                 <button type="button" id="btnRepairExcelToggle" class="btn-excel-toggle-custom"
                   onclick="toggleRepairExcelActions(event)" title="Menu Nhập / Xuất Excel Sửa Chữa">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="8" y1="13" x2="16" y2="13"></line>
-                  <line x1="8" y1="17" x2="16" y2="17"></line>
-                  <line x1="10" y1="9" x2="12" y2="9"></line>
-                </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="8" y1="13" x2="16" y2="13"></line>
+                    <line x1="8" y1="17" x2="16" y2="17"></line>
+                    <line x1="10" y1="9" x2="12" y2="9"></line>
+                  </svg>
                 </button>
 
                 <div id="repairExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
-                  <button type="button" class="btn-action-sales" onclick="triggerImportRepairExcel(); closeAllExcelDropdowns();"
+                  <button type="button" class="btn-action-sales"
+                    onclick="triggerImportRepairExcel(); closeAllExcelDropdowns();"
                     title="Nhập dữ liệu Sửa Chữa từ file Excel (.csv, .xlsx)"
                     style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
                     📥 Nhập Excel
                   </button>
-                  <button type="button" class="btn-action-sales" onclick="exportRepairToExcel(); closeAllExcelDropdowns();"
+                  <button type="button" class="btn-action-sales"
+                    onclick="exportRepairToExcel(); closeAllExcelDropdowns();"
                     title="Xuất danh sách Sửa Chữa ra file Excel"
                     style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
                     📤 Xuất Excel
                   </button>
-                  <button type="button" class="btn-action-sales" onclick="clearAllRepairData(); closeAllExcelDropdowns();"
+                  <button type="button" class="btn-action-sales"
+                    onclick="clearAllRepairData(); closeAllExcelDropdowns();"
                     title="Xóa toàn bộ danh sách Sửa Chữa để nhập lại từ đầu"
                     style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
                     🗑️ Xóa Hết
@@ -1448,7 +1562,8 @@
             <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnPhoneExcelToggle" class="btn-excel-toggle-custom"
                 onclick="togglePhoneExcelActions(event)" title="Menu Nhập / Xuất Excel Bán Máy">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="8" y1="13" x2="16" y2="13"></line>
@@ -1458,12 +1573,14 @@
               </button>
 
               <div id="phoneExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
-                <button type="button" class="btn-action-sales" onclick="fetchDirectCloudSync(true); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="fetchDirectCloudSync(true); closeAllExcelDropdowns();"
                   title="Tải và làm mới dữ liệu Bán Máy mới nhất từ Đám Mây"
                   style="background: #0f172a; border: 1.5px solid #0284c7; color: #38bdf8; box-shadow: 0 4px 12px rgba(2,132,199,0.25);">
                   ☁️ Làm Mới Đám Mây
                 </button>
-                <button type="button" class="btn-action-sales" onclick="triggerImportPhoneExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="triggerImportPhoneExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Bán Máy từ file Excel (.csv, .xlsx)"
                   style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
                   📥 Nhập Excel
@@ -1605,7 +1722,8 @@
             <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnBangaExcelToggle" class="btn-excel-toggle-custom"
                 onclick="toggleBangaExcelActions(event)" title="Menu Nhập / Xuất Excel Bán Gà">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="8" y1="13" x2="16" y2="13"></line>
@@ -1615,17 +1733,19 @@
               </button>
 
               <div id="bangaExcelActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportBangaExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="triggerImportBangaExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Bán Gà từ file Excel (.csv, .xlsx)"
                   style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
                   📥 Nhập Excel
                 </button>
-                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportBangaToExcel(); closeAllExcelDropdowns();"
-                  title="Xuất danh sách Bán Gà ra file Excel"
+                <button type="button" class="btn-action-sales btn-export-excel-action"
+                  onclick="exportBangaToExcel(); closeAllExcelDropdowns();" title="Xuất danh sách Bán Gà ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
                   📤 Xuất Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="removeDuplicateBangaItems(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="removeDuplicateBangaItems(); closeAllExcelDropdowns();"
                   title="Xóa các đơn bán gà trùng lặp, chỉ giữ lại duy nhất 1 đơn"
                   style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
                   🧹 Lọc Trùng
@@ -1673,8 +1793,8 @@
               <span class="search-label-single-line">TÌM KIẾM</span>
               <input type="text" id="bangaSearchInput" class="search-input-field" inputmode="text"
                 placeholder="🔍 Tìm tên máy, phụ kiện..." oninput="handleBangaSearchInput(this)"
-                onfocus="handleBangaSearchInput(this)" onkeydown="handleBangaSearchKeydown(event)"
-                autocomplete="off" style="width: 200px;">
+                onfocus="handleBangaSearchInput(this)" onkeydown="handleBangaSearchKeydown(event)" autocomplete="off"
+                style="width: 200px;">
               <button type="button" id="btnClearBangaSearch" class="btn-clear-search" onclick="clearBangaSearchNew()"
                 title="Xóa tìm kiếm">✕</button>
               <div id="bangaSearchSuggestions" class="phone-search-suggestions-dropdown" style="display: none;"></div>
@@ -1833,7 +1953,8 @@
             <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnSoldPhoneExcelToggle" class="btn-excel-toggle-custom"
                 onclick="toggleSoldPhoneExcelActions(event)" title="Menu Nhập / Xuất Excel Bảo Hành">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="8" y1="13" x2="16" y2="13"></line>
@@ -1843,17 +1964,20 @@
               </button>
 
               <div id="soldPhoneActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportSoldPhoneExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="triggerImportSoldPhoneExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Bảo Hành từ file Excel (.csv, .xlsx)"
                   style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
                   📥 Nhập Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="exportSoldPhoneToExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="exportSoldPhoneToExcel(); closeAllExcelDropdowns();"
                   title="Xuất danh sách Bảo Hành ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
                   📤 Xuất Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="clearAllSoldPhoneData(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="clearAllSoldPhoneData(); closeAllExcelDropdowns();"
                   title="Xóa toàn bộ danh sách Bảo Hành để nhập lại từ đầu"
                   style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
                   🗑️ Xóa Hết
@@ -2053,7 +2177,7 @@
       <!-- TAB 5: BÁO GIÁ SỬA CHỮA & NHẬP HÀNG (CƠ SỞ DỮ LIỆU KIM CHI MOBILE) -->
       <div id="tab-baogia" class="tab-content"
         style="padding: 0; margin: -0.5rem -1rem; height: calc(100vh - 65px); overflow: hidden;">
-        <iframe src="baogia.html?v=20261125_011316" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
+        <iframe src="baogia.html?v=20261113_2130" id="baogiaFrame" title="BÁO GIÁ SỬA CHỮA & NHẬP HÀNG"
           style="width: 100%; height: 100%; border: none; background: #0b0f19;"
           allow="clipboard-read; clipboard-write"></iframe>
       </div>
@@ -2424,7 +2548,8 @@
             <div class="excel-menu-dropdown-wrapper" style="flex-shrink: 0;">
               <button type="button" id="btnMainXacExcelToggle" class="btn-excel-toggle-custom"
                 onclick="toggleMainXacExcelActions(event)" title="Menu Nhập / Xuất Excel Main Xác">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="8" y1="13" x2="16" y2="13"></line>
@@ -2434,22 +2559,26 @@
               </button>
 
               <div id="mainXacActionsBox" class="excel-dropdown-actions-menu" style="display: none;">
-                <button type="button" class="btn-action-sales" onclick="triggerImportMainXacExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="triggerImportMainXacExcel(); closeAllExcelDropdowns();"
                   title="Nhập dữ liệu Main Xác từ file Excel (.csv, .xlsx)"
                   style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
                   📥 Nhập Excel
                 </button>
-                <button type="button" class="btn-action-sales btn-export-excel-action" onclick="exportMainXacToExcel(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales btn-export-excel-action"
+                  onclick="exportMainXacToExcel(); closeAllExcelDropdowns();"
                   title="Xuất danh sách Main Xác ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
                   📤 Xuất Excel
                 </button>
-                <button type="button" class="btn-action-sales" onclick="removeDuplicateMainXacItems(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="removeDuplicateMainXacItems(); closeAllExcelDropdowns();"
                   title="Xóa máy main xác trùng lặp, chỉ giữ lại duy nhất 1 máy"
                   style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
                   🧹 Lọc Trùng
                 </button>
-                <button type="button" class="btn-action-sales" onclick="clearAllMainXacData(); closeAllExcelDropdowns();"
+                <button type="button" class="btn-action-sales"
+                  onclick="clearAllMainXacData(); closeAllExcelDropdowns();"
                   title="Xóa toàn bộ danh sách Main Xác để nhập lại từ đầu"
                   style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
                   🗑️ Xóa Hết
@@ -2643,32 +2772,41 @@
               KÝ</button>
             <button type="button" class="brand-btn-h" id="btnRepSubAccount"
               onclick="switchReportSection('account', this)">👤 TÀI KHOẢN</button>
-            <button type="button" class="brand-btn-h" id="btnRepSubTax"
-              onclick="openTaxReportModal()" title="Xuất sổ doanh thu bán hàng hóa, dịch vụ mẫu S1a-HKD"
-              style="color: #ffffff; font-weight: 800;">
+            <button type="button" class="brand-btn-h" id="btnRepSubTax" onclick="openTaxReportModal()"
+              title="Xuất sổ doanh thu bán hàng hóa, dịch vụ mẫu S1a-HKD" style="color: #ffffff; font-weight: 800;">
               📑 BÁO CÁO THUẾ
             </button>
 
             <!-- HỘP THEO DÕI HẠN MỨC FIRESTORE ĐỌC / GHI TRONG NGÀY (SÁT BÊN PHẢI TÀI KHOẢN) -->
-            <div id="firestoreQuotaTracker" onclick="if(confirm('Bạn có muốn đặt lại bộ đếm lượt Đọc / Ghi chu kỳ này về 0 không?')){resetFsDailyUsage();}" title="Theo dõi hạn ngạch Firestore (Tự động reset lúc 15:00 hàng ngày theo giờ VN). Click để đặt lại về 0." style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px; margin-left: 8px; vertical-align: middle; background: rgba(15, 23, 42, 0.85); border: 1px solid #1e293b; border-radius: 9px; padding: 4px 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.35);">
-              <div style="display: flex; align-items: center; gap: 5px;" title="Lượt Đọc Firestore (Giới hạn: 50.000 / chu kỳ, tự reset lúc 15:00)">
-                <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px;">📥 ĐỌC:</span>
+            <div id="firestoreQuotaTracker"
+              onclick="if(confirm('Bạn có muốn đặt lại bộ đếm lượt Đọc / Ghi chu kỳ này về 0 không?')){resetFsDailyUsage();}"
+              title="Theo dõi hạn ngạch Firestore (Tự động reset lúc 15:00 hàng ngày theo giờ VN). Click để đặt lại về 0."
+              style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px; margin-left: 8px; vertical-align: middle; background: rgba(15, 23, 42, 0.85); border: 1px solid #1e293b; border-radius: 9px; padding: 4px 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.35);">
+              <div style="display: flex; align-items: center; gap: 5px;"
+                title="Lượt Đọc Firestore (Giới hạn: 50.000 / chu kỳ, tự reset lúc 15:00)">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px;">📥
+                  ĐỌC:</span>
                 <span id="fsReadCountVal" style="font-size: 0.85rem; font-weight: 900; color: #38bdf8;">0</span>
                 <span style="font-size: 0.72rem; color: #64748b; font-weight: 700;">/</span>
-                <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700;" title="Còn lại">còn <b id="fsReadRemainVal" style="color: #4ade80;">50.000</b></span>
+                <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700;" title="Còn lại">còn <b
+                    id="fsReadRemainVal" style="color: #4ade80;">50.000</b></span>
               </div>
               <div style="width: 1px; height: 16px; background: #334155;"></div>
-              <div style="display: flex; align-items: center; gap: 5px;" title="Lượt Ghi Firestore (Giới hạn: 20.000 / chu kỳ, tự reset lúc 15:00)">
-                <span style="font-size: 0.72rem; font-weight: 800; color: #f59e0b; letter-spacing: 0.5px;">📤 GHI:</span>
+              <div style="display: flex; align-items: center; gap: 5px;"
+                title="Lượt Ghi Firestore (Giới hạn: 20.000 / chu kỳ, tự reset lúc 15:00)">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #f59e0b; letter-spacing: 0.5px;">📤
+                  GHI:</span>
                 <span id="fsWriteCountVal" style="font-size: 0.85rem; font-weight: 900; color: #f59e0b;">0</span>
                 <span style="font-size: 0.72rem; color: #64748b; font-weight: 700;">/</span>
-                <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700;" title="Còn lại">còn <b id="fsWriteRemainVal" style="color: #4ade80;">20.000</b></span>
+                <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700;" title="Còn lại">còn <b
+                    id="fsWriteRemainVal" style="color: #4ade80;">20.000</b></span>
               </div>
             </div>
           </div>
 
           <!-- Menu sổ xuống chọn tháng & năm nằm góc phải cùng hàng với tab -->
-          <div id="repMonthPickerWrap" style="display: flex; align-items: center; gap: 6px; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 2px 10px; height: 38px; box-sizing: border-box;">
+          <div id="repMonthPickerWrap"
+            style="display: flex; align-items: center; gap: 6px; background: #000000; border: 1.5px solid #334155; border-radius: 9px; padding: 2px 10px; height: 38px; box-sizing: border-box;">
             <span style="font-size: 1rem; line-height: 1;">📅</span>
             <select id="repSelectMonth" onchange="changeReportMonthYear()"
               style="background: transparent; border: none; color: #facc15; font-weight: 900; font-size: 0.95rem; cursor: pointer; outline: none; padding: 0 4px;">
@@ -3029,8 +3167,10 @@
     <div class="modal-ticket-box" style="max-width: 644px;">
       <div class="ticket-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
         <span id="phoneModalTitle">Thêm Thông Tin Máy Mới</span>
-        <div id="phoneModalBrandWrap" style="display: inline-flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 8px;">
-          <select id="mBrandSelect" class="ticket-input" style="height: 32px; padding: 2px 10px; font-weight: 800; font-size: 0.95rem; background: #0f172a; color: #38bdf8; border: 1.5px solid #38bdf8; border-radius: 6px; cursor: pointer; text-transform: uppercase;">
+        <div id="phoneModalBrandWrap"
+          style="display: inline-flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 8px;">
+          <select id="mBrandSelect" class="ticket-input"
+            style="height: 32px; padding: 2px 10px; font-weight: 800; font-size: 0.95rem; background: #0f172a; color: #38bdf8; border: 1.5px solid #38bdf8; border-radius: 6px; cursor: pointer; text-transform: uppercase;">
             <option value="IPHONE">IPHONE</option>
             <option value="SAMSUNG">SAMSUNG</option>
             <option value="OPPO">OPPO</option>
@@ -3082,7 +3222,8 @@
             <div class="form-ticket-group" style="width: 58px; flex-shrink: 0;">
               <label class="form-ticket-label" style="text-align: center;">IMEI *</label>
               <input type="text" class="ticket-input" id="mImei" required maxlength="4" inputmode="numeric"
-                placeholder="" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4); checkPhoneModalValidity();"
+                placeholder=""
+                oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4); checkPhoneModalValidity();"
                 style="text-align: center; font-weight: 800; padding: 9px 4px; letter-spacing: 0.5px;">
             </div>
 
@@ -3121,7 +3262,8 @@
             <label class="form-ticket-label">Dung Lượng Máy *</label>
             <div class="input-with-actions">
               <input type="text" list="mStorageList" class="ticket-input" id="mStorage" required autocomplete="off"
-                oninput="formatTitleCaseInput(this); checkPhoneModalValidity();" onblur="formatStorageInput(this); checkPhoneModalValidity();">
+                oninput="formatTitleCaseInput(this); checkPhoneModalValidity();"
+                onblur="formatStorageInput(this); checkPhoneModalValidity();">
               <datalist id="mStorageList"></datalist>
               <div class="icon-btn-set">
                 <button type="button" class="btn-svg-action btn-svg-add"
@@ -3313,7 +3455,7 @@
             <input type="hidden" id="mProfit" value="">
           </div>
 
-          <button type="submit" id="btnSavePhoneModal" class="btn-save-ticket active" style="font-weight: 900;">LƯU DỮ LIỆU</button>
+          <button type="submit" onclick="saveNewPhone(event)" id="btnSavePhoneModal" class="btn-save-ticket active" style="font-weight: 900;">LƯU DỮ LIỆU</button>
         </div>
       </form>
     </div>
@@ -3762,18 +3904,22 @@
             <div class="date-adjust-container" style="position: relative;">
               <button type="button" class="btn-date-step" onclick="adjustSellDate(-1)" title="Giảm 1 ngày">-</button>
               <input type="text" class="ticket-input" id="sellDateVal"
-                style="text-align: center; font-weight: 900; color: var(--amber-color); user-select: none; -webkit-user-select: none;" readonly>
+                style="text-align: center; font-weight: 900; color: var(--amber-color); user-select: none; -webkit-user-select: none;"
+                readonly>
               <button type="button" class="btn-date-step" onclick="adjustSellDate(1)" title="Tăng 1 ngày">+</button>
-              <button type="button" class="btn-date-step" onclick="openNativeDatePickerForSellPhone()" title="Chọn ngày trên lịch"
+              <button type="button" class="btn-date-step" onclick="openNativeDatePickerForSellPhone()"
+                title="Chọn ngày trên lịch"
                 style="background: #0284c7; border-color: #38bdf8; color: #ffffff; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
               </button>
-              <input type="date" id="nativeDatePicker_sellPhone" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;"
+              <input type="date" id="nativeDatePicker_sellPhone"
+                style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;"
                 onchange="handleNativeDateChangeForSellPhone(this.value)">
             </div>
           </div>
@@ -3791,7 +3937,8 @@
           </div>
 
           <div style="flex: 1.25;">
-            <button type="button" id="btnConfirmSellPhone" class="btn-confirm-sell-main active" onclick="confirmSellPhone(event)">
+            <button type="button" id="btnConfirmSellPhone" class="btn-confirm-sell-main active"
+              onclick="confirmSellPhone(event)">
               Xác Nhận
             </button>
           </div>
@@ -3801,12 +3948,19 @@
   </div>
 
   <!-- MODAL SỬA THÔNG TIN MÁY ĐÃ BÁN (CHUẨN 100% NHƯ XÁC NHẬN BÁN MÁY) -->
-  <div class="modal-overlay" id="editSoldPhoneModal" style="display: none; z-index: 100000;" onclick="if(event.target === this) closeEditSoldPhoneModal()">
-    <div class="modal-ticket-box capitalize-ui" style="max-width: 580px; padding: 1.25rem 1.5rem;" onclick="event.stopPropagation()">
-      <div class="ticket-header" style="border-bottom: none; margin-bottom: 0.8rem; padding-bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-        <span style="color: #38bdf8; font-weight: 900; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.5px;">Sửa Thông Tin Máy Đã Bán</span>
-        <div id="editSoldBrandWrap" style="display: inline-flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 8px;">
-          <select id="editSoldBrandSelect" class="ticket-input" onchange="onEditSoldFieldChange()" style="height: 32px; padding: 2px 10px; font-weight: 800; font-size: 0.95rem; background: #0f172a; color: #38bdf8; border: 1.5px solid #38bdf8; border-radius: 6px; cursor: pointer; text-transform: uppercase;">
+  <div class="modal-overlay" id="editSoldPhoneModal" style="display: none; z-index: 100000;"
+    onclick="if(event.target === this) closeEditSoldPhoneModal()">
+    <div class="modal-ticket-box capitalize-ui" style="max-width: 580px; padding: 1.25rem 1.5rem;"
+      onclick="event.stopPropagation()">
+      <div class="ticket-header"
+        style="border-bottom: none; margin-bottom: 0.8rem; padding-bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+        <span
+          style="color: #38bdf8; font-weight: 900; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.5px;">Sửa
+          Thông Tin Máy Đã Bán</span>
+        <div id="editSoldBrandWrap"
+          style="display: inline-flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 8px;">
+          <select id="editSoldBrandSelect" class="ticket-input" onchange="onEditSoldFieldChange()"
+            style="height: 32px; padding: 2px 10px; font-weight: 800; font-size: 0.95rem; background: #0f172a; color: #38bdf8; border: 1.5px solid #38bdf8; border-radius: 6px; cursor: pointer; text-transform: uppercase;">
             <option value="IPHONE">IPHONE</option>
             <option value="SAMSUNG">SAMSUNG</option>
             <option value="OPPO">OPPO</option>
@@ -3830,7 +3984,8 @@
           <div
             style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;">
-              <span style="font-size: 1.1rem; font-weight: 900; color: #fff;" id="editSoldPhoneSummaryTitle">IPHONE - 15 Pro Max (256GB)</span>
+              <span style="font-size: 1.1rem; font-weight: 900; color: #fff;" id="editSoldPhoneSummaryTitle">IPHONE - 15
+                Pro Max (256GB)</span>
               <span id="editSoldPhoneSummaryDot"
                 style="width: 28px; height: 28px; border-radius: 50%; display: inline-block; flex-shrink: 0; margin-left: 2px;"></span>
             </div>
@@ -3838,7 +3993,8 @@
               style="font-size: 0.95rem; font-weight: 900; color: var(--amber-color); background: #141c2b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 8px; border-radius: 6px;"
               id="editSoldPhoneSummaryImei">4567</span>
           </div>
-          <div style="font-size: 0.84rem; color: #9ca3af; font-weight: 700;" id="editSoldPhoneSummaryDetails">Zin đẹp 99% - Pin : 99% - QG: VN/A - Giá Nhập : 0</div>
+          <div style="font-size: 0.84rem; color: #9ca3af; font-weight: 700;" id="editSoldPhoneSummaryDetails">Zin đẹp
+            99% - Pin : 99% - QG: VN/A - Giá Nhập : 0</div>
         </div>
 
         <div class="form-ticket-row" style="margin-bottom: 0.9rem;">
@@ -3860,7 +4016,8 @@
         <div class="form-ticket-row" style="margin-bottom: 1.25rem;">
           <div class="form-ticket-group" style="flex: 1.1;">
             <label class="form-ticket-label" style="color: #facc15;">Lưu Vào *</label>
-            <select class="ticket-input" id="editSoldTargetList" required onchange="onEditSoldFieldChange()" style="cursor: pointer; font-weight: 800;">
+            <select class="ticket-input" id="editSoldTargetList" required onchange="onEditSoldFieldChange()"
+              style="cursor: pointer; font-weight: 800;">
               <option value="Bán Hàng">Bán Hàng</option>
               <option value="Bán Gà">Bán Gà</option>
             </select>
@@ -3868,7 +4025,8 @@
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label" style="color: #facc15;">Thanh Toán *</label>
-            <select class="ticket-input" id="editSoldPaymentMethod" required onchange="onEditSoldFieldChange()" style="cursor: pointer; font-weight: 800;">
+            <select class="ticket-input" id="editSoldPaymentMethod" required onchange="onEditSoldFieldChange()"
+              style="cursor: pointer; font-weight: 800;">
               <option value="Tiền Mặt">Tiền Mặt</option>
               <option value="Chuyển Khoản">Chuyển Khoản</option>
             </select>
@@ -3876,7 +4034,8 @@
 
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label" style="color: #facc15;">Bảo Hành *</label>
-            <select class="ticket-input" id="editSoldWarranty" required onchange="onEditSoldFieldChange()" style="cursor: pointer; font-weight: 800;">
+            <select class="ticket-input" id="editSoldWarranty" required onchange="onEditSoldFieldChange()"
+              style="cursor: pointer; font-weight: 800;">
               <option value="3 Tháng">3 Tháng</option>
               <option value="6 Tháng">6 Tháng</option>
               <option value="12 Tháng">12 Tháng</option>
@@ -3920,21 +4079,25 @@
           <div class="form-ticket-group" style="flex: 1.65;">
             <label class="form-ticket-label">Ngày Bán</label>
             <div class="date-adjust-container" style="position: relative;">
-              <button type="button" class="btn-date-step" onclick="adjustEditSoldDate(-1)" title="Giảm 1 ngày">-</button>
+              <button type="button" class="btn-date-step" onclick="adjustEditSoldDate(-1)"
+                title="Giảm 1 ngày">-</button>
               <input type="text" class="ticket-input" id="editSoldDateVal" placeholder="DD/MM/YYYY" autocomplete="off"
                 oninput="onEditSoldFieldChange()" onchange="onEditSoldFieldChange()"
                 style="text-align: center; font-weight: 900; color: var(--amber-color); min-width: 0; padding: 7px 2px; font-size: 0.95rem;">
               <button type="button" class="btn-date-step" onclick="adjustEditSoldDate(1)" title="Tăng 1 ngày">+</button>
-              <button type="button" class="btn-date-step" onclick="openNativeDatePickerForEditSold()" title="Chọn ngày trên lịch"
+              <button type="button" class="btn-date-step" onclick="openNativeDatePickerForEditSold()"
+                title="Chọn ngày trên lịch"
                 style="background: #0284c7; border-color: #38bdf8; color: #ffffff; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
               </button>
-              <input type="date" id="nativeDatePicker_editSold" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;"
+              <input type="date" id="nativeDatePicker_editSold"
+                style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;"
                 onchange="handleNativeDateChangeForEditSold(this.value)">
             </div>
           </div>
@@ -3952,7 +4115,9 @@
           </div>
 
           <div style="flex: 1.25;">
-            <button type="submit" id="btnSaveEditedSoldPhone" class="btn-confirm-sell-main active" onclick="saveEditedSoldPhone(event)" style="background: linear-gradient(135deg, #0284c7, #0369a1); border-color: #38bdf8; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4); cursor: pointer; pointer-events: auto; opacity: 1;">
+            <button type="submit" id="btnSaveEditedSoldPhone" class="btn-confirm-sell-main active"
+              onclick="saveEditedSoldPhone(event)"
+              style="background: linear-gradient(135deg, #0284c7, #0369a1); border-color: #38bdf8; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4); cursor: pointer; pointer-events: auto; opacity: 1;">
               Lưu Thay Đổi
             </button>
           </div>
@@ -3983,8 +4148,8 @@
           </div>
           <div class="form-ticket-group" style="flex: 1;">
             <label class="form-ticket-label" style="color: #facc15;">IMEI</label>
-            <input type="text" class="ticket-input" id="extPhoneImei" placeholder="" autocomplete="off"
-              maxlength="15" style="text-align: center; color: var(--amber-color); font-weight: 900;">
+            <input type="text" class="ticket-input" id="extPhoneImei" placeholder="" autocomplete="off" maxlength="15"
+              style="text-align: center; color: var(--amber-color); font-weight: 900;">
           </div>
         </div>
 
@@ -4066,18 +4231,22 @@
             <div class="date-adjust-container" style="position: relative;">
               <button type="button" class="btn-date-step" onclick="adjustExtSellDate(-1)" title="Giảm 1 ngày">-</button>
               <input type="text" class="ticket-input" id="extSellDateVal"
-                style="text-align: center; font-weight: 900; color: var(--amber-color); user-select: none; -webkit-user-select: none;" readonly>
+                style="text-align: center; font-weight: 900; color: var(--amber-color); user-select: none; -webkit-user-select: none;"
+                readonly>
               <button type="button" class="btn-date-step" onclick="adjustExtSellDate(1)" title="Tăng 1 ngày">+</button>
-              <button type="button" class="btn-date-step" onclick="openNativeDatePickerForExtSell()" title="Chọn ngày trên lịch"
+              <button type="button" class="btn-date-step" onclick="openNativeDatePickerForExtSell()"
+                title="Chọn ngày trên lịch"
                 style="background: #0284c7; border-color: #38bdf8; color: #ffffff; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
               </button>
-              <input type="date" id="nativeDatePicker_extSell" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;"
+              <input type="date" id="nativeDatePicker_extSell"
+                style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;"
                 onchange="handleNativeDateChangeForExtSell(this.value)">
             </div>
           </div>
@@ -4150,10 +4319,11 @@
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="font-size: 1.45rem;">📝</span>
           <div>
-            <div style="font-weight: 900; font-size: 1.15rem; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div
+              style="font-weight: 900; font-size: 1.15rem; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.5px;">
               SỔ TAY GHI CHÚ BÁN HÀNG
             </div>
-            
+
           </div>
         </div>
         <button type="button" onclick="closeSalesNotePadModal()"
@@ -4163,10 +4333,13 @@
 
       <!-- Ô VĂN BẢN GHI CHÚ RỘNG RÃI -->
       <!-- THANH TAB GHI CHÚ (HUYỀN, QUỲNH, +...) -->
-      <div class="sales-notepad-tabs-bar" id="salesNotePadTabsBar" style="display: flex; align-items: flex-end; gap: 6px; border-bottom: 2px solid #334155; margin-bottom: 12px; overflow-x: auto; padding-bottom: 0;"></div>
+      <div class="sales-notepad-tabs-bar" id="salesNotePadTabsBar"
+        style="display: flex; align-items: flex-end; gap: 6px; border-bottom: 2px solid #334155; margin-bottom: 12px; overflow-x: auto; padding-bottom: 0;">
+      </div>
 
       <div style="margin-bottom: 1rem;">
-        <textarea id="salesNotePadTextarea" rows="11" placeholder="Nhập nội dung ghi chú bán hàng tại đây... (Nội dung tự động lưu và đồng bộ realtime)"
+        <textarea id="salesNotePadTextarea" rows="11"
+          placeholder="Nhập nội dung ghi chú bán hàng tại đây... (Nội dung tự động lưu và đồng bộ realtime)"
           style="width: 100%; box-sizing: border-box; background: #0b111e; border: 1.5px solid #1e293b; border-radius: 10px; padding: 12px 14px; color: #f1f5f9; font-size: 0.95rem; font-family: inherit; line-height: 1.55; resize: vertical; outline: none; min-height: 220px;"
           onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 12px rgba(245,158,11,0.2)';"
           onblur="this.style.borderColor='#1e293b'; this.style.boxShadow='none'; autoSaveSalesNotePad();"></textarea>
@@ -4311,8 +4484,10 @@
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="font-size: 1.5rem;">📑</span>
           <div>
-            <div style="font-size: 1.15rem; font-weight: 900; color: #10b981; letter-spacing: 0.3px;">XUẤT BÁO CÁO THUẾ (MẪU S1a-HKD)</div>
-            <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">Sổ doanh thu bán hàng hóa, dịch vụ theo Thông tư Bộ Tài Chính</div>
+            <div style="font-size: 1.15rem; font-weight: 900; color: #10b981; letter-spacing: 0.3px;">XUẤT BÁO CÁO THUẾ
+              (MẪU S1a-HKD)</div>
+            <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">Sổ doanh thu bán hàng hóa, dịch vụ theo
+              Thông tư Bộ Tài Chính</div>
           </div>
         </div>
         <button type="button" onclick="closeTaxReportModal()"
@@ -4321,8 +4496,10 @@
       </div>
 
       <!-- THÔNG TIN HỘ KINH DOANH -->
-      <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid #1e293b; border-radius: 12px; padding: 1rem; margin-bottom: 1.2rem;">
-        <div style="font-size: 0.85rem; font-weight: 800; color: #facc15; margin-bottom: 6px; text-transform: uppercase;">
+      <div
+        style="background: rgba(15, 23, 42, 0.75); border: 1px solid #1e293b; border-radius: 12px; padding: 1rem; margin-bottom: 1.2rem;">
+        <div
+          style="font-size: 0.85rem; font-weight: 800; color: #facc15; margin-bottom: 6px; text-transform: uppercase;">
           🏛️ Thông tin kê khai:
         </div>
         <div style="font-size: 0.85rem; color: #e2e8f0; line-height: 1.6;">
@@ -4333,13 +4510,16 @@
       </div>
 
       <!-- CHỌN THÁNG XUẤT -->
-      <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid #1e293b; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
-        <div style="font-size: 0.82rem; font-weight: 800; color: #cbd5e1; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+      <div
+        style="background: rgba(15, 23, 42, 0.75); border: 1px solid #1e293b; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+        <div
+          style="font-size: 0.82rem; font-weight: 800; color: #cbd5e1; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
           📅 Chọn Tháng & Năm xuất sổ:
         </div>
 
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-          <div style="display: inline-flex; align-items: center; gap: 8px; background: #0b0f19; border: 1.5px solid #334155; border-radius: 10px; padding: 6px 12px;">
+          <div
+            style="display: inline-flex; align-items: center; gap: 8px; background: #0b0f19; border: 1.5px solid #334155; border-radius: 10px; padding: 6px 12px;">
             <span style="font-size: 1.1rem;">🗓️</span>
             <select id="taxExportMonth" onchange="updateTaxExportSummary()"
               style="background: transparent; border: none; color: #facc15; font-weight: 900; font-size: 1rem; cursor: pointer; outline: none;">
@@ -4727,7 +4907,8 @@
             <label class="sw-input-label">Báo giá <span class="req">*</span></label>
             <div class="sw-input-with-tools">
               <input type="text" inputmode="numeric" class="sw-input-field" id="swPriceInput" placeholder="Nhập giá"
-                required autocomplete="off" oninput="formatCurrencyInput(this); filterSwDropdown('price', this.value); checkSoftwareFormValidity();"
+                required autocomplete="off"
+                oninput="formatCurrencyInput(this); filterSwDropdown('price', this.value); checkSoftwareFormValidity();"
                 onfocus="if(window.innerWidth > 768){ openSwDropdown('price'); }">
               <button type="button" class="sw-tool-btn sw-tool-dropdown" onclick="toggleSwDropdown('price')"
                 title="Xổ danh sách"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -4804,6 +4985,7 @@
                 style="width: 100%; height: 42px; font-weight: 800; font-size: 0.88rem; color: #fff; background: #111724; border: 1px solid #1f293d; border-radius: 8px; padding: 0 10px; box-sizing: border-box; display: block;">
                 <option value="NỢ DAI VL" selected>💀 NỢ DAI VL</option>
                 <option value="ĐÃ TRẢ">✔ ĐÃ THANH TOÁN</option>
+                <option value="BÁN HÀNG">Bán Hàng</option>
               </select>
             </div>
           </div>
@@ -5329,15 +5511,19 @@
           <!-- 1. Ô LÃI -->
           <div
             style="display: flex; align-items: center; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; height: 38px; padding: 0 12px; flex: 1 1 auto; min-width: 110px; box-sizing: border-box;">
-            <span style="font-weight: 900; font-size: 0.95rem; color: #facc15; letter-spacing: 0.5px; white-space: nowrap;">LÃI
+            <span
+              style="font-weight: 900; font-size: 0.95rem; color: #facc15; letter-spacing: 0.5px; white-space: nowrap;">LÃI
               :&nbsp;</span>
-            <span id="rFormProfitDisplay" style="font-weight: 900; font-size: 1.05rem; color: #10b981; white-space: nowrap;"></span>
+            <span id="rFormProfitDisplay"
+              style="font-weight: 900; font-size: 1.05rem; color: #10b981; white-space: nowrap;"></span>
           </div>
 
           <!-- 2. Ô PK (CHỈ NHẬP TỐI ĐA 4 CHỮ SỐ) -->
           <div
             style="display: inline-flex; align-items: center; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; height: 38px; padding: 0 10px; flex: 0 0 110px; width: 110px; box-sizing: border-box;">
-            <label for="rFormPk" style="font-weight: 900; font-size: 0.92rem; color: #facc15; margin-right: 6px; white-space: nowrap; cursor: pointer;">PK :</label>
+            <label for="rFormPk"
+              style="font-weight: 900; font-size: 0.92rem; color: #facc15; margin-right: 6px; white-space: nowrap; cursor: pointer;">PK
+              :</label>
             <input type="text" id="rFormPk" maxlength="4" placeholder="0"
               oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4); updateRepairFormProfit();"
               style="width: 100%; height: 100%; background: transparent; border: none; color: #ffffff; font-size: 0.95rem; font-weight: 800; text-align: center; outline: none; padding: 0; box-sizing: border-box;">
@@ -5346,12 +5532,15 @@
           <!-- 3. Ô CHỌN NGƯỜI MÌNH NỢ (MẶC ĐỊNH TRỐNG, KHÔNG BẮT BUỘC) -->
           <div
             style="position: relative; display: inline-flex; align-items: center; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; height: 38px; padding: 0 8px; box-sizing: border-box; flex: 1.2 1 auto; min-width: 155px;">
-            <label for="rFormCreditor" style="font-weight: 900; font-size: 0.92rem; color: #facc15; margin-right: 4px; white-space: nowrap; cursor: pointer;">Mình Nợ :</label>
+            <label for="rFormCreditor"
+              style="font-weight: 900; font-size: 0.92rem; color: #facc15; margin-right: 4px; white-space: nowrap; cursor: pointer;">Mình
+              Nợ :</label>
             <select id="rFormCreditor" class="repair-select-filter"
               style="appearance: none; -webkit-appearance: none; background: transparent; border: none; color: #ffffff; height: 100%; width: 100%; font-size: 0.92rem; font-weight: 800; cursor: pointer; outline: none; padding: 0 18px 0 2px; margin: 0; box-sizing: border-box;">
               <option value="" style="background: #0f172a; color: #94a3b8;">-- Không --</option>
             </select>
-            <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; font-size: 0.70rem; font-weight: 900;">▼</span>
+            <span
+              style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; font-size: 0.70rem; font-weight: 900;">▼</span>
           </div>
 
           <!-- 4. NÚT TẠO ĐƠN -->
@@ -5408,8 +5597,8 @@
                 <button type="button" class="repair-mini-btn edit"
                   onclick="editDebtOption('creditor', 'debtFormCreditor', 'Sửa tên Người mình nợ:')"
                   title="Sửa">✏️</button>
-                <button type="button" class="repair-mini-btn del" onclick="deleteDebtOption('creditor', 'debtFormCreditor')"
-                  title="Xóa">🗑️</button>
+                <button type="button" class="repair-mini-btn del"
+                  onclick="deleteDebtOption('creditor', 'debtFormCreditor')" title="Xóa">🗑️</button>
               </div>
             </div>
           </div>
@@ -5576,14 +5765,16 @@
             <!-- Nút chọn lịch native -->
             <button type="button" onclick="openNativeDatePickerForEditSale()" title="Chọn ngày trên lịch"
               style="width: 38px; height: 38px; min-width: 38px; background: #0284c7; border: 1.5px solid #38bdf8; border-radius: 8px; color: #ffffff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
                 <line x1="8" y1="2" x2="8" y2="6"></line>
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
             </button>
-            <input type="date" id="nativeDatePicker_editSale" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;"
+            <input type="date" id="nativeDatePicker_editSale"
+              style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;"
               onchange="handleNativeDateChangeForEditSale(this.value)">
           </div>
         </div>
@@ -6165,7 +6356,8 @@
         </div>
 
         <!-- DÒNG TỔNG LỢI NHUẬN & CÒN THIẾU (Y CHANG MẪU: Tổng Lãi : 990 - Còn Thiếu : 1.510) -->
-        <div class="stats-total-row" style="margin-top: 10px; margin-bottom: 12px; text-align: center; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px;">
+        <div class="stats-total-row"
+          style="margin-top: 10px; margin-bottom: 12px; text-align: center; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px;">
           <span style="color: #f59e0b; font-weight: 900; font-size: 1.25rem;">Tổng Lãi : </span>
           <span id="mStatsTotalProfit"
             style="color: #facc15; font-weight: 900; font-size: 1.45rem; letter-spacing: 0.5px;">0</span>
@@ -6181,7 +6373,8 @@
       <div class="stats-footer-controls"
         style="padding: 0 14px 16px 14px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: nowrap; box-sizing: border-box; width: 100%;">
         <!-- Ô LỌC THEO NGÀY/THÁNG/NĂM: TĂNG KÍCH THƯỚC Ô 10% (110px), CỠ CHỮ TĂNG 10% (0.88rem) -->
-        <div style="position: relative; display: inline-flex; align-items: center; height: 34px; max-height: 34px; min-height: 34px; flex: 0 0 110px; width: 110px; min-width: 110px; box-sizing: border-box;">
+        <div
+          style="position: relative; display: inline-flex; align-items: center; height: 34px; max-height: 34px; min-height: 34px; flex: 0 0 110px; width: 110px; min-width: 110px; box-sizing: border-box;">
           <select id="mStatsPeriodSelect" onchange="setMobileStatsMode(this.value)"
             style="appearance: none; -webkit-appearance: none; background: #0284c7; border: 1.5px solid #38bdf8; color: #ffffff; height: 34px; max-height: 34px; min-height: 34px; line-height: 31px; width: 100%; padding: 0 20px 0 8px; border-radius: 6px; font-size: 0.88rem; font-weight: 900; cursor: pointer; outline: none; text-transform: uppercase; box-sizing: border-box; text-overflow: clip; white-space: nowrap; overflow: visible; text-align: center; margin: 0; letter-spacing: 0.3px;">
             <option value="day" selected style="background: #0f172a; color: #ffffff;">NGÀY</option>
@@ -6196,7 +6389,8 @@
         <!-- BỘ ĐIỀU HƯỚNG NGÀY: GIẢM KÍCH CỠ Ô 5% (flex: 0 1 190px), TĂNG CỠ CHỮ 10% (1.01rem) -->
         <div id="mStatsDateNavBox"
           style="display: inline-flex; align-items: center; justify-content: space-between; gap: 4px; background: rgba(5, 150, 105, 0.12); border: 1.5px solid #10b981; border-radius: 6px; padding: 0 4px; height: 34px; max-height: 34px; min-height: 34px; flex: 0 1 190px; min-width: 145px; box-sizing: border-box;">
-          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsDate(-1)" title="Lùi 1 ngày" style="flex: 0 0 22px; width: 22px; height: 26px;">
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsDate(-1)" title="Lùi 1 ngày"
+            style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
               style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M15 18l-6-6 6-6" />
@@ -6205,7 +6399,8 @@
           <span id="mStatsDateNavLabel" onclick="openMobileStatsNativeDatePicker()"
             style="color: #ffffff; font-weight: 900; font-size: 1.01rem; padding: 0 2px; cursor: pointer; user-select: none; letter-spacing: 0.3px; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;"
             title="Bấm để mở lịch chọn ngày">04/11/2026</span>
-          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsDate(1)" title="Tiến 1 ngày" style="flex: 0 0 22px; width: 22px; height: 26px;">
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsDate(1)" title="Tiến 1 ngày"
+            style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
               style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M9 18l6-6-6-6" />
@@ -6219,17 +6414,18 @@
         <!-- BỘ CHỌN THÁNG (KHI CHỌN CHẾ ĐỘ THÁNG) -->
         <div id="mStatsMonthNavBox"
           style="display: none; align-items: center; justify-content: space-between; gap: 4px; background: rgba(5, 150, 105, 0.12); border: 1.5px solid #10b981; border-radius: 6px; padding: 0 4px; height: 34px; max-height: 34px; min-height: 34px; flex: 0 1 190px; min-width: 145px; box-sizing: border-box;">
-          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsMonth(-1)"
-            title="Lùi 1 tháng" style="flex: 0 0 22px; width: 22px; height: 26px;">
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsMonth(-1)" title="Lùi 1 tháng"
+            style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
               style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
           <span id="mStatsMonthNavLabel"
-            style="color: #ffffff; font-weight: 900; font-size: 1.01rem; padding: 0 2px; user-select: none; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;">Tháng 11/2026</span>
-          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsMonth(1)"
-            title="Tiến 1 tháng" style="flex: 0 0 22px; width: 22px; height: 26px;">
+            style="color: #ffffff; font-weight: 900; font-size: 1.01rem; padding: 0 2px; user-select: none; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;">Tháng
+            11/2026</span>
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsMonth(1)" title="Tiến 1 tháng"
+            style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
               style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M9 18l6-6-6-6" />
@@ -6240,17 +6436,18 @@
         <!-- BỘ CHỌN NĂM (KHI CHỌN CHẾ ĐỘ NĂM) -->
         <div id="mStatsYearNavBox"
           style="display: none; align-items: center; justify-content: space-between; gap: 4px; background: rgba(5, 150, 105, 0.12); border: 1.5px solid #10b981; border-radius: 6px; padding: 0 4px; height: 34px; max-height: 34px; min-height: 34px; flex: 0 1 190px; min-width: 145px; box-sizing: border-box;">
-          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsYear(-1)"
-            title="Lùi 1 năm" style="flex: 0 0 22px; width: 22px; height: 26px;">
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsYear(-1)" title="Lùi 1 năm"
+            style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
               style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
           <span id="mStatsYearNavLabel"
-            style="color: #ffffff; font-weight: 900; font-size: 1.01rem; padding: 0 2px; user-select: none; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;">Năm 2026</span>
-          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsYear(1)"
-            title="Tiến 1 năm" style="flex: 0 0 22px; width: 22px; height: 26px;">
+            style="color: #ffffff; font-weight: 900; font-size: 1.01rem; padding: 0 2px; user-select: none; white-space: nowrap; overflow: visible; text-align: center; flex: 1 1 auto; line-height: 31px;">Năm
+            2026</span>
+          <button type="button" class="stats-arrow-green-btn" onclick="changeMobileStatsYear(1)" title="Tiến 1 năm"
+            style="flex: 0 0 22px; width: 22px; height: 26px;">
             <svg viewBox="0 0 24 24"
               style="width: 14px; height: 14px; stroke: #ffffff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;">
               <path d="M9 18l6-6-6-6" />
@@ -6309,10 +6506,10 @@
   <!-- ================================================ -->
 
   <!-- Dữ liệu đồng bộ ban đầu cho kho máy, bảo hành và main xác -->
-  <script src="js/seed_data.js?v=20261125_011316"></script>
+  <script src="js/seed_data.js?v=20261125_002000"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261125_011316"></script>
+  <script src="js/main.js?v=20261125_011200"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)
@@ -6355,9 +6552,11 @@
       style="background: #0f172a; border: 2px solid #38bdf8; border-radius: 16px; width: 100%; max-width: 350px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.9), 0 0 25px rgba(56,189,248,0.35); color: #ffffff; user-select: none;"
       onclick="event.stopPropagation()">
       <!-- Header popup lịch -->
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1e293b;">
+      <div
+        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1e293b;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
             <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -6370,27 +6569,33 @@
       </div>
 
       <!-- Tháng / Năm chuyển đổi -->
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #1e293b; padding: 6px 10px; border-radius: 8px;">
+      <div
+        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #1e293b; padding: 6px 10px; border-radius: 8px;">
         <button type="button" onclick="changeAppDatePickerMonth(-1)"
           style="background: #334155; border: 1px solid #475569; color: #ffffff; width: 30px; height: 30px; border-radius: 6px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center;">◀</button>
-        <span id="appDatePickerMonthYear" style="font-weight: 900; font-size: 1rem; color: #facc15; letter-spacing: 0.5px;">11/2026</span>
+        <span id="appDatePickerMonthYear"
+          style="font-weight: 900; font-size: 1rem; color: #facc15; letter-spacing: 0.5px;">11/2026</span>
         <button type="button" onclick="changeAppDatePickerMonth(1)"
           style="background: #334155; border: 1px solid #475569; color: #ffffff; width: 30px; height: 30px; border-radius: 6px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center;">▶</button>
       </div>
 
       <!-- Hàng thứ trong tuần -->
-      <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.8rem; font-weight: 800; color: #94a3b8; margin-bottom: 8px;">
-        <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span style="color: #f87171;">CN</span>
+      <div
+        style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.8rem; font-weight: 800; color: #94a3b8; margin-bottom: 8px;">
+        <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span
+          style="color: #f87171;">CN</span>
       </div>
 
       <!-- Lưới các ngày trong tháng -->
-      <div id="appDatePickerGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 14px;">
+      <div id="appDatePickerGrid"
+        style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 14px;">
       </div>
 
       <!-- Nút hành động nhanh: Hôm nay & Đóng -->
       <div style="display: flex; gap: 8px; justify-content: space-between;">
         <button type="button" onclick="selectAppDatePickerToday()"
-          style="flex: 1; height: 34px; background: #0284c7; border: 1px solid #38bdf8; border-radius: 8px; color: #ffffff; font-weight: 800; font-size: 0.88rem; cursor: pointer;">Hôm Nay</button>
+          style="flex: 1; height: 34px; background: #0284c7; border: 1px solid #38bdf8; border-radius: 8px; color: #ffffff; font-weight: 800; font-size: 0.88rem; cursor: pointer;">Hôm
+          Nay</button>
         <button type="button" onclick="closeAppDatePickerModal()"
           style="flex: 1; height: 34px; background: #334155; border: 1px solid #475569; border-radius: 8px; color: #e2e8f0; font-weight: 800; font-size: 0.88rem; cursor: pointer;">Đóng</button>
       </div>

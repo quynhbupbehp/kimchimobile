@@ -407,12 +407,12 @@ function formatBrandDeviceName(str) {
   if (!str || typeof str !== 'string') return str || '';
   let res = str;
   // Loại bỏ GB bị thêm nhầm sau 1 hoặc 2 số của tên máy (VD: 9GB, 11GB, 12GB, 14GB -> 9, 11, 12, 14)
-  res = res.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1');
+  res = res.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2');
   // Riêng iphone và ipad: người dùng ghi iphone/ipad thì hiển thị iPhone/iPad, còn ghi IPHONE/IPAD thì hiển thị đúng như vậy
-  res = res.replace(/(?<!\p{L})(iphone|Iphone)(?!\p{L})/gu, 'iPhone');
-  res = res.replace(/(?<!\p{L})(ipad|Ipad)(?!\p{L})/gu, 'iPad');
+  res = res.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(iphone|Iphone)(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/g, '$1iPhone');
+  res = res.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(ipad|Ipad)(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/g, '$1iPad');
   // Chữ se: người dùng ghi se thì viết thành SE
-  res = res.replace(/(?<!\p{L})se(?!\p{L})/gui, 'SE');
+  res = res.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])se(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1SE');
   return res;
 }
 
@@ -1346,6 +1346,16 @@ function openUniversalSmartDropdown(input, filterText = null) {
 
   // Khử trùng lặp
   options = Array.from(new Set(options));
+
+  // Tự động sắp xếp từ bé đến lớn đối với các danh sách Giá (như Giá bán, Giá nhập)
+  if (listId === 'tPriceOutList' || listId === 'tPriceInList' || (input.id && (input.id === 'tPriceOut' || input.id === 'tPriceIn'))) {
+    options.sort((a, b) => {
+      let numA = parseFloat(String(a).replace(/[^\d.-]/g, '')) || 0;
+      let numB = parseFloat(String(b).replace(/[^\d.-]/g, '')) || 0;
+      return numA - numB;
+    });
+  }
+
   input._universalOptions = options;
   input._universalListId = listId;
 
@@ -2277,6 +2287,23 @@ function handleLogin(e) {
   const pass = passEl ? passEl.value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() : '';
   const masterPassList = ["250991", "250995", "Huyen@95", "123456"];
 
+  if (!user) {
+    const err = document.getElementById('loginError');
+    if (err) {
+      err.innerText = 'Vui lòng nhập tài khoản!';
+      err.style.display = 'block';
+    }
+    return false;
+  }
+  if (!pass) {
+    const err = document.getElementById('loginError');
+    if (err) {
+      err.innerText = 'Vui lòng nhập mật khẩu!';
+      err.style.display = 'block';
+    }
+    return false;
+  }
+
   // Lấy danh sách tài khoản hệ thống từ biến systemAccountsDb hoặc mặc định
   let accountsList = (typeof systemAccountsDb !== 'undefined' && Array.isArray(systemAccountsDb) && systemAccountsDb.length > 0) ? systemAccountsDb : (typeof DEFAULT_SYSTEM_ACCOUNTS !== 'undefined' ? DEFAULT_SYSTEM_ACCOUNTS : []);
 
@@ -2326,8 +2353,12 @@ function handleLogin(e) {
   }
 
   if (isPassValid) {
+    window.KIMCHI_IN_MEMORY_LOGGED = true;
+    window.KIMCHI_CURRENT_USER = foundAcc.username || user;
     const sc = document.getElementById('loginScreen');
-    if (sc) sc.style.display = 'none';
+    if (sc) {
+      sc.style.setProperty('display', 'none', 'important');
+    }
     document.body.classList.remove('login-locked', 'login-active');
     document.documentElement.classList.add('user-is-logged');
     // Re-render all tables after login so Firebase-loaded data shows up
@@ -2356,7 +2387,7 @@ function handleLogin(e) {
         localStorage.removeItem('KIMCHI_CURRENT_USER');
       }
     } catch (errStorage) {
-      console.warn('Storage warning:', errStorage);
+      console.warn('Storage warning (Private Browsing / quota):', errStorage);
     }
     if (err) err.style.display = 'none';
     return false;
@@ -2390,8 +2421,8 @@ function migrateStorageUnits() {
     if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
       let sChanged = false;
       salesDatabase.forEach(item => {
-        if (item.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(item.name)) {
-          let updated = item.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (item.name && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(item.name)) {
+          let updated = item.name.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== item.name) { item.name = updated; sChanged = true; }
         }
       });
@@ -2403,8 +2434,8 @@ function migrateStorageUnits() {
     if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
       let bChanged = false;
       bangaDatabase.forEach(item => {
-        if (item.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(item.name)) {
-          let updated = item.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (item.name && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(item.name)) {
+          let updated = item.name.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== item.name) { item.name = updated; bChanged = true; }
         }
         if (item.storage && /gb|tb|mb/i.test(item.storage)) {
@@ -2424,8 +2455,8 @@ function migrateStorageUnits() {
           let updated = formatStorageDisplay(p.storage);
           if (updated !== p.storage) { p.storage = updated; pChanged = true; }
         }
-        if (p.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(p.name)) {
-          let updated = p.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (p.name && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(p.name)) {
+          let updated = p.name.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== p.name) { p.name = updated; pChanged = true; }
         }
       });
@@ -2441,8 +2472,8 @@ function migrateStorageUnits() {
           let updated = formatStorageDisplay(p.storage);
           if (updated !== p.storage) { p.storage = updated; spChanged = true; }
         }
-        if (p.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(p.name)) {
-          let updated = p.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (p.name && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(p.name)) {
+          let updated = p.name.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== p.name) { p.name = updated; spChanged = true; }
         }
       });
@@ -2454,8 +2485,8 @@ function migrateStorageUnits() {
     if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
       let swChanged = false;
       softwareDatabase.forEach(item => {
-        if (item.device && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(item.device)) {
-          let updated = item.device.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (item.device && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(item.device)) {
+          let updated = item.device.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== item.device) { item.device = updated; swChanged = true; }
         }
       });
@@ -2722,11 +2753,9 @@ function fetchDirectCloudSync(showToastMsg) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          var isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
-          if (isSoftwareCleared) return;
           var list = data.list;
           list.sort(function (a, b) { return getItemTimestamp(b) - getItemTimestamp(a); });
-          softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(list) : list;
+          softwareDatabase = list;
           if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
           if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
           if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
@@ -2763,8 +2792,13 @@ function fetchDirectCloudSync(showToastMsg) {
             if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
           } else {
             // Đồng bộ trực tiếp 100% từ Cloud: Thiết bị này (Web/Mobile) nhận đúng những gì thiết bị kia đã tạo/sửa/xóa
-            // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
-            phoneDatabase = rawList;
+            var rawList = Array.isArray(data.list) ? data.list : [];
+            // Nếu trên Cloud bị thiếu các máy chuẩn từ seed 154 máy, tự động hợp nhất bổ sung máy thiếu
+            if (typeof mergeWithSeedPhones === 'function') {
+              phoneDatabase = mergeWithSeedPhones(rawList);
+            } else {
+              phoneDatabase = rawList;
+            }
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
@@ -2831,6 +2865,41 @@ function fetchDirectCloudSync(showToastMsg) {
         }
       }
     }).catch(function (e) { console.warn('fetchDirectCloudSync activity_logs:', e); });
+
+    // 9. Tải Báo Giá Linh Kiện (parts) Bundle
+    db.collection('sync_bundles').doc('parts').get().then(function (doc) {
+      if (doc && doc.exists) {
+        var data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          partsDatabase = data.list;
+          if (typeof renderPartsTable === 'function') renderPartsTable();
+        }
+      }
+    }).catch(function (e) { console.warn('fetchDirectCloudSync parts:', e); });
+
+    // 10. Tải Mình Nợ (my_debt) Bundle
+    db.collection('sync_bundles').doc('my_debt').get().then(function (doc) {
+      if (doc && doc.exists) {
+        var data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          myDebtDatabase = data.list;
+          if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
+          if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+        }
+      }
+    }).catch(function (e) { console.warn('fetchDirectCloudSync my_debt:', e); });
+
+    // 11. Tải Nợ Khác (other_debt) Bundle
+    db.collection('sync_bundles').doc('other_debt').get().then(function (doc) {
+      if (doc && doc.exists) {
+        var data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          otherDebtDatabase = data.list;
+          if (typeof renderDebtOtherList === 'function') renderDebtOtherList();
+          if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+        }
+      }
+    }).catch(function (e) { console.warn('fetchDirectCloudSync other_debt:', e); });
 
     if (showToastMsg && typeof showToast === 'function') {
       showToast('⚡ Đã đồng bộ dữ liệu đám mây mới nhất!');
@@ -3109,11 +3178,9 @@ function initFirebaseRealtimeSync() {
       if (doc && doc.exists) {
         const data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
-          const isSoftwareCleared = localStorage.getItem('KIMCHI_PHANMEM_CLEARED') === 'true';
-          if (isSoftwareCleared) return;
           let list = data.list;
           list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
-          softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(list) : list;
+          softwareDatabase = list;
           if (typeof renderSoftwareTable === 'function') renderSoftwareTable(softwareDatabase);
           if (typeof renderSwCustomerFilterOptions === 'function') renderSwCustomerFilterOptions();
           if (typeof renderSoftwareDebtTable === 'function' && typeof swIsDebtViewActive !== 'undefined' && swIsDebtViewActive) {
@@ -3150,9 +3217,13 @@ function initFirebaseRealtimeSync() {
             return;
           }
           // Đồng bộ trực tiếp 100% từ Cloud Realtime: Web hay Mobile thêm/sửa/xóa là bên kia cập nhật tức thì
-          // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
           const rawList = Array.isArray(data.list) ? data.list : [];
-          phoneDatabase = rawList;
+          // Nếu trên Cloud bị thiếu các máy chuẩn từ seed 154 máy, tự động hợp nhất bổ sung máy thiếu
+          if (typeof mergeWithSeedPhones === 'function') {
+            phoneDatabase = mergeWithSeedPhones(rawList);
+          } else {
+            phoneDatabase = rawList;
+          }
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
@@ -3222,6 +3293,47 @@ function initFirebaseRealtimeSync() {
         }
       }
     }, err => console.warn('Bundle sync activity_logs notice:', err.code || err));
+  } catch (e) { }
+
+  // Đồng bộ Báo Giá Linh Kiện (parts) siêu tốc qua sync_bundles
+  try {
+    db.collection('sync_bundles').doc('parts').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          partsDatabase = data.list;
+          if (typeof renderPartsTable === 'function') renderPartsTable();
+        }
+      }
+    }, err => console.warn('Bundle sync parts notice:', err.code || err));
+  } catch (e) { }
+
+  // Đồng bộ Mình Nợ (my_debt) siêu tốc qua sync_bundles
+  try {
+    db.collection('sync_bundles').doc('my_debt').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          myDebtDatabase = data.list;
+          if (typeof renderMyDebtTable === 'function') renderMyDebtTable();
+          if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+        }
+      }
+    }, err => console.warn('Bundle sync my_debt notice:', err.code || err));
+  } catch (e) { }
+
+  // Đồng bộ Nợ Khác (other_debt) siêu tốc qua sync_bundles
+  try {
+    db.collection('sync_bundles').doc('other_debt').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data();
+        if (data && Array.isArray(data.list) && data.list.length > 0) {
+          otherDebtDatabase = data.list;
+          if (typeof renderDebtOtherList === 'function') renderDebtOtherList();
+          if (typeof renderDebtDashboard === 'function') renderDebtDashboard();
+        }
+      }
+    }, err => console.warn('Bundle sync other_debt notice:', err.code || err));
   } catch (e) { }
 
   // ĐÃ CHUYỂN TOÀN BỘ CÁC TAB SANG CƠ CHẾ SYNC_BUNDLES SIÊU TIẾT KIỆM QUOTA (RULE 6)
@@ -3473,8 +3585,8 @@ function mergeWithSeedSoftware(list) {
 }
 window.mergeWithSeedSoftware = mergeWithSeedSoftware;
 
-// Dữ liệu Phần Mềm: Khởi tạo Pure Firestore (hợp nhất cùng 1.415 đơn gốc chuẩn)
-let softwareDatabase = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware([]) : ((typeof window.SEED_SOFTWARE_DATA !== 'undefined' && Array.isArray(window.SEED_SOFTWARE_DATA)) ? JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA)) : DEFAULT_SOFTWARE_DATA);
+// Dữ liệu Phần Mềm: Khởi tạo Pure Firestore (đồng bộ 100% realtime giữa Web và Mobile)
+let softwareDatabase = [];
 
 // Dữ liệu Bán Hàng & Bán Gà: Khởi tạo an toàn (Tab Bán Hàng chạy Pure Firestore, không dùng localStorage)
 let salesDatabase = [];
@@ -10948,35 +11060,34 @@ function mergeWithSeedSoldPhones(list) {
 window.mergeWithSeedSoldPhones = mergeWithSeedSoldPhones;
 
 function mergeWithSeedPhones(list) {
-  const soldIds = getSoldPhoneIds();
-  const deletedPhoneIds = getDeletedPhoneIds();
-  // Nếu đã có danh sách máy lưu cục bộ, chỉ lọc bỏ máy đã bán/xóa, tuyệt đối không tự ý nhồi thêm seed cũ
-  if (Array.isArray(list) && list.length > 0) {
-    let combined = list.filter(item => {
-      if (!item) return false;
-      if (item.id && (soldIds.has(String(item.id)) || deletedPhoneIds.has(String(item.id)))) return false;
-      return true;
+  // Lấy các máy hiện có từ list
+  let combined = Array.isArray(list) ? list.filter(item => !!item) : [];
+
+  // Tự động bổ sung đầy đủ 100% các máy từ SEED chuẩn (154 máy) nếu danh sách chưa có (so theo ID và IMEI)
+  if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+    const existIdSet = new Set(combined.map(s => String(s.id)));
+    const existImeiSet = new Set(combined.filter(s => s.imei).map(s => String(s.imei).trim().toLowerCase()));
+
+    window.SEED_PHONES_DATA.forEach(seed => {
+      if (!seed || !seed.id) return;
+      const sId = String(seed.id);
+      const sImei = seed.imei ? String(seed.imei).trim() : '';
+
+      // Nếu máy đã có trong danh sách thì bỏ qua
+      if (existIdSet.has(sId)) return;
+      if (sImei && existImeiSet.has(sImei.toLowerCase())) return;
+
+      combined.push(JSON.parse(JSON.stringify(seed)));
+      existIdSet.add(sId);
+      if (sImei) existImeiSet.add(sImei.toLowerCase());
     });
-    if (typeof applyPhoneStatusOverrides === 'function') {
-      combined = applyPhoneStatusOverrides(combined);
-    }
-    return combined;
   }
 
-  // Chỉ khi danh sách hoàn toàn trống (máy mới tinh chưa từng có dữ liệu), mới lấy từ SEED_PHONES_DATA
-  let combined = [];
-  if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-    const seeds = window.SEED_PHONES_DATA;
-    seeds.forEach(s => {
-      if (!s || !s.id) return;
-      const sId = String(s.id);
-      if (soldIds.has(sId) || deletedPhoneIds.has(sId)) return;
-      combined.push(s);
-    });
-  }
-  if (typeof applyPhoneStatusOverrides === 'function') {
-    combined = applyPhoneStatusOverrides(combined);
-  }
+  // Luôn đảm bảo trạng thái các máy trong kho là 'Còn Hàng' trừ khi máy có trạng thái cụ thể khác
+  combined.forEach(p => {
+    if (!p.status || !String(p.status).trim()) p.status = 'Còn Hàng';
+  });
+
   return combined;
 }
 window.mergeWithSeedPhones = mergeWithSeedPhones;
@@ -11008,6 +11119,14 @@ function loadInitialPhones() {
 }
 let soldPhoneDatabase = loadInitialSoldPhones();
 let phoneDatabase = loadInitialPhones();
+
+// Tự động lưu và đồng bộ lại nếu phát hiện số lượng máy trong kho chưa đủ 154 máy chuẩn
+if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length >= 154) {
+  if (!Array.isArray(phoneDatabase) || phoneDatabase.length < window.SEED_PHONES_DATA.length) {
+    phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : window.SEED_PHONES_DATA;
+    try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
+  }
+}
 
 // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
 function autoSyncPhonesToWarranty() {
@@ -11530,15 +11649,9 @@ function checkPhoneModalValidity() {
 
   const nameVal = document.getElementById('mName') ? document.getElementById('mName').value.trim() : '';
   const imeiVal = document.getElementById('mImei') ? document.getElementById('mImei').value.trim() : '';
-  const colorVal = document.getElementById('mColor') ? document.getElementById('mColor').value.trim() : '';
-  const storageVal = document.getElementById('mStorage') ? document.getElementById('mStorage').value.trim() : '';
-  const conditionVal = document.getElementById('mCondition') ? document.getElementById('mCondition').value.trim() : '';
-  const statusVal = document.getElementById('mStatus') ? document.getElementById('mStatus').value.trim() : '';
-  const priceInVal = document.getElementById('mPriceIn') ? document.getElementById('mPriceIn').value.trim() : '';
-  const priceOutVal = document.getElementById('mPriceOut') ? document.getElementById('mPriceOut').value.trim() : '';
 
-  // IMEI chỉ cần có ghi là được (tối đa 4 số)
-  const isValid = Boolean(nameVal && imeiVal && colorVal && storageVal && conditionVal && statusVal && priceInVal && priceOutVal);
+  // Nút Lưu Dữ Liệu luôn sẵn sàng bấm, chỉ cần có tên máy
+  const isValid = Boolean(nameVal);
 
   if (isValid) {
     saveBtn.disabled = false;
@@ -11546,20 +11659,23 @@ function checkPhoneModalValidity() {
     saveBtn.style.cursor = 'pointer';
     saveBtn.style.pointerEvents = 'auto';
   } else {
-    saveBtn.disabled = true;
-    saveBtn.style.opacity = '0.45';
-    saveBtn.style.cursor = 'not-allowed';
-    saveBtn.style.pointerEvents = 'none';
+    // Không khóa cứng pointerEvents='none' để khi người dùng bấm vào vẫn phản hồi hoặc focus ô thiếu
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = '1';
+    saveBtn.style.cursor = 'pointer';
+    saveBtn.style.pointerEvents = 'auto';
   }
 }
 window.checkPhoneModalValidity = checkPhoneModalValidity;
 
 function closePhoneModal() {
-  document.getElementById('phoneModal').classList.remove('active');
+  const modal = document.getElementById('phoneModal');
+  if (modal) modal.classList.remove('active');
 }
+window.closePhoneModal = closePhoneModal;
 
 function saveNewPhone(e) {
-  e.preventDefault();
+  if (e && typeof e.preventDefault === 'function') e.preventDefault();
   const editId = document.getElementById('mEditId').value;
   const brandSelectVal = document.getElementById('mBrandSelect') ? document.getElementById('mBrandSelect').value : '';
   const existingP = editId ? phoneDatabase.find(x => String(x.id) === String(editId) || x.id == editId) : null;
@@ -11656,6 +11772,7 @@ function saveNewPhone(e) {
     showToast(editId ? '✅ Đã cập nhật thông tin máy thành công!' : '✅ Đã thêm máy mới vào kho thành công!');
   }
 }
+window.saveNewPhone = saveNewPhone;
 
 function viewPhone(id, fromSold = false) {
   let p = null;
@@ -13978,10 +14095,10 @@ function renderPhoneGrid() {
   const rawSearch = document.getElementById('phoneSearchInput') ? document.getElementById('phoneSearchInput').value.trim() : '';
   const normSearch = normalizeQuery(rawSearch);
 
-  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (chỉ lấy seed nếu danh sách máy hoàn toàn trống)
+  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (hợp nhất đầy đủ seed chuẩn 154 máy)
   if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-    if (!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) {
-      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+    if (!Array.isArray(phoneDatabase) || phoneDatabase.length < window.SEED_PHONES_DATA.length) {
+      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase || []) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
       savePhoneStorage();
     }
   }
@@ -13994,19 +14111,19 @@ function renderPhoneGrid() {
   }
 
   const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 768;
+  // Khi ở chế độ CHUA_XU_LY: Lọc riêng các máy Chưa Xử Lý / Main Xác
+  // Khi ở chế độ Còn Hàng (mặc định): Lọc các máy còn hàng, loại trừ máy Đã Bán và máy Chưa Xử Lý
   let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
-    ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
-    : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
-
-  // TRÊN MOBILE & DESKTOP: TAB BÁN MÁY CHỈ HIỂN THỊ DUY NHẤT CÁC MÁY CÒN HÀNG KHI Ở CHẾ ĐỘ CON_HANG
-  if (isMobileScreen && currentPhoneStatusFilter !== 'CHUA_XU_LY') {
-    filtered = filtered.filter(p => {
+    ? phoneDatabase.filter(p => {
       let st = (p.status || '').toLowerCase().trim();
-      if (!st || st === 'còn hàng' || st === 'con hang') return true;
-      if (st.includes('chưa xử lý') || st.includes('đã bán') || st.includes('da ban') || st.includes('main xác')) return false;
+      return st === 'chưa xử lý' || st.includes('chưa xử lý') || st.includes('main xác');
+    })
+    : phoneDatabase.filter(p => {
+      let st = (p.status || '').toLowerCase().trim();
+      if (st.includes('đã bán') || st.includes('da ban')) return false;
+      if (st === 'chưa xử lý' || st.includes('chưa xử lý') || st.includes('main xác')) return false;
       return true;
     });
-  }
   if (currentBrandFilter !== 'ALL') {
     const cbf = (currentBrandFilter || '').toUpperCase().trim();
     filtered = filtered.filter(p => {
@@ -14189,11 +14306,49 @@ function renderPhoneGrid() {
       return aDiff - bDiff;
     });
   } else {
-    // Sắp xếp theo thứ tự thêm mới hoặc sửa thông tin gần nhất lên đầu
+    // Helper lấy timestamp ngày thêm máy chuẩn xác (hỗ trợ cả DD/MM/YYYY, YYYY-MM-DD, và timestamp)
+    const parsePhoneDateTimestamp = (p) => {
+      if (!p) return 0;
+      let dStr = (p.date || p.dateIn || '').trim();
+      if (dStr) {
+        if (dStr.includes('/')) {
+          const parts = dStr.split('/');
+          if (parts.length === 3) {
+            const d = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const y = parseInt(parts[2], 10);
+            const t = new Date(y, m, d).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+        } else if (dStr.includes('-')) {
+          const parts = dStr.split('-');
+          if (parts.length === 3) {
+            let y, m, d;
+            if (parts[0].length === 4) {
+              y = parseInt(parts[0], 10);
+              m = parseInt(parts[1], 10) - 1;
+              d = parseInt(parts[2], 10);
+            } else {
+              d = parseInt(parts[0], 10);
+              m = parseInt(parts[1], 10) - 1;
+              y = parseInt(parts[2], 10);
+            }
+            const t = new Date(y, m, d).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+        }
+      }
+      return Number(p.updatedAt) || Number(p.createdAt) || Number(p.id) || 0;
+    };
+
+    // Sắp xếp theo thứ tự ngày nhập / ngày thêm gần nhất lên trước (như trên Web)
     filtered.sort((a, b) => {
-      let tB = Number(b.updatedAt) || Number(b.createdAt) || Number(b.id) || 0;
-      let tA = Number(a.updatedAt) || Number(a.createdAt) || Number(a.id) || 0;
-      return tB - tA;
+      let tB = parsePhoneDateTimestamp(b);
+      let tA = parsePhoneDateTimestamp(a);
+      if (tB !== tA) return tB - tA;
+      let idB = Number(b.updatedAt) || Number(b.createdAt) || Number(b.id) || 0;
+      let idA = Number(a.updatedAt) || Number(a.createdAt) || Number(a.id) || 0;
+      return idB - idA;
     });
   }
 
@@ -14313,7 +14468,7 @@ function renderPhoneGrid() {
       }
 
       return `
-                  <tr class="phone-table-row" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
+                  <tr class="phone-table-row" onclick="handlePhoneRowClick(this)" ontouchstart="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
                     <td style="text-align: left; padding-left: 12px; max-width: 280px;">
                       <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;">
                         <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px;">
@@ -14422,7 +14577,7 @@ function renderPhoneGrid() {
       let desktopDotSize = isDesktop ? 36 : 25;
 
       return `
-            <div class="phone-card" ondblclick="viewPhone('${p.id}')" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
+            <div class="phone-card" onclick="handlePhoneRowClick(this)" ontouchstart="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}'); } this._lastTap=now;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
               <div class="phone-card-header">
                 <div class="phone-header-left">
@@ -14451,6 +14606,35 @@ function renderPhoneGrid() {
     }).join('');
   }
 }
+
+// Hiệu ứng highlight hàng / thẻ máy khi click hoặc chạm như bên Báo Giá Chi Tiết
+let activePhoneRowElement = null;
+let activePhoneRowTimeout = null;
+
+function handlePhoneRowClick(rowElement) {
+  if (!rowElement) return;
+  if (window.event && window.event.target && (window.event.target.closest('button') || window.event.target.closest('.action-btn-group') || window.event.target.closest('.phone-card-actions-row'))) return;
+
+  if (activePhoneRowElement && activePhoneRowElement !== rowElement) {
+    activePhoneRowElement.classList.remove('clicked-pink-row');
+  }
+  if (activePhoneRowTimeout) {
+    clearTimeout(activePhoneRowTimeout);
+  }
+
+  activePhoneRowElement = rowElement;
+  activePhoneRowElement.classList.remove('clicked-pink-row');
+  void activePhoneRowElement.offsetWidth;
+  activePhoneRowElement.classList.add('clicked-pink-row');
+
+  activePhoneRowTimeout = setTimeout(() => {
+    if (activePhoneRowElement) {
+      activePhoneRowElement.classList.remove('clicked-pink-row');
+      activePhoneRowElement = null;
+    }
+  }, 4000);
+}
+window.handlePhoneRowClick = handlePhoneRowClick;
 
 // Toggle hiển thị 3 nút Bán, Sửa, Xóa khi click vào ô máy
 function togglePhoneCardActions(cardEl, e) {
@@ -14942,7 +15126,7 @@ function renderSoldPhoneTable() {
       let formattedPrice = isSoldPhonePricesHidden ? '*****' : (formatPriceStr(p.price || p.total) || '0');
 
       return `
-            <div class="phone-card sold-phone-card" ondblclick="viewPhone('${p.id}', true)" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}', true); } this._lastTap=now;" title="Nháy 2 lần để xem chi tiết máy">
+            <div class="phone-card sold-phone-card" onclick="handlePhoneRowClick(this)" ontouchstart="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}', true)" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}', true); } this._lastTap=now;" title="Nháy 2 lần để xem chi tiết máy">
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
               <div class="phone-card-header">
                 <div class="phone-header-left">
@@ -15909,8 +16093,12 @@ function openSoftwareModal(editId = null) {
           if (mIn) mIn.value = t[1];
         }
       }
-      let isPaid = (item.paymentStatus === 'ĐÃ TRẢ' || item.paymentStatus === 'ĐÃ THANH TOÁN');
-      document.getElementById('swFormPayment').value = isPaid ? 'ĐÃ TRẢ' : 'NỢ DAI VL';
+      if (item.paymentStatus === 'BÁN HÀNG') {
+        document.getElementById('swFormPayment').value = 'BÁN HÀNG';
+      } else {
+        let isPaid = (item.paymentStatus === 'ĐÃ TRẢ' || item.paymentStatus === 'ĐÃ THANH TOÁN');
+        document.getElementById('swFormPayment').value = isPaid ? 'ĐÃ TRẢ' : 'NỢ DAI VL';
+      }
     }
   }
 
@@ -16071,6 +16259,64 @@ function saveSoftwareTicket(e) {
   swFilterStatus = 'ALL';
   const statusSelect = document.getElementById('swStatusFilter');
   if (statusSelect) statusSelect.value = 'ALL';
+
+  // ĐỒNG BỘ SANG TAB BÁN HÀNG NẾU CHỌN THANH TOÁN LÀ "BÁN HÀNG"
+  const targetSoftwareId = editId ? String(editId) : String(targetItem.id);
+  if (paymentStatus === 'BÁN HÀNG') {
+    let devName = (device || 'Máy').trim();
+    let salesCommodityName = `Phá Mật Khẩu : ${devName}`;
+
+    let pNum = parseFloat(price.replace(/\D/g, '')) || 0;
+    let salesPriceFormatted = formatPriceStr(pNum);
+
+    let salesDateStr = `${ddStr}/${mmStr}/${yyyyStr}`;
+    let salesDateTime = `${time} - ${salesDateStr}`;
+
+    if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+      let existingSale = salesDatabase.find(s => String(s.softwareId) === targetSoftwareId);
+      if (existingSale) {
+        existingSale.name = salesCommodityName;
+        existingSale.total = salesPriceFormatted;
+        existingSale.priceIn = salesPriceFormatted;
+        existingSale.profit = '0';
+        existingSale.method = 'Chuyển khoản';
+        existingSale.dateTime = salesDateTime;
+        existingSale.date = salesDateStr;
+        existingSale.customer = customer || 'Khách lẻ';
+        existingSale.paymentStatus = 'Đã Trả';
+        if (typeof saveSalesStorage === 'function') saveSalesStorage(existingSale);
+      } else {
+        const salesRecord = {
+          id: Date.now() + 1,
+          name: salesCommodityName,
+          total: salesPriceFormatted,
+          priceIn: salesPriceFormatted,
+          profit: '0',
+          method: 'Chuyển khoản',
+          dateTime: salesDateTime,
+          date: salesDateStr,
+          customer: customer || 'Khách lẻ',
+          paymentStatus: 'Đã Trả',
+          isMissingInfo: false,
+          isChecked: false,
+          softwareId: targetSoftwareId
+        };
+        salesDatabase.unshift(salesRecord);
+        if (typeof saveSalesStorage === 'function') saveSalesStorage(salesRecord);
+      }
+      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+    }
+  } else if (editId) {
+    // Nếu sửa từ Bán Hàng sang trạng thái khác thì gỡ bỏ đơn bán hàng liên kết
+    if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+      const prevSalesLen = salesDatabase.length;
+      salesDatabase = salesDatabase.filter(s => String(s.softwareId) !== targetSoftwareId);
+      if (salesDatabase.length !== prevSalesLen) {
+        if (typeof saveSalesStorage === 'function') saveSalesStorage();
+        if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+      }
+    }
+  }
 
   saveSoftwareStorage(targetItem);
   renderSwCustomerFilterOptions();
@@ -16259,6 +16505,15 @@ function deleteSoftwareTicket(id) {
     saveSoftwareStorage();
     if (typeof db !== 'undefined' && db && id) {
       db.collection('software').doc(String(id)).delete().catch(console.error);
+    }
+    // Tự động xóa đơn bán hàng liên kết nếu có
+    if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+      const prevSalesLen = salesDatabase.length;
+      salesDatabase = salesDatabase.filter(s => String(s.softwareId) !== String(id));
+      if (salesDatabase.length !== prevSalesLen) {
+        if (typeof saveSalesStorage === 'function') saveSalesStorage();
+        if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+      }
     }
     if (item && typeof logActivity === 'function') {
       logActivity('DELETE', 'phanmem', 'Phần mềm', `Xóa đơn phần mềm: ${item.customer} - ${item.device} (Báo giá: ${item.price})`, item, null, id);
@@ -18452,13 +18707,7 @@ function filterDebtByCustomer(custName) {
 }
 
 function renderSoftwareTable(database) {
-  if (!Array.isArray(database) || database.length === 0) {
-    if (Array.isArray(window.SEED_SOFTWARE_DATA) && window.SEED_SOFTWARE_DATA.length > 0) {
-      database = (typeof mergeWithSeedSoftware === 'function') ? mergeWithSeedSoftware(softwareDatabase) : JSON.parse(JSON.stringify(window.SEED_SOFTWARE_DATA));
-      softwareDatabase = database;
-      saveSoftwareStorage();
-    }
-  }
+  if (!Array.isArray(database)) database = softwareDatabase || [];
   updateSoftwareProfits();
 
   const tbody = document.getElementById('softwareTableBody');
@@ -25725,7 +25974,7 @@ function removeDuplicateMainXacItems() {
   if (typeof db !== 'undefined' && db) {
     duplicates.forEach(item => {
       if (item && item.id) {
-        db.collection('main_xac').doc(String(item.id)).delete().catch(console.error);
+        db.collection('mainxac').doc(String(item.id)).delete().catch(console.error);
       }
     });
   }
