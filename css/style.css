@@ -1623,7 +1623,6 @@
 
     .phone-horizontal-table tbody tr {
       border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      transition: background 0.15s ease;
       cursor: pointer;
     }
 
@@ -1638,6 +1637,7 @@
     .phone-horizontal-table td {
       padding: 10px 8px;
       vertical-align: middle;
+      contain: layout style;
     }
 
     .phone-horizontal-table td:last-child {
@@ -1900,12 +1900,15 @@
 
     .phone-card-name {
       cursor: pointer;
-      transition: color 0.15s ease, text-decoration 0.15s ease;
+      display: inline-block;
+      vertical-align: middle;
+      text-decoration: none !important;
+      transform: translateZ(0);
     }
 
     .phone-card-name:hover {
       color: #38bdf8 !important;
-      text-decoration: underline;
+      text-decoration: none !important;
     }
 
     /* 3 NÚT THAO TÁC Ở CUỐI MODAL CHI TIẾT MÁY (BÁN, SỬA, XÓA) */

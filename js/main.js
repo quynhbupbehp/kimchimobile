@@ -14113,13 +14113,18 @@ function renderPhoneGrid() {
   }
 
   const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 768;
-  // Khi ở chế độ CHUA_XU_LY: Lọc riêng các máy Chưa Xử Lý
-  // Khi ở chế độ bình thường: Hiển thị đầy đủ tất cả các máy trong kho Bán Máy (không giấu máy)
+  // Khi ở chế độ CHUA_XU_LY: Lọc riêng các máy Chưa Xử Lý / Main Xác
+  // Khi ở chế độ Còn Hàng (mặc định): Lọc các máy còn hàng, loại trừ máy Đã Bán và máy Chưa Xử Lý
   let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
-    ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
+    ? phoneDatabase.filter(p => {
+      let st = (p.status || '').toLowerCase().trim();
+      return st === 'chưa xử lý' || st.includes('chưa xử lý') || st.includes('main xác');
+    })
     : phoneDatabase.filter(p => {
       let st = (p.status || '').toLowerCase().trim();
-      return !st.includes('đã bán') && !st.includes('da ban');
+      if (st.includes('đã bán') || st.includes('da ban')) return false;
+      if (st === 'chưa xử lý' || st.includes('chưa xử lý') || st.includes('main xác')) return false;
+      return true;
     });
   if (currentBrandFilter !== 'ALL') {
     const cbf = (currentBrandFilter || '').toUpperCase().trim();
