@@ -407,12 +407,12 @@ function formatBrandDeviceName(str) {
   if (!str || typeof str !== 'string') return str || '';
   let res = str;
   // Loại bỏ GB bị thêm nhầm sau 1 hoặc 2 số của tên máy (VD: 9GB, 11GB, 12GB, 14GB -> 9, 11, 12, 14)
-  res = res.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1');
+  res = res.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2');
   // Riêng iphone và ipad: người dùng ghi iphone/ipad thì hiển thị iPhone/iPad, còn ghi IPHONE/IPAD thì hiển thị đúng như vậy
-  res = res.replace(/(?<!\p{L})(iphone|Iphone)(?!\p{L})/gu, 'iPhone');
-  res = res.replace(/(?<!\p{L})(ipad|Ipad)(?!\p{L})/gu, 'iPad');
+  res = res.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(iphone|Iphone)(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/g, '$1iPhone');
+  res = res.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(ipad|Ipad)(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/g, '$1iPad');
   // Chữ se: người dùng ghi se thì viết thành SE
-  res = res.replace(/(?<!\p{L})se(?!\p{L})/gui, 'SE');
+  res = res.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])se(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1SE');
   return res;
 }
 
@@ -2411,8 +2411,8 @@ function migrateStorageUnits() {
     if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
       let sChanged = false;
       salesDatabase.forEach(item => {
-        if (item.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(item.name)) {
-          let updated = item.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (item.name && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(item.name)) {
+          let updated = item.name.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== item.name) { item.name = updated; sChanged = true; }
         }
       });
@@ -2424,8 +2424,8 @@ function migrateStorageUnits() {
     if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase)) {
       let bChanged = false;
       bangaDatabase.forEach(item => {
-        if (item.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(item.name)) {
-          let updated = item.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (item.name && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(item.name)) {
+          let updated = item.name.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== item.name) { item.name = updated; bChanged = true; }
         }
         if (item.storage && /gb|tb|mb/i.test(item.storage)) {
@@ -2445,8 +2445,8 @@ function migrateStorageUnits() {
           let updated = formatStorageDisplay(p.storage);
           if (updated !== p.storage) { p.storage = updated; pChanged = true; }
         }
-        if (p.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(p.name)) {
-          let updated = p.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (p.name && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(p.name)) {
+          let updated = p.name.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== p.name) { p.name = updated; pChanged = true; }
         }
       });
@@ -2462,8 +2462,8 @@ function migrateStorageUnits() {
           let updated = formatStorageDisplay(p.storage);
           if (updated !== p.storage) { p.storage = updated; spChanged = true; }
         }
-        if (p.name && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(p.name)) {
-          let updated = p.name.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (p.name && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(p.name)) {
+          let updated = p.name.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== p.name) { p.name = updated; spChanged = true; }
         }
       });
@@ -2475,8 +2475,8 @@ function migrateStorageUnits() {
     if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
       let swChanged = false;
       softwareDatabase.forEach(item => {
-        if (item.device && /(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui.test(item.device)) {
-          let updated = item.device.replace(/(?<!\p{L})(\d{1,2})\s*GB(?!\p{L})/gui, '$1').trim();
+        if (item.device && /(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/i.test(item.device)) {
+          let updated = item.device.replace(/(^|[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])(\d{1,2})\s*GB(?![a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9])/gi, '$1$2').trim();
           if (updated !== item.device) { item.device = updated; swChanged = true; }
         }
       });
