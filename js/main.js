@@ -15909,8 +15909,12 @@ function openSoftwareModal(editId = null) {
           if (mIn) mIn.value = t[1];
         }
       }
-      let isPaid = (item.paymentStatus === 'ĐÃ TRẢ' || item.paymentStatus === 'ĐÃ THANH TOÁN');
-      document.getElementById('swFormPayment').value = isPaid ? 'ĐÃ TRẢ' : 'NỢ DAI VL';
+      if (item.paymentStatus === 'BÁN HÀNG') {
+        document.getElementById('swFormPayment').value = 'BÁN HÀNG';
+      } else {
+        let isPaid = (item.paymentStatus === 'ĐÃ TRẢ' || item.paymentStatus === 'ĐÃ THANH TOÁN');
+        document.getElementById('swFormPayment').value = isPaid ? 'ĐÃ TRẢ' : 'NỢ DAI VL';
+      }
     }
   }
 
@@ -16071,6 +16075,70 @@ function saveSoftwareTicket(e) {
   swFilterStatus = 'ALL';
   const statusSelect = document.getElementById('swStatusFilter');
   if (statusSelect) statusSelect.value = 'ALL';
+
+  // ĐỒNG BỘ SANG TAB BÁN HÀNG NẾU CHỌN THANH TOÁN LÀ "BÁN HÀNG"
+  const targetSoftwareId = editId ? String(editId) : String(targetItem.id);
+  if (paymentStatus === 'BÁN HÀNG') {
+    let rawCust = (customer || '').trim();
+    let shortCust = rawCust;
+    if (shortCust.includes(' ')) {
+      let cParts = shortCust.split(/\s+/).filter(Boolean);
+      shortCust = cParts[cParts.length - 1]; // Lấy tên cuối, ví dụ "Bùi Văn Bình" -> "Bình"
+    }
+    let serviceName = (device || 'Phần Mềm').trim();
+    let salesCommodityName = shortCust ? `${shortCust} : ${serviceName}` : serviceName;
+
+    let pNum = parseFloat(price.replace(/\D/g, '')) || 0;
+    let salesPriceFormatted = formatPriceStr(pNum);
+
+    let salesDateStr = `${ddStr}/${mmStr}/${yyyyStr}`;
+    let salesDateTime = `${time} - ${salesDateStr}`;
+
+    if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+      let existingSale = salesDatabase.find(s => String(s.softwareId) === targetSoftwareId);
+      if (existingSale) {
+        existingSale.name = salesCommodityName;
+        existingSale.total = salesPriceFormatted;
+        existingSale.priceIn = salesPriceFormatted;
+        existingSale.profit = '0';
+        existingSale.method = 'Chuyển khoản';
+        existingSale.dateTime = salesDateTime;
+        existingSale.date = salesDateStr;
+        existingSale.customer = customer || 'Khách lẻ';
+        existingSale.paymentStatus = 'Đã Trả';
+        if (typeof saveSalesStorage === 'function') saveSalesStorage(existingSale);
+      } else {
+        const salesRecord = {
+          id: Date.now() + 1,
+          name: salesCommodityName,
+          total: salesPriceFormatted,
+          priceIn: salesPriceFormatted,
+          profit: '0',
+          method: 'Chuyển khoản',
+          dateTime: salesDateTime,
+          date: salesDateStr,
+          customer: customer || 'Khách lẻ',
+          paymentStatus: 'Đã Trả',
+          isMissingInfo: false,
+          isChecked: false,
+          softwareId: targetSoftwareId
+        };
+        salesDatabase.unshift(salesRecord);
+        if (typeof saveSalesStorage === 'function') saveSalesStorage(salesRecord);
+      }
+      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+    }
+  } else if (editId) {
+    // Nếu sửa từ Bán Hàng sang trạng thái khác thì gỡ bỏ đơn bán hàng liên kết
+    if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+      const prevSalesLen = salesDatabase.length;
+      salesDatabase = salesDatabase.filter(s => String(s.softwareId) !== targetSoftwareId);
+      if (salesDatabase.length !== prevSalesLen) {
+        if (typeof saveSalesStorage === 'function') saveSalesStorage();
+        if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+      }
+    }
+  }
 
   saveSoftwareStorage(targetItem);
   renderSwCustomerFilterOptions();
@@ -16259,6 +16327,15 @@ function deleteSoftwareTicket(id) {
     saveSoftwareStorage();
     if (typeof db !== 'undefined' && db && id) {
       db.collection('software').doc(String(id)).delete().catch(console.error);
+    }
+    // Tự động xóa đơn bán hàng liên kết nếu có
+    if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase)) {
+      const prevSalesLen = salesDatabase.length;
+      salesDatabase = salesDatabase.filter(s => String(s.softwareId) !== String(id));
+      if (salesDatabase.length !== prevSalesLen) {
+        if (typeof saveSalesStorage === 'function') saveSalesStorage();
+        if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+      }
     }
     if (item && typeof logActivity === 'function') {
       logActivity('DELETE', 'phanmem', 'Phần mềm', `Xóa đơn phần mềm: ${item.customer} - ${item.device} (Báo giá: ${item.price})`, item, null, id);
