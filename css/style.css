@@ -1903,12 +1903,17 @@
       display: inline-block;
       vertical-align: middle;
       text-decoration: none !important;
+      -webkit-text-decoration: none !important;
       transform: translateZ(0);
     }
 
-    .phone-card-name:hover {
+    .phone-card-name:hover,
+    .phone-card-name:focus,
+    .phone-card-name:active,
+    .phone-card:hover .phone-card-name {
       color: #38bdf8 !important;
       text-decoration: none !important;
+      -webkit-text-decoration: none !important;
     }
 
     /* 3 NÚT THAO TÁC Ở CUỐI MODAL CHI TIẾT MÁY (BÁN, SỬA, XÓA) */
