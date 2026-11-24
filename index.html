@@ -131,15 +131,21 @@
       function checkLoginEarly() {
         var isLogged = false;
         try {
-          var token = sessionStorage.getItem('KIMCHI_AUTH_TOKEN') || localStorage.getItem('KIMCHI_AUTH_TOKEN');
-          var loggedFlag = sessionStorage.getItem('KIMCHI_LOGGED') || localStorage.getItem('KIMCHI_LOGGED');
-          var validTokens = ['250991', '250995', 'Huyen@95', '123456', 'logged'];
-          if (loggedFlag === 'true') {
+          if (window.KIMCHI_IN_MEMORY_LOGGED === true) {
             isLogged = true;
-          } else if (token) {
-            isLogged = validTokens.indexOf(token) !== -1 || token.length >= 4;
+          } else {
+            var token = sessionStorage.getItem('KIMCHI_AUTH_TOKEN') || localStorage.getItem('KIMCHI_AUTH_TOKEN');
+            var loggedFlag = sessionStorage.getItem('KIMCHI_LOGGED') || localStorage.getItem('KIMCHI_LOGGED');
+            var validTokens = ['250991', '250995', 'Huyen@95', '123456', 'logged'];
+            if (loggedFlag === 'true') {
+              isLogged = true;
+            } else if (token) {
+              isLogged = validTokens.indexOf(token) !== -1 || token.length >= 4;
+            }
           }
-        } catch (e) { }
+        } catch (e) {
+          if (window.KIMCHI_IN_MEMORY_LOGGED === true) isLogged = true;
+        }
 
         var sc = document.getElementById('loginScreen');
         if (isLogged) {
@@ -275,7 +281,7 @@
       <div class="login-title">KIM CHI MOBILE</div>
       <div class="login-sub">ĐĂNG NHẬP HỆ THỐNG QUẢN LÝ</div>
 
-      <form onsubmit="handleLogin(event)">
+      <form onsubmit="handleLogin(event); return false;" novalidate>
         <div class="login-field">
           <label class="login-label">Tài Khoản Đăng Nhập</label>
           <input type="text" id="loginUser" class="login-input" placeholder="Nhập tài khoản" required
@@ -302,7 +308,7 @@
           </label>
         </div>
 
-        <button type="submit" class="login-btn">ĐĂNG NHẬP NGAY</button>
+        <button type="submit" class="login-btn" onclick="handleLogin(event)">ĐĂNG NHẬP NGAY</button>
         <button type="button" onclick="hardRefreshApp()"
           style="margin-top: 10px; width: 100%; background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #94a3b8; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
           <span>🔄</span> <span>Làm mới & Tải bản mới nhất (Xóa Cache)</span>

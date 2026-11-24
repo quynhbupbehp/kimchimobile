@@ -2326,8 +2326,12 @@ function handleLogin(e) {
   }
 
   if (isPassValid) {
+    window.KIMCHI_IN_MEMORY_LOGGED = true;
+    window.KIMCHI_CURRENT_USER = foundAcc.username || user;
     const sc = document.getElementById('loginScreen');
-    if (sc) sc.style.display = 'none';
+    if (sc) {
+      sc.style.setProperty('display', 'none', 'important');
+    }
     document.body.classList.remove('login-locked', 'login-active');
     document.documentElement.classList.add('user-is-logged');
     // Re-render all tables after login so Firebase-loaded data shows up
@@ -2356,7 +2360,7 @@ function handleLogin(e) {
         localStorage.removeItem('KIMCHI_CURRENT_USER');
       }
     } catch (errStorage) {
-      console.warn('Storage warning:', errStorage);
+      console.warn('Storage warning (Private Browsing / quota):', errStorage);
     }
     if (err) err.style.display = 'none';
     return false;
