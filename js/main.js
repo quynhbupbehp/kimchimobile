@@ -2792,8 +2792,13 @@ function fetchDirectCloudSync(showToastMsg) {
             if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
           } else {
             // Đồng bộ trực tiếp 100% từ Cloud: Thiết bị này (Web/Mobile) nhận đúng những gì thiết bị kia đã tạo/sửa/xóa
-            // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
-            phoneDatabase = rawList;
+            var rawList = Array.isArray(data.list) ? data.list : [];
+            // Nếu trên Cloud bị thiếu các máy chuẩn từ seed 154 máy, tự động hợp nhất bổ sung máy thiếu
+            if (typeof mergeWithSeedPhones === 'function') {
+              phoneDatabase = mergeWithSeedPhones(rawList);
+            } else {
+              phoneDatabase = rawList;
+            }
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
@@ -3212,9 +3217,13 @@ function initFirebaseRealtimeSync() {
             return;
           }
           // Đồng bộ trực tiếp 100% từ Cloud Realtime: Web hay Mobile thêm/sửa/xóa là bên kia cập nhật tức thì
-          // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
           const rawList = Array.isArray(data.list) ? data.list : [];
-          phoneDatabase = rawList;
+          // Nếu trên Cloud bị thiếu các máy chuẩn từ seed 154 máy, tự động hợp nhất bổ sung máy thiếu
+          if (typeof mergeWithSeedPhones === 'function') {
+            phoneDatabase = mergeWithSeedPhones(rawList);
+          } else {
+            phoneDatabase = rawList;
+          }
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
@@ -11053,30 +11062,39 @@ window.mergeWithSeedSoldPhones = mergeWithSeedSoldPhones;
 function mergeWithSeedPhones(list) {
   const soldIds = getSoldPhoneIds();
   const deletedPhoneIds = getDeletedPhoneIds();
-  // Nếu đã có danh sách máy lưu cục bộ, chỉ lọc bỏ máy đã bán/xóa, tuyệt đối không tự ý nhồi thêm seed cũ
-  if (Array.isArray(list) && list.length > 0) {
-    let combined = list.filter(item => {
-      if (!item) return false;
-      if (item.id && (soldIds.has(String(item.id)) || deletedPhoneIds.has(String(item.id)))) return false;
-      return true;
+
+  // Bắt đầu từ danh sách hiện tại (lọc bỏ máy đã bán/xóa vĩnh viễn)
+  let combined = Array.isArray(list) ? list.filter(item => {
+    if (!item) return false;
+    const sId = String(item.id || '');
+    const sImeiKey = item.imei ? ('imei_' + String(item.imei).trim().toLowerCase()) : '';
+    if (sId && (soldIds.has(sId) || deletedPhoneIds.has(sId))) return false;
+    if (sImeiKey && (soldIds.has(sImeiKey) || deletedPhoneIds.has(sImeiKey))) return false;
+    return true;
+  }) : [];
+
+  // Tự động bổ sung các máy từ SEED chuẩn (154 máy) nếu danh sách chưa có (so theo ID hoặc IMEI)
+  if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
+    const existIdSet = new Set(combined.map(s => String(s.id)));
+    const existImeiSet = new Set(combined.filter(s => s.imei).map(s => String(s.imei).trim().toLowerCase()));
+
+    window.SEED_PHONES_DATA.forEach(seed => {
+      if (!seed || !seed.id) return;
+      const sId = String(seed.id);
+      const sImei = seed.imei ? String(seed.imei).trim() : '';
+      const sImeiKey = sImei ? ('imei_' + sImei.toLowerCase()) : '';
+
+      if (soldIds.has(sId) || deletedPhoneIds.has(sId)) return;
+      if (sImeiKey && (soldIds.has(sImeiKey) || deletedPhoneIds.has(sImeiKey))) return;
+      if (existIdSet.has(sId)) return;
+      if (sImei && existImeiSet.has(sImei.toLowerCase())) return;
+
+      combined.push(seed);
+      existIdSet.add(sId);
+      if (sImei) existImeiSet.add(sImei.toLowerCase());
     });
-    if (typeof applyPhoneStatusOverrides === 'function') {
-      combined = applyPhoneStatusOverrides(combined);
-    }
-    return combined;
   }
 
-  // Chỉ khi danh sách hoàn toàn trống (máy mới tinh chưa từng có dữ liệu), mới lấy từ SEED_PHONES_DATA
-  let combined = [];
-  if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-    const seeds = window.SEED_PHONES_DATA;
-    seeds.forEach(s => {
-      if (!s || !s.id) return;
-      const sId = String(s.id);
-      if (soldIds.has(sId) || deletedPhoneIds.has(sId)) return;
-      combined.push(s);
-    });
-  }
   if (typeof applyPhoneStatusOverrides === 'function') {
     combined = applyPhoneStatusOverrides(combined);
   }
@@ -11111,6 +11129,12 @@ function loadInitialPhones() {
 }
 let soldPhoneDatabase = loadInitialSoldPhones();
 let phoneDatabase = loadInitialPhones();
+
+// Tự động lưu và đồng bộ lại nếu phát hiện số lượng máy được bổ sung đủ 154 máy
+if (Array.isArray(phoneDatabase) && Array.isArray(window.SEED_PHONES_DATA) && phoneDatabase.length < window.SEED_PHONES_DATA.length) {
+  phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : window.SEED_PHONES_DATA;
+  try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
+}
 
 // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
 function autoSyncPhonesToWarranty() {
@@ -14081,10 +14105,10 @@ function renderPhoneGrid() {
   const rawSearch = document.getElementById('phoneSearchInput') ? document.getElementById('phoneSearchInput').value.trim() : '';
   const normSearch = normalizeQuery(rawSearch);
 
-  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (chỉ lấy seed nếu danh sách máy hoàn toàn trống)
+  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (hợp nhất đầy đủ seed chuẩn 154 máy)
   if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-    if (!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) {
-      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+    if (!Array.isArray(phoneDatabase) || phoneDatabase.length < window.SEED_PHONES_DATA.length) {
+      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase || []) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
       savePhoneStorage();
     }
   }
