@@ -13332,7 +13332,12 @@ function openEditSoldPhoneModal(id) {
   let cleanStorage = (p.storage || '').replace(/[()]/g, '');
   let brandStr = p.brand || '';
   let nameStr = p.name || '';
-  document.getElementById('editSoldPhoneSummaryTitle').innerText = `${brandStr ? brandStr + ' - ' : ''}${nameStr} ${cleanStorage ? '(' + cleanStorage + ')' : ''}`.trim();
+  if (window.innerWidth <= 768) {
+    let shortStorage = cleanStorage.replace(/GB/gi, '').trim();
+    document.getElementById('editSoldPhoneSummaryTitle').innerHTML = `<span style="color:#ffffff;">${nameStr}</span>${shortStorage ? ` <span style="color:#ef4444;border:1.5px solid #ef4444;border-radius:6px;padding:1px 6px;font-size:0.85em;font-weight:900;">${shortStorage}</span>` : ''}`;
+  } else {
+    document.getElementById('editSoldPhoneSummaryTitle').innerText = `${brandStr ? brandStr + ' - ' : ''}${nameStr} ${cleanStorage ? '(' + cleanStorage + ')' : ''}`.trim();
+  }
   document.getElementById('editSoldPhoneSummaryImei').innerText = p.imei || 'Chưa có';
 
   const brandSelect = document.getElementById('editSoldBrandSelect');
