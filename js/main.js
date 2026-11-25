@@ -2662,10 +2662,13 @@ async function manualSyncAllToFirestore() {
 
     for (const t of tasks) {
       try {
-        await db.collection('sync_bundles').doc(t.name).set({
-          list: sanitizeForFirestore(t.data),
-          updatedAt: now
-        }, { merge: true });
+        await Promise.race([
+          db.collection('sync_bundles').doc(t.name).set({
+            list: sanitizeForFirestore(t.data),
+            updatedAt: now
+          }, { merge: true }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Hết thời gian chờ (Timeout 10s)')), 10000))
+        ]);
         successCount++;
       } catch (subErr) {
         console.warn(`Lỗi đồng bộ bundle ${t.name}:`, subErr);
