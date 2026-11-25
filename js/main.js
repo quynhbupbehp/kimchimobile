@@ -2869,59 +2869,129 @@ function deduplicateAllTabs() {
 window.deduplicateAllTabs = deduplicateAllTabs;
 
 function deduplicateTab(tabName) {
-  const dedupList = (arr, keyFn) => {
-    if (!Array.isArray(arr) || arr.length === 0) return { unique: arr || [], removed: 0 };
-    const seen = new Set();
-    const unique = [];
-    let removed = 0;
-    for (const item of arr) {
-      if (!item) continue;
-      const k = keyFn(item);
-      if (seen.has(k)) {
-        removed++;
-      } else {
-        seen.add(k);
-        unique.push(item);
-      }
-    }
-    return { unique, removed };
-  };
   const pNum = (v) => (typeof parsePriceNum === 'function' ? parsePriceNum(v) : (parseInt(String(v || '').replace(/\D/g, ''), 10) || 0));
 
+  let arr = [];
+  let title = '';
+  let keyFn = null;
+  let labelFn = null;
+
   if (tabName === 'sales' && typeof salesDatabase !== 'undefined') {
-    const res = dedupList(salesDatabase, s => `${s.dateTime || ''}|${(s.name || '').toLowerCase().trim()}|${pNum(s.total)}`);
-    if (res.removed === 0) return alert('✅ Tab Bán Hàng không có đơn nào bị trùng lặp!');
-    if (!confirm(`Phát hiện ${res.removed} đơn Bán Hàng bị trùng lặp.\nBạn có muốn xóa các bản sao trùng lặp (giữ lại 1 bản gốc) không?`)) return;
-    salesDatabase = res.unique;
-    if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
-    if (typeof syncSalesBundleDebounced === 'function') syncSalesBundleDebounced();
+    arr = salesDatabase;
+    title = 'Bán Hàng';
+    keyFn = s => `${s.dateTime || ''}|${(s.name || '').toLowerCase().trim()}|${pNum(s.total)}`;
+    labelFn = s => `${s.dateTime || ''} | ${s.customer || 'Khách lẻ'} | ${s.name || ''} | Giá: ${s.total || 0}`;
   } else if (tabName === 'software' && typeof softwareDatabase !== 'undefined') {
-    const res = dedupList(softwareDatabase, s => `${s.dayMonth || ''}|${s.year || '2026'}|${(s.customer || '').toLowerCase().trim()}|${(s.device || '').toLowerCase().trim()}|${pNum(s.price)}`);
-    if (res.removed === 0) return alert('✅ Tab Phần Mềm không có đơn nào bị trùng lặp!');
-    if (!confirm(`Phát hiện ${res.removed} đơn Phần Mềm bị trùng lặp.\nBạn có muốn xóa các bản sao trùng lặp (giữ lại 1 bản gốc) không?`)) return;
-    softwareDatabase = res.unique;
-    if (typeof renderSoftwareTable === 'function') renderSoftwareTable();
-    if (typeof syncSoftwareBundleDebounced === 'function') syncSoftwareBundleDebounced();
+    arr = softwareDatabase;
+    title = 'Phần Mềm';
+    keyFn = s => `${s.dayMonth || ''}|${s.year || '2026'}|${(s.customer || '').toLowerCase().trim()}|${(s.device || '').toLowerCase().trim()}|${pNum(s.price)}`;
+    labelFn = s => `${s.dayMonth || ''}/${s.year || '2026'} ${s.time || ''} | ${s.customer || ''} | ${s.device || ''} | Giá: ${s.price || 0}`;
   } else if (tabName === 'repair' && typeof repairDatabase !== 'undefined') {
-    const res = dedupList(repairDatabase, r => `${r.dateFormatted || ''}|${r.timeFormatted || ''}|${(r.customer || '').toLowerCase().trim()}|${(r.device || '').toLowerCase().trim()}|${pNum(r.price)}`);
-    if (res.removed === 0) return alert('✅ Tab Sửa Chữa không có phiếu nào bị trùng lặp!');
-    if (!confirm(`Phát hiện ${res.removed} phiếu Sửa Chữa bị trùng lặp.\nBạn có muốn xóa các bản sao trùng lặp (giữ lại 1 bản gốc) không?`)) return;
-    repairDatabase = res.unique;
-    if (typeof saveRepairDb === 'function') saveRepairDb();
-    if (typeof renderRepairTable === 'function') renderRepairTable();
+    arr = repairDatabase;
+    title = 'Sửa Chữa';
+    keyFn = r => `${r.dateFormatted || ''}|${r.timeFormatted || ''}|${(r.customer || '').toLowerCase().trim()}|${(r.device || '').toLowerCase().trim()}|${pNum(r.price)}`;
+    labelFn = r => `${r.dateFormatted || ''} ${r.timeFormatted || ''} | ${r.customer || ''} | ${r.device || ''} | Giá: ${r.price || 0}`;
   } else if (tabName === 'phone' && typeof phoneDatabase !== 'undefined') {
-    const res = dedupList(phoneDatabase, p => {
+    arr = phoneDatabase;
+    title = 'Bán Máy';
+    keyFn = p => {
       const imei = (p.imei || '').toLowerCase().trim();
       return imei ? `imei:${imei}` : `${(p.brand || '').toLowerCase().trim()}|${(p.name || '').toLowerCase().trim()}|${pNum(p.price)}|${p.date || ''}`;
-    });
-    if (res.removed === 0) return alert('✅ Tab Bán Máy không có máy nào bị trùng lặp!');
-    if (!confirm(`Phát hiện ${res.removed} máy bị trùng lặp.\nBạn có muốn xóa các bản sao trùng lặp (giữ lại 1 bản gốc) không?`)) return;
-    phoneDatabase = res.unique;
-    if (typeof renderPhoneTable === 'function') renderPhoneTable();
-    if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+    };
+    labelFn = p => `${p.date || ''} | ${p.brand || ''} ${p.name || ''} | IMEI: ${p.imei || 'Không'} | Giá: ${p.price || 0}`;
+  } else {
+    return;
   }
-  if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
-  if (typeof showToast === 'function') showToast('✅ Đã lọc sạch dữ liệu trùng lặp và đang đồng bộ lên Cloud!', 3500);
+
+  const seen = new Set();
+  const dupIndices = [];
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    if (!item) continue;
+    const k = keyFn(item);
+    if (seen.has(k)) {
+      dupIndices.push({ index: i, label: labelFn(item) });
+    } else {
+      seen.add(k);
+    }
+  }
+
+  if (dupIndices.length === 0) {
+    alert(`✅ Tab ${title} không có đơn nào bị trùng lặp!`);
+    return;
+  }
+
+  const oldModal = document.getElementById('dedupPreviewModal');
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'dedupPreviewModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(2,6,23,0.82);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="background:#0f172a;border:1.5px solid #334155;border-radius:14px;max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column;color:#f8fafc;box-shadow:0 20px 50px rgba(0,0,0,0.6);">
+      <div style="padding:14px 18px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-weight:800;font-size:1rem;color:#f472b6;">🧹 Lọc Trùng Tab ${title} (${dupIndices.length} bản sao)</div>
+        <button type="button" id="dedupCloseBtn" style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:10px 18px;border-bottom:1px solid #1e293b;display:flex;gap:12px;align-items:center;font-size:0.85rem;color:#cbd5e1;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:700;">
+          <input type="checkbox" id="dedupSelectAll" checked style="width:16px;height:16px;cursor:pointer;"> Chọn / Bỏ chọn tất cả
+        </label>
+        <span style="color:#94a3b8;">(Bản gốc đầu tiên luôn được giữ lại)</span>
+      </div>
+      <div style="padding:12px 18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;">
+        ${dupIndices.map(d => `
+          <label style="display:flex;align-items:flex-start;gap:10px;background:#1e293b;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:0.86rem;line-height:1.4;">
+            <input type="checkbox" class="dedup-item-chk" data-idx="${d.index}" checked style="margin-top:3px;width:16px;height:16px;flex-shrink:0;cursor:pointer;">
+            <span>${d.label}</span>
+          </label>
+        `).join('')}
+      </div>
+      <div style="padding:12px 18px;border-top:1px solid #1e293b;display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" id="dedupCancelBtn" style="padding:8px 16px;border-radius:8px;border:1px solid #475569;background:#1e293b;color:#e2e8f0;cursor:pointer;font-weight:700;">Hủy</button>
+        <button type="button" id="dedupConfirmBtn" style="padding:8px 16px;border-radius:8px;border:none;background:#ec4899;color:#ffffff;cursor:pointer;font-weight:800;">🗑️ Xóa các mục đã chọn</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  document.getElementById('dedupCloseBtn').onclick = closeModal;
+  document.getElementById('dedupCancelBtn').onclick = closeModal;
+  document.getElementById('dedupSelectAll').onchange = function () {
+    modal.querySelectorAll('.dedup-item-chk').forEach(c => { c.checked = this.checked; });
+  };
+  document.getElementById('dedupConfirmBtn').onclick = function () {
+    const toRemove = new Set();
+    modal.querySelectorAll('.dedup-item-chk:checked').forEach(c => {
+      toRemove.add(parseInt(c.getAttribute('data-idx'), 10));
+    });
+    if (toRemove.size === 0) {
+      alert('Bạn chưa chọn mục nào để xóa!');
+      return;
+    }
+    const filtered = arr.filter((_, idx) => !toRemove.has(idx));
+    if (tabName === 'sales') {
+      salesDatabase = filtered;
+      if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+      if (typeof syncSalesBundleDebounced === 'function') syncSalesBundleDebounced();
+    } else if (tabName === 'software') {
+      softwareDatabase = filtered;
+      if (typeof renderSoftwareTable === 'function') renderSoftwareTable();
+      if (typeof syncSoftwareBundleDebounced === 'function') syncSoftwareBundleDebounced();
+    } else if (tabName === 'repair') {
+      repairDatabase = filtered;
+      if (typeof saveRepairDb === 'function') saveRepairDb();
+      if (typeof renderRepairTable === 'function') renderRepairTable();
+    } else if (tabName === 'phone') {
+      phoneDatabase = filtered;
+      if (typeof renderPhoneTable === 'function') renderPhoneTable();
+      if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+    }
+    if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+    closeModal();
+    if (typeof showToast === 'function') showToast(`✅ Đã xóa ${toRemove.size} mục trùng lặp ở tab ${title} và đang đồng bộ lên Cloud!`, 3500);
+  };
 }
 window.deduplicateTab = deduplicateTab;
 
