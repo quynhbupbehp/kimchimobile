@@ -2589,6 +2589,7 @@ window.sanitizeForFirestore = sanitizeForFirestore;
 // HÀM ĐỒNG BỘ TOÀN BỘ CÁC TAB LÊN FIREBASE CLOUD THỦ CÔNG
 // =========================================================
 async function manualSyncAllToFirestore() {
+  localStorage.removeItem('KIMCHI_SKIP_CLOUD_FETCH_ONCE');
   const btn = document.getElementById('btnSyncAllCloud');
   const originalHtml = btn ? btn.innerHTML : '';
   if (btn) {
@@ -3236,6 +3237,11 @@ function initFirebaseRealtimeSync() {
 
   if (typeof db === 'undefined' || !db) {
     console.warn("Chưa tìm thấy kết nối Firebase Firestore (db)!");
+    return;
+  }
+
+  if (localStorage.getItem('KIMCHI_SKIP_CLOUD_FETCH_ONCE') === '1') {
+    console.log('Đang giữ dữ liệu vừa nạp từ Backup, tạm bỏ qua onSnapshot cho đến khi bấm Đồng bộ.');
     return;
   }
 
