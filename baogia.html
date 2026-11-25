@@ -1156,7 +1156,7 @@
             // Màu chữ trắng và vàng xen kẽ, ngăn cách bằng dấu -
             const rawTokens = processedName.split('-').map(t => t.trim()).filter(Boolean);
             let tokensHtml = '';
-            if (!isMobile && rawTokens.length >= 7) {
+            if (!isMobile && rawTokens.length >= 8) {
                 const splitMid = Math.ceil(rawTokens.length / 2);
                 const renderPart = (tokens, startIdx) => tokens.map((token, i) => {
                     const idx = startIdx + i;
