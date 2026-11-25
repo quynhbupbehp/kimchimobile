@@ -13429,7 +13429,7 @@ QG : ${p.origin || 'VN/A'} - Giá Nhập : ${p.priceIn || '0'}`;
     btnSave.classList.add('active');
     btnSave.disabled = false;
     btnSave.style.pointerEvents = 'auto';
-    btnSave.innerText = 'Lưu Thay Đổi';
+    btnSave.innerText = 'LƯU';
   }
 
   const modal = document.getElementById('editSoldPhoneModal');
@@ -13767,7 +13767,7 @@ function saveEditedSoldPhone(e) {
     renderSoldPhoneTable();
   } finally {
     if (btnSave) {
-      btnSave.innerText = 'Lưu Thay Đổi';
+      btnSave.innerText = 'LƯU';
       btnSave.disabled = false;
       btnSave.classList.add('active');
     }
