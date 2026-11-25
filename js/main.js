@@ -2946,12 +2946,11 @@ function deduplicateTab(tabName) {
     bar.innerHTML = `<span style="color:#f472b6;font-weight:800;font-size:0.9rem;">🧹 Tích chọn các máy muốn xóa khỏi Bảo Hành (không xóa bên Bán Gà):</span><button type="button" id="btnSoldInlineDel" style="margin-left:auto;padding:6px 14px;border-radius:8px;border:none;background:#ec4899;color:#fff;font-weight:800;cursor:pointer;">🗑️ Xóa đã chọn</button><button type="button" id="btnSoldInlineCancel" style="padding:6px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#cbd5e1;font-weight:700;cursor:pointer;">Hủy</button>`;
     const tableWrap = tbody.closest('table');
     if (tableWrap && tableWrap.parentElement) tableWrap.parentElement.insertBefore(bar, tableWrap);
-    tbody.querySelectorAll('tr').forEach(tr => {
+    tbody.querySelectorAll('tr').forEach((tr, rIdx) => {
       const firstTd = tr.querySelector('td');
       if (!firstTd || firstTd.querySelector('.sold-inline-del-chk')) return;
-      const editBtn = tr.querySelector('[onclick*="openEditSoldPhoneModal"]');
-      const mId = editBtn ? String(editBtn.getAttribute('onclick')).match(/openEditSoldPhoneModal\(['"]?([^'")]+)['"]?\)/) : null;
-      const rowId = mId ? mId[1] : '';
+      const renderedItem = (Array.isArray(window.currentRenderedSoldPhones) && window.currentRenderedSoldPhones[rIdx]) ? window.currentRenderedSoldPhones[rIdx] : null;
+      const rowId = renderedItem ? String(renderedItem.id) : '';
       const chk = document.createElement('input');
       chk.type = 'checkbox';
       chk.className = 'sold-inline-del-chk';
