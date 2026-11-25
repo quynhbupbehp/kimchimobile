@@ -11674,7 +11674,10 @@ window.checkPhoneModalValidity = checkPhoneModalValidity;
 
 function closePhoneModal() {
   const modal = document.getElementById('phoneModal');
-  if (modal) modal.classList.remove('active');
+  if (modal) {
+    modal.classList.remove('active', 'show');
+    modal.style.setProperty('display', 'none', 'important');
+  }
 }
 window.closePhoneModal = closePhoneModal;
 
