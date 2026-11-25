@@ -26481,3 +26481,22 @@ function removeDuplicateMainXacItems() {
   alert(`âœ… ÄÃ£ lá»c sáº¡ch thÃ nh cÃ´ng! ÄÃ£ loáº¡i bá» ${duplicates.length} má»¥c trÃ¹ng láº·p trong kho Main - XÃ¡c.`);
 }
 window.removeDuplicateMainXacItems = removeDuplicateMainXacItems;
+
+// Tô màu cam khi b?m vào ô máy ? tab Bán Máy (Web & Mobile) và tab B?o Hành (Mobile)
+document.addEventListener('click', function (e) {
+  const phoneRow = e.target.closest('#phoneTableBody tr');
+  if (phoneRow) {
+    const tbody = phoneRow.parentElement;
+    if (tbody) tbody.querySelectorAll('tr.kimchi-orange-selected').forEach(r => { if (r !== phoneRow) r.classList.remove('kimchi-orange-selected'); });
+    phoneRow.classList.toggle('kimchi-orange-selected');
+    return;
+  }
+  if (window.innerWidth <= 768) {
+    const soldRow = e.target.closest('#soldPhoneTableBody tr');
+    if (soldRow) {
+      const tbody = soldRow.parentElement;
+      if (tbody) tbody.querySelectorAll('tr.kimchi-orange-selected-mobile').forEach(r => { if (r !== soldRow) r.classList.remove('kimchi-orange-selected-mobile'); });
+      soldRow.classList.toggle('kimchi-orange-selected-mobile');
+    }
+  }
+});

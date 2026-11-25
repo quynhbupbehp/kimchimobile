@@ -365,6 +365,21 @@
       stroke: #ffffff !important;
     }
   </style>
+  <style>
+    /* Tô màu cam khi bấm vào ô máy (Bán Máy: Web & Mobile; Bảo Hành: Mobile) */
+    #phoneTableBody tr.kimchi-orange-selected,
+    #phoneTableBody tr.kimchi-orange-selected td {
+      background-color: rgba(249, 115, 22, 0.35) !important;
+      border-color: rgba(249, 115, 22, 0.7) !important;
+    }
+    @media (max-width: 768px) {
+      #soldPhoneTableBody tr.kimchi-orange-selected-mobile,
+      #soldPhoneTableBody tr.kimchi-orange-selected-mobile td {
+        background-color: rgba(249, 115, 22, 0.35) !important;
+        border-color: rgba(249, 115, 22, 0.7) !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
