@@ -11972,7 +11972,7 @@ function openPhoneModal(editId = null) {
   if (editId) {
     const p = phoneDatabase.find(item => String(item.id) === String(editId) || item.id == editId);
     if (p) {
-      document.getElementById('phoneModalTitle').innerText = "Sửa Thông Tin Máy";
+      document.getElementById('phoneModalTitle').innerText = (window.innerWidth <= 768 ? "Sửa Thông Tin" : "Sửa Thông Tin Máy");
       document.getElementById('mEditId').value = p.id;
       const brandSelect = document.getElementById('mBrandSelect');
       if (brandSelect) {
