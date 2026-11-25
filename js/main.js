@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    HỆ THỐNG THÔNG BÁO TỰ TẮT SAU 2 GIÂY (TOAST NOTIFICATION)
    Thay thế toàn bộ window.alert chuẩn của trình duyệt
    ============================================================ */
@@ -2867,6 +2867,63 @@ function deduplicateAllTabs() {
   if (typeof showToast === 'function') showToast(`✅ Đã lọc sạch ${totalRemoved} mục trùng lặp và đang đồng bộ lên Cloud!`, 4000);
 }
 window.deduplicateAllTabs = deduplicateAllTabs;
+
+function deduplicateTab(tabName) {
+  const dedupList = (arr, keyFn) => {
+    if (!Array.isArray(arr) || arr.length === 0) return { unique: arr || [], removed: 0 };
+    const seen = new Set();
+    const unique = [];
+    let removed = 0;
+    for (const item of arr) {
+      if (!item) continue;
+      const k = keyFn(item);
+      if (seen.has(k)) {
+        removed++;
+      } else {
+        seen.add(k);
+        unique.push(item);
+      }
+    }
+    return { unique, removed };
+  };
+  const pNum = (v) => (typeof parsePriceNum === 'function' ? parsePriceNum(v) : (parseInt(String(v || '').replace(/\D/g, ''), 10) || 0));
+
+  if (tabName === 'sales' && typeof salesDatabase !== 'undefined') {
+    const res = dedupList(salesDatabase, s => `${s.dateTime || ''}|${(s.name || '').toLowerCase().trim()}|${pNum(s.total)}`);
+    if (res.removed === 0) return alert('✅ Tab Bán Hàng không có đơn nào bị trùng lặp!');
+    if (!confirm(`Phát hiện ${res.removed} đơn Bán Hàng bị trùng lặp.\nBạn có muốn xóa các bản sao trùng lặp (giữ lại 1 bản gốc) không?`)) return;
+    salesDatabase = res.unique;
+    if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+    if (typeof syncSalesBundleDebounced === 'function') syncSalesBundleDebounced();
+  } else if (tabName === 'software' && typeof softwareDatabase !== 'undefined') {
+    const res = dedupList(softwareDatabase, s => `${s.dayMonth || ''}|${s.year || '2026'}|${(s.customer || '').toLowerCase().trim()}|${(s.device || '').toLowerCase().trim()}|${pNum(s.price)}`);
+    if (res.removed === 0) return alert('✅ Tab Phần Mềm không có đơn nào bị trùng lặp!');
+    if (!confirm(`Phát hiện ${res.removed} đơn Phần Mềm bị trùng lặp.\nBạn có muốn xóa các bản sao trùng lặp (giữ lại 1 bản gốc) không?`)) return;
+    softwareDatabase = res.unique;
+    if (typeof renderSoftwareTable === 'function') renderSoftwareTable();
+    if (typeof syncSoftwareBundleDebounced === 'function') syncSoftwareBundleDebounced();
+  } else if (tabName === 'repair' && typeof repairDatabase !== 'undefined') {
+    const res = dedupList(repairDatabase, r => `${r.dateFormatted || ''}|${r.timeFormatted || ''}|${(r.customer || '').toLowerCase().trim()}|${(r.device || '').toLowerCase().trim()}|${pNum(r.price)}`);
+    if (res.removed === 0) return alert('✅ Tab Sửa Chữa không có phiếu nào bị trùng lặp!');
+    if (!confirm(`Phát hiện ${res.removed} phiếu Sửa Chữa bị trùng lặp.\nBạn có muốn xóa các bản sao trùng lặp (giữ lại 1 bản gốc) không?`)) return;
+    repairDatabase = res.unique;
+    if (typeof saveRepairDb === 'function') saveRepairDb();
+    if (typeof renderRepairTable === 'function') renderRepairTable();
+  } else if (tabName === 'phone' && typeof phoneDatabase !== 'undefined') {
+    const res = dedupList(phoneDatabase, p => {
+      const imei = (p.imei || '').toLowerCase().trim();
+      return imei ? `imei:${imei}` : `${(p.brand || '').toLowerCase().trim()}|${(p.name || '').toLowerCase().trim()}|${pNum(p.price)}|${p.date || ''}`;
+    });
+    if (res.removed === 0) return alert('✅ Tab Bán Máy không có máy nào bị trùng lặp!');
+    if (!confirm(`Phát hiện ${res.removed} máy bị trùng lặp.\nBạn có muốn xóa các bản sao trùng lặp (giữ lại 1 bản gốc) không?`)) return;
+    phoneDatabase = res.unique;
+    if (typeof renderPhoneTable === 'function') renderPhoneTable();
+    if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+  }
+  if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+  if (typeof showToast === 'function') showToast('✅ Đã lọc sạch dữ liệu trùng lặp và đang đồng bộ lên Cloud!', 3500);
+}
+window.deduplicateTab = deduplicateTab;
 
 function autoPushLocalDataToFirestore() {
   // ĐÃ VÔ HIỆU HÓA: Không tự động đẩy seed_data lên Cloud khi mở app trên thiết bị mới

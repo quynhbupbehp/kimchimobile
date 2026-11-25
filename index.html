@@ -576,6 +576,12 @@
                   📤 Xuất Excel
                 </button>
                 <button type="button" class="btn-action-sales"
+                  onclick="deduplicateTab('sales'); closeAllExcelDropdowns();"
+                  title="Quét và lọc bỏ các đơn Bán Hàng bị trùng lặp"
+                  style="background: #0f172a; border: 1.5px solid #f472b6; color: #f472b6; box-shadow: 0 4px 12px rgba(244,114,182,0.25);">
+                  🧹 Lọc Trùng
+                </button>
+                <button type="button" class="btn-action-sales"
                   onclick="removeDuplicateSalesItems(); closeAllExcelDropdowns();"
                   title="Xóa các đơn bán hàng trùng lặp, chỉ giữ lại duy nhất 1 đơn"
                   style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
@@ -934,6 +940,12 @@
                   title="Xuất danh sách Phần Mềm ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
                   📤 Xuất Excel
+                </button>
+                <button type="button" class="btn-action-sales"
+                  onclick="deduplicateTab('software'); closeAllExcelDropdowns();"
+                  title="Quét và lọc bỏ các đơn Phần Mềm bị trùng lặp"
+                  style="background: #0f172a; border: 1.5px solid #f472b6; color: #f472b6; box-shadow: 0 4px 12px rgba(244,114,182,0.25);">
+                  🧹 Lọc Trùng
                 </button>
                 <button type="button" class="btn-action-sales"
                   onclick="removeDuplicateSoftwareItems(); closeAllExcelDropdowns();"
@@ -1335,6 +1347,12 @@
                     📤 Xuất Excel
                   </button>
                   <button type="button" class="btn-action-sales"
+                    onclick="deduplicateTab('repair'); closeAllExcelDropdowns();"
+                    title="Quét và lọc bỏ các phiếu Sửa Chữa bị trùng lặp"
+                    style="background: #0f172a; border: 1.5px solid #f472b6; color: #f472b6; box-shadow: 0 4px 12px rgba(244,114,182,0.25);">
+                    🧹 Lọc Trùng
+                  </button>
+                  <button type="button" class="btn-action-sales"
                     onclick="clearAllRepairData(); closeAllExcelDropdowns();"
                     title="Xóa toàn bộ danh sách Sửa Chữa để nhập lại từ đầu"
                     style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
@@ -1584,6 +1602,12 @@
                   title="Nhập dữ liệu Bán Máy từ file Excel (.csv, .xlsx)"
                   style="background: #0f172a; border: 1.5px solid #10b981; color: #ffffff; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
                   📥 Nhập Excel
+                </button>
+                <button type="button" class="btn-action-sales"
+                  onclick="deduplicateTab('phone'); closeAllExcelDropdowns();"
+                  title="Quét và lọc bỏ các máy bị trùng lặp"
+                  style="background: #0f172a; border: 1.5px solid #f472b6; color: #f472b6; box-shadow: 0 4px 12px rgba(244,114,182,0.25);">
+                  🧹 Lọc Trùng
                 </button>
                 <button type="button" class="btn-action-sales" onclick="exportPhoneToExcel(); closeAllExcelDropdowns();"
                   title="Xuất danh sách Bán Máy ra file Excel"
@@ -2775,10 +2799,6 @@
             <button type="button" class="brand-btn-h" id="btnRepSubTax" onclick="openTaxReportModal()"
               title="Xuất sổ doanh thu bán hàng hóa, dịch vụ mẫu S1a-HKD" style="color: #ffffff; font-weight: 800;">
               📑 BÁO CÁO THUẾ
-            </button>
-            <button type="button" class="brand-btn-h" onclick="deduplicateAllTabs()"
-              title="Quét và lọc bỏ các đơn bị trùng lặp ở các tab (có hỏi xác nhận trước khi xóa)" style="color: #f472b6; font-weight: 800;">
-              🧹 LỌC TRÙNG
             </button>
 
             <!-- HỘP THEO DÕI HẠN MỨC FIRESTORE ĐỌC / GHI TRONG NGÀY (SÁT BÊN PHẢI TÀI KHOẢN) -->
