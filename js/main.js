@@ -13334,7 +13334,7 @@ function openEditSoldPhoneModal(id) {
   let nameStr = p.name || '';
   if (window.innerWidth <= 768) {
     let shortStorage = cleanStorage.replace(/GB/gi, '').trim();
-    document.getElementById('editSoldPhoneSummaryTitle').innerHTML = `<span style="color:#ffffff;">${nameStr}</span>${shortStorage ? ` <span style="color:#ef4444;border:1.5px solid #ef4444;border-radius:6px;padding:1px 6px;font-size:0.85em;font-weight:900;">${shortStorage}</span>` : ''}`;
+    let mDotCol = (typeof getHexColor === 'function') ? getHexColor(p.color) : '#6b7280'; document.getElementById('editSoldPhoneSummaryTitle').innerHTML = `<span style="color:#ffffff;">${nameStr}</span><span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:${mDotCol};border:1.5px solid rgba(255,255,255,0.45);vertical-align:middle;margin:0 5px;"></span>${shortStorage ? `<span style="color:#ef4444;border:1.5px solid #ef4444;border-radius:6px;padding:1px 6px;font-size:0.85em;font-weight:900;">${shortStorage}</span>` : ''}`;
   } else {
     document.getElementById('editSoldPhoneSummaryTitle').innerText = `${brandStr ? brandStr + ' - ' : ''}${nameStr} ${cleanStorage ? '(' + cleanStorage + ')' : ''}`.trim();
   }
