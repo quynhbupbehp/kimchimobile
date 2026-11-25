@@ -14516,7 +14516,7 @@ function renderPhoneGrid() {
               ${filtered.map(p => {
       let pName = formatBrandDeviceName(p.name || '');
       let pNameHtml = escapeHtml(pName);
-      const nameParts = pName.split(/\s+-\s+/);
+      const nameParts = pName.split(/\s+[-–]\s+|\s*\/\s*/);
       if (nameParts.length >= 7) {
         const mid = Math.ceil(nameParts.length / 2);
         const line1 = escapeHtml(nameParts.slice(0, mid).join(' - '));
@@ -14651,7 +14651,7 @@ function renderPhoneGrid() {
     container.innerHTML = filtered.map(p => {
       let pName = formatBrandDeviceName(p.name || '');
       let pNameHtml = escapeHtml(pName);
-      const nameParts = pName.split(/\s+-\s+/);
+      const nameParts = pName.split(/\s+[-–]\s+|\s*\/\s*/);
       if (nameParts.length >= 7) {
         const mid = Math.ceil(nameParts.length / 2);
         const line1 = escapeHtml(nameParts.slice(0, mid).join(' - '));
@@ -15235,7 +15235,7 @@ function renderSoldPhoneTable() {
       let brandDisplay = formatBrandDeviceName(p.brand || '');
       let pName = formatBrandDeviceName(p.name || '');
       let pNameHtml = escapeHtml(pName);
-      const nameParts = pName.split(/\s+-\s+/);
+      const nameParts = pName.split(/\s+[-–]\s+|\s*\/\s*/);
       if (nameParts.length >= 7) {
         const mid = Math.ceil(nameParts.length / 2);
         const line1 = escapeHtml(nameParts.slice(0, mid).join(' - '));
