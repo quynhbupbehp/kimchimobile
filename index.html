@@ -367,10 +367,11 @@
   </style>
   <style>
     /* Tô màu cam khi bấm vào ô máy (Bán Máy: Web & Mobile; Bảo Hành: Mobile) */
-    #phoneTableBody tr.kimchi-orange-selected,
-    #phoneTableBody tr.kimchi-orange-selected td {
+    #phoneGridContainer > .kimchi-orange-selected {
+      background: rgba(249, 115, 22, 0.35) !important;
       background-color: rgba(249, 115, 22, 0.35) !important;
-      border-color: rgba(249, 115, 22, 0.7) !important;
+      border-color: #f97316 !important;
+      box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.6) !important;
     }
     @media (max-width: 768px) {
       #soldPhoneTableBody tr.kimchi-orange-selected-mobile,

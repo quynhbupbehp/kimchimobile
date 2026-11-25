@@ -1,4 +1,4 @@
-/* ============================================================
+ï»¿/* ============================================================
    Há»† THá»NG THÃ”NG BÃO Tá»° Táº®T SAU 2 GIÃ‚Y (TOAST NOTIFICATION)
    Thay tháº¿ toÃ n bá»™ window.alert chuáº©n cá»§a trÃ¬nh duyá»‡t
    ============================================================ */
@@ -26482,12 +26482,12 @@ function removeDuplicateMainXacItems() {
 }
 window.removeDuplicateMainXacItems = removeDuplicateMainXacItems;
 
-// Tô màu cam khi b?m vào ô máy ? tab Bán Máy (Web & Mobile) và tab B?o Hành (Mobile)
+// Tï¿½ mï¿½u cam khi b?m vï¿½o ï¿½ mï¿½y ? tab Bï¿½n Mï¿½y (Web & Mobile) vï¿½ tab B?o Hï¿½nh (Mobile)
 document.addEventListener('click', function (e) {
-  const phoneRow = e.target.closest('#phoneTableBody tr');
+  const phoneRow = e.target.closest('#phoneGridContainer > div');
   if (phoneRow) {
     const tbody = phoneRow.parentElement;
-    if (tbody) tbody.querySelectorAll('tr.kimchi-orange-selected').forEach(r => { if (r !== phoneRow) r.classList.remove('kimchi-orange-selected'); });
+    if (tbody) tbody.querySelectorAll('.kimchi-orange-selected').forEach(r => { if (r !== phoneRow) r.classList.remove('kimchi-orange-selected'); });
     phoneRow.classList.toggle('kimchi-orange-selected');
     return;
   }
@@ -26495,7 +26495,7 @@ document.addEventListener('click', function (e) {
     const soldRow = e.target.closest('#soldPhoneTableBody tr');
     if (soldRow) {
       const tbody = soldRow.parentElement;
-      if (tbody) tbody.querySelectorAll('tr.kimchi-orange-selected-mobile').forEach(r => { if (r !== soldRow) r.classList.remove('kimchi-orange-selected-mobile'); });
+      if (tbody) tbody.querySelectorAll('.kimchi-orange-selected-mobile').forEach(r => { if (r !== soldRow) r.classList.remove('kimchi-orange-selected-mobile'); });
       soldRow.classList.toggle('kimchi-orange-selected-mobile');
     }
   }
