@@ -2777,6 +2777,97 @@ function importFullBackupJSON(event) {
 }
 window.importFullBackupJSON = importFullBackupJSON;
 
+function deduplicateAllTabs() {
+  const dedupList = (arr, keyFn) => {
+    if (!Array.isArray(arr) || arr.length === 0) return { unique: arr || [], removed: 0 };
+    const seen = new Set();
+    const unique = [];
+    let removed = 0;
+    for (const item of arr) {
+      if (!item) continue;
+      const k = keyFn(item);
+      if (seen.has(k)) {
+        removed++;
+      } else {
+        seen.add(k);
+        unique.push(item);
+      }
+    }
+    return { unique, removed };
+  };
+
+  const pNum = (v) => (typeof parsePriceNum === 'function' ? parsePriceNum(v) : (parseInt(String(v || '').replace(/\D/g, ''), 10) || 0));
+
+  const resSales = typeof salesDatabase !== 'undefined'
+    ? dedupList(salesDatabase, s => `${s.dateTime || ''}|${(s.name || '').toLowerCase().trim()}|${pNum(s.total)}`)
+    : { unique: [], removed: 0 };
+
+  const resSw = typeof softwareDatabase !== 'undefined'
+    ? dedupList(softwareDatabase, s => `${s.dayMonth || ''}|${s.year || '2026'}|${(s.customer || '').toLowerCase().trim()}|${(s.device || '').toLowerCase().trim()}|${pNum(s.price)}`)
+    : { unique: [], removed: 0 };
+
+  const resBanga = typeof bangaDatabase !== 'undefined'
+    ? dedupList(bangaDatabase, s => `${s.dateTime || ''}|${(s.name || '').toLowerCase().trim()}|${pNum(s.total)}`)
+    : { unique: [], removed: 0 };
+
+  const resRepair = typeof repairDatabase !== 'undefined'
+    ? dedupList(repairDatabase, r => `${r.dateFormatted || ''}|${r.timeFormatted || ''}|${(r.customer || '').toLowerCase().trim()}|${(r.device || '').toLowerCase().trim()}|${pNum(r.price)}`)
+    : { unique: [], removed: 0 };
+
+  const resPhone = typeof phoneDatabase !== 'undefined'
+    ? dedupList(phoneDatabase, p => {
+        const imei = (p.imei || '').toLowerCase().trim();
+        return imei ? `imei:${imei}` : `${(p.brand || '').toLowerCase().trim()}|${(p.name || '').toLowerCase().trim()}|${pNum(p.price)}|${p.date || ''}`;
+      })
+    : { unique: [], removed: 0 };
+
+  const totalRemoved = resSales.removed + resSw.removed + resBanga.removed + resRepair.removed + resPhone.removed;
+  if (totalRemoved === 0) {
+    alert('✅ Tuyệt vời! Không có đơn nào bị trùng lặp ở các tab.');
+    return;
+  }
+
+  const lines = [];
+  if (resSales.removed > 0) lines.push(`- Bán Hàng: ${resSales.removed} đơn trùng`);
+  if (resSw.removed > 0) lines.push(`- Phần Mềm: ${resSw.removed} đơn trùng`);
+  if (resBanga.removed > 0) lines.push(`- Bán Gà: ${resBanga.removed} đơn trùng`);
+  if (resRepair.removed > 0) lines.push(`- Sửa Chữa: ${resRepair.removed} phiếu trùng`);
+  if (resPhone.removed > 0) lines.push(`- Bán Máy (Kho): ${resPhone.removed} máy trùng`);
+
+  if (!confirm(`Phát hiện tổng cộng ${totalRemoved} mục bị trùng lặp:\n\n${lines.join('\n')}\n\nBạn có muốn xóa các bản sao trùng lặp (giữ lại 1 bản gốc) không?`)) {
+    return;
+  }
+
+  if (resSales.removed > 0) {
+    salesDatabase = resSales.unique;
+    if (typeof renderSalesTable === 'function') renderSalesTable(salesDatabase);
+    if (typeof syncSalesBundleDebounced === 'function') syncSalesBundleDebounced();
+  }
+  if (resSw.removed > 0) {
+    softwareDatabase = resSw.unique;
+    if (typeof renderSoftwareTable === 'function') renderSoftwareTable();
+    if (typeof syncSoftwareBundleDebounced === 'function') syncSoftwareBundleDebounced();
+  }
+  if (resBanga.removed > 0) {
+    bangaDatabase = resBanga.unique;
+    if (typeof renderBangaTable === 'function') renderBangaTable(bangaDatabase);
+    if (typeof syncBangaBundleDebounced === 'function') syncBangaBundleDebounced();
+  }
+  if (resRepair.removed > 0) {
+    repairDatabase = resRepair.unique;
+    if (typeof saveRepairDb === 'function') saveRepairDb();
+    if (typeof renderRepairTable === 'function') renderRepairTable();
+  }
+  if (resPhone.removed > 0) {
+    phoneDatabase = resPhone.unique;
+    if (typeof renderPhoneTable === 'function') renderPhoneTable();
+    if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+  }
+  if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
+  if (typeof showToast === 'function') showToast(`✅ Đã lọc sạch ${totalRemoved} mục trùng lặp và đang đồng bộ lên Cloud!`, 4000);
+}
+window.deduplicateAllTabs = deduplicateAllTabs;
+
 function autoPushLocalDataToFirestore() {
   // ĐÃ VÔ HIỆU HÓA: Không tự động đẩy seed_data lên Cloud khi mở app trên thiết bị mới
   // Giữ nguyên dữ liệu đám mây thực tế 100%, bảo vệ dữ liệu đã có trên Web
