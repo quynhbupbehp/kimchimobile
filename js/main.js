@@ -2903,8 +2903,10 @@ function deduplicateTab(tabName) {
     arr = soldPhoneDatabase;
     title = 'Bảo Hành';
     keyFn = p => {
-      const imei = (p.imei || '').toLowerCase().trim();
-      return imei ? `imei:${imei}|${p.dateOut || p.date || ''}` : `${(p.customer || '').toLowerCase().trim()}|${(p.name || '').toLowerCase().trim()}|${pNum(p.price)}|${p.dateOut || p.date || ''}`;
+      const mImei = String(p.name || '').match(/\((\d{4})\)/);
+      const imei = ((p.imei || '') || (mImei ? mImei[1] : '')).toLowerCase().trim();
+      const d = p.dateOut || p.date || p.soldDate || '';
+      return imei ? `imei:${imei}|${d}` : `${(p.customer || '').toLowerCase().trim()}|${(p.name || '').toLowerCase().trim()}|${pNum(p.price)}|${p.dateOut || p.date || ''}`;
     };
     labelFn = p => `${p.dateOut || p.date || ''} | ${p.customer || 'Khách lẻ'} | ${p.brand || ''} ${p.name || ''} | IMEI: ${p.imei || 'Không'} | Giá: ${p.price || 0}`;
   } else {
