@@ -2811,6 +2811,13 @@ function fetchDirectCloudSync(showToastMsg) {
               if (pImeiKey && (soldIds.has(pImeiKey) || deletedIds.has(pImeiKey))) return false;
               return true;
             });
+            var localUpdated = Number(localStorage.getItem('KIMCHI_PHONES_UPDATED_AT') || 0);
+            if (cloudUpdated && cloudUpdated > localUpdated) {
+              try {
+                localStorage.removeItem('KIMCHI_PHONE_STATUS_OVERRIDES');
+                localStorage.removeItem('KIMCHI_PHONE_EDIT_OVERRIDES');
+              } catch (e) { }
+            }
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
           try {
@@ -3252,6 +3259,12 @@ function initFirebaseRealtimeSync() {
             if (pImeiKey && (soldIds.has(pImeiKey) || deletedIds.has(pImeiKey))) return false;
             return true;
           });
+          if (cloudUpdated && cloudUpdated > Number(localStorage.getItem('KIMCHI_PHONES_UPDATED_AT') || 0)) {
+            try {
+              localStorage.removeItem('KIMCHI_PHONE_STATUS_OVERRIDES');
+              localStorage.removeItem('KIMCHI_PHONE_EDIT_OVERRIDES');
+            } catch (e) { }
+          }
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           try {
             localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase));
@@ -14571,12 +14584,12 @@ function renderPhoneGrid() {
       return `
                   <tr class="phone-table-row" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
                     <td style="text-align: left; padding-left: 12px; white-space: nowrap;">
-                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: nowrap; white-space: nowrap;">
                         <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;">
                           ${escapeHtml(pName)}
                           ${getColorDotHtml(p.color, 26)}
                         </span>
-                        ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.45rem; letter-spacing: 0.5px; border: 1px solid rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.12); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">${escapeHtml(p.imei)}</span>` : ''}
+                        ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.5rem; letter-spacing: 0.5px; margin-left: auto; white-space: nowrap;">${escapeHtml(p.imei)}</span>` : ''}
                       </div>
                       <div style="font-size: 1.08rem; color: #94a3b8; margin-top: 3px; display: flex; align-items: center; gap: 6px;">
                         <span>${getPhoneBrandBadgeHtml(p.brand, p.name)}</span>
