@@ -14516,7 +14516,7 @@ function renderPhoneGrid() {
               ${filtered.map(p => {
       let pName = formatBrandDeviceName(p.name || '');
       let pNameHtml = escapeHtml(pName);
-      const nameParts = pName.split(/\s+[-–]\s+|\s*\/\s*/);
+      const nameParts = pName.split(/\s+-\s+/);
       if (nameParts.length >= 7) {
         const mid = Math.ceil(nameParts.length / 2);
         const line1 = escapeHtml(nameParts.slice(0, mid).join(' - '));
@@ -14651,7 +14651,7 @@ function renderPhoneGrid() {
     container.innerHTML = filtered.map(p => {
       let pName = formatBrandDeviceName(p.name || '');
       let pNameHtml = escapeHtml(pName);
-      const nameParts = pName.split(/\s+[-–]\s+|\s*\/\s*/);
+      const nameParts = pName.split(/\s+-\s+/);
       if (nameParts.length >= 7) {
         const mid = Math.ceil(nameParts.length / 2);
         const line1 = escapeHtml(nameParts.slice(0, mid).join(' - '));
@@ -15235,7 +15235,7 @@ function renderSoldPhoneTable() {
       let brandDisplay = formatBrandDeviceName(p.brand || '');
       let pName = formatBrandDeviceName(p.name || '');
       let pNameHtml = escapeHtml(pName);
-      const nameParts = pName.split(/\s+[-–]\s+|\s*\/\s*/);
+      const nameParts = pName.split(/\s+-\s+/);
       if (nameParts.length >= 7) {
         const mid = Math.ceil(nameParts.length / 2);
         const line1 = escapeHtml(nameParts.slice(0, mid).join(' - '));
@@ -19684,13 +19684,22 @@ function renderPartsTable() {
 
     const lkText = escapeHtml((item.type || '').toUpperCase());
     const kieuText = escapeHtml((item.style || item.status || 'ZIN').toUpperCase());
+    const rawDevice = item.device || '';
+    let deviceHtml = escapeHtml(rawDevice);
+    const deviceParts = rawDevice.split(/\s+[-–]\s+|\s*\/\s*/);
+    if (deviceParts.length >= 7) {
+      const mid = Math.ceil(deviceParts.length / 2);
+      const line1 = escapeHtml(deviceParts.slice(0, mid).join(' - '));
+      const line2 = escapeHtml(deviceParts.slice(mid).join(' - '));
+      deviceHtml = `<span style="display: inline-flex; flex-direction: column; line-height: 1.3;"><span>${line1}</span><span>${line2}</span></span>`;
+    }
 
     return `
           <tr class="${isOut ? 'out-of-stock' : ''}">
             <td style="text-align: left; padding-left: 18px;">
               <div class="bg-cell-devicename">
                 ${brandLogo}
-                <span class="bg-model-chip">${escapeHtml(item.device || '')}</span>
+                <span class="bg-model-chip">${deviceHtml}</span>
                 ${colorDotHtml}
               </div>
             </td>
