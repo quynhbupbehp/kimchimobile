@@ -12646,7 +12646,8 @@ function openSellPhoneModal(id) {
   }
 
   let pinVal = formatPinByBrand(p.pin, p.brand, p.name);
-  document.getElementById('sellPhoneSummaryDetails').innerText = `${p.condition || 'Zin Đẹp 99%'} - Pin : ${pinVal} - QG: ${p.origin || 'VN/A'} - Giá Nhập : ${p.priceIn || '0'}`;
+  document.getElementById('sellPhoneSummaryDetails').innerText = `${p.condition || 'Zin Đẹp 99%'} - Pin : ${pinVal}
+QG : ${p.origin || 'VN/A'} - Giá Nhập : ${p.priceIn || '0'}`;
 
   document.getElementById('sellCustomerName').value = '';
   document.getElementById('sellCustomerName').placeholder = 'Khách Lẻ';
@@ -13355,7 +13356,8 @@ function openEditSoldPhoneModal(id) {
   }
 
   let pinVal = (typeof formatPinByBrand === 'function') ? formatPinByBrand(p.pin, p.brand, p.name) : (p.pin || 'Pin Zin');
-  document.getElementById('editSoldPhoneSummaryDetails').innerText = `${p.condition || 'Zin Đẹp 99%'} - Pin : ${pinVal} - QG: ${p.origin || 'VN/A'} - Giá Nhập : ${p.priceIn || '0'}`;
+  document.getElementById('editSoldPhoneSummaryDetails').innerText = `${p.condition || 'Zin Đẹp 99%'} - Pin : ${pinVal}
+QG : ${p.origin || 'VN/A'} - Giá Nhập : ${p.priceIn || '0'}`;
 
   // 1. Tên Khách Hàng
   document.getElementById('editSoldCustomerName').value = p.customer || 'Khách Lẻ';
