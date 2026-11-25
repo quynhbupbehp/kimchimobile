@@ -2658,6 +2658,7 @@ async function manualSyncAllToFirestore() {
     // Đồng bộ tuần tự an toàn, tránh xung đột IndexedDB (Assertion Failed)
     let successCount = 0;
     let failedTasks = [];
+    let lastSubErrMsg = '';
 
     for (const t of tasks) {
       try {
@@ -2669,11 +2670,15 @@ async function manualSyncAllToFirestore() {
       } catch (subErr) {
         console.warn(`Lỗi đồng bộ bundle ${t.name}:`, subErr);
         failedTasks.push(t.name);
+        lastSubErrMsg = (subErr && (subErr.message || String(subErr))) || '';
+        if (typeof notifyFirebaseQuotaExceeded === 'function') {
+          notifyFirebaseQuotaExceeded(subErr);
+        }
       }
     }
 
     if (btn) {
-      btn.innerHTML = '✅';
+      btn.innerHTML = failedTasks.length === 0 ? '✅' : '⚠️';
       setTimeout(function () {
         btn.disabled = false;
         btn.innerHTML = originalHtml;
@@ -2687,9 +2692,14 @@ async function manualSyncAllToFirestore() {
         alert('Đã đồng bộ toàn bộ dữ liệu tất cả các tab lên Cloud thành công!');
       }
     } else {
-      console.warn('Một số bundle đồng bộ bị hoãn:', failedTasks);
+      console.warn('Một số bundle đồng bộ bị lỗi:', failedTasks, lastSubErrMsg);
+      const errDetail = /quota|resource-exhausted/i.test(lastSubErrMsg)
+        ? 'Firebase vẫn đang hết hạn mức (Quota Exceeded)!'
+        : (lastSubErrMsg || 'Lỗi kết nối');
       if (typeof showToast === 'function') {
-        showToast(`✅ Đã đồng bộ dữ liệu cốt lõi (${successCount}/${tasks.length} danh mục)!`, 3500);
+        showToast(`⚠️ Đồng bộ lỗi (${successCount}/${tasks.length}): ${failedTasks.join(', ')} — ${errDetail}`, 5000);
+      } else {
+        alert(`⚠️ Đồng bộ lỗi (${successCount}/${tasks.length}): ${failedTasks.join(', ')}\n${errDetail}`);
       }
     }
   } catch (err) {
