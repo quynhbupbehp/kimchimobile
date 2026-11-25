@@ -4091,41 +4091,41 @@
           Phụ Kiện Tặng Kèm Khi Mua Máy
         </div>
 
-        <div class="form-ticket-row" style="margin-bottom: 1.25rem; gap: 14px;">
-          <div class="gift-box-item" style="flex: 1;">
+        <div class="form-ticket-row" style="margin-bottom: 1.25rem; display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important;">
+          <div class="gift-box-item" style="min-width: 0;">
             <span class="gift-label">Sạc</span>
             <input type="text" inputmode="numeric" class="gift-input" id="editSoldGiftSac" placeholder="0"
               oninput="handleGiftInput(this); calcEditSoldProfit(); onEditSoldFieldChange();">
           </div>
 
-          <div class="gift-box-item" style="flex: 1;">
+          <div class="gift-box-item" style="min-width: 0;">
             <span class="gift-label">Ốp</span>
             <input type="text" inputmode="numeric" class="gift-input" id="editSoldGiftOp" placeholder="0"
               oninput="handleGiftInput(this); calcEditSoldProfit(); onEditSoldFieldChange();">
           </div>
 
-          <div class="gift-box-item" style="flex: 1;">
-            <span class="gift-label">C.Lực</span>
+          <div class="gift-box-item" style="min-width: 0;">
+            <span class="gift-label">CL</span>
             <input type="text" inputmode="numeric" class="gift-input" id="editSoldGiftCluc" placeholder="0"
               oninput="handleGiftInput(this); calcEditSoldProfit(); onEditSoldFieldChange();">
           </div>
 
-          <div class="gift-box-item" style="flex: 1;">
-            <span class="gift-label">Khác</span>
+          <div class="gift-box-item" style="min-width: 0;">
+            <span class="gift-label">#</span>
             <input type="text" inputmode="numeric" class="gift-input" id="editSoldGiftKhac" placeholder="0"
               oninput="handleGiftInput(this); calcEditSoldProfit(); onEditSoldFieldChange();">
           </div>
         </div>
 
         <div class="form-ticket-row" style="align-items: flex-end; gap: 8px; margin-bottom: 0.5rem;">
-          <div class="form-ticket-group" style="flex: 1.65;">
+          <div class="form-ticket-group" style="flex: 2.0;">
             <label class="form-ticket-label">Ngày Bán</label>
             <div class="date-adjust-container" style="position: relative;">
               <button type="button" class="btn-date-step" onclick="adjustEditSoldDate(-1)"
                 title="Giảm 1 ngày">-</button>
               <input type="text" class="ticket-input" id="editSoldDateVal" placeholder="DD/MM/YYYY" autocomplete="off"
                 oninput="onEditSoldFieldChange()" onchange="onEditSoldFieldChange()"
-                style="text-align: center; font-weight: 900; color: var(--amber-color); min-width: 0; padding: 7px 2px; font-size: 0.95rem;">
+                style="text-align: center; font-weight: 900; color: var(--amber-color); min-width: 0; padding: 7px 2px; font-size: 0.85rem;">
               <button type="button" class="btn-date-step" onclick="adjustEditSoldDate(1)" title="Tăng 1 ngày">+</button>
               <button type="button" class="btn-date-step" onclick="openNativeDatePickerForEditSold()"
                 title="Chọn ngày trên lịch"
@@ -4144,7 +4144,7 @@
             </div>
           </div>
 
-          <div class="form-ticket-group" style="flex: 0.58;">
+          <div class="form-ticket-group" style="flex: 0.46;">
             <label class="form-ticket-label">Tiền PK</label>
             <input type="text" class="ticket-input" id="editSoldTotalGiftMoney" readonly
               style="text-align: center; font-weight: 900; color: #f87171; background: #141c2b; font-size: 0.85rem; padding: 9px 4px;">
