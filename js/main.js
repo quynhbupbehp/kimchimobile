@@ -2791,6 +2791,17 @@ function fetchDirectCloudSync(showToastMsg) {
             phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
             if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
           } else {
+            var localUpdatedAt = 0;
+            try { localUpdatedAt = Number(localStorage.getItem('KIMCHI_PHONES_UPDATED_AT')) || 0; } catch (e) { }
+            var cloudUpdatedAt = Number(data.updatedAt) || 0;
+
+            // Nếu dữ liệu Local vừa được lưu gần hơn Cloud (người dùng vừa sửa xong bấm F5 ngay)
+            if (localUpdatedAt > 0 && cloudUpdatedAt > 0 && cloudUpdatedAt < localUpdatedAt) {
+              console.log('Local phones mới hơn Cloud phones (Local: ' + localUpdatedAt + ' > Cloud: ' + cloudUpdatedAt + '). Giữ nguyên Local và đẩy lên Cloud.');
+              if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+              return;
+            }
+
             // Đồng bộ trực tiếp 100% từ Cloud: Thiết bị này (Web/Mobile) nhận đúng những gì thiết bị kia đã tạo/sửa/xóa
             var rawList = Array.isArray(data.list) ? data.list : [];
             // Nếu trên Cloud bị thiếu các máy chuẩn từ seed 154 máy, tự động hợp nhất bổ sung máy thiếu
@@ -3216,6 +3227,16 @@ function initFirebaseRealtimeSync() {
             console.warn('Bỏ qua sync_bundles phones bị phình to từ cloud cũ');
             return;
           }
+          let localUpdatedAt = 0;
+          try { localUpdatedAt = Number(localStorage.getItem('KIMCHI_PHONES_UPDATED_AT')) || 0; } catch (e) { }
+          const cloudUpdatedAt = Number(data.updatedAt) || 0;
+
+          // Nếu bản snapshot trả về có timestamp cũ hơn bản sửa đổi vừa lưu ở Local, bỏ qua snapshot cũ
+          if (localUpdatedAt > 0 && cloudUpdatedAt > 0 && cloudUpdatedAt < localUpdatedAt) {
+            console.log('Snapshot phones cũ hơn Local (Local: ' + localUpdatedAt + ' > Cloud: ' + cloudUpdatedAt + '). Bỏ qua ghi đè.');
+            return;
+          }
+
           // Đồng bộ trực tiếp 100% từ Cloud Realtime: Web hay Mobile thêm/sửa/xóa là bên kia cập nhật tức thì
           const rawList = Array.isArray(data.list) ? data.list : [];
           // Nếu trên Cloud bị thiếu các máy chuẩn từ seed 154 máy, tự động hợp nhất bổ sung máy thiếu
@@ -11111,11 +11132,15 @@ function loadInitialPhones() {
     if (localRaw) {
       const parsed = JSON.parse(localRaw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(parsed) : parsed;
+        const merged = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(parsed) : parsed;
+        if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(merged);
+        return merged;
       }
     }
   } catch (e) { }
-  return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
+  const initial = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
+  if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(initial);
+  return initial;
 }
 let soldPhoneDatabase = loadInitialSoldPhones();
 let phoneDatabase = loadInitialPhones();
@@ -11433,6 +11458,7 @@ function savePhoneStorage(itemToSync) {
       applyPhoneStatusOverrides(phoneDatabase);
     }
     localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase));
+    localStorage.setItem('KIMCHI_PHONES_UPDATED_AT', String(Date.now()));
   } catch (e) { }
   if (typeof db !== 'undefined' && db) {
     if (itemToSync && itemToSync.id) {
@@ -11641,7 +11667,11 @@ function openPhoneModal(editId = null) {
   const pm = document.getElementById('phoneModal');
   if (pm) {
     pm.classList.add('active');
-    pm.style.display = 'flex';
+    pm.classList.add('show');
+    pm.style.setProperty('display', 'flex', 'important');
+    pm.style.visibility = 'visible';
+    pm.style.opacity = '1';
+    pm.style.pointerEvents = 'auto';
   }
   if (typeof checkPhoneModalValidity === 'function') checkPhoneModalValidity();
 }
@@ -11672,11 +11702,18 @@ function checkPhoneModalValidity() {
 }
 window.checkPhoneModalValidity = checkPhoneModalValidity;
 
-function closePhoneModal() {
+function closePhoneModal(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
   const modal = document.getElementById('phoneModal');
   if (modal) {
     modal.classList.remove('active', 'show');
     modal.style.setProperty('display', 'none', 'important');
+    modal.style.visibility = 'hidden';
+    modal.style.opacity = '0';
+    modal.style.pointerEvents = 'none';
   }
 }
 window.closePhoneModal = closePhoneModal;

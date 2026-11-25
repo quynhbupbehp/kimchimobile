@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261125_074500";
+    var CURRENT_PAGE_VERSION = "20261125_075300";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -3182,8 +3182,8 @@
             <option value="IPAD">IPAD</option>
           </select>
         </div>
-        <button type="button" onclick="closePhoneModal()"
-          style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
+        <button type="button" onclick="closePhoneModal(event)"
+          style="background:none; border:none; color:white; font-size:1.4rem; line-height: 1; cursor:pointer; padding: 4px 8px; z-index: 100000; touch-action: manipulation; pointer-events: auto !important;" aria-label="Đóng popup">✕</button>
       </div>
 
       <form onsubmit="saveNewPhone(event); return false;" novalidate>
