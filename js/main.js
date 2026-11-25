@@ -14439,8 +14439,18 @@ function renderPhoneGrid() {
       return Number(p.updatedAt) || Number(p.createdAt) || Number(p.id) || 0;
     };
 
-    // Sắp xếp theo thứ tự ngày nhập / ngày thêm gần nhất lên trước (như trên Web)
+    // Sắp xếp theo thứ tự thời gian mới nhất lên trước (ưu tiên cập nhật/thêm mới nhất, sau đó đến ngày nhập)
     filtered.sort((a, b) => {
+      if (currentPhoneStatusFilter === 'CHUA_XU_LY') {
+        let uB = Number(b.updatedAt) || Number(b.createdAt) || 0;
+        let uA = Number(a.updatedAt) || Number(a.createdAt) || 0;
+        let dB = parsePhoneDateTimestamp(b);
+        let dA = parsePhoneDateTimestamp(a);
+        let timeB = Math.max(uB, dB, Number(b.id) || 0);
+        let timeA = Math.max(uA, dA, Number(a.id) || 0);
+        if (timeB !== timeA) return timeB - timeA;
+        return (Number(b.id) || 0) - (Number(a.id) || 0);
+      }
       let tB = parsePhoneDateTimestamp(b);
       let tA = parsePhoneDateTimestamp(a);
       if (tB !== tA) return tB - tA;
@@ -25057,6 +25067,42 @@ function renderMainXacGrid() {
   if (footCostEl) footCostEl.innerText = formatPriceStr(totalCost);
   if (footProfitEl) footProfitEl.innerText = formatPriceStr(totalProfit);
   if (footCountTextEl) footCountTextEl.innerText = `Hiển thị ${filtered.length} main - xác.`;
+
+  // Sắp xếp danh sách Main - Xác theo thời gian mới nhất lên trước
+  filtered.sort((a, b) => {
+    const parseItemDate = (p) => {
+      if (!p) return 0;
+      let dStr = (p.date || p.dateTime || '').trim();
+      if (dStr) {
+        if (dStr.includes(' - ')) dStr = dStr.split(' - ')[1].trim();
+        if (dStr.includes('/')) {
+          const parts = dStr.split('/');
+          if (parts.length === 3) {
+            const d = parseInt(parts[0], 10), m = parseInt(parts[1], 10) - 1, y = parseInt(parts[2], 10);
+            const t = new Date(y, m, d).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+        } else if (dStr.includes('-')) {
+          const parts = dStr.split('-');
+          if (parts.length === 3) {
+            let y = parseInt(parts[0], 10), m = parseInt(parts[1], 10) - 1, d = parseInt(parts[2], 10);
+            if (parts[0].length !== 4) { d = parseInt(parts[0], 10); m = parseInt(parts[1], 10) - 1; y = parseInt(parts[2], 10); }
+            const t = new Date(y, m, d).getTime();
+            if (!isNaN(t) && t > 0) return t;
+          }
+        }
+      }
+      return 0;
+    };
+    let uB = Number(b.updatedAt) || Number(b.createdAt) || 0;
+    let uA = Number(a.updatedAt) || Number(a.createdAt) || 0;
+    let dB = parseItemDate(b);
+    let dA = parseItemDate(a);
+    let timeB = Math.max(uB, dB, Number(b.id) || 0);
+    let timeA = Math.max(uA, dA, Number(a.id) || 0);
+    if (timeB !== timeA) return timeB - timeA;
+    return (Number(b.id) || 0) - (Number(a.id) || 0);
+  });
 
   if (filtered.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--text-sub); font-size: 0.95rem;">Không tìm thấy mục Main - Xác nào phù hợp</td></tr>`;
