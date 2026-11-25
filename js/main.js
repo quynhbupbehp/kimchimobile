@@ -14589,7 +14589,7 @@ function renderPhoneGrid() {
                           ${escapeHtml(pName)}
                           ${getColorDotHtml(p.color, 26)}
                         </span>
-                        ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.45rem; letter-spacing: 0.5px; border: 1px solid rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.12); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">${escapeHtml(p.imei)}</span>` : ''}
+                        ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.45rem; letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.75); background: rgba(239, 68, 68, 0.12); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">${escapeHtml(p.imei)}</span>` : ''}
                       </div>
                       <div style="font-size: 1.08rem; color: #94a3b8; margin-top: 3px; display: flex; align-items: center; gap: 6px;">
                         <span>${getPhoneBrandBadgeHtml(p.brand, p.name)}</span>
