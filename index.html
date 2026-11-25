@@ -4178,25 +4178,34 @@
           </div>
         </div>
 
-        <!-- Hàng 2: Giá Bán * và Giá Nhập * (chỉ nhập, không gợi ý) -->
-        <div class="form-ticket-row" style="margin-bottom: 0.85rem;">
-          <div class="form-ticket-group" style="flex: 1;">
+        <!-- Hàng 2: Giá Bán * (40%), Giá Nhập * (40%), BH * (20%) -->
+        <div class="form-ticket-row" style="margin-bottom: 0.85rem; display: grid; grid-template-columns: 4fr 4fr 2fr; gap: 10px;">
+          <div class="form-ticket-group" style="min-width: 0;">
             <label class="form-ticket-label" style="color: #facc15;">Giá Bán *</label>
             <input type="text" class="ticket-input" id="extPriceOut" required placeholder="" autocomplete="off"
               oninput="formatCurrencyInput(this); calcExtSellProfit();"
-              style="color: #10b981; font-weight: 900; font-size: 1.15rem;">
+              style="color: #10b981; font-weight: 900; font-size: 1.15rem; width: 100%; box-sizing: border-box;">
           </div>
-          <div class="form-ticket-group" style="flex: 1;">
+          <div class="form-ticket-group" style="min-width: 0;">
             <label class="form-ticket-label" style="color: #facc15;">Giá Nhập *</label>
             <input type="text" class="ticket-input" id="extPriceIn" required placeholder="" autocomplete="off"
-              oninput="formatCurrencyInput(this); calcExtSellProfit();" style="font-weight: 800; color: #cbd5e1;">
+              oninput="formatCurrencyInput(this); calcExtSellProfit();" style="font-weight: 800; color: #cbd5e1; width: 100%; box-sizing: border-box;">
+          </div>
+          <div class="form-ticket-group" style="min-width: 0;">
+            <label class="form-ticket-label" style="color: #facc15;">BH *</label>
+            <select class="ticket-input" id="extWarranty" required
+              style="cursor: pointer; font-weight: 800; text-align: center; padding-left: 4px; padding-right: 4px; width: 100%; box-sizing: border-box;">
+              <option value="3 Tháng">3T</option>
+              <option value="6 Tháng">6T</option>
+              <option value="12 Tháng">12T</option>
+              <option value="0 Bảo Hành">0BH</option>
+            </select>
           </div>
         </div>
 
-        <!-- Hàng 3: Ẩn Tên Khách Hàng, Tình Trạng, và Bảo Hành * -->
+        <!-- Hàng 3: Ẩn Tên Khách Hàng, Tình Trạng -->
         <input type="hidden" id="extCustomerName" value="Khách Lẻ">
         <input type="hidden" id="extCondition" value="Full Chức Năng">
-        <input type="hidden" id="extWarranty" value="0 Bảo Hành">
 
         <!-- Hàng 4: Lưu Vào * và Thanh Toán * -->
         <div class="form-ticket-row" style="margin-bottom: 1.1rem;">
