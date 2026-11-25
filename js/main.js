@@ -10988,12 +10988,21 @@ function getPhoneStatusOverrides() {
     return raw ? JSON.parse(raw) : {};
   } catch (e) { return {}; }
 }
+function normalizePhoneStatus(str) {
+  if (!str) return '';
+  const s = String(str).trim();
+  const lower = s.toLowerCase();
+  if (lower === 'chưa xử lý' || lower === 'chua xu ly' || lower === 'chua_xu_ly') return 'Chưa Xử Lý';
+  if (lower === 'còn hàng' || lower === 'con hang' || lower === 'con_hang') return 'Còn Hàng';
+  return s;
+}
 function setPhoneStatusOverride(id, status, imei) {
   try {
     if (!id && !imei) return;
+    const normStatus = normalizePhoneStatus(status);
     const map = getPhoneStatusOverrides();
-    if (id) map[String(id)] = status;
-    if (imei && String(imei).trim()) map['imei_' + String(imei).trim().toLowerCase()] = status;
+    if (id) map[String(id)] = normStatus;
+    if (imei && String(imei).trim()) map['imei_' + String(imei).trim().toLowerCase()] = normStatus;
     localStorage.setItem('KIMCHI_PHONE_STATUS_OVERRIDES', JSON.stringify(map));
   } catch (e) { }
 }
@@ -11662,7 +11671,7 @@ function openPhoneModal(editId = null) {
       document.getElementById('mOrigin').value = p.origin || '';
       document.getElementById('mPriceIn').value = p.priceIn || '';
       document.getElementById('mPriceOut').value = p.price || '';
-      if (statusEl) statusEl.value = p.status || 'Còn Hàng';
+      if (statusEl) statusEl.value = (typeof normalizePhoneStatus === 'function' ? normalizePhoneStatus(p.status) : p.status) || 'Còn Hàng';
       document.getElementById('mNote').value = p.note || '';
       document.getElementById('mDateVal').value = p.date || getCurrentDateStr();
       calcModalProfit();
@@ -11774,7 +11783,7 @@ function saveNewPhone(e) {
     const priceInEl = document.getElementById('mPriceIn');
     const priceIn = priceInEl ? priceInEl.value.trim() : '';
     const statusEl = document.getElementById('mStatus');
-    const status = statusEl ? statusEl.value : 'Còn Hàng';
+    const status = (typeof normalizePhoneStatus === 'function' ? normalizePhoneStatus(statusEl ? statusEl.value : 'Còn Hàng') : (statusEl ? statusEl.value : 'Còn Hàng')) || 'Còn Hàng';
     const noteEl = document.getElementById('mNote');
     const note = typeof toTitleCase === 'function' ? toTitleCase(noteEl ? noteEl.value.trim() : '') : (noteEl ? noteEl.value.trim() : '');
     const dateValEl = document.getElementById('mDateVal');
@@ -11882,6 +11891,9 @@ function saveNewPhone(e) {
     if (typeof renderPhoneGrid === 'function') {
       try { renderPhoneGrid(); } catch (e) { }
     }
+    if (typeof updateChuaXuLyBtnUI === 'function') {
+      try { updateChuaXuLyBtnUI(); } catch (e) { }
+    }
     if (typeof showToast === 'function') {
       showToast(editId ? '✅ Đã cập nhật thông tin máy thành công!' : '✅ Đã thêm máy mới vào kho thành công!');
     }
@@ -11890,6 +11902,9 @@ function saveNewPhone(e) {
     closePhoneModal();
     if (typeof renderPhoneGrid === 'function') {
       try { renderPhoneGrid(); } catch (e) { }
+    }
+    if (typeof updateChuaXuLyBtnUI === 'function') {
+      try { updateChuaXuLyBtnUI(); } catch (e) { }
     }
     if (typeof showToast === 'function') {
       showToast('✅ Đã lưu thông tin máy!');

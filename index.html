@@ -3183,7 +3183,8 @@
           </select>
         </div>
         <button type="button" onclick="closePhoneModal(event)"
-          style="background:none; border:none; color:white; font-size:1.4rem; line-height: 1; cursor:pointer; padding: 4px 8px; z-index: 100000; touch-action: manipulation; pointer-events: auto !important;" aria-label="Đóng popup">✕</button>
+          style="background:none; border:none; color:white; font-size:1.4rem; line-height: 1; cursor:pointer; padding: 4px 8px; z-index: 100000; touch-action: manipulation; pointer-events: auto !important;"
+          aria-label="Đóng popup">✕</button>
       </div>
 
       <form onsubmit="saveNewPhone(event); return false;" novalidate>
@@ -3221,8 +3222,7 @@
           <div style="flex: 1; display: flex; gap: 6px;">
             <div class="form-ticket-group" style="width: 58px; flex-shrink: 0;">
               <label class="form-ticket-label" style="text-align: center;">IMEI *</label>
-              <input type="text" class="ticket-input" id="mImei" maxlength="4" inputmode="numeric"
-                placeholder=""
+              <input type="text" class="ticket-input" id="mImei" maxlength="4" inputmode="numeric" placeholder=""
                 oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4); checkPhoneModalValidity();"
                 style="text-align: center; font-weight: 800; padding: 9px 4px; letter-spacing: 0.5px;">
             </div>
@@ -3455,7 +3455,8 @@
             <input type="hidden" id="mProfit" value="">
           </div>
 
-          <button type="button" onclick="saveNewPhone(event)" id="btnSavePhoneModal" class="btn-save-ticket active" style="font-weight: 900; cursor: pointer; pointer-events: auto !important;">LƯU DỮ LIỆU</button>
+          <button type="button" onclick="saveNewPhone(event)" id="btnSavePhoneModal" class="btn-save-ticket active"
+            style="font-weight: 900; cursor: pointer; pointer-events: auto !important;">LƯU DỮ LIỆU</button>
         </div>
       </form>
     </div>
