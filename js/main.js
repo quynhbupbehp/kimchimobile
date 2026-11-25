@@ -3478,12 +3478,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderAllDropdowns();
   renderAllRepairDropdowns();
   if (typeof renderCustomBrandTabs === 'function') renderCustomBrandTabs();
-  const initBrand = (typeof currentBrandFilter !== 'undefined' && currentBrandFilter) ? currentBrandFilter : 'ALL';
-  const targetBrandBtn = Array.from(document.querySelectorAll('.brand-tabs-horizontal .brand-btn-h')).find(b => {
-    const t = (b.innerText || '').trim().toUpperCase();
-    return (initBrand === 'ALL' && (t === 'TẤT CẢ' || t === 'ALL')) || t === initBrand.toUpperCase();
-  }) || document.querySelector('.brand-tabs-horizontal .brand-btn-h');
-  filterBrand(initBrand, targetBrandBtn);
+  filterBrand('ALL', document.querySelector('.brand-tabs-horizontal .brand-btn-h'));
   renderSalesTable(salesDatabase);
   renderBangaTable(bangaDatabase);
   renderPhoneGrid();
@@ -6870,7 +6865,7 @@ function closeAllExcelDropdowns() {
 
 if (typeof window !== 'undefined') {
   window.closeAllExcelDropdowns = closeAllExcelDropdowns;
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     if (!e.target.closest('.excel-menu-dropdown-wrapper')) {
       closeAllExcelDropdowns();
     }
@@ -11260,13 +11255,7 @@ function autoSyncPhonesToWarranty() {
 }
 window.autoSyncPhonesToWarranty = autoSyncPhonesToWarranty;
 
-let currentBrandFilter = (function () {
-  try {
-    return localStorage.getItem('KIMCHI_PHONE_BRAND_FILTER') || 'ALL';
-  } catch (e) {
-    return 'ALL';
-  }
-})();
+let currentBrandFilter = "ALL";
 let currentPriceFilter = "ALL";
 let currentPhoneStatusFilter = (function () {
   try {
@@ -11512,21 +11501,9 @@ function saveSoldPhoneStorage(itemToSync) {
 }
 
 function filterBrand(brandName, btn) {
-  currentBrandFilter = brandName || 'ALL';
-  try { localStorage.setItem('KIMCHI_PHONE_BRAND_FILTER', currentBrandFilter); } catch (e) { }
+  currentBrandFilter = brandName;
   document.querySelectorAll('.brand-tabs-horizontal .brand-btn-h').forEach(b => b.classList.remove('active'));
-  if (btn) {
-    btn.classList.add('active');
-  } else {
-    // Tự động active nút tương ứng với brandName
-    const allBtns = document.querySelectorAll('.brand-tabs-horizontal .brand-btn-h');
-    allBtns.forEach(b => {
-      const txt = (b.innerText || '').trim().toUpperCase();
-      if ((currentBrandFilter === 'ALL' && (txt === 'TẤT CẢ' || txt === 'ALL')) || txt === currentBrandFilter.toUpperCase()) {
-        b.classList.add('active');
-      }
-    });
-  }
+  if (btn) btn.classList.add('active');
 
   const addBtnWrapper = document.getElementById('addPhoneBtnWrapper');
   if (addBtnWrapper) addBtnWrapper.style.display = 'flex';
@@ -22095,7 +22072,7 @@ function addNewDebtOption(field, inputId, promptText) {
   const input = document.getElementById(inputId);
   const currentVal = input ? input.value.trim() : '';
   const label = field === 'creditor' ? 'Người mình nợ' : 'Loại món nợ';
-  
+
   const val = prompt(promptText || `Thêm ${label} mới:`, currentVal);
   if (val === null) return;
   const clean = val.trim();
@@ -22117,7 +22094,7 @@ function editDebtOption(field, inputId, promptText) {
   if (!input) return;
   const oldVal = input.value.trim();
   const label = field === 'creditor' ? 'Người mình nợ' : 'Loại món nợ';
-  
+
   if (!oldVal) {
     alert(`Vui lòng chọn hoặc nhập tên ${label} cần sửa!`);
     return;
