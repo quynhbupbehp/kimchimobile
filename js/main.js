@@ -2602,96 +2602,75 @@ async function manualSyncAllToFirestore() {
 
   if (typeof db === 'undefined' || !db) {
     if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
-    alert('Chưa có kết nối Firebase Firestore!');
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Chưa có kết nối Firebase Firestore!');
+    } else {
+      alert('Chưa có kết nối Firebase Firestore!');
+    }
     return;
   }
 
   try {
-    const promises = [];
     const now = Date.now();
+    const tasks = [];
 
     // 1. Tab Bán Hàng
     if (typeof salesDatabase !== 'undefined' && Array.isArray(salesDatabase) && salesDatabase.length > 0) {
-      promises.push(
-        db.collection('sync_bundles').doc('sales').set({
-          list: sanitizeForFirestore(salesDatabase),
-          updatedAt: now
-        }, { merge: true }).catch(function (err) { console.warn('Sync bundle sales warn:', err); })
-      );
+      tasks.push({ name: 'sales', data: salesDatabase });
     }
 
     // 2. Tab Phần Mềm
     if (typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase) && softwareDatabase.length > 0) {
-      promises.push(
-        db.collection('sync_bundles').doc('software').set({
-          list: sanitizeForFirestore(softwareDatabase),
-          updatedAt: now
-        }, { merge: true }).catch(function (err) { console.warn('Sync bundle software warn:', err); })
-      );
+      tasks.push({ name: 'software', data: softwareDatabase });
     }
 
     // 3. Tab Bán Gà
     if (typeof bangaDatabase !== 'undefined' && Array.isArray(bangaDatabase) && bangaDatabase.length > 0) {
-      promises.push(
-        db.collection('sync_bundles').doc('banga').set({
-          list: sanitizeForFirestore(bangaDatabase),
-          updatedAt: now
-        }, { merge: true }).catch(function (err) { console.warn('Sync bundle banga warn:', err); })
-      );
+      tasks.push({ name: 'banga', data: bangaDatabase });
     }
 
-    // 4. Tab Bán Máy (Kho máy) - Đồng bộ gói Bundle 1 Document duy nhất
+    // 4. Tab Bán Máy (Kho máy)
     if (typeof phoneDatabase !== 'undefined' && Array.isArray(phoneDatabase) && phoneDatabase.length > 0) {
-      promises.push(
-        db.collection('sync_bundles').doc('phones').set({
-          list: sanitizeForFirestore(phoneDatabase),
-          updatedAt: now
-        }, { merge: true }).catch(function () { })
-      );
+      tasks.push({ name: 'phones', data: phoneDatabase });
     }
 
-    // 5. Tab Bảo Hành (Máy đã bán) - Đồng bộ gói Bundle 1 Document duy nhất
+    // 5. Tab Bảo Hành (Máy đã bán)
     if (typeof soldPhoneDatabase !== 'undefined' && Array.isArray(soldPhoneDatabase) && soldPhoneDatabase.length > 0) {
-      promises.push(
-        db.collection('sync_bundles').doc('sold_phones').set({
-          list: sanitizeForFirestore(soldPhoneDatabase),
-          updatedAt: now
-        }, { merge: true }).catch(function () { })
-      );
+      tasks.push({ name: 'sold_phones', data: soldPhoneDatabase });
     }
 
     // 6. Tab Sửa Chữa
     if (typeof repairDatabase !== 'undefined' && Array.isArray(repairDatabase) && repairDatabase.length > 0) {
-      promises.push(
-        db.collection('sync_bundles').doc('repairs').set({
-          list: sanitizeForFirestore(repairDatabase),
-          updatedAt: now
-        }, { merge: true }).catch(function () { })
-      );
+      tasks.push({ name: 'repairs', data: repairDatabase });
     }
 
     // 7. Tab Main Xác
     if (typeof mainXacDatabase !== 'undefined' && Array.isArray(mainXacDatabase) && mainXacDatabase.length > 0) {
-      promises.push(
-        db.collection('sync_bundles').doc('mainxac').set({
-          list: sanitizeForFirestore(mainXacDatabase),
-          updatedAt: now
-        }, { merge: true }).catch(function () { })
-      );
+      tasks.push({ name: 'mainxac', data: mainXacDatabase });
     }
 
-    // 8. Tab Hệ Thống - Nhật Ký (activity_logs) - Đồng bộ gói Bundle 7 ngày gần nhất
+    // 8. Tab Hệ Thống - Nhật Ký (activity_logs)
     if (typeof activityLogDatabase !== 'undefined' && Array.isArray(activityLogDatabase) && activityLogDatabase.length > 0) {
       if (typeof pruneOldActivityLogs === 'function') pruneOldActivityLogs();
-      promises.push(
-        db.collection('sync_bundles').doc('activity_logs').set({
-          list: sanitizeForFirestore(activityLogDatabase),
-          updatedAt: now
-        }, { merge: true }).catch(function () { })
-      );
+      tasks.push({ name: 'activity_logs', data: activityLogDatabase });
     }
 
-    await Promise.all(promises);
+    // Đồng bộ tuần tự an toàn, tránh xung đột IndexedDB (Assertion Failed)
+    let successCount = 0;
+    let failedTasks = [];
+
+    for (const t of tasks) {
+      try {
+        await db.collection('sync_bundles').doc(t.name).set({
+          list: sanitizeForFirestore(t.data),
+          updatedAt: now
+        }, { merge: true });
+        successCount++;
+      } catch (subErr) {
+        console.warn(`Lỗi đồng bộ bundle ${t.name}:`, subErr);
+        failedTasks.push(t.name);
+      }
+    }
 
     if (btn) {
       btn.innerHTML = '✅';
@@ -2701,10 +2680,17 @@ async function manualSyncAllToFirestore() {
       }, 2500);
     }
 
-    if (typeof showToast === 'function') {
-      showToast('✅ Đã đồng bộ toàn bộ dữ liệu tất cả các tab lên Cloud thành công!', 3500);
+    if (failedTasks.length === 0) {
+      if (typeof showToast === 'function') {
+        showToast('✅ Đã đồng bộ toàn bộ dữ liệu tất cả các tab lên Cloud thành công!', 3500);
+      } else {
+        alert('Đã đồng bộ toàn bộ dữ liệu tất cả các tab lên Cloud thành công!');
+      }
     } else {
-      alert('Đã đồng bộ toàn bộ dữ liệu tất cả các tab lên Cloud thành công!');
+      console.warn('Một số bundle đồng bộ bị hoãn:', failedTasks);
+      if (typeof showToast === 'function') {
+        showToast(`✅ Đã đồng bộ dữ liệu cốt lõi (${successCount}/${tasks.length} danh mục)!`, 3500);
+      }
     }
   } catch (err) {
     console.error('Lỗi khi bấm đồng bộ toàn bộ:', err);
@@ -2717,9 +2703,17 @@ async function manualSyncAllToFirestore() {
     }
     const msg = (err && (err.message || String(err))) || '';
     if (/quota|resource-exhausted/i.test(msg)) {
-      alert('⚠️ Firebase đang tạm hết hạn mức đọc/ghi hôm nay (Quota Exceeded). Dữ liệu trên máy của bạn vẫn an toàn 100%! Ngày mai Firebase reset bạn hãy bấm lại nhé.');
+      if (typeof showToast === 'function') {
+        showToast('⚠️ Firebase đang tạm hết hạn mức hôm nay (Quota Exceeded). Dữ liệu trên máy vẫn an toàn 100%!', 4000);
+      } else {
+        alert('⚠️ Firebase đang tạm hết hạn mức đọc/ghi hôm nay (Quota Exceeded). Dữ liệu trên máy của bạn vẫn an toàn 100%! Ngày mai Firebase reset bạn hãy bấm lại nhé.');
+      }
     } else {
-      alert('Có lỗi xảy ra khi đồng bộ: ' + msg);
+      if (typeof showToast === 'function') {
+        showToast('⚠️ Đồng bộ bị gián đoạn: ' + msg, 3500);
+      } else {
+        alert('Có lỗi xảy ra khi đồng bộ: ' + msg);
+      }
     }
   }
 }
@@ -2789,6 +2783,15 @@ function fetchDirectCloudSync(showToastMsg) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
+          // Bảo vệ dữ liệu vừa sửa cục bộ: Nếu local mới hơn Cloud thì không ghi đè, ngược lại đẩy local lên Cloud
+          var localUpdated = parseInt(localStorage.getItem('KIMCHI_PHONES_UPDATED_AT') || '0', 10);
+          var cloudUpdated = parseInt((data && data.updatedAt) || '0', 10);
+          if (localUpdated && cloudUpdated && localUpdated > cloudUpdated) {
+            console.log('Kho máy cục bộ mới hơn Cloud (' + (localUpdated - cloudUpdated) + 'ms). Bảo lưu máy vừa sửa và cập nhật Cloud.');
+            if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+            return;
+          }
+
           // Bảo vệ chống dữ liệu rác cũ (> 500 máy) từ bundle cũ đè lên
           if (data.list.length > 500 && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length < 300) {
             console.warn('Phát hiện bundle phones cũ bị phình to (' + data.list.length + ' máy). Tự động chuẩn hóa về seed chuẩn.');
@@ -2810,7 +2813,10 @@ function fetchDirectCloudSync(showToastMsg) {
             });
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
-          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
+          try {
+            localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase));
+            if (cloudUpdated) localStorage.setItem('KIMCHI_PHONES_UPDATED_AT', String(cloudUpdated));
+          } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -3221,6 +3227,14 @@ function initFirebaseRealtimeSync() {
       if (doc && doc.exists) {
         const data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
+          // Bảo vệ dữ liệu vừa sửa cục bộ: Nếu local mới hơn Cloud thì không ghi đè
+          const localUpdated = parseInt(localStorage.getItem('KIMCHI_PHONES_UPDATED_AT') || '0', 10);
+          const cloudUpdated = parseInt((data && data.updatedAt) || '0', 10);
+          if (localUpdated && cloudUpdated && localUpdated > cloudUpdated) {
+            console.log('Kho máy realtime: Cục bộ mới hơn Cloud snapshot, giữ nguyên máy vừa sửa.');
+            return;
+          }
+
           if (data.list.length > 500 && Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length < 300) {
             console.warn('Bỏ qua sync_bundles phones bị phình to từ cloud cũ');
             return;
@@ -3239,7 +3253,10 @@ function initFirebaseRealtimeSync() {
             return true;
           });
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
-          try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
+          try {
+            localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase));
+            if (cloudUpdated) localStorage.setItem('KIMCHI_PHONES_UPDATED_AT', String(cloudUpdated));
+          } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
         }
       }
@@ -3461,7 +3478,12 @@ window.addEventListener('DOMContentLoaded', () => {
   renderAllDropdowns();
   renderAllRepairDropdowns();
   if (typeof renderCustomBrandTabs === 'function') renderCustomBrandTabs();
-  filterBrand('ALL', document.querySelector('.brand-tabs-horizontal .brand-btn-h'));
+  const initBrand = (typeof currentBrandFilter !== 'undefined' && currentBrandFilter) ? currentBrandFilter : 'ALL';
+  const targetBrandBtn = Array.from(document.querySelectorAll('.brand-tabs-horizontal .brand-btn-h')).find(b => {
+    const t = (b.innerText || '').trim().toUpperCase();
+    return (initBrand === 'ALL' && (t === 'TẤT CẢ' || t === 'ALL')) || t === initBrand.toUpperCase();
+  }) || document.querySelector('.brand-tabs-horizontal .brand-btn-h');
+  filterBrand(initBrand, targetBrandBtn);
   renderSalesTable(salesDatabase);
   renderBangaTable(bangaDatabase);
   renderPhoneGrid();
@@ -11238,7 +11260,13 @@ function autoSyncPhonesToWarranty() {
 }
 window.autoSyncPhonesToWarranty = autoSyncPhonesToWarranty;
 
-let currentBrandFilter = "ALL";
+let currentBrandFilter = (function () {
+  try {
+    return localStorage.getItem('KIMCHI_PHONE_BRAND_FILTER') || 'ALL';
+  } catch (e) {
+    return 'ALL';
+  }
+})();
 let currentPriceFilter = "ALL";
 let currentPhoneStatusFilter = (function () {
   try {
@@ -11443,11 +11471,13 @@ function syncSoldPhoneBundleDebounced() {
 }
 
 function savePhoneStorage(itemToSync) {
+  const now = Date.now();
   try {
     if (typeof applyPhoneStatusOverrides === 'function') {
       applyPhoneStatusOverrides(phoneDatabase);
     }
     localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase));
+    localStorage.setItem('KIMCHI_PHONES_UPDATED_AT', String(now));
   } catch (e) { }
   if (typeof db !== 'undefined' && db) {
     if (itemToSync && itemToSync.id) {
@@ -11456,7 +11486,7 @@ function savePhoneStorage(itemToSync) {
     try {
       db.collection('sync_bundles').doc('phones').set({
         list: sanitizeForFirestore(phoneDatabase),
-        updatedAt: Date.now()
+        updatedAt: now
       }, { merge: true }).catch(console.error);
     } catch (e) { }
     syncPhoneBundleDebounced();
@@ -11482,9 +11512,21 @@ function saveSoldPhoneStorage(itemToSync) {
 }
 
 function filterBrand(brandName, btn) {
-  currentBrandFilter = brandName;
+  currentBrandFilter = brandName || 'ALL';
+  try { localStorage.setItem('KIMCHI_PHONE_BRAND_FILTER', currentBrandFilter); } catch (e) { }
   document.querySelectorAll('.brand-tabs-horizontal .brand-btn-h').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    // Tự động active nút tương ứng với brandName
+    const allBtns = document.querySelectorAll('.brand-tabs-horizontal .brand-btn-h');
+    allBtns.forEach(b => {
+      const txt = (b.innerText || '').trim().toUpperCase();
+      if ((currentBrandFilter === 'ALL' && (txt === 'TẤT CẢ' || txt === 'ALL')) || txt === currentBrandFilter.toUpperCase()) {
+        b.classList.add('active');
+      }
+    });
+  }
 
   const addBtnWrapper = document.getElementById('addPhoneBtnWrapper');
   if (addBtnWrapper) addBtnWrapper.style.display = 'flex';
