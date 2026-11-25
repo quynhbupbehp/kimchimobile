@@ -12210,7 +12210,7 @@ function saveNewPhone(e) {
       }
     }
     if (typeof savePhoneStorage === 'function') {
-      try { savePhoneStorage(savedItem); } catch (e) { }
+      try { savePhoneStorage(savedItem); } catch (e) { }`r`n    }`r`n    if (typeof syncPhoneBundleDebounced === 'function') {`r`n      try { syncPhoneBundleDebounced(); } catch (e) { }
     }
     closePhoneModal();
     if (typeof renderPhoneGrid === 'function') {
