@@ -4197,7 +4197,7 @@
         </div>
 
         <!-- Hàng 2: Giá Bán * (40%), Giá Nhập * (40%), BH * (20%) -->
-        <div class="form-ticket-row" style="margin-bottom: 0.85rem; display: grid !important; grid-template-columns: 4fr 4fr 2fr !important; gap: 8px !important; align-items: end;">
+        <div class="form-ticket-row" style="margin-bottom: 0.85rem; display: grid !important; grid-template-columns: minmax(0, 4fr) minmax(0, 4fr) minmax(0, 2.2fr) !important; gap: 6px !important; align-items: end; width: 100%; box-sizing: border-box;">
           <div class="form-ticket-group" style="min-width: 0;">
             <label class="form-ticket-label" style="color: #facc15;">Giá Bán *</label>
             <input type="text" class="ticket-input" id="extPriceOut" required placeholder="" autocomplete="off"
@@ -4212,7 +4212,7 @@
           <div class="form-ticket-group" style="min-width: 0;">
             <label class="form-ticket-label" style="color: #facc15;">BH *</label>
             <select class="ticket-input" id="extWarranty" required
-              style="cursor: pointer; font-weight: 800; text-align: center; padding-left: 4px; padding-right: 4px; width: 100%; box-sizing: border-box;">
+              style="cursor: pointer; font-weight: 800; text-align: center; font-size: 0.85rem; padding: 0 2px; min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box;">
               <option value="3 Tháng">3T</option>
               <option value="6 Tháng">6T</option>
               <option value="12 Tháng">12T</option>
