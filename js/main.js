@@ -2931,6 +2931,54 @@ function deduplicateTab(tabName) {
     return;
   }
 
+  if (tabName === 'sold_phones') {
+    const tbody = document.getElementById('soldPhoneTableBody');
+    if (!tbody) return;
+    const oldBar = document.getElementById('soldInlineDedupBar');
+    if (oldBar) {
+      oldBar.remove();
+      tbody.querySelectorAll('.sold-inline-del-chk').forEach(el => el.remove());
+      return;
+    }
+    const bar = document.createElement('div');
+    bar.id = 'soldInlineDedupBar';
+    bar.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:8px;background:#1e293b;border:1.5px solid #ec4899;border-radius:10px;';
+    bar.innerHTML = `<span style="color:#f472b6;font-weight:800;font-size:0.9rem;">🧹 Tích chọn các máy muốn xóa khỏi Bảo Hành (không xóa bên Bán Gà):</span><button type="button" id="btnSoldInlineDel" style="margin-left:auto;padding:6px 14px;border-radius:8px;border:none;background:#ec4899;color:#fff;font-weight:800;cursor:pointer;">🗑️ Xóa đã chọn</button><button type="button" id="btnSoldInlineCancel" style="padding:6px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#cbd5e1;font-weight:700;cursor:pointer;">Hủy</button>`;
+    const tableWrap = tbody.closest('table');
+    if (tableWrap && tableWrap.parentElement) tableWrap.parentElement.insertBefore(bar, tableWrap);
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const firstTd = tr.querySelector('td');
+      if (!firstTd || firstTd.querySelector('.sold-inline-del-chk')) return;
+      const editBtn = tr.querySelector('[onclick*="openEditSoldPhoneModal"]');
+      const mId = editBtn ? String(editBtn.getAttribute('onclick')).match(/openEditSoldPhoneModal\(['"]?([^'")]+)['"]?\)/) : null;
+      const rowId = mId ? mId[1] : '';
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.className = 'sold-inline-del-chk';
+      chk.setAttribute('data-id', rowId);
+      chk.style.cssText = 'width:17px;height:17px;margin-right:8px;vertical-align:middle;cursor:pointer;accent-color:#ec4899;';
+      chk.onclick = e => e.stopPropagation();
+      firstTd.insertBefore(chk, firstTd.firstChild);
+    });
+    document.getElementById('btnSoldInlineCancel').onclick = () => {
+      bar.remove();
+      tbody.querySelectorAll('.sold-inline-del-chk').forEach(el => el.remove());
+    };
+    document.getElementById('btnSoldInlineDel').onclick = () => {
+      const ids = new Set();
+      tbody.querySelectorAll('.sold-inline-del-chk:checked').forEach(c => {
+        const v = c.getAttribute('data-id');
+        if (v) ids.add(String(v));
+      });
+      if (ids.size === 0) return alert('Bạn chưa tích chọn mục nào!');
+      soldPhoneDatabase = soldPhoneDatabase.filter(item => !ids.has(String(item.id)));
+      bar.remove();
+      if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+      if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+      if (typeof showToast === 'function') showToast(`✅ Đã xóa ${ids.size} mục khỏi Bảo Hành (Bán Gà giữ nguyên)!`, 3500);
+    };
+    return;
+  }
   const oldModal = document.getElementById('dedupPreviewModal');
   if (oldModal) oldModal.remove();
 
