@@ -26502,3 +26502,44 @@ document.addEventListener('click', function (e) {
     }
   }
 });
+
+// Mobile-only layout for phoneModal (Web untouched)
+(function () {
+  if (window.innerWidth > 768) return;
+  const applyMobilePhoneModalLayout = () => {
+    const mName = document.getElementById('mName')?.closest('.form-ticket-group');
+    const mImei = document.getElementById('mImei')?.closest('.form-ticket-group');
+    const mColor = document.getElementById('mColor')?.closest('.form-ticket-group');
+    const mOrigin = document.getElementById('mOrigin')?.closest('.form-ticket-group');
+    const mStatus = document.getElementById('mStatus')?.closest('.form-ticket-group');
+    const mNote = document.getElementById('mNote')?.closest('.form-ticket-group');
+    if (mStatus) mStatus.style.display = 'none';
+    if (mNote) mNote.style.display = 'none';
+    if (mName && mImei) {
+      const row1 = mName.closest('.form-ticket-row');
+      if (row1 && mImei.parentElement !== row1) {
+        const colorWrap = mImei.parentElement;
+        row1.style.cssText = 'display:grid !important; grid-template-columns: 7fr 3fr !important; gap:8px !important; align-items:end;';
+        mName.style.minWidth = '0';
+        mImei.style.cssText = 'width:100% !important; min-width:0;';
+        row1.appendChild(mImei);
+        if (mColor && mOrigin) {
+          const colorRow = document.createElement('div');
+          colorRow.className = 'form-ticket-row';
+          colorRow.style.cssText = 'display:grid !important; grid-template-columns: 1fr 1fr !important; gap:8px !important; align-items:end;';
+          mColor.style.minWidth = '0';
+          mOrigin.style.minWidth = '0';
+          colorRow.appendChild(mColor);
+          colorRow.appendChild(mOrigin);
+          row1.insertAdjacentElement('afterend', colorRow);
+        }
+        if (colorWrap && colorWrap.children.length === 0) colorWrap.remove();
+      }
+    }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyMobilePhoneModalLayout);
+  } else {
+    applyMobilePhoneModalLayout();
+  }
+})();
