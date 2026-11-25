@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    HỆ THỐNG THÔNG BÁO TỰ TẮT SAU 2 GIÂY (TOAST NOTIFICATION)
    Thay thế toàn bộ window.alert chuẩn của trình duyệt
    ============================================================ */
@@ -2741,7 +2741,7 @@ function fetchDirectCloudSync(showToastMsg) {
   if (typeof db === 'undefined' || !db) return;
   try {
     // 1. Tải Sales Bundle
-    db.collection('sync_bundles').doc('sales').get().then(function (doc) {
+    db.collection('sync_bundles').doc('sales').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2757,7 +2757,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync sales:', e); });
 
     // 2. Tải Software Bundle
-    db.collection('sync_bundles').doc('software').get().then(function (doc) {
+    db.collection('sync_bundles').doc('software').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2775,7 +2775,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync software:', e); });
 
     // 3. Tải Banga Bundle
-    db.collection('sync_bundles').doc('banga').get().then(function (doc) {
+    db.collection('sync_bundles').doc('banga').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2789,7 +2789,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync banga:', e); });
 
     // 4. Tải Kho Bán Máy (phones) Bundle
-    db.collection('sync_bundles').doc('phones').get().then(function (doc) {
+    db.collection('sync_bundles').doc('phones').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2840,7 +2840,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync phones:', e); });
 
     // 5. Tải Sold Phones (Bảo Hành) Bundle
-    db.collection('sync_bundles').doc('sold_phones').get().then(function (doc) {
+    db.collection('sync_bundles').doc('sold_phones').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2859,7 +2859,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync sold_phones:', e); });
 
     // 6. Tải Sửa Chữa (repairs) Bundle
-    db.collection('sync_bundles').doc('repairs').get().then(function (doc) {
+    db.collection('sync_bundles').doc('repairs').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2873,7 +2873,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync repairs:', e); });
 
     // 7. Tải Main Xác (mainxac) Bundle
-    db.collection('sync_bundles').doc('mainxac').get().then(function (doc) {
+    db.collection('sync_bundles').doc('mainxac').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2886,7 +2886,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync mainxac:', e); });
 
     // 8. Tải Nhật Ký Hệ Thống (activity_logs) Bundle
-    db.collection('sync_bundles').doc('activity_logs').get().then(function (doc) {
+    db.collection('sync_bundles').doc('activity_logs').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2899,7 +2899,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync activity_logs:', e); });
 
     // 9. Tải Báo Giá Linh Kiện (parts) Bundle
-    db.collection('sync_bundles').doc('parts').get().then(function (doc) {
+    db.collection('sync_bundles').doc('parts').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2910,7 +2910,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync parts:', e); });
 
     // 10. Tải Mình Nợ (my_debt) Bundle
-    db.collection('sync_bundles').doc('my_debt').get().then(function (doc) {
+    db.collection('sync_bundles').doc('my_debt').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -2922,7 +2922,7 @@ function fetchDirectCloudSync(showToastMsg) {
     }).catch(function (e) { console.warn('fetchDirectCloudSync my_debt:', e); });
 
     // 11. Tải Nợ Khác (other_debt) Bundle
-    db.collection('sync_bundles').doc('other_debt').get().then(function (doc) {
+    db.collection('sync_bundles').doc('other_debt').get({ source: 'server' }).then(function (doc) {
       if (doc && doc.exists) {
         var data = doc.data();
         if (data && Array.isArray(data.list) && data.list.length > 0) {
