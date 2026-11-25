@@ -2795,25 +2795,19 @@ function fetchDirectCloudSync(showToastMsg) {
             phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
             if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
           } else {
-            var localUpdatedAt = 0;
-            try { localUpdatedAt = Number(localStorage.getItem('KIMCHI_PHONES_UPDATED_AT')) || 0; } catch (e) { }
-            var cloudUpdatedAt = Number(data.updatedAt) || 0;
-
-            // Nếu dữ liệu Local vừa được lưu gần hơn Cloud (người dùng vừa sửa xong bấm F5 ngay)
-            if (localUpdatedAt > 0 && cloudUpdatedAt > 0 && cloudUpdatedAt < localUpdatedAt) {
-              console.log('Local phones mới hơn Cloud phones (Local: ' + localUpdatedAt + ' > Cloud: ' + cloudUpdatedAt + '). Giữ nguyên Local và đẩy lên Cloud.');
-              if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
-              return;
-            }
-
             // Đồng bộ trực tiếp 100% từ Cloud: Thiết bị này (Web/Mobile) nhận đúng những gì thiết bị kia đã tạo/sửa/xóa
+            // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
             var rawList = Array.isArray(data.list) ? data.list : [];
-            // Nếu trên Cloud bị thiếu các máy chuẩn từ seed 154 máy, tự động hợp nhất bổ sung máy thiếu
-            if (typeof mergeWithSeedPhones === 'function') {
-              phoneDatabase = mergeWithSeedPhones(rawList);
-            } else {
-              phoneDatabase = rawList;
-            }
+            var soldIds = typeof getSoldPhoneIds === 'function' ? getSoldPhoneIds() : new Set();
+            var deletedIds = typeof getDeletedPhoneIds === 'function' ? getDeletedPhoneIds() : new Set();
+            phoneDatabase = rawList.filter(function (p) {
+              if (!p) return false;
+              var pId = String(p.id || '');
+              var pImeiKey = p.imei ? ('imei_' + String(p.imei).trim().toLowerCase()) : '';
+              if (pId && (soldIds.has(pId) || deletedIds.has(pId))) return false;
+              if (pImeiKey && (soldIds.has(pImeiKey) || deletedIds.has(pImeiKey))) return false;
+              return true;
+            });
             if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           }
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
@@ -3231,24 +3225,19 @@ function initFirebaseRealtimeSync() {
             console.warn('Bỏ qua sync_bundles phones bị phình to từ cloud cũ');
             return;
           }
-          let localUpdatedAt = 0;
-          try { localUpdatedAt = Number(localStorage.getItem('KIMCHI_PHONES_UPDATED_AT')) || 0; } catch (e) { }
-          const cloudUpdatedAt = Number(data.updatedAt) || 0;
-
-          // Nếu bản snapshot trả về có timestamp cũ hơn bản sửa đổi vừa lưu ở Local, bỏ qua snapshot cũ
-          if (localUpdatedAt > 0 && cloudUpdatedAt > 0 && cloudUpdatedAt < localUpdatedAt) {
-            console.log('Snapshot phones cũ hơn Local (Local: ' + localUpdatedAt + ' > Cloud: ' + cloudUpdatedAt + '). Bỏ qua ghi đè.');
-            return;
-          }
-
           // Đồng bộ trực tiếp 100% từ Cloud Realtime: Web hay Mobile thêm/sửa/xóa là bên kia cập nhật tức thì
+          // Luôn lọc sạch máy đã bán hoặc đã xóa để F5 không bao giờ nạp lại máy đã bán
           const rawList = Array.isArray(data.list) ? data.list : [];
-          // Nếu trên Cloud bị thiếu các máy chuẩn từ seed 154 máy, tự động hợp nhất bổ sung máy thiếu
-          if (typeof mergeWithSeedPhones === 'function') {
-            phoneDatabase = mergeWithSeedPhones(rawList);
-          } else {
-            phoneDatabase = rawList;
-          }
+          const soldIds = typeof getSoldPhoneIds === 'function' ? getSoldPhoneIds() : new Set();
+          const deletedIds = typeof getDeletedPhoneIds === 'function' ? getDeletedPhoneIds() : new Set();
+          phoneDatabase = rawList.filter(p => {
+            if (!p) return false;
+            const pId = String(p.id || '');
+            const pImeiKey = p.imei ? ('imei_' + String(p.imei).trim().toLowerCase()) : '';
+            if (pId && (soldIds.has(pId) || deletedIds.has(pId))) return false;
+            if (pImeiKey && (soldIds.has(pImeiKey) || deletedIds.has(pImeiKey))) return false;
+            return true;
+          });
           if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(phoneDatabase);
           try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
           if (typeof renderPhoneGrid === 'function') renderPhoneGrid();
@@ -11093,39 +11082,35 @@ function mergeWithSeedSoldPhones(list) {
 window.mergeWithSeedSoldPhones = mergeWithSeedSoldPhones;
 
 function mergeWithSeedPhones(list) {
-  // Lấy các máy hiện có từ list
-  let combined = Array.isArray(list) ? list.filter(item => !!item) : [];
+  const soldIds = getSoldPhoneIds();
+  const deletedPhoneIds = getDeletedPhoneIds();
+  // Nếu đã có danh sách máy lưu cục bộ, chỉ lọc bỏ máy đã bán/xóa, tuyệt đối không tự ý nhồi thêm seed cũ
+  if (Array.isArray(list) && list.length > 0) {
+    let combined = list.filter(item => {
+      if (!item) return false;
+      if (item.id && (soldIds.has(String(item.id)) || deletedPhoneIds.has(String(item.id)))) return false;
+      return true;
+    });
+    if (typeof applyPhoneStatusOverrides === 'function') {
+      combined = applyPhoneStatusOverrides(combined);
+    }
+    return combined;
+  }
 
-  // Tự động bổ sung đầy đủ 100% các máy từ SEED chuẩn (154 máy) nếu danh sách chưa có (so theo ID và IMEI)
+  // Chỉ khi danh sách hoàn toàn trống (máy mới tinh chưa từng có dữ liệu), mới lấy từ SEED_PHONES_DATA
+  let combined = [];
   if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-    const existIdSet = new Set(combined.map(s => String(s.id)));
-    const existImeiSet = new Set(combined.filter(s => s.imei).map(s => String(s.imei).trim().toLowerCase()));
-
-    window.SEED_PHONES_DATA.forEach(seed => {
-      if (!seed || !seed.id) return;
-      const sId = String(seed.id);
-      const sImei = seed.imei ? String(seed.imei).trim() : '';
-
-      // Nếu máy đã có trong danh sách thì bỏ qua
-      if (existIdSet.has(sId)) return;
-      if (sImei && existImeiSet.has(sImei.toLowerCase())) return;
-
-      combined.push(JSON.parse(JSON.stringify(seed)));
-      existIdSet.add(sId);
-      if (sImei) existImeiSet.add(sImei.toLowerCase());
+    const seeds = window.SEED_PHONES_DATA;
+    seeds.forEach(s => {
+      if (!s || !s.id) return;
+      const sId = String(s.id);
+      if (soldIds.has(sId) || deletedPhoneIds.has(sId)) return;
+      combined.push(s);
     });
   }
-
-  // Luôn áp dụng các chỉnh sửa và trạng thái người dùng đã lưu (KIMCHI_PHONE_EDIT_OVERRIDES & KIMCHI_PHONE_STATUS_OVERRIDES)
   if (typeof applyPhoneStatusOverrides === 'function') {
-    applyPhoneStatusOverrides(combined);
+    combined = applyPhoneStatusOverrides(combined);
   }
-
-  // Luôn đảm bảo trạng thái các máy trong kho là 'Còn Hàng' trừ khi máy có trạng thái cụ thể khác
-  combined.forEach(p => {
-    if (!p.status || !String(p.status).trim()) p.status = 'Còn Hàng';
-  });
-
   return combined;
 }
 window.mergeWithSeedPhones = mergeWithSeedPhones;
@@ -11149,26 +11134,14 @@ function loadInitialPhones() {
     if (localRaw) {
       const parsed = JSON.parse(localRaw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        const merged = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(parsed) : parsed;
-        if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(merged);
-        return merged;
+        return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(parsed) : parsed;
       }
     }
   } catch (e) { }
-  const initial = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
-  if (typeof applyPhoneStatusOverrides === 'function') applyPhoneStatusOverrides(initial);
-  return initial;
+  return (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : (window.SEED_PHONES_DATA || []);
 }
 let soldPhoneDatabase = loadInitialSoldPhones();
 let phoneDatabase = loadInitialPhones();
-
-// Tự động lưu và đồng bộ lại nếu phát hiện số lượng máy trong kho chưa đủ 154 máy chuẩn
-if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length >= 154) {
-  if (!Array.isArray(phoneDatabase) || phoneDatabase.length < window.SEED_PHONES_DATA.length) {
-    phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase) : window.SEED_PHONES_DATA;
-    try { localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase)); } catch (e) { }
-  }
-}
 
 // TỰ ĐỘNG ĐỒNG BỘ MÁY BÁN TỪ BÁN GÀ / BÁN HÀNG SANG BẢO HÀNH (VÍ DỤ SAMSUNG A17 NGÀY 06/11)
 function autoSyncPhonesToWarranty() {
@@ -11475,7 +11448,6 @@ function savePhoneStorage(itemToSync) {
       applyPhoneStatusOverrides(phoneDatabase);
     }
     localStorage.setItem('KIMCHI_PHONES_LOCAL', JSON.stringify(phoneDatabase));
-    localStorage.setItem('KIMCHI_PHONES_UPDATED_AT', String(Date.now()));
   } catch (e) { }
   if (typeof db !== 'undefined' && db) {
     if (itemToSync && itemToSync.id) {
@@ -11681,15 +11653,7 @@ function openPhoneModal(editId = null) {
     document.getElementById('mPinPct').placeholder = '';
   }
 
-  const pm = document.getElementById('phoneModal');
-  if (pm) {
-    pm.classList.add('active');
-    pm.classList.add('show');
-    pm.style.setProperty('display', 'flex', 'important');
-    pm.style.visibility = 'visible';
-    pm.style.opacity = '1';
-    pm.style.pointerEvents = 'auto';
-  }
+  document.getElementById('phoneModal').classList.add('active');
   if (typeof checkPhoneModalValidity === 'function') checkPhoneModalValidity();
 }
 window.openPhoneModal = openPhoneModal;
@@ -11700,9 +11664,15 @@ function checkPhoneModalValidity() {
 
   const nameVal = document.getElementById('mName') ? document.getElementById('mName').value.trim() : '';
   const imeiVal = document.getElementById('mImei') ? document.getElementById('mImei').value.trim() : '';
+  const colorVal = document.getElementById('mColor') ? document.getElementById('mColor').value.trim() : '';
+  const storageVal = document.getElementById('mStorage') ? document.getElementById('mStorage').value.trim() : '';
+  const conditionVal = document.getElementById('mCondition') ? document.getElementById('mCondition').value.trim() : '';
+  const statusVal = document.getElementById('mStatus') ? document.getElementById('mStatus').value.trim() : '';
+  const priceInVal = document.getElementById('mPriceIn') ? document.getElementById('mPriceIn').value.trim() : '';
+  const priceOutVal = document.getElementById('mPriceOut') ? document.getElementById('mPriceOut').value.trim() : '';
 
-  // Nút Lưu Dữ Liệu luôn sẵn sàng bấm, chỉ cần có tên máy
-  const isValid = Boolean(nameVal);
+  // IMEI chỉ cần có ghi là được (tối đa 4 số)
+  const isValid = Boolean(nameVal && imeiVal && colorVal && storageVal && conditionVal && statusVal && priceInVal && priceOutVal);
 
   if (isValid) {
     saveBtn.disabled = false;
@@ -11710,218 +11680,115 @@ function checkPhoneModalValidity() {
     saveBtn.style.cursor = 'pointer';
     saveBtn.style.pointerEvents = 'auto';
   } else {
-    // Không khóa cứng pointerEvents='none' để khi người dùng bấm vào vẫn phản hồi hoặc focus ô thiếu
-    saveBtn.disabled = false;
-    saveBtn.style.opacity = '1';
-    saveBtn.style.cursor = 'pointer';
-    saveBtn.style.pointerEvents = 'auto';
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = '0.45';
+    saveBtn.style.cursor = 'not-allowed';
+    saveBtn.style.pointerEvents = 'none';
   }
 }
 window.checkPhoneModalValidity = checkPhoneModalValidity;
 
-function closePhoneModal(e) {
-  if (e) {
-    if (typeof e.preventDefault === 'function') e.preventDefault();
-    if (typeof e.stopPropagation === 'function') e.stopPropagation();
-  }
-  const modal = document.getElementById('phoneModal');
-  if (modal) {
-    modal.classList.remove('active', 'show');
-    modal.style.setProperty('display', 'none', 'important');
-    modal.style.visibility = 'hidden';
-    modal.style.opacity = '0';
-    modal.style.pointerEvents = 'none';
-  }
+function closePhoneModal() {
+  document.getElementById('phoneModal').classList.remove('active');
 }
 window.closePhoneModal = closePhoneModal;
 
 function saveNewPhone(e) {
-  if (e) {
-    if (typeof e.preventDefault === 'function') e.preventDefault();
-    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  e.preventDefault();
+  const editId = document.getElementById('mEditId').value;
+  const brandSelectVal = document.getElementById('mBrandSelect') ? document.getElementById('mBrandSelect').value : '';
+  const existingP = editId ? phoneDatabase.find(x => String(x.id) === String(editId) || x.id == editId) : null;
+  let resolvedBrand = brandSelectVal || (existingP ? (existingP.brand || (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter)) : (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter));
+  if (resolvedBrand === 'OPPO & REALME' || resolvedBrand === 'OPPO - REALME') {
+    resolvedBrand = /realme/i.test(document.getElementById('mName').value) ? 'REALME' : 'OPPO';
+  } else if (resolvedBrand === 'REDMI & POCO' || resolvedBrand === 'REDMI - POCO') {
+    resolvedBrand = /poco/i.test(document.getElementById('mName').value) ? 'POCO' : 'REDMI';
+  }
+  const brand = resolvedBrand;
+  const name = toTitleCase(document.getElementById('mName').value.trim());
+  const color = toTitleCase(document.getElementById('mColor').value.trim());
+  const imei = document.getElementById('mImei').value.trim();
+  const storage = formatStorageValue(toTitleCase(document.getElementById('mStorage').value.trim()));
+  const condition = toTitleCase(document.getElementById('mCondition').value.trim());
+  const pinStatus = toTitleCase(document.getElementById('mPinStatus').value.trim());
+
+  let pinPctRaw = document.getElementById('mPinPct').value.trim();
+  const pinPct = formatPinByBrand(pinPctRaw, brand, name);
+
+  const origin = document.getElementById('mOrigin').value.trim().toUpperCase();
+  const priceOut = document.getElementById('mPriceOut').value.trim();
+  const priceIn = document.getElementById('mPriceIn').value.trim();
+  const status = document.getElementById('mStatus') ? document.getElementById('mStatus').value : 'Còn Hàng';
+  const note = toTitleCase(document.getElementById('mNote').value.trim());
+  const dateIn = document.getElementById('mDateVal').value.trim();
+
+  const originStr = origin || 'VN/A';
+  let savedItem = null;
+
+  if (editId) {
+    const p = phoneDatabase.find(item => String(item.id) === String(editId) || item.id == editId);
+    if (p) {
+      const oldData = JSON.parse(JSON.stringify(p));
+      p.brand = brand;
+      p.name = name;
+      p.color = color;
+      p.storage = storage ? `(${storage})` : '';
+      p.imei = imei;
+      p.price = priceOut;
+      p.condition = condition;
+      p.pinStatus = pinStatus;
+      p.pin = pinPct;
+      p.origin = originStr;
+      p.priceIn = priceIn || '0';
+      p.status = status;
+      p.note = note;
+      p.date = dateIn;
+      p.updatedAt = Date.now();
+      savedItem = p;
+      if (typeof logActivity === 'function') {
+        logActivity('EDIT', 'banmay', 'Bán máy', `Sửa thông tin máy: ${brand} ${name} (${imei || 'Không IMEI'}) - Giá: ${priceOut}`, oldData, p, p.id);
+      }
+    }
+  } else {
+    const newItem = {
+      id: Date.now() + Math.random(),
+      brand,
+      name,
+      color,
+      storage: storage ? `(${storage})` : '',
+      imei,
+      price: priceOut,
+      condition,
+      pinStatus,
+      pin: pinPct,
+      origin: originStr,
+      priceIn: priceIn || '0',
+      status: status || 'Còn Hàng',
+      note,
+      date: dateIn || getCurrentDateStr(),
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    phoneDatabase.unshift(newItem);
+    savedItem = newItem;
+    if (typeof logActivity === 'function') {
+      logActivity('ADD', 'banmay', 'Bán máy', `Nhập máy mới: ${brand} ${name} ${newItem.storage} (${imei || 'Không IMEI'}) - Vốn: ${newItem.priceIn}`, null, newItem, newItem.id);
+    }
   }
 
-  try {
-    const editIdEl = document.getElementById('mEditId');
-    const editId = editIdEl ? editIdEl.value.trim() : '';
-    const brandSelectVal = document.getElementById('mBrandSelect') ? document.getElementById('mBrandSelect').value : '';
-
-    let existingP = null;
-    if (editId && Array.isArray(phoneDatabase)) {
-      existingP = phoneDatabase.find(x => String(x.id) === String(editId) || x.id == editId);
+  if (savedItem) {
+    if (typeof setPhoneEditOverride === 'function') {
+      setPhoneEditOverride(savedItem);
     }
-
-    let resolvedBrand = brandSelectVal || (existingP ? (existingP.brand || (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter)) : (currentBrandFilter === 'ALL' ? 'IPHONE' : currentBrandFilter));
-    const nameEl = document.getElementById('mName');
-    const rawName = nameEl ? nameEl.value.trim() : '';
-
-    if (resolvedBrand === 'OPPO & REALME' || resolvedBrand === 'OPPO - REALME') {
-      resolvedBrand = /realme/i.test(rawName) ? 'REALME' : 'OPPO';
-    } else if (resolvedBrand === 'REDMI & POCO' || resolvedBrand === 'REDMI - POCO') {
-      resolvedBrand = /poco/i.test(rawName) ? 'POCO' : 'REDMI';
+    if (savedItem.status && typeof setPhoneStatusOverride === 'function') {
+      setPhoneStatusOverride(savedItem.id, savedItem.status, savedItem.imei);
     }
-    const brand = resolvedBrand || 'IPHONE';
-    const name = typeof toTitleCase === 'function' ? toTitleCase(rawName) : rawName;
-    const colorEl = document.getElementById('mColor');
-    const color = typeof toTitleCase === 'function' ? toTitleCase(colorEl ? colorEl.value.trim() : '') : (colorEl ? colorEl.value.trim() : '');
-    const imeiEl = document.getElementById('mImei');
-    const imei = imeiEl ? imeiEl.value.trim() : '';
-
-    const storageEl = document.getElementById('mStorage');
-    const storageRaw = storageEl ? storageEl.value.trim() : '';
-    const storage = typeof formatStorageValue === 'function' ? formatStorageValue(typeof toTitleCase === 'function' ? toTitleCase(storageRaw) : storageRaw) : storageRaw;
-
-    const condEl = document.getElementById('mCondition');
-    const condition = typeof toTitleCase === 'function' ? toTitleCase(condEl ? condEl.value.trim() : '') : (condEl ? condEl.value.trim() : '');
-
-    const pinStatusEl = document.getElementById('mPinStatus');
-    const pinStatus = typeof toTitleCase === 'function' ? toTitleCase(pinStatusEl ? pinStatusEl.value.trim() : '') : (pinStatusEl ? pinStatusEl.value.trim() : '');
-
-    const pinPctEl = document.getElementById('mPinPct');
-    let pinPctRaw = pinPctEl ? pinPctEl.value.trim() : '';
-    const pinPct = typeof formatPinByBrand === 'function' ? formatPinByBrand(pinPctRaw, brand, name) : pinPctRaw;
-
-    const originEl = document.getElementById('mOrigin');
-    const origin = originEl ? originEl.value.trim().toUpperCase() : '';
-
-    const priceOutEl = document.getElementById('mPriceOut');
-    const priceOut = priceOutEl ? priceOutEl.value.trim() : '';
-
-    const priceInEl = document.getElementById('mPriceIn');
-    const priceIn = priceInEl ? priceInEl.value.trim() : '';
-
-    const statusEl = document.getElementById('mStatus');
-    const status = statusEl ? statusEl.value : 'Còn Hàng';
-
-    const noteEl = document.getElementById('mNote');
-    const note = typeof toTitleCase === 'function' ? toTitleCase(noteEl ? noteEl.value.trim() : '') : (noteEl ? noteEl.value.trim() : '');
-
-    const dateValEl = document.getElementById('mDateVal');
-    const dateIn = dateValEl ? dateValEl.value.trim() : '';
-
-    const originStr = origin || 'VN/A';
-    let savedItem = null;
-
-    if (!Array.isArray(phoneDatabase)) {
-      phoneDatabase = [];
-    }
-
-    if (editId) {
-      let p = phoneDatabase.find(item => String(item.id) === String(editId) || item.id == editId);
-      // Fallback search by IMEI if ID was not matched
-      if (!p && imei) {
-        p = phoneDatabase.find(item => item.imei && String(item.imei).trim().toLowerCase() === String(imei).trim().toLowerCase());
-      }
-
-      if (p) {
-        const oldData = JSON.parse(JSON.stringify(p));
-        p.brand = brand;
-        p.name = name;
-        p.color = color;
-        p.storage = storage ? (storage.startsWith('(') ? storage : `(${storage})`) : '';
-        p.imei = imei;
-        p.price = priceOut;
-        p.condition = condition;
-        p.pinStatus = pinStatus;
-        p.pin = pinPct;
-        p.origin = originStr;
-        p.priceIn = priceIn || '0';
-        p.status = status;
-        p.note = note;
-        p.date = dateIn || p.date || (typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : '');
-        p.updatedAt = Date.now();
-        savedItem = p;
-
-        if (typeof logActivity === 'function') {
-          try {
-            logActivity('EDIT', 'banmay', 'Bán máy', `Sửa thông tin máy: ${brand} ${name} (${imei || 'Không IMEI'}) - Giá: ${priceOut}`, oldData, p, p.id);
-          } catch (e) { }
-        }
-      } else {
-        // Fallback: If editId given but not in phoneDatabase, update/create item
-        const newItem = {
-          id: editId,
-          brand,
-          name,
-          color,
-          storage: storage ? (storage.startsWith('(') ? storage : `(${storage})`) : '',
-          imei,
-          price: priceOut,
-          condition,
-          pinStatus,
-          pin: pinPct,
-          origin: originStr,
-          priceIn: priceIn || '0',
-          status: status || 'Còn Hàng',
-          note,
-          date: dateIn || (typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : ''),
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        };
-        phoneDatabase.unshift(newItem);
-        savedItem = newItem;
-      }
-    } else {
-      const newItem = {
-        id: Date.now() + Math.random(),
-        brand,
-        name,
-        color,
-        storage: storage ? (storage.startsWith('(') ? storage : `(${storage})`) : '',
-        imei,
-        price: priceOut,
-        condition,
-        pinStatus,
-        pin: pinPct,
-        origin: originStr,
-        priceIn: priceIn || '0',
-        status: status || 'Còn Hàng',
-        note,
-        date: dateIn || (typeof getCurrentDateStr === 'function' ? getCurrentDateStr() : ''),
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-      phoneDatabase.unshift(newItem);
-      savedItem = newItem;
-
-      if (typeof logActivity === 'function') {
-        try {
-          logActivity('ADD', 'banmay', 'Bán máy', `Nhập máy mới: ${brand} ${name} ${newItem.storage} (${imei || 'Không IMEI'}) - Vốn: ${newItem.priceIn}`, null, newItem, newItem.id);
-        } catch (e) { }
-      }
-    }
-
-    if (savedItem) {
-      if (typeof setPhoneEditOverride === 'function') {
-        try { setPhoneEditOverride(savedItem); } catch (e) { }
-      }
-      if (savedItem.status && typeof setPhoneStatusOverride === 'function') {
-        try { setPhoneStatusOverride(savedItem.id, savedItem.status, savedItem.imei); } catch (e) { }
-      }
-    }
-
-    if (typeof savePhoneStorage === 'function') {
-      try { savePhoneStorage(savedItem); } catch (e) { }
-    }
-
-    closePhoneModal();
-
-    if (typeof renderPhoneGrid === 'function') {
-      try { renderPhoneGrid(); } catch (e) { }
-    }
-
-    if (typeof showToast === 'function') {
-      showToast(editId ? '✅ Đã cập nhật thông tin máy thành công!' : '✅ Đã thêm máy mới vào kho thành công!');
-    }
-  } catch (err) {
-    console.error('Lỗi khi lưu thông tin máy:', err);
-    closePhoneModal();
-    if (typeof renderPhoneGrid === 'function') {
-      try { renderPhoneGrid(); } catch (e) { }
-    }
-    if (typeof showToast === 'function') {
-      showToast('✅ Đã lưu thông tin máy!');
-    }
+  }
+  savePhoneStorage(savedItem);
+  closePhoneModal();
+  renderPhoneGrid();
+  if (typeof showToast === 'function') {
+    showToast(editId ? '✅ Đã cập nhật thông tin máy thành công!' : '✅ Đã thêm máy mới vào kho thành công!');
   }
 }
 window.saveNewPhone = saveNewPhone;
@@ -14247,10 +14114,10 @@ function renderPhoneGrid() {
   const rawSearch = document.getElementById('phoneSearchInput') ? document.getElementById('phoneSearchInput').value.trim() : '';
   const normSearch = normalizeQuery(rawSearch);
 
-  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (hợp nhất đầy đủ seed chuẩn 154 máy)
+  // Đảm bảo phoneDatabase khởi tạo ban đầu an toàn (chỉ lấy seed nếu danh sách máy hoàn toàn trống)
   if (Array.isArray(window.SEED_PHONES_DATA) && window.SEED_PHONES_DATA.length > 0) {
-    if (!Array.isArray(phoneDatabase) || phoneDatabase.length < window.SEED_PHONES_DATA.length) {
-      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones(phoneDatabase || []) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
+    if (!Array.isArray(phoneDatabase) || phoneDatabase.length === 0) {
+      phoneDatabase = (typeof mergeWithSeedPhones === 'function') ? mergeWithSeedPhones([]) : JSON.parse(JSON.stringify(window.SEED_PHONES_DATA));
       savePhoneStorage();
     }
   }
@@ -14263,19 +14130,19 @@ function renderPhoneGrid() {
   }
 
   const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 768;
-  // Khi ở chế độ CHUA_XU_LY: Lọc riêng các máy Chưa Xử Lý / Main Xác
-  // Khi ở chế độ Còn Hàng (mặc định): Lọc các máy còn hàng, loại trừ máy Đã Bán và máy Chưa Xử Lý
   let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
-    ? phoneDatabase.filter(p => {
+    ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
+    : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
+
+  // TRÊN MOBILE & DESKTOP: TAB BÁN MÁY CHỈ HIỂN THỊ DUY NHẤT CÁC MÁY CÒN HÀNG KHI Ở CHẾ ĐỘ CON_HANG
+  if (isMobileScreen && currentPhoneStatusFilter !== 'CHUA_XU_LY') {
+    filtered = filtered.filter(p => {
       let st = (p.status || '').toLowerCase().trim();
-      return st === 'chưa xử lý' || st.includes('chưa xử lý') || st.includes('main xác');
-    })
-    : phoneDatabase.filter(p => {
-      let st = (p.status || '').toLowerCase().trim();
-      if (st.includes('đã bán') || st.includes('da ban')) return false;
-      if (st === 'chưa xử lý' || st.includes('chưa xử lý') || st.includes('main xác')) return false;
+      if (!st || st === 'còn hàng' || st === 'con hang') return true;
+      if (st.includes('chưa xử lý') || st.includes('đã bán') || st.includes('da ban') || st.includes('main xác')) return false;
       return true;
     });
+  }
   if (currentBrandFilter !== 'ALL') {
     const cbf = (currentBrandFilter || '').toUpperCase().trim();
     filtered = filtered.filter(p => {
@@ -14458,59 +14325,11 @@ function renderPhoneGrid() {
       return aDiff - bDiff;
     });
   } else {
-    // Helper lấy timestamp ngày thêm máy chuẩn xác (hỗ trợ cả DD/MM/YYYY, YYYY-MM-DD, và timestamp)
-    const parsePhoneDateTimestamp = (p) => {
-      if (!p) return 0;
-      let dStr = (p.date || p.dateIn || '').trim();
-      if (dStr) {
-        if (dStr.includes('/')) {
-          const parts = dStr.split('/');
-          if (parts.length === 3) {
-            const d = parseInt(parts[0], 10);
-            const m = parseInt(parts[1], 10) - 1;
-            const y = parseInt(parts[2], 10);
-            const t = new Date(y, m, d).getTime();
-            if (!isNaN(t) && t > 0) return t;
-          }
-        } else if (dStr.includes('-')) {
-          const parts = dStr.split('-');
-          if (parts.length === 3) {
-            let y, m, d;
-            if (parts[0].length === 4) {
-              y = parseInt(parts[0], 10);
-              m = parseInt(parts[1], 10) - 1;
-              d = parseInt(parts[2], 10);
-            } else {
-              d = parseInt(parts[0], 10);
-              m = parseInt(parts[1], 10) - 1;
-              y = parseInt(parts[2], 10);
-            }
-            const t = new Date(y, m, d).getTime();
-            if (!isNaN(t) && t > 0) return t;
-          }
-        }
-      }
-      return Number(p.updatedAt) || Number(p.createdAt) || Number(p.id) || 0;
-    };
-
-    // Sắp xếp theo thứ tự thời gian mới nhất lên trước (ưu tiên cập nhật/thêm mới nhất, sau đó đến ngày nhập)
+    // Sắp xếp theo thứ tự thêm mới hoặc sửa thông tin gần nhất lên đầu
     filtered.sort((a, b) => {
-      if (currentPhoneStatusFilter === 'CHUA_XU_LY') {
-        let uB = Number(b.updatedAt) || Number(b.createdAt) || 0;
-        let uA = Number(a.updatedAt) || Number(a.createdAt) || 0;
-        let dB = parsePhoneDateTimestamp(b);
-        let dA = parsePhoneDateTimestamp(a);
-        let timeB = Math.max(uB, dB, Number(b.id) || 0);
-        let timeA = Math.max(uA, dA, Number(a.id) || 0);
-        if (timeB !== timeA) return timeB - timeA;
-        return (Number(b.id) || 0) - (Number(a.id) || 0);
-      }
-      let tB = parsePhoneDateTimestamp(b);
-      let tA = parsePhoneDateTimestamp(a);
-      if (tB !== tA) return tB - tA;
-      let idB = Number(b.updatedAt) || Number(b.createdAt) || Number(b.id) || 0;
-      let idA = Number(a.updatedAt) || Number(a.createdAt) || Number(a.id) || 0;
-      return idB - idA;
+      let tB = Number(b.updatedAt) || Number(b.createdAt) || Number(b.id) || 0;
+      let tA = Number(a.updatedAt) || Number(a.createdAt) || Number(a.id) || 0;
+      return tB - tA;
     });
   }
 
@@ -14630,7 +14449,7 @@ function renderPhoneGrid() {
       }
 
       return `
-                  <tr class="phone-table-row" onclick="handlePhoneRowClick(this)" ontouchstart="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
+                  <tr class="phone-table-row" ondblclick="viewPhone('${p.id}')" style="cursor: pointer;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
                     <td style="text-align: left; padding-left: 12px; max-width: 280px;">
                       <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;">
                         <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px;">
@@ -14739,7 +14558,7 @@ function renderPhoneGrid() {
       let desktopDotSize = isDesktop ? 36 : 25;
 
       return `
-            <div class="phone-card" onclick="handlePhoneRowClick(this)" ontouchstart="handlePhoneRowClick(this)" ondblclick="viewPhone('${p.id}')" ontouchend="let now=Date.now(); if(this._lastTap && now-this._lastTap<350){ viewPhone('${p.id}'); } this._lastTap=now;" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
+            <div class="phone-card" ondblclick="viewPhone('${p.id}')" title="Nhấp đúp chuột (nháy 2 lần) để xem chi tiết máy">
               <!-- HÀNG 1: TÊN MÁY + MÀU + DUNG LƯỢNG | GIÁ TIỀN Ở GIỮA | ĐÓNG KHUNG IMEI -->
               <div class="phone-card-header">
                 <div class="phone-header-left">
