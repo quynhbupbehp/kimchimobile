@@ -581,12 +581,6 @@
                   style="background: #0f172a; border: 1.5px solid #f472b6; color: #f472b6; box-shadow: 0 4px 12px rgba(244,114,182,0.25);">
                   🧹 Lọc Trùng
                 </button>
-                <button type="button" class="btn-action-sales"
-                  onclick="removeDuplicateSalesItems(); closeAllExcelDropdowns();"
-                  title="Xóa các đơn bán hàng trùng lặp, chỉ giữ lại duy nhất 1 đơn"
-                  style="background: #0f172a; border: 1.5px solid #f59e0b; color: #fbbf24; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
-                  🧹 Lọc Trùng
-                </button>
                 <button type="button" class="btn-action-sales" onclick="clearAllSalesData(); closeAllExcelDropdowns();"
                   title="Xóa danh sách Bán Hàng theo phạm vi thời gian đang chọn"
                   style="background: #0f172a; border: 1.5px solid #ef4444; color: #f87171; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
@@ -1999,6 +1993,12 @@
                   title="Xuất danh sách Bảo Hành ra file Excel"
                   style="background: #0f172a; border: 1.5px solid #38bdf8; color: #ffffff; box-shadow: 0 4px 12px rgba(56,189,248,0.25);">
                   📤 Xuất Excel
+                </button>
+                <button type="button" class="btn-action-sales"
+                  onclick="deduplicateTab('sold_phones'); closeAllExcelDropdowns();"
+                  title="Quét và lọc bỏ các máy Bảo Hành bị trùng lặp"
+                  style="background: #0f172a; border: 1.5px solid #f472b6; color: #f472b6; box-shadow: 0 4px 12px rgba(244,114,182,0.25);">
+                  🧹 Lọc Trùng
                 </button>
                 <button type="button" class="btn-action-sales"
                   onclick="clearAllSoldPhoneData(); closeAllExcelDropdowns();"

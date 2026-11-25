@@ -2899,6 +2899,14 @@ function deduplicateTab(tabName) {
       return imei ? `imei:${imei}` : `${(p.brand || '').toLowerCase().trim()}|${(p.name || '').toLowerCase().trim()}|${pNum(p.price)}|${p.date || ''}`;
     };
     labelFn = p => `${p.date || ''} | ${p.brand || ''} ${p.name || ''} | IMEI: ${p.imei || 'Không'} | Giá: ${p.price || 0}`;
+  } else if (tabName === 'sold_phones' && typeof soldPhoneDatabase !== 'undefined') {
+    arr = soldPhoneDatabase;
+    title = 'Bảo Hành';
+    keyFn = p => {
+      const imei = (p.imei || '').toLowerCase().trim();
+      return imei ? `imei:${imei}|${p.dateOut || p.date || ''}` : `${(p.customer || '').toLowerCase().trim()}|${(p.name || '').toLowerCase().trim()}|${pNum(p.price)}|${p.dateOut || p.date || ''}`;
+    };
+    labelFn = p => `${p.dateOut || p.date || ''} | ${p.customer || 'Khách lẻ'} | ${p.brand || ''} ${p.name || ''} | IMEI: ${p.imei || 'Không'} | Giá: ${p.price || 0}`;
   } else {
     return;
   }
@@ -2987,6 +2995,10 @@ function deduplicateTab(tabName) {
       phoneDatabase = filtered;
       if (typeof renderPhoneTable === 'function') renderPhoneTable();
       if (typeof syncPhoneBundleDebounced === 'function') syncPhoneBundleDebounced();
+    } else if (tabName === 'sold_phones') {
+      soldPhoneDatabase = filtered;
+      if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
+      if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
     }
     if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     closeModal();
