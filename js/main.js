@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    HỆ THỐNG THÔNG BÁO TỰ TẮT SAU 2 GIÂY (TOAST NOTIFICATION)
    Thay thế toàn bộ window.alert chuẩn của trình duyệt
    ============================================================ */
@@ -2667,7 +2667,7 @@ async function manualSyncAllToFirestore() {
             list: sanitizeForFirestore(t.data),
             updatedAt: now
           }, { merge: true }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Hết thời gian chờ (Timeout 5s)')), 5000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Hết thời gian chờ (Timeout 10s)')), 10000))
         ]);
         successCount++;
       } catch (subErr) {
@@ -2677,7 +2677,6 @@ async function manualSyncAllToFirestore() {
         if (typeof notifyFirebaseQuotaExceeded === 'function') {
           notifyFirebaseQuotaExceeded(subErr);
         }
-        if (/Timeout/i.test(lastSubErrMsg)) break;
       }
     }
 
@@ -2732,6 +2731,49 @@ async function manualSyncAllToFirestore() {
   }
 }
 window.manualSyncAllToFirestore = manualSyncAllToFirestore;
+
+function exportFullBackupJSON() {
+  try {
+    const data = JSON.stringify(localStorage);
+    const blob = new Blob([data], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    a.href = url;
+    a.download = `kimchimobile_backup_${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (typeof showToast === 'function') showToast('✅ Đã xuất file Backup toàn bộ dữ liệu!', 3500);
+  } catch (err) {
+    alert('Lỗi xuất Backup: ' + (err && err.message ? err.message : err));
+  }
+}
+window.exportFullBackupJSON = exportFullBackupJSON;
+
+function importFullBackupJSON(event) {
+  const file = event && event.target && event.target.files && event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || typeof parsed !== 'object') throw new Error('File không hợp lệ');
+      Object.keys(parsed).forEach(k => {
+        localStorage.setItem(k, parsed[k]);
+      });
+      if (typeof showToast === 'function') showToast('✅ Đã nạp Backup thành công! Đang tải lại giao diện...', 2500);
+      setTimeout(() => location.reload(), 1200);
+    } catch (err) {
+      alert('Lỗi nạp Backup: ' + (err && err.message ? err.message : err));
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  event.target.value = '';
+}
+window.importFullBackupJSON = importFullBackupJSON;
 
 function autoPushLocalDataToFirestore() {
   // ĐÃ VÔ HIỆU HÓA: Không tự động đẩy seed_data lên Cloud khi mở app trên thiết bị mới
