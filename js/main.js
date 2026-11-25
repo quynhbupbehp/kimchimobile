@@ -2786,7 +2786,7 @@ function deduplicateAllTabs() {
     for (const item of arr) {
       if (!item) continue;
       const k = keyFn(item);
-      if (seen.has(k)) {
+      if (tabName === 'sold_phones' && !String(item.imei || '').trim() && !/\(\d{4}\)/.test(String(item.name || ''))) { dupIndices.push({ index: i, label: '[Không IMEI] ' + labelFn(item) }); } else if (seen.has(k)) {
         removed++;
       } else {
         seen.add(k);
@@ -2919,7 +2919,7 @@ function deduplicateTab(tabName) {
     const item = arr[i];
     if (!item) continue;
     const k = keyFn(item);
-    if (seen.has(k)) {
+    if (tabName === 'sold_phones' && !String(item.imei || '').trim() && !/\(\d{4}\)/.test(String(item.name || ''))) { dupIndices.push({ index: i, label: '[Không IMEI] ' + labelFn(item) }); } else if (seen.has(k)) {
       dupIndices.push({ index: i, label: labelFn(item) });
     } else {
       seen.add(k);
