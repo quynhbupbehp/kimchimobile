@@ -194,6 +194,10 @@ function switchMainTab(tabName, btnElement) {
   // Tự động đóng mobile drawer nếu đang mở
   closeMobileSidebar();
 
+  try {
+    localStorage.setItem('KIMCHI_ACTIVE_MAIN_TAB', tabName);
+  } catch (e) { }
+
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   const targetTab = document.getElementById('tab-' + tabName);
   if (targetTab) {
@@ -3479,6 +3483,14 @@ window.addEventListener('DOMContentLoaded', () => {
   if (typeof updateSidebarOverallProfits === 'function') {
     updateSidebarOverallProfits();
   }
+
+  // Khôi phục tab mà người dùng đang mở trước khi F5
+  try {
+    const savedActiveTab = localStorage.getItem('KIMCHI_ACTIVE_MAIN_TAB');
+    if (savedActiveTab && savedActiveTab !== 'banhang') {
+      switchMainTab(savedActiveTab);
+    }
+  } catch (e) { }
 
   // Khởi tạo hoàn tất
 });
@@ -11102,6 +11114,11 @@ function mergeWithSeedPhones(list) {
       existIdSet.add(sId);
       if (sImei) existImeiSet.add(sImei.toLowerCase());
     });
+  }
+
+  // Luôn áp dụng các chỉnh sửa và trạng thái người dùng đã lưu (KIMCHI_PHONE_EDIT_OVERRIDES & KIMCHI_PHONE_STATUS_OVERRIDES)
+  if (typeof applyPhoneStatusOverrides === 'function') {
+    applyPhoneStatusOverrides(combined);
   }
 
   // Luôn đảm bảo trạng thái các máy trong kho là 'Còn Hàng' trừ khi máy có trạng thái cụ thể khác
