@@ -2764,6 +2764,7 @@ function importFullBackupJSON(event) {
       Object.keys(parsed).forEach(k => {
         localStorage.setItem(k, parsed[k]);
       });
+      localStorage.setItem('KIMCHI_SKIP_CLOUD_FETCH_ONCE', '1');
       if (typeof showToast === 'function') showToast('✅ Đã nạp Backup thành công! Đang tải lại giao diện...', 2500);
       setTimeout(() => location.reload(), 1200);
     } catch (err) {
@@ -2785,6 +2786,11 @@ window.autoPushLocalDataToFirestore = autoPushLocalDataToFirestore;
 // TẢI TRỰC TIẾP TỪ CLOUD (HTTP GET) - KHÔNG CẦN CHỜ SNAPSHOT, GIẢI QUYẾT TRIỆT ĐỂ MOBILE KHÔNG THẤY DỮ LIỆU
 function fetchDirectCloudSync(showToastMsg) {
   if (typeof db === 'undefined' || !db) return;
+  if (!showToastMsg && localStorage.getItem('KIMCHI_SKIP_CLOUD_FETCH_ONCE') === '1') {
+    localStorage.removeItem('KIMCHI_SKIP_CLOUD_FETCH_ONCE');
+    console.log('Bỏ qua fetchDirectCloudSync 1 lần để giữ nguyên dữ liệu vừa nạp từ Backup.');
+    return;
+  }
   try {
     // 1. Tải Sales Bundle
     db.collection('sync_bundles').doc('sales').get({ source: 'server' }).then(function (doc) {
