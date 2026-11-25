@@ -26494,7 +26494,7 @@ document.addEventListener('click', function (e) {
     return;
   }
   if (window.innerWidth <= 900) {
-    const soldRow = e.target.closest('#soldPhoneTableBody tr');
+    const soldRow = e.target.closest('#soldPhoneCardsContainer > div, #soldPhoneTableBody tr');
     if (soldRow) {
       const tbody = soldRow.parentElement;
       if (tbody) tbody.querySelectorAll('.kimchi-orange-selected-mobile').forEach(r => { if (r !== soldRow) r.classList.remove('kimchi-orange-selected-mobile'); });
