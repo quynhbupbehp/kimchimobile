@@ -21,7 +21,7 @@
   </script>
   <script>
     // === PHIÊN BẢN HIỆN TẠI CỦA TRANG (tự động cập nhật khi push) ===
-    var CURRENT_PAGE_VERSION = "20261125_075300";
+    var CURRENT_PAGE_VERSION = "20261125_080000";
 
     // === XÓA BỎ SERVICE WORKER CŨ ĐỂ KHÔNG BỊ CACHE TRANG WEB TRÊN MOBILE ===
     if ('serviceWorker' in navigator) {
@@ -6466,9 +6466,9 @@
   <script src="js/xlsx.full.min.js"></script>
 
   <!-- ================= FIREBASE SDK ================= -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
   <script>
     // Cấu hình kết nối dự án Kimchimobile của bạn
@@ -6485,15 +6485,20 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Bật Firestore Offline Persistence (IndexedDB) cho cả Desktop & Mobile
-    // Giúp lưu bộ nhớ đệm chính thức của Google, khi offline vẫn mượt và tự động đồng bộ khi có mạng lại
+    // Cấu hình Firestore ổn định, chống xung đột IndexedDB gây lỗi Assertion
+    try {
+      db.settings({
+        cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+        ignoreUndefinedProperties: true
+      });
+    } catch (e) { }
+
+    // Bật Firestore Offline Persistence an toàn cho cả Desktop & Mobile
     try {
       db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
         if (err.code === 'failed-precondition') {
-          // Khi nhiều tab cùng mở một lúc trên trình duyệt
           console.warn('Firestore persistence multiple tabs open notice:', err.code);
         } else if (err.code === 'unimplemented') {
-          // Trình duyệt không hỗ trợ IndexedDB
           console.warn('Firestore persistence not supported in this browser:', err.code);
         } else {
           console.warn('Firestore persistence notice:', err.code || err);
@@ -6509,7 +6514,7 @@
   <script src="js/seed_data.js?v=20261125_002000"></script>
 
   <!-- Script ứng dụng chính -->
-  <script src="js/main.js?v=20261125_074500"></script>
+  <script src="js/main.js?v=20261125_080000"></script>
 
   <script>
     // Xử lý cảm ứng siêu nhạy trên điện thoại di động (iOS Safari & Android)

@@ -2612,7 +2612,7 @@ async function manualSyncAllToFirestore() {
         db.collection('sync_bundles').doc('sales').set({
           list: sanitizeForFirestore(salesDatabase),
           updatedAt: now
-        }, { merge: true })
+        }, { merge: true }).catch(function (err) { console.warn('Sync bundle sales warn:', err); })
       );
     }
 
@@ -2622,7 +2622,7 @@ async function manualSyncAllToFirestore() {
         db.collection('sync_bundles').doc('software').set({
           list: sanitizeForFirestore(softwareDatabase),
           updatedAt: now
-        }, { merge: true })
+        }, { merge: true }).catch(function (err) { console.warn('Sync bundle software warn:', err); })
       );
     }
 
@@ -2632,7 +2632,7 @@ async function manualSyncAllToFirestore() {
         db.collection('sync_bundles').doc('banga').set({
           list: sanitizeForFirestore(bangaDatabase),
           updatedAt: now
-        }, { merge: true })
+        }, { merge: true }).catch(function (err) { console.warn('Sync bundle banga warn:', err); })
       );
     }
 
