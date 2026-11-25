@@ -8390,11 +8390,13 @@ function handleImportSoftwareExcelFile(event) {
           .replace(/[\u0300-\u036f]/g, '')
           .trim());
 
-        let cCust = -1, cDev = -1, cPrice = -1, cCost = -1, cProfit = -1, cTime = -1, cStatus = -1, cYear = -1;
+        let cCust = -1, cDev = -1, cPrice = -1, cCost = -1, cProfit = -1, cTime = -1, cDayMonth = -1, cStatus = -1, cYear = -1;
 
         cleanCols.forEach((col, idx) => {
           if (col === 'nam' || col === 'year') {
             cYear = idx;
+          } else if (col === 'ngay thang') {
+            cDayMonth = idx;
           } else if (col === 'gio' || col === 'ngay' || col === 'ngay no' || col.includes('thoi gian') || col.includes('ngay gio') || col.includes('date') || col.includes('time')) {
             cTime = idx;
           } else if (col === 'khach' || col.includes('khach hang') || col.includes('customer') || col === 'tho' || col.includes('ten tho')) {
@@ -8421,6 +8423,7 @@ function handleImportSoftwareExcelFile(event) {
           colIdxCost = cCost;
           colIdxProfit = cProfit;
           colIdxTime = cTime;
+          colIdxDayMonth = cDayMonth;
           colIdxStatus = cStatus;
           colIdxYear = cYear;
           break;
@@ -8509,20 +8512,31 @@ function handleImportSoftwareExcelFile(event) {
         let profitStr = formatPriceStr(profitNum);
 
         // Xử lý ngày giờ
-        let dtFormatted = formatImportDateTime(rawTime); // "HH:mm - DD/MM/YYYY"
+        let rawDayMonth = colIdxDayMonth !== -1 && row[colIdxDayMonth] !== undefined ? String(row[colIdxDayMonth]).trim() : '';
         let timePart = "10:00";
         let dayMonthPart = "01-01";
         let yearPart = currentYear;
 
-        let mDt = dtFormatted.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-        if (mDt) {
-          timePart = `${mDt[1].padStart(2, '0')}:${mDt[2].padStart(2, '0')}`;
-          dayMonthPart = `${mDt[3].padStart(2, '0')}-${mDt[4].padStart(2, '0')}`;
-          yearPart = mDt[5];
+        if (rawDayMonth && /^\d{1,2}[-/]\d{1,2}$/.test(rawDayMonth)) {
+          let dmParts = rawDayMonth.split(/[-/]/);
+          dayMonthPart = `${dmParts[0].padStart(2, '0')}-${dmParts[1].padStart(2, '0')}`;
+          let rtStr = String(rawTime || '').trim();
+          if (/^\d{1,2}:\d{1,2}$/.test(rtStr)) {
+            let tp = rtStr.split(':');
+            timePart = `${tp[0].padStart(2, '0')}:${tp[1].padStart(2, '0')}`;
+          }
         } else {
-          let { dayMonth, year } = parseExcelDateToDMY(rawTime);
-          dayMonthPart = dayMonth;
-          yearPart = year;
+          let dtFormatted = formatImportDateTime(rawTime); // "HH:mm - DD/MM/YYYY"
+          let mDt = dtFormatted.match(/^(\d{1,2}):(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+          if (mDt) {
+            timePart = `${mDt[1].padStart(2, '0')}:${mDt[2].padStart(2, '0')}`;
+            dayMonthPart = `${mDt[3].padStart(2, '0')}-${mDt[4].padStart(2, '0')}`;
+            yearPart = mDt[5];
+          } else {
+            let { dayMonth, year } = parseExcelDateToDMY(rawTime);
+            dayMonthPart = dayMonth;
+            yearPart = year;
+          }
         }
         if (rawYear && /^\d{4}$/.test(rawYear)) {
           yearPart = rawYear;
