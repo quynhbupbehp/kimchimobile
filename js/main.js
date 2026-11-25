@@ -1268,7 +1268,7 @@ function closeUniversalSmartDropdown() {
 function openUniversalSmartDropdown(input, filterText = null) {
   if (!input) return;
   // TRÊN GIAO DIỆN MOBILE: Chỉ gợi ý tên phụ kiện (tItemName), KHÔNG mở dropdown cho giá bán và giá nhập (chỉ nhập trực tiếp)
-  if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) {
+  if (window.innerWidth <= 900 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) {
     closeUniversalSmartDropdown();
     return;
   }
@@ -1391,7 +1391,7 @@ function openUniversalSmartDropdown(input, filterText = null) {
 
   // NẾU LỌC KHÔNG CÓ KẾT QUẢ HOẶC CHƯA CÓ TRONG DANH SÁCH (ÁP DỤNG TRÊN DESKTOP)
   if (isFiltering && displayOptions.length === 0) {
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= 900) {
       closeUniversalSmartDropdown();
       return;
     }
@@ -1465,7 +1465,7 @@ function openUniversalSmartDropdown(input, filterText = null) {
   }
 
   positionUniversalSmartDropdown(input, dropdownEl);
-  if (window.innerWidth <= 768) {
+  if (window.innerWidth <= 900) {
     const targetEl = input.closest('.input-with-actions') || input;
     targetEl.appendChild(dropdownEl);
   } else {
@@ -1496,7 +1496,7 @@ function positionUniversalSmartDropdown(input, dropdownEl) {
   if (!input || !dropdownEl) return;
   const targetEl = input.closest('.input-with-actions') || input;
 
-  if (window.innerWidth <= 768) {
+  if (window.innerWidth <= 900) {
     // TRÊN MOBILE: Gắn dropdown trực tiếp vào container ô nhập dạng ABSOLUTE
     // Menu sẽ luôn luôn nằm dính chặt dưới đáy của ô nhập, không bị bàn phím ảo hay viewport đẩy đè lên ô
     if (targetEl !== dropdownEl.parentNode) {
@@ -1686,7 +1686,7 @@ document.addEventListener('focusin', function (e) {
 document.addEventListener('input', function (e) {
   const input = e.target.closest('input');
   if (input) {
-    if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) return;
+    if (window.innerWidth <= 900 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) return;
     const listId = input.dataset.originalList || input.getAttribute('list') || (input.id ? (input.id + 'List') : null);
     if (listId && (document.getElementById(listId) || input._universalOptions)) {
       openUniversalSmartDropdown(input, input.value);
@@ -1697,7 +1697,7 @@ document.addEventListener('input', function (e) {
 document.addEventListener('keyup', function (e) {
   const input = e.target.closest('input');
   if (input && e.key !== 'Escape' && e.key !== 'Enter') {
-    if (window.innerWidth <= 768 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) return;
+    if (window.innerWidth <= 900 && (input.id === 'tPriceOut' || input.id === 'tPriceIn')) return;
     const listId = input.dataset.originalList || input.getAttribute('list') || (input.id ? (input.id + 'List') : null);
     if (listId && (document.getElementById(listId) || input._universalOptions)) {
       openUniversalSmartDropdown(input, input.value);
@@ -3243,7 +3243,7 @@ function notifyFirebaseQuotaExceeded(err) {
   console.warn("⚠️ Cảnh báo: Firebase Firestore đã hết hạn mức đọc/ghi hôm nay (resource-exhausted).");
 
   // Cảnh báo trực tiếp trên Mobile
-  if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+  if (typeof window !== 'undefined' && window.innerWidth <= 900) {
     if (typeof showToast === 'function') {
       showToast("⚠️ Firebase hết hạn ngạch đọc/ghi hôm nay!\nDữ liệu vẫn được lưu an toàn 100% trên điện thoại.", 5000);
     }
@@ -6783,7 +6783,7 @@ function closeTicketModal() {
 window.closeTicketModal = closeTicketModal;
 
 function checkAndApplySoftwareTicketAutoSync() {
-  if (typeof window === 'undefined' || window.innerWidth <= 768) return;
+  if (typeof window === 'undefined' || window.innerWidth <= 900) return;
   const nameEl = document.getElementById('tItemName');
   if (!nameEl) return;
   const name = (nameEl.value || '').trim().toLowerCase();
@@ -6806,14 +6806,14 @@ function checkAndApplySoftwareTicketAutoSync() {
 }
 
 document.addEventListener('input', function (e) {
-  if (typeof window === 'undefined' || window.innerWidth <= 768) return;
+  if (typeof window === 'undefined' || window.innerWidth <= 900) return;
   if (e.target && (e.target.id === 'tItemName' || e.target.id === 'tPriceOut')) {
     checkAndApplySoftwareTicketAutoSync();
   }
 });
 
 document.addEventListener('change', function (e) {
-  if (typeof window === 'undefined' || window.innerWidth <= 768) return;
+  if (typeof window === 'undefined' || window.innerWidth <= 900) return;
   if (e.target && (e.target.id === 'tItemName' || e.target.id === 'tPriceOut')) {
     checkAndApplySoftwareTicketAutoSync();
   }
@@ -14574,7 +14574,7 @@ function renderPhoneGrid() {
     currentBrandFilter = 'ALL';
   }
 
-  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 900;
   let filtered = (currentPhoneStatusFilter === 'CHUA_XU_LY')
     ? phoneDatabase.filter(p => p.status === 'Chưa Xử Lý' || (p.status && p.status.toLowerCase().includes('chưa xử lý')))
     : phoneDatabase.filter(p => p.status !== 'Chưa Xử Lý' && (!p.status || !p.status.toLowerCase().includes('chưa xử lý')));
@@ -15943,7 +15943,7 @@ function renderSwDropdownMenu(type, keyword) {
   }
 
   if (filtered.length === 0) {
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= 900) {
       closeAllSwDropdowns(null);
       return;
     }
@@ -15972,7 +15972,7 @@ function renderSwDropdownMenu(type, keyword) {
 }
 
 function openSwDropdown(type) {
-  if (window.innerWidth <= 768 && (type === 'price' || type === 'fee')) {
+  if (window.innerWidth <= 900 && (type === 'price' || type === 'fee')) {
     return; // Trên mobile: chỉ nhập giá/phí, không mở dropdown chọn
   }
   const meta = SW_DROPDOWN_META[type];
@@ -16560,7 +16560,7 @@ function checkSoftwareFormValidity() {
   const submitBtn = document.getElementById('swSubmitBtn');
   if (!submitBtn) return;
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 900;
   const custVal = (document.getElementById('swCustomerInput')?.value || '').trim();
   const devVal = (document.getElementById('swDeviceInput')?.value || '').trim();
   const priceVal = (document.getElementById('swPriceInput')?.value || '').trim();
@@ -26491,7 +26491,7 @@ document.addEventListener('click', function (e) {
     phoneRow.classList.toggle('kimchi-orange-selected');
     return;
   }
-  if (window.innerWidth <= 768) {
+  if (window.innerWidth <= 900) {
     const soldRow = e.target.closest('#soldPhoneTableBody tr');
     if (soldRow) {
       const tbody = soldRow.parentElement;
