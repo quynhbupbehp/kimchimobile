@@ -14515,6 +14515,14 @@ function renderPhoneGrid() {
             <tbody>
               ${filtered.map(p => {
       let pName = formatBrandDeviceName(p.name || '');
+      let pNameHtml = escapeHtml(pName);
+      const nameParts = pName.split(/\s+-\s+/);
+      if (nameParts.length >= 7) {
+        const mid = Math.ceil(nameParts.length / 2);
+        const line1 = escapeHtml(nameParts.slice(0, mid).join(' - '));
+        const line2 = escapeHtml(nameParts.slice(mid).join(' - '));
+        pNameHtml = `<span style="display: inline-flex; flex-direction: column; line-height: 1.25;"><span>${line1}</span><span>${line2}</span></span>`;
+      }
       let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
       let storageWithGB = rawStorage.replace(/ggb$/i, 'GB').replace(/g$/i, 'GB');
       if (storageWithGB) {
@@ -14586,10 +14594,10 @@ function renderPhoneGrid() {
                     <td style="text-align: left; padding-left: 12px; white-space: nowrap;">
                       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap;">
                         <span style="font-weight: 900; color: #10b981; font-size: 1.6rem; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;">
-                          ${escapeHtml(pName)}
+                          ${pNameHtml}
                           ${getColorDotHtml(p.color, 26)}
                         </span>
-                        ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.45rem; letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.75); background: rgba(239, 68, 68, 0.12); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">${escapeHtml(p.imei)}</span>` : ''}
+                        ${p.imei ? `<span style="font-weight: 900; color: #ef4444; font-size: 1.45rem; letter-spacing: 0.5px; border: 1px solid rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.12); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">${escapeHtml(p.imei)}</span>` : ''}
                       </div>
                       <div style="font-size: 1.08rem; color: #94a3b8; margin-top: 3px; display: flex; align-items: center; gap: 6px;">
                         <span>${getPhoneBrandBadgeHtml(p.brand, p.name)}</span>
@@ -14642,6 +14650,14 @@ function renderPhoneGrid() {
     container.className = 'phone-grid';
     container.innerHTML = filtered.map(p => {
       let pName = formatBrandDeviceName(p.name || '');
+      let pNameHtml = escapeHtml(pName);
+      const nameParts = pName.split(/\s+-\s+/);
+      if (nameParts.length >= 7) {
+        const mid = Math.ceil(nameParts.length / 2);
+        const line1 = escapeHtml(nameParts.slice(0, mid).join(' - '));
+        const line2 = escapeHtml(nameParts.slice(mid).join(' - '));
+        pNameHtml = `<span style="display: inline-flex; flex-direction: column; line-height: 1.25;"><span>${line1}</span><span>${line2}</span></span>`;
+      }
       let rawStorage = formatStorageDisplay((p.storage || '').replace(/[()]/g, '')).trim();
       let storageDisplay = rawStorage.replace(/\s*g+b$/i, '').replace(/\s*g$/i, '').trim();
 
@@ -15218,6 +15234,14 @@ function renderSoldPhoneTable() {
     mobileCardsContainer.innerHTML = filtered.map(p => {
       let brandDisplay = formatBrandDeviceName(p.brand || '');
       let pName = formatBrandDeviceName(p.name || '');
+      let pNameHtml = escapeHtml(pName);
+      const nameParts = pName.split(/\s+-\s+/);
+      if (nameParts.length >= 7) {
+        const mid = Math.ceil(nameParts.length / 2);
+        const line1 = escapeHtml(nameParts.slice(0, mid).join(' - '));
+        const line2 = escapeHtml(nameParts.slice(mid).join(' - '));
+        pNameHtml = `<span style="display: inline-flex; flex-direction: column; line-height: 1.25;"><span>${line1}</span><span>${line2}</span></span>`;
+      }
       let logoHtml = getPhoneBrandLogoHtml(p.brand, p.name, 25);
       // Trên Mobile: Loại bỏ tên hãng ở đầu tên máy để logo không bị trùng lặp
       let brandAndName = pName.replace(/^(?:SAMSUNG|OPPO|REALME|XIAOMI|REDMI|POCO|VIVO|HONOR|IPHONE|IPAD|APPLE)\s*[-–—:]*\s*/i, '');
