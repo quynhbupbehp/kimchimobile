@@ -1154,13 +1154,13 @@
 
             // Tách các tên máy bởi dấu gạch ngang '-', hoặc hiển thị tên đơn lẻ
             // Màu chữ trắng và vàng xen kẽ, ngăn cách bằng dấu -
-            const rawTokens = processedName.split('-');
-            const tokensHtml = rawTokens.map((rawToken, idx) => {
-                const token = rawToken.trim();
-                if (!token) return '';
+            const rawTokens = processedName.split('-').map(t => t.trim()).filter(Boolean);
+            const splitMid = (!isMobile && rawTokens.length >= 7) ? Math.ceil(rawTokens.length / 2) : -1;
+            const tokensHtml = rawTokens.map((token, idx) => {
                 const colorClass = (idx % 2 === 0) ? 'text-white font-black' : 'text-[#f59e0b] font-black';
-                const separatorHtml = (idx > 0) ? `<span class="text-gray-500 font-bold mx-1 select-none">-</span>` : '';
-                return `${separatorHtml}<span class="${colorClass}">${token}</span>`;
+                const separatorHtml = (idx > 0 && idx !== splitMid) ? `<span class="text-gray-500 font-bold mx-1 select-none">-</span>` : '';
+                const breakHtml = (idx === splitMid) ? '<br>' : '';
+                return `${breakHtml}${separatorHtml}<span class="${colorClass}">${token}</span>`;
             }).join('');
 
             const brandLogoHtml = getBrandBadgeHtml(brand, isMobile, nameStr);
