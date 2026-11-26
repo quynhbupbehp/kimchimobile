@@ -2777,7 +2777,7 @@ function importFullBackupJSON(event) {
 }
 window.importFullBackupJSON = importFullBackupJSON;
 
-function deduplicateAllTabs() {
+async function deduplicateAllTabs() {
   const dedupList = (arr, keyFn) => {
     if (!Array.isArray(arr) || arr.length === 0) return { unique: arr || [], removed: 0 };
     const seen = new Set();
