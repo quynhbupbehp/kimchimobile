@@ -2668,7 +2668,7 @@ async function manualSyncAllToFirestore() {
             list: sanitizeForFirestore(t.data),
             updatedAt: now
           }, { merge: true }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Hết thời gian chờ (Timeout 10s)')), 10000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Hết thời gian chờ (Timeout 60s)')), 60000))
         ]);
         successCount++;
       } catch (subErr) {
