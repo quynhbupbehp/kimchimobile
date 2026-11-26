@@ -5029,10 +5029,12 @@
         <div class="sw-input-row" style="align-items: flex-start; margin-bottom: 1.15rem;">
           <div class="sw-input-col" style="flex: 1;">
             <label class="sw-input-label">Ngày <span class="req">*</span></label>
-            <div class="sw-input-with-tools" style="height: 42px; box-sizing: border-box; padding: 0 10px;">
+            <div class="sw-input-with-tools" style="height: 42px; box-sizing: border-box; padding: 0 6px; display: flex; align-items: center; gap: 4px;">
+              <button type="button" class="btn-date-step" onclick="adjustSwFormDate(-1)" title="Giảm 1 ngày" style="height: 30px; min-width: 30px;">-</button>
               <input type="text" class="sw-input-field" id="swFormDate"
-                style="color: #10b981; font-weight: 800; cursor: pointer; text-align: center; padding: 0; height: 100%; font-size: 0.95rem; width: 100%;"
+                style="color: #10b981; font-weight: 800; cursor: pointer; text-align: center; padding: 0; height: 100%; font-size: 0.95rem; flex: 1; min-width: 0;"
                 value="24/10/2026">
+              <button type="button" class="btn-date-step" onclick="adjustSwFormDate(1)" title="Tăng 1 ngày" style="height: 30px; min-width: 30px;">+</button>
             </div>
           </div>
 

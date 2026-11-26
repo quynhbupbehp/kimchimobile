@@ -26600,3 +26600,21 @@ document.addEventListener('click', function (e) {
     applyMobilePhoneModalLayout();
   }
 })();
+
+function adjustSwFormDate(delta) {
+  const el = document.getElementById('swFormDate');
+  if (!el) return;
+  const parts = String(el.value || '').trim().split('/');
+  let d = new Date();
+  if (parts.length === 3) {
+    const day = parseInt(parts[0], 10);
+    const mon = parseInt(parts[1], 10) - 1;
+    const yr = parseInt(parts[2], 10);
+    if (!isNaN(day) && !isNaN(mon) && !isNaN(yr)) d = new Date(yr, mon, day);
+  }
+  d.setDate(d.getDate() + delta);
+  const pad = n => String(n).padStart(2, '0');
+  el.value = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  if (typeof checkSoftwareFormValidity === 'function') checkSoftwareFormValidity();
+}
+window.adjustSwFormDate = adjustSwFormDate;
