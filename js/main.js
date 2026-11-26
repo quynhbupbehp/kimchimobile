@@ -2653,7 +2653,7 @@ async function manualSyncAllToFirestore() {
     // 8. Tab Hệ Thống - Nhật Ký (activity_logs)
     if (typeof activityLogDatabase !== 'undefined' && Array.isArray(activityLogDatabase) && activityLogDatabase.length > 0) {
       if (typeof pruneOldActivityLogs === 'function') pruneOldActivityLogs();
-      tasks.push({ name: 'activity_logs', data: activityLogDatabase });
+      // tasks.push({ name: 'activity_logs', data: activityLogDatabase });
     }
 
     // Đồng bộ tuần tự an toàn, tránh xung đột IndexedDB (Assertion Failed)
