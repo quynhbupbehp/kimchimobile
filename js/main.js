@@ -3180,7 +3180,7 @@ function fetchDirectCloudSync(showToastMsg) {
           if (data.list.length > 300 && Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length < 200) {
             console.warn('Phát hiện bundle sold_phones cũ bị phình to (' + data.list.length + ' máy). Tự động chuẩn hóa về seed chuẩn.');
             soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
-            if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch(e) {} if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { await db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+            if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch(e) {} if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
           } else {
             soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
             try { localStorage.setItem('KIMCHI_SOLD_PHONES_LOCAL', JSON.stringify(soldPhoneDatabase)); } catch (e) { }
