@@ -2970,7 +2970,7 @@ function deduplicateTab(tabName) {
         if (v) ids.add(String(v));
       });
       if (ids.size === 0) return alert('Bạn chưa tích chọn mục nào!');
-      soldPhoneDatabase = soldPhoneDatabase.filter(item => !ids.has(String(item.id))); if (typeof setSoldPhoneDeletedOverride === 'function') { ids.forEach(id => { try { setSoldPhoneDeletedOverride(id); } catch(e) {} }); }
+      soldPhoneDatabase = soldPhoneDatabase.filter(item => !ids.has(String(item.id))); if (typeof setSoldPhoneDeletedOverride === 'function') { ids.forEach(id => { try { setSoldPhoneDeletedOverride(id); } catch(e) {} }); } if (typeof db !== 'undefined' && db) { ids.forEach(id => { try { db.collection('sold_phones').doc(String(id)).delete().catch(() => {}); } catch(e) {} }); }
       bar.remove();
       if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
       if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch(e) {} if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { await db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
