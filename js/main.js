@@ -15871,6 +15871,13 @@ function getSwDropdownItems(type) {
     });
   }
 
+  try {
+    const hidden = JSON.parse(localStorage.getItem('KIMCHI_SW_HIDDEN_' + type) || '[]');
+    if (Array.isArray(hidden) && hidden.length > 0) {
+      const hiddenSet = new Set(hidden.map(h => String(h).trim().toLowerCase()));
+      result = result.filter(x => !hiddenSet.has(String(x).trim().toLowerCase()));
+    }
+  } catch (e) {}
   return result;
 }
 
@@ -16239,6 +16246,14 @@ function deleteSwOption(type, inputId, event) {
   if (confirm(`Bạn có chắc chắn muốn xóa "${targetVal}" khỏi danh mục gợi ý không?`)) {
     let newItems = items.filter(x => x.trim().toLowerCase() !== targetVal.toLowerCase());
     saveSwDropdownItems(type, newItems);
+    try {
+      const hiddenKey = 'KIMCHI_SW_HIDDEN_' + type;
+      const hidden = JSON.parse(localStorage.getItem(hiddenKey) || '[]');
+      if (!hidden.some(h => String(h).trim().toLowerCase() === targetVal.toLowerCase())) {
+        hidden.push(targetVal);
+        localStorage.setItem(hiddenKey, JSON.stringify(hidden));
+      }
+    } catch (e) {}
     if (el && el.value.trim().toLowerCase() === targetVal.toLowerCase()) {
       el.value = '';
     }
