@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    HỆ THỐNG THÔNG BÁO TỰ TẮT SAU 2 GIÂY (TOAST NOTIFICATION)
    Thay thế toàn bộ window.alert chuẩn của trình duyệt
    ============================================================ */
@@ -16183,6 +16183,20 @@ function addNewSwOption(type, inputId, promptText, event) {
     if (!exists) {
       items.unshift(clean);
       saveSwDropdownItems(type, items);
+    if (type === 'customer' && typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
+      let updatedRows = 0;
+      softwareDatabase.forEach(s => {
+        if (s && String(s.customer || '').trim().toLowerCase() === currentVal.toLowerCase()) {
+          s.customer = newVal;
+          updatedRows++;
+        }
+      });
+      if (updatedRows > 0) {
+        if (typeof renderSoftwareTable === 'function') renderSoftwareTable();
+        if (typeof syncSoftwareBundleDebounced === 'function') syncSoftwareBundleDebounced();
+        if (typeof showToast === 'function') showToast(`✅ Đã đổi tên "${currentVal}" → "${newVal}" cho ${updatedRows} đơn Phần Mềm!`, 3500);
+      }
+    }
       if (input) input.value = clean;
       renderSwDropdownMenu(type, '');
       alert(`✓ Đã thêm "${clean}" vào danh mục gợi ý thành công!`);
@@ -16220,6 +16234,20 @@ function editSwOption(type, inputId, promptText, event) {
       items.unshift(newVal);
     }
     saveSwDropdownItems(type, items);
+    if (type === 'customer' && typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
+      let updatedRows = 0;
+      softwareDatabase.forEach(s => {
+        if (s && String(s.customer || '').trim().toLowerCase() === currentVal.toLowerCase()) {
+          s.customer = newVal;
+          updatedRows++;
+        }
+      });
+      if (updatedRows > 0) {
+        if (typeof renderSoftwareTable === 'function') renderSoftwareTable();
+        if (typeof syncSoftwareBundleDebounced === 'function') syncSoftwareBundleDebounced();
+        if (typeof showToast === 'function') showToast(`✅ Đã đổi tên "${currentVal}" → "${newVal}" cho ${updatedRows} đơn Phần Mềm!`, 3500);
+      }
+    }
     if (el) el.value = newVal;
     renderSwDropdownMenu(type, '');
   }
