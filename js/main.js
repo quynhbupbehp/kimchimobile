@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    HỆ THỐNG THÔNG BÁO TỰ TẮT SAU 2 GIÂY (TOAST NOTIFICATION)
    Thay thế toàn bộ window.alert chuẩn của trình duyệt
    ============================================================ */
@@ -26619,3 +26619,16 @@ function adjustSwFormDate(delta) {
   if (typeof checkSoftwareFormValidity === 'function') checkSoftwareFormValidity();
 }
 window.adjustSwFormDate = adjustSwFormDate;
+
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof SW_DROPDOWN_META !== 'undefined') {
+    Object.keys(SW_DROPDOWN_META).forEach(type => {
+      const inp = document.getElementById(SW_DROPDOWN_META[type].inputId);
+      if (inp) {
+        inp.addEventListener('input', function () {
+          if (typeof filterSwDropdown === 'function') filterSwDropdown(type, this.value);
+        });
+      }
+    });
+  }
+});
