@@ -3047,7 +3047,7 @@ function deduplicateTab(tabName) {
     } else if (tabName === 'sold_phones') {
       soldPhoneDatabase = filtered;
       if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-      if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch(e) {} if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { await db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+      if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch(e) {} if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
     }
     if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     closeModal();
