@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    HỆ THỐNG THÔNG BÁO TỰ TẮT SAU 2 GIÂY (TOAST NOTIFICATION)
    Thay thế toàn bộ window.alert chuẩn của trình duyệt
    ============================================================ */
@@ -15997,7 +15997,7 @@ function renderSwDropdownMenu(type, keyword) {
       if (!v) return false;
       const rawV = String(v).toLowerCase();
       const normV = rawV.replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      return rawV.includes(rawKw) || normV.includes(normKw);
+      return rawV.includes(rawKw);
     });
   }
 
