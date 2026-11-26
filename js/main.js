@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    HỆ THỐNG THÔNG BÁO TỰ TẮT SAU 2 GIÂY (TOAST NOTIFICATION)
    Thay thế toàn bộ window.alert chuẩn của trình duyệt
    ============================================================ */
@@ -2482,7 +2482,7 @@ function migrateStorageUnits() {
         }
       });
       if (spChanged) {
-        if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch(e) {} if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+        if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch (e) { } if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
       }
     }
 
@@ -2816,9 +2816,9 @@ async function deduplicateAllTabs() {
 
   const resPhone = typeof phoneDatabase !== 'undefined'
     ? dedupList(phoneDatabase, p => {
-        const imei = (p.imei || '').toLowerCase().trim();
-        return imei ? `imei:${imei}` : `${(p.brand || '').toLowerCase().trim()}|${(p.name || '').toLowerCase().trim()}|${pNum(p.price)}|${p.date || ''}`;
-      })
+      const imei = (p.imei || '').toLowerCase().trim();
+      return imei ? `imei:${imei}` : `${(p.brand || '').toLowerCase().trim()}|${(p.name || '').toLowerCase().trim()}|${pNum(p.price)}|${p.date || ''}`;
+    })
     : { unique: [], removed: 0 };
 
   const totalRemoved = resSales.removed + resSw.removed + resBanga.removed + resRepair.removed + resPhone.removed;
@@ -2970,10 +2970,10 @@ function deduplicateTab(tabName) {
         if (v) ids.add(String(v));
       });
       if (ids.size === 0) return alert('Bạn chưa tích chọn mục nào!');
-      soldPhoneDatabase = soldPhoneDatabase.filter(item => !ids.has(String(item.id))); if (typeof setSoldPhoneDeletedOverride === 'function') { ids.forEach(id => { try { setSoldPhoneDeletedOverride(id); } catch(e) {} }); } if (typeof db !== 'undefined' && db) { ids.forEach(id => { try { db.collection('sold_phones').doc(String(id)).delete().catch(() => {}); } catch(e) {} }); }
+      soldPhoneDatabase = soldPhoneDatabase.filter(item => !ids.has(String(item.id))); if (typeof setSoldPhoneDeletedOverride === 'function') { ids.forEach(id => { try { setSoldPhoneDeletedOverride(id); } catch (e) { } }); } if (typeof db !== 'undefined' && db) { ids.forEach(id => { try { db.collection('sold_phones').doc(String(id)).delete().catch(() => { }); } catch (e) { } }); }
       bar.remove();
       if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-      if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch(e) {} if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { await db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+      if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch (e) { } if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { await db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
       if (typeof showToast === 'function') showToast(`✅ Đã xóa ${ids.size} mục khỏi Bảo Hành (Bán Gà giữ nguyên)!`, 3500);
     };
     return;
@@ -3047,7 +3047,7 @@ function deduplicateTab(tabName) {
     } else if (tabName === 'sold_phones') {
       soldPhoneDatabase = filtered;
       if (typeof renderSoldPhoneTable === 'function') renderSoldPhoneTable();
-      if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch(e) {} if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+      if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch (e) { } if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
     }
     if (typeof updateSidebarOverallProfits === 'function') updateSidebarOverallProfits();
     closeModal();
@@ -3180,7 +3180,7 @@ function fetchDirectCloudSync(showToastMsg) {
           if (data.list.length > 300 && Array.isArray(window.SEED_SOLD_DATA) && window.SEED_SOLD_DATA.length < 200) {
             console.warn('Phát hiện bundle sold_phones cũ bị phình to (' + data.list.length + ' máy). Tự động chuẩn hóa về seed chuẩn.');
             soldPhoneDatabase = (typeof mergeWithSeedSoldPhones === 'function') ? mergeWithSeedSoldPhones([]) : JSON.parse(JSON.stringify(window.SEED_SOLD_DATA));
-            if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch(e) {} if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
+            if (typeof saveSoldPhoneStorage === 'function') try { saveSoldPhoneStorage(); } catch (e) { } if (typeof db !== 'undefined' && db && typeof sanitizeForFirestore === 'function') { db.collection('sync_bundles').doc('sold_phones').set({ list: sanitizeForFirestore(soldPhoneDatabase), updatedAt: Date.now() }, { merge: true }); } else if (typeof syncSoldPhoneBundleDebounced === 'function') syncSoldPhoneBundleDebounced();
           } else {
             soldPhoneDatabase = Array.isArray(data.list) ? data.list : [];
             try { localStorage.setItem('KIMCHI_SOLD_PHONES_LOCAL', JSON.stringify(soldPhoneDatabase)); } catch (e) { }
@@ -15877,7 +15877,7 @@ function getSwDropdownItems(type) {
       const hiddenSet = new Set(hidden.map(h => String(h).trim().toLowerCase()));
       result = result.filter(x => !hiddenSet.has(String(x).trim().toLowerCase()));
     }
-  } catch (e) {}
+  } catch (e) { }
   return result;
 }
 
@@ -16178,25 +16178,13 @@ function addNewSwOption(type, inputId, promptText, event) {
   }
 
   if (clean !== "") {
+    clean = clean.replace(/\s+/g, ' ').trim();
     let items = getSwDropdownItems(type);
-    let exists = items.some(x => x.toLowerCase() === clean.toLowerCase());
+    let normClean = clean.toLowerCase();
+    let exists = items.some(x => String(x || '').replace(/\s+/g, ' ').trim().toLowerCase() === normClean);
     if (!exists) {
       items.unshift(clean);
       saveSwDropdownItems(type, items);
-    if (type === 'customer' && typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
-      let updatedRows = 0;
-      softwareDatabase.forEach(s => {
-        if (s && String(s.customer || '').trim().toLowerCase() === currentVal.toLowerCase()) {
-          s.customer = newVal;
-          updatedRows++;
-        }
-      });
-      if (updatedRows > 0) {
-        if (typeof renderSoftwareTable === 'function') renderSoftwareTable();
-        if (typeof syncSoftwareBundleDebounced === 'function') syncSoftwareBundleDebounced();
-        if (typeof showToast === 'function') showToast(`✅ Đã đổi tên "${currentVal}" → "${newVal}" cho ${updatedRows} đơn Phần Mềm!`, 3500);
-      }
-    }
       if (input) input.value = clean;
       renderSwDropdownMenu(type, '');
       alert(`✓ Đã thêm "${clean}" vào danh mục gợi ý thành công!`);
@@ -16234,20 +16222,6 @@ function editSwOption(type, inputId, promptText, event) {
       items.unshift(newVal);
     }
     saveSwDropdownItems(type, items);
-    if (type === 'customer' && typeof softwareDatabase !== 'undefined' && Array.isArray(softwareDatabase)) {
-      let updatedRows = 0;
-      softwareDatabase.forEach(s => {
-        if (s && String(s.customer || '').trim().toLowerCase() === currentVal.toLowerCase()) {
-          s.customer = newVal;
-          updatedRows++;
-        }
-      });
-      if (updatedRows > 0) {
-        if (typeof renderSoftwareTable === 'function') renderSoftwareTable();
-        if (typeof syncSoftwareBundleDebounced === 'function') syncSoftwareBundleDebounced();
-        if (typeof showToast === 'function') showToast(`✅ Đã đổi tên "${currentVal}" → "${newVal}" cho ${updatedRows} đơn Phần Mềm!`, 3500);
-      }
-    }
     if (el) el.value = newVal;
     renderSwDropdownMenu(type, '');
   }
@@ -16281,7 +16255,7 @@ function deleteSwOption(type, inputId, event) {
         hidden.push(targetVal);
         localStorage.setItem(hiddenKey, JSON.stringify(hidden));
       }
-    } catch (e) {}
+    } catch (e) { }
     if (el && el.value.trim().toLowerCase() === targetVal.toLowerCase()) {
       el.value = '';
     }
