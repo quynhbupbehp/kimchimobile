@@ -16045,7 +16045,8 @@ function openSwDropdown(type) {
   }
 
   closeAllSwDropdowns(type);
-  renderSwDropdownMenu(type, '');
+  const _inp = document.getElementById(meta.inputId);
+  renderSwDropdownMenu(type, _inp ? _inp.value : '');
   menu.classList.add('open');
   // Cuộn đến item đang active
   setTimeout(() => {
