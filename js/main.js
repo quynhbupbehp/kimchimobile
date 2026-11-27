@@ -16106,6 +16106,7 @@ function toggleSwDropdown(type) {
     menu.classList.remove('open');
   } else {
     openSwDropdown(type);
+    renderSwDropdownMenu(type, '');
     const input = document.getElementById(meta.inputId);
     if (input) input.focus();
   }
